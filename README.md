@@ -1,4 +1,4 @@
-# Automaticlly plot Antarctic Data
+# Automatically plot Antarctic Data
 
 The attached Jupyter notebook automatically samples gridded data and plots earth-layer cross-sections and data profiles for Antarctica. It uses pygmt for sampling and plotting. 
 
