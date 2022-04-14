@@ -1,4 +1,4 @@
-# Automatically plot Antarctic Data
+# Automatically plot Antarctic data
 
 <p align="center">
     <img src="https://github.com/mdtanker/antarctic_cross_sections/blob/main/cover_fig.png" width="600">
