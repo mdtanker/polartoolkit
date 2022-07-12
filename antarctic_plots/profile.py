@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pygmt
-import geopandas as gpd
+# import geopandas as gpd
 import verde as vd
 from antarctic_plots import fetch
 

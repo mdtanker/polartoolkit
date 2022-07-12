@@ -1,3 +1,10 @@
 /.ipynb_checkpoints*
-data/moa750_2009_hp1_v1.1.tif
-data/antarctic_ice_vel_phase_map_v01-vmag.nc
+
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info

@@ -21,7 +21,6 @@ setup(
         'pygmt',
         'pandas',
         'numpy',
-        'geopandas',
         'pooch',
         'xarray',
         'pyproj',
