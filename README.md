@@ -22,6 +22,18 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 
 ## Getting started
 
+Create a new python environment and activate it:
+    
+    conda create -n antarctic_plots python=3.9
+    
+    conda activate antarctic_plots
+    
 To install the development version from Github:
 
-    pip install https://github.com/mdtanker/antarctic_plots.git
+    git clone https://github.com/mdtanker/antarctic_plots.git
+    
+    cd antarctic_plots
+    
+    pip install .
+    
+Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb)
