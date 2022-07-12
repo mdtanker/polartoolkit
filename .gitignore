@@ -1,3 +1,3 @@
 /.ipynb_checkpoints*
-sample_data/moa750_2009_hp1_v1.1.tif
-sample_data/antarctic_ice_vel_phase_map_v01-vmag.nc
+data/moa750_2009_hp1_v1.1.tif
+data/antarctic_ice_vel_phase_map_v01-vmag.nc
