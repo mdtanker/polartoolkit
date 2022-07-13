@@ -78,6 +78,7 @@ def bedmap2(layer, plot=False, info=False):
     grd = grd.squeeze()
     if layer=='surface':
         grd = grd.fillna(0)
+        print('filling grid nans with "0"')
     if plot==True:
         grd.plot(robust=True)
     if info==True:
@@ -143,40 +144,81 @@ def gravity(type, plot=False, info=False, region=None, spacing=5e3):
         print(pygmt.grdinfo(grd))
     return grd
 
-def magnetics(plot=False, info=False, region=None, spacing=5e3):
+def magnetics(version, plot=False, info=False, region=None, spacing=5e3):
     """
+    version, one of following strings: 
+        'admap2', 'admap1', 'admap2_eq_src', 'admap2_gdb'
+    1) 
+    ADMAP2 magnetic anomaly compilation of Antarctica.
+    Non-geosoft specific files provide from Sasha Golynsky.
+    2) 
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
     https://admap.kongju.ac.kr/databases.html
-    Update to use ADMAP2 once non-Geosoft specific file versions are released
-    ADMAP2 magnetic anomaly compilation of Antarctica.
+    3) 
+    ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
+    4) 
+    Geosoft-specific .gdb abridged files.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
+    
     """
     if region==None:
-        region=(-3330000, 3330000, -3330000, 3330000)
-    # for downloading .gdb abridged files
-    # files = pooch.retrieve(
-    #     url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
-    #     known_hash=None,
-    #     processor=pooch.Unzip(),
-    #     progressbar=True)
-    file = pooch.retrieve(
-            url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+            region=(-3330000, 3330000, -3330000, 3330000)
+    if version == 'admap2':
+        path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
+        grd = xr.load_dataarray(path)
+        grd = grd.squeeze()
+        grd = pygmt.grdfilter(
+                grid=grd,
+                filter=f'g{spacing}',
+                spacing=spacing,
+                region=region,
+                distance='0',
+                nans='r',
+                verbose='q')
+    elif version == 'admap1':
+        path = pooch.retrieve(
+                url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+                known_hash=None,
+                processor=pooch.Unzip(),
+                progressbar=True)[0]
+        df = pd.read_csv(path, delim_whitespace=True, header=None, 
+                names=['lat', 'lon', 'nT'])
+        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        df['x'], df['y'] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+        df = pygmt.blockmedian(df[["x", "y", 'nT']], 
+                                spacing=spacing, 
+                                region=region,
+                                verbose='q')
+        grd = pygmt.surface(data=df[['x','y','nT']], 
+                                spacing=spacing, 
+                                region=region,
+                                M='2c',
+                                verbose='q') 
+    elif version == 'admap2_eq_src':                           
+        path = pooch.retrieve(
+                url="https://admap.kongju.ac.kr/admapdata/ADMAP_2S_EPS_20km.zip",
+                known_hash=None,
+                processor=pooch.Unzip(),
+                progressbar=True)[0]
+        df = pd.read_csv(path, delim_whitespace=True, header=None, 
+                names=['lat', 'lon', 'z', 'eq_source']
+                )
+        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        df['x'], df['y'] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+        df = pygmt.blockmedian(df[["x", "y", 'eq_source']], 
+                                spacing=spacing, region=region,
+                                verbose='q')
+        grd = pygmt.surface(data=df[['x','y','eq_source']], 
+                            spacing=spacing, region=region, M='2c',
+                            verbose='q') 
+    elif version == 'admap2_gdb':
+        files = pooch.retrieve(
+            url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
             known_hash=None,
             processor=pooch.Unzip(),
-            progressbar=True)[0]
-    df = pd.read_csv(file, delim_whitespace=True, header=None, 
-            names=['lat', 'lon', 'nT'])
-    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-    df['x'], df['y'] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-    df = pygmt.blockmedian(df[["x", "y", 'nT']], 
-                            spacing=spacing, 
-                            region=region,
-                            verbose='q')
-    grd = pygmt.surface(data=df[['x','y','nT']], 
-                            spacing=spacing, 
-                            region=region,
-                            M='2c',
-                            verbose='q') 
+            progressbar=True)
+    else:
+        print('invalid version string')
     if plot==True:
         grd.plot(robust=True)
     if info==True:

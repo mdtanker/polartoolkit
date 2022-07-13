@@ -124,8 +124,7 @@ def default_layers():
 def default_data(region=None):
     if region==None:
         region=(-3330000, 3330000, -3330000, 3330000)
-
-    mag = fetch.magnetics(region=region, spacing=10e3)
+    mag = fetch.magnetics(version='admap1', region=region, spacing=10e3)
     FA_grav = fetch.gravity('FA', region=region, spacing=10e3)
     data_names = ['ADMAP-1 magnetics','ANT-4d Free-air grav',]
     data_grids = [mag, FA_grav,]
