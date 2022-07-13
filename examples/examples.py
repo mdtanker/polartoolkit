@@ -104,19 +104,9 @@ profile.plot_profile(
     )
 
 # %%
-# get default bedmap2 layers
-layers_dict=profile.default_layers()
-# add dictionary entry of extra layers
-layers_dict['basement']={}
-layers_dict['basement']['name']='basement'
-layers_dict['basement']['grid']=fetch.basement()
-layers_dict['basement']['color']='chocolate'
-
-
-# %%
 # include your own grid files for both the cross section and the data profile
 
-# use function make_data_dict to specify grids and colors for data profile
+# use function: make_data_dict to specify grids and colors for data profile
 data_dict = profile.make_data_dict(['Bouguer gravity', 'DeepBedMap'], [fetch.gravity('BA'), fetch.deepbedmap()], ['purple', 'red'])
 
 # get default bedmap2 layers
@@ -132,6 +122,30 @@ profile.plot_profile(
     add_map=True,
     data_dict=data_dict,
     layers_dict=layers_dict,
+    )
+
+# %%
+# note that the additional layer 'basement', doesn't extend past the groundingline. By default, NaN's in any layer are set equal 
+# to the layer above, causing the vertical line at ~100km.
+# to remove this feature, set 
+profile.plot_profile(
+    method='shapefile',
+    add_map=True,
+    data_dict=data_dict,
+    layers_dict=layers_dict,
+    fillnans=False
+    )
+
+# %%
+# we can change the zoom of the map with the buffer_perc argument
+# this is a percentage of total line distance, so in this case
+# we zoom out by 80% of 330km, so ~260km
+profile.plot_profile(
+    method='shapefile',
+    add_map=True,
+    data_dict=data_dict,
+    layers_dict=layers_dict,
+    buffer_perc=.8,
     )
 
 # %%

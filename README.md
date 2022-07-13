@@ -22,13 +22,13 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 
 ## Getting started
 
-Here I use mamba to install packages, but conda should work:
+Here I use mamba to install packages, but conda should work as well:
 
     conda install mamba
 
 Create a new python environment and install the dependencies:
     
-    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas
+    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
 
 If you planning on using Jupyter notebooks, include ipykernel in the above command. 
 

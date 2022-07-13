@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: antarctic-plots
-Version: 0.0.post20+g1153a89.d20220713
+Version: 0.0.post23+g2da383c.d20220713
 Summary: Functions to automate Antarctic data visualization
 Home-page: https://github.com/mdtanker/antarctic_plots
 Author: Matt Tankersley

@@ -23,23 +23,27 @@ def imagery():
      MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
     Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
     """
-    img = pooch.retrieve(
+    path = pooch.retrieve(
         # url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/moa750_2014_hp1_v01.tif",
         url='https://lima.usgs.gov/tiff_90pct.zip',
         processor=pooch.Unzip(),
-        known_hash=None,)[0]
-    return img
+        known_hash=None,
+        progressbar=True,)
+    file = [p for p in path if p.endswith('.tif')][0]
+    return file
 
 def groundingline():
     """
     Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147
     Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
     """
-    groundingline = pooch.retrieve(
+    path = pooch.retrieve(
         url="https://doi.pangaea.de/10013/epic.42133.d001",
         known_hash=None,
-        processor=pooch.Unzip(),)[3]
-    return groundingline
+        processor=pooch.Unzip(),
+        progressbar=True,)#[3]
+    file = [p for p in path if p.endswith('.shp')][0]
+    return file
 
 def basement(plot=False, info=False):
     """
@@ -50,7 +54,7 @@ def basement(plot=False, info=False):
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",
         known_hash=None,
-        )
+        progressbar=True,)
     grd = xr.load_dataarray(path)
     if plot==True:
         grd.plot(robust=True)
@@ -62,27 +66,18 @@ def bedmap2(layer, plot=False, info=False):
     """
     bedmap2 data, from https://doi.org/10.5194/tc-7-375-2013.
     layer is one of following strings: 
-        thickness, bed, surface, geoid2wgs
+        'thickness', 'bed', 'surface', 'geiod_to_WGS84'
     """
-    bedmap2 = pooch.retrieve(
+    path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
         known_hash=None,
-        processor=pooch.Unzip(),)
-    if layer=='thickness':
-        path=bedmap2[11]
-    if layer=='bed':
-        path=bedmap2[29]
-    if layer=='surface':
-        path=bedmap2[39]
-    if layer=='geoid2wgs':
-        path=bedmap2[26]
-
-    grd = xr.load_dataarray(path)
+        processor=pooch.Unzip(),
+        progressbar=True,)
+    file = [p for p in path if p.endswith(f'{layer}.tif')][0]
+    grd = xr.load_dataarray(file)
     grd = grd.squeeze()
-
     if layer=='surface':
         grd = grd.fillna(0)
-
     if plot==True:
         grd.plot(robust=True)
     if info==True:
@@ -96,12 +91,10 @@ def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
     """
     if region==None:
         region=(-2700000, 2800000, -2200000, 2300000)
-
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         known_hash=None,
         progressbar=True,)
-
     grd = pygmt.grdfilter(
         grid=path,
         filter=f'g{spacing}',
@@ -110,8 +103,6 @@ def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
         distance='0',
         nans='r',
         verbose='q')
-    # grd = xr.load_dataarray(path)
-
     if plot==True:
         grd.plot(robust=True)
     if info==True:
@@ -127,15 +118,14 @@ def gravity(type, plot=False, info=False, region=None, spacing=5e3):
     """
     if region==None:
         region=(-3330000, 3330000, -3330000, 3330000)
-
-    gravity = pooch.retrieve(
+    path = pooch.retrieve(
         url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
         known_hash=None,
-        processor=pooch.Unzip(),)[5]
-
-    df = pd.read_csv(gravity, delim_whitespace=True, 
-                            skiprows=3, names=['id', 'lat', 'lon', 'FA', 'Err', 'DG', 'BA'])
-
+        processor=pooch.Unzip(),
+        progressbar=True,)
+    file = [p for p in path if p.endswith('.dat')][0]
+    df = pd.read_csv(file, delim_whitespace=True, skiprows=3,
+                    names=['id', 'lat', 'lon', 'FA', 'Err', 'DG', 'BA'],)
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df['x'], df['y'] = transformer.transform(df.lat.tolist(), df.lon.tolist())
     df = pygmt.blockmedian(df[["x", "y", type]], 
@@ -163,25 +153,21 @@ def magnetics(plot=False, info=False, region=None, spacing=5e3):
     """
     if region==None:
         region=(-3330000, 3330000, -3330000, 3330000)
-    # for download .gdb abridged files
+    # for downloading .gdb abridged files
     # files = pooch.retrieve(
     #     url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
     #     known_hash=None,
     #     processor=pooch.Unzip(),
     #     progressbar=True)
-
     file = pooch.retrieve(
             url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True)[0]
-
     df = pd.read_csv(file, delim_whitespace=True, header=None, 
-            names=['lat', 'lon', 'nT']
-            )
+            names=['lat', 'lon', 'nT'])
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df['x'], df['y'] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-
     df = pygmt.blockmedian(df[["x", "y", 'nT']], 
                             spacing=spacing, 
                             region=region,
@@ -191,7 +177,6 @@ def magnetics(plot=False, info=False, region=None, spacing=5e3):
                             region=region,
                             M='2c',
                             verbose='q') 
-
     if plot==True:
         grd.plot(robust=True)
     if info==True:
@@ -207,7 +192,8 @@ def magnetics(plot=False, info=False, region=None, spacing=5e3):
 #         url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
 #         known_hash=None,
 #         processor=pooch.Unzip(
-#             extract_dir='Burton_Johnson_2020',),)
+#             extract_dir='Burton_Johnson_2020',),
+#         progressbar=True,)
 #     file = [p for p in path if p.endswith('Mean.tif')][0]
 #     grd = xr.load_dataarray(file)
 #     grd = grd.squeeze()
