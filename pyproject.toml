@@ -5,7 +5,3 @@ requires = [
     'setuptools_scm[toml]'
 ]
 build-backend = 'setuptools.build_meta'
-
-[tool.setuptools_scm]
-version_scheme =  "post-release"
-write_to =  "antarctic_plots/_version_generated.py"

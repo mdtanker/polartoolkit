@@ -148,7 +148,4 @@ profile.plot_profile(
     buffer_perc=.8,
     )
 
-# %%
-
-
 

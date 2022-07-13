@@ -1,7 +1,0 @@
-pandas
-numpy
-pooch
-xarray
-pyproj
-verde
-rioxarray
