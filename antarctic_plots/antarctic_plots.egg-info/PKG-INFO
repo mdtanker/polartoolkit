@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: antarctic-plots
-Version: 0.0.post19+g9536903.d20220713
+Version: 0.1.dev19+g9536903.d20220712
 Summary: Functions to automate Antarctic data visualization
 Home-page: https://github.com/mdtanker/antarctic_plots
 Author: Matt Tankersley
@@ -8,7 +8,6 @@ Author-email: matt.d.tankersley@gmail.com
 License: MIT
 Project-URL: Tracker, https://github.com/mdtanker/antarctic_plots/issues
 Project-URL: Source, https://github.com/mdtanker/antarctic_plots
-Keywords: antarctica,geoscience
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
