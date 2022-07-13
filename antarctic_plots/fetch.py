@@ -4,11 +4,17 @@ from pyproj import Transformer
 import xarray as xr
 import pygmt
 
-def sample_shp():
-    shp = pooch.retrieve(
-        url='https://github.com/mdtanker/antarctic_plots/raw/main/data/Disco_deep_transect_1k.shp',
+def sample_shp(name):
+    """
+    load 1 of 2 sample shapefiles
+    name =is either 'Disco_deep_transect' or 'Roosevelt_Island'
+    """
+    path = pooch.retrieve(
+        url=f'https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip',
+        processor=pooch.Unzip(),
         known_hash=None,)
-    return shp
+    file = [p for p in path if p.endswith('.shp')][0]
+    return file
 
 def imagery():
     """

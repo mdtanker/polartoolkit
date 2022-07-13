@@ -25,12 +25,12 @@ b=(1000e3, 1400e3)
 # b=(-100e3,-545e3)
 
 # call the main function, input the starting and ending points, and disable the map. 
-# profile.plot_profile(
-#     method='points',
-#     start=a,
-#     stop=b,
-#     add_map=False,
-#     )
+profile.plot_profile(
+    method='points',
+    start=a,
+    stop=b,
+    add_map=False,
+    )
 
 # %%
 # increase the resolution with the parameter "num"

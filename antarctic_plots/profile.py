@@ -18,7 +18,7 @@ def create_profile(
     along a line with multiple methods
     """
     if shapefile==None:
-        shapefile=fetch.sample_shp()
+        shapefile=fetch.sample_shp(name='Disco_deep_transect')
 
     methods=['points', 'shapefile']
     if method not in methods:
