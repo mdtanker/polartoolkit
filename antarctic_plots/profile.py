@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pygmt
-# import geopandas as gpd
+import geopandas as gpd
 import verde as vd
 from antarctic_plots import fetch
 
@@ -18,7 +18,7 @@ def create_profile(
     along a line with multiple methods
     """
     if shapefile==None:
-        shapefile='../data/Disco_deep_transect_1k.shp'
+        shapefile=fetch.sample_shp()
 
     methods=['points', 'shapefile']
     if method not in methods:

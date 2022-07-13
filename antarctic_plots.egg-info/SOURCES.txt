@@ -16,6 +16,11 @@ antarctic_plots.egg-info/dependency_links.txt
 antarctic_plots.egg-info/requires.txt
 antarctic_plots.egg-info/top_level.txt
 antarctic_plots.egg-info/zip-safe
+antarctic_plots/antarctic_plots.egg-info/PKG-INFO
+antarctic_plots/antarctic_plots.egg-info/SOURCES.txt
+antarctic_plots/antarctic_plots.egg-info/dependency_links.txt
+antarctic_plots/antarctic_plots.egg-info/requires.txt
+antarctic_plots/antarctic_plots.egg-info/top_level.txt
 data/Disco_deep_transect_1k.cpg
 data/Disco_deep_transect_1k.dbf
 data/Disco_deep_transect_1k.prj
@@ -26,6 +31,7 @@ data/Roosevelt_Island_10k.dbf
 data/Roosevelt_Island_10k.prj
 data/Roosevelt_Island_10k.shp
 data/Roosevelt_Island_10k.shx
+data/__init__.py
 examples/examples.ipynb
 examples/examples.py
 examples/.ipynb_checkpoints/examples-checkpoint.ipynb

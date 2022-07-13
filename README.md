@@ -22,12 +22,20 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 
 ## Getting started
 
-Create a new python environment and activate it:
+Here I use mamba to install packages, but conda should work:
+
+    conda install mamba
+
+Create a new python environment and install the dependencies:
     
-    conda create -n antarctic_plots python=3.9
-    
-    conda activate antarctic_plots
-    
+    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas
+
+If you planning on using Jupyter notebooks, include ipykernel in the above command. 
+
+Activate the new environemnt:
+
+    mamba activate antarctic_plots
+
 To install the development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
@@ -35,5 +43,10 @@ To install the development version from Github:
     cd antarctic_plots
     
     pip install .
-    
+
 Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb)
+
+If you get an error related to traitlets run the following command as discuss [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
+
+    conda install ipykernel --update-deps --force-reinstall
+     

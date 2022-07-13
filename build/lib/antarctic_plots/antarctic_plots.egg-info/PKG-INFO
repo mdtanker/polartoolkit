@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: antarctic-plots
-Version: 0.0.post20+g1153a89.d20220713
+Version: 0.1.dev19+g9536903.d20220712
 Summary: Functions to automate Antarctic data visualization
 Home-page: https://github.com/mdtanker/antarctic_plots
 Author: Matt Tankersley
@@ -8,7 +8,6 @@ Author-email: matt.d.tankersley@gmail.com
 License: MIT
 Project-URL: Tracker, https://github.com/mdtanker/antarctic_plots/issues
 Project-URL: Source, https://github.com/mdtanker/antarctic_plots
-Keywords: antarctica,geoscience
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
@@ -40,20 +39,12 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 
 ## Getting started
 
-Here I use mamba to install packages, but conda should work:
-
-    conda install mamba
-
-Create a new python environment and install the dependencies:
+Create a new python environment and activate it:
     
-    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas
-
-If you planning on using Jupyter notebooks, include ipykernel in the above command. 
-
-Activate the new environemnt:
-
-    mamba activate antarctic_plots
-
+    conda create -n antarctic_plots python=3.9
+    
+    conda activate antarctic_plots
+    
 To install the development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
@@ -61,13 +52,9 @@ To install the development version from Github:
     cd antarctic_plots
     
     pip install .
-
+    
 Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb)
 
-If you get an error related to traitlets run the following command as discuss [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
-
-    conda install ipykernel --update-deps --force-reinstall
-     
 MIT License
 
 Copyright (c) 2022 Matt Tankerlsey

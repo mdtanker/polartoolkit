@@ -4,6 +4,12 @@ from pyproj import Transformer
 import xarray as xr
 import pygmt
 
+def sample_shp():
+    shp = pooch.retrieve(
+        url='https://github.com/mdtanker/antarctic_plots/raw/main/data/Disco_deep_transect_1k.shp',
+        known_hash=None,)
+    return shp
+
 def imagery():
     """
     Antarctic imagery from LIMA: https://lima.usgs.gov/fullcontinent.php
