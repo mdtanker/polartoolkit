@@ -48,6 +48,11 @@ To install the development version from Github:
     cd antarctic_plots
     pip install -e .
 
+Or once the repo is cloned, use the make file for installation:
+
+    cd antarctic_plots
+    make install
+
 Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb) or the equivalent [.py file](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.py)
 
 If you get an error related to traitlets run the following command as discuss [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
