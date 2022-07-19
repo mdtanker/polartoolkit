@@ -6,6 +6,7 @@
 # first, import the modules from the package
 from antarctic_plots import profile
 from antarctic_plots import fetch
+from antarctic_plots import utils
 
 # %% [markdown]
 # ## Simple cross section

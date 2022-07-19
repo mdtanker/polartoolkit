@@ -1,0 +1,10 @@
+geopandas==0.11.0
+numpy==1.23.1
+pandas==1.4.3
+pooch==1.6.0
+pygmt==0.7.0
+pyproj==3.3.1
+rioxarray==0.11.1
+setuptools==63.2.0
+verde==1.7.0
+xarray==2022.3.0

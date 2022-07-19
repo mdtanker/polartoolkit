@@ -1,0 +1,20 @@
+name: antarctic_plots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.9
+  - pip
+  - numpy
+  - pandas
+  - geopandas
+  - pooch
+  - pygmt
+  - pyproj
+  - rioxarray
+  - setuptools
+  - verde
+  - xarray
+  - ipykernel
+  - notebook
+  - jupyterlab

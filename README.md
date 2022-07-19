@@ -1,7 +1,7 @@
 # Automatically plot Antarctic data
 
 <p align="center">
-    <img src="https://github.com/mdtanker/antarctic_plots/blob/main/cover_fig.png" width="600">
+    <img src="cover_fig.png" width="600">
 </p> 
 
 ## Disclaimer
@@ -26,27 +26,43 @@ Here I use mamba to install packages, but conda should work as well:
 
     conda install mamba
 
-Create a new python environment and install the dependencies:
-    
-    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
+Create a new python environment:
 
-If you planning on using Jupyter notebooks, include ipykernel in the above command. 
+    mamba create --name antarctic_plots python=3.9
 
-Activate the new environemnt:
+Activate the new environment:
 
     mamba activate antarctic_plots
+
+To install the last released version:
+
+    pip install antarctic-plots --no-deps
+
+Instead, if you want to use it with ipython (i.e. Jupyter notebooks) the following installs the additional dependencies:
+
+    pip install antarctic-plots[ipython]
 
 To install the development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
-    
     cd antarctic_plots
-    
-    pip install .
+    pip install -e .
 
-Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb)
+Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb) or the equivalent [.py file](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.py)
 
 If you get an error related to traitlets run the following command as discuss [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
 
     conda install ipykernel --update-deps --force-reinstall
-     
+
+Antarctic_plots has the following dependencies:
+* pandas 
+* numpy 
+* pooch 
+* xarray 
+* pyproj 
+* verde 
+* rioxarray 
+* pygmt 
+* geopandas 
+* netCDF4 
+* tqdm
