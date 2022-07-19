@@ -1,19 +1,21 @@
-/.ipynb_checkpoints*
+.ipynb_checkpoints*
 
 # Compiled python modules.
 *.pyc
 
 # Setuptools distribution folder
-/dist/
+dist/
 
 # Docs build file
-/build/
+docs/_build/
+docs/_static/
+docs/_templates/
 
 # Python egg metadata, regenerated from source files by setuptools.
-/antarctic_plots.egg-info
+antarctic_plots.egg-info/
 
 # Github folder
-/.github
+.github/
 
 # Large data files
 data/ADMAP_2B_2017_R9_BAS_.tif

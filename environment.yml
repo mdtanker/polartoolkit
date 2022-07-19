@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python==3.9
   - pip
+  - mamba
   # Science
   - numpy
   - pandas
@@ -15,6 +16,10 @@ dependencies:
   - rioxarray
   - verde
   - xarray
+  # iPython
+  - ipykernel
+  - notebook
+  - jupyterlab
   # Build
   - setuptools
   - twine
@@ -22,7 +27,6 @@ dependencies:
   - black
   - isort
   - flake8
-  # iPython
-  - ipykernel
-  - notebook
-  - jupyterlab
+  # Documentation
+  - sphinx
+  - sphinx-rtd-theme
