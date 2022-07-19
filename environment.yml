@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python==3.9
   - pip
+  # Science
   - numpy
   - pandas
   - geopandas
@@ -12,9 +13,16 @@ dependencies:
   - pygmt
   - pyproj
   - rioxarray
-  - setuptools
   - verde
   - xarray
+  # Build
+  - setuptools
+  - twine
+  # Code style checks and autoformat
+  - black
+  - isort
+  - flake8
+  # iPython
   - ipykernel
   - notebook
   - jupyterlab
