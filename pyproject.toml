@@ -29,8 +29,9 @@ dev = [
     "pytest",
     "sphinx",
     "sphinx-rtd-theme",
-    "myst-parcer",
+    "myst-parser",
     "rst-to-myst",
+    "furo",
 ]
 ipython = [
     "ipykernel",

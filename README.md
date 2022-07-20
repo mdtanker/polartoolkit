@@ -1,8 +1,9 @@
 # Automatically plot Antarctic data
 
-<p align="center">
+<!-- <p align="center">
     <img src="cover_fig.png" width="600">
-</p> 
+</p>  -->
+![](cover_fig.png)
 
 ## Disclaimer
 
