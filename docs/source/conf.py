@@ -36,7 +36,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "autoapi.extension",
+    # "autoapi.extension",
     "nbsphinx",
 ]
 
