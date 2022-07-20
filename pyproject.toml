@@ -18,22 +18,19 @@ dependencies = [
     "pyproj",
     "verde",
     "rioxarray",
-    "pygmt",
-    "geopandas",
     "netCDF4",
     "tqdm",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black",
+    "black[jupyterlab]",
     "flake8",
     "isort",
     "pytest",
     "sphinx",
     "sphinx-rtd-theme",
 ]
-
 ipython = [
     "ipykernel",
     "jupyterlab",

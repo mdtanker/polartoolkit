@@ -24,25 +24,28 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 
 Here I use mamba to install packages, but conda should work as well:
 
-    conda install mamba
+Create a new python environment:
 
-Create a new python environment with the required dependencies:
-
-    mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj  verde rioxarray pygmt geopandas netCDF4 tqdm
-
-If you will use ipython (i.e. Jupyter notebooks) then include ipykernel and jupyterlab:
-
-        mamba create --name antarctic_plots python=3.9 pandas numpy pooch xarray pyproj  verde rioxarray pygmt geopandas netCDF4 tqdm ipykernel jupyterlab
-
-Activate the new environment:
-
+    mamba create --name antarctic_plots python=3.9 
     mamba activate antarctic_plots
 
-To install the last released version:
+### Option 1) install package and dependencies together: 
+
+    pip install antarctic-plots
+
+will require 2 dependencies to be install seperately
+
+    mamba install pygmt geopandas
+
+### Option 2) install seperately:
+    
+    mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
+
+Optionally add ipykernel jupyterlab and notebook if you want to use iPython.
 
     pip install antarctic-plots --no-deps
 
-To install the development version from Github:
+### Option 3) install the latest development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots
@@ -52,6 +55,7 @@ Or once the repo is cloned, use the make file for installation:
 
     cd antarctic_plots
     make install
+    mamba install geopandas pygmt
 
 Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb) or the equivalent [.py file](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.py)
 
