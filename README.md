@@ -33,9 +33,9 @@ Create a new python environment:
 
     pip install antarctic-plots
 
-will require 2 dependencies to be install seperately
+will require several dependencies to be install seperately
 
-    mamba install pygmt geopandas
+    mamba install pygmt geopandas tqdm
 
 ### Option 2) install seperately:
     

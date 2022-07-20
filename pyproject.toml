@@ -19,7 +19,6 @@ dependencies = [
     "verde",
     "rioxarray",
     "netCDF4",
-    "tqdm",
 ]
 
 [project.optional-dependencies]
