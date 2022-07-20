@@ -4,3 +4,5 @@
 #
 # This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+"""Functions to automate Antarctic data visualization"""
+__version__ = "0.0.1"
