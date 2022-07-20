@@ -6,16 +6,12 @@
 ```{include} ../../README.md
 :relative-images:
 ```
-Read installation instructions in {ref}`Installation`.
+{ref}`Installation` instructions here.
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
 
 api
-usage
+installation
 notebooks/tutorial
 ```
-#
-
-
-
