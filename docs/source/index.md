@@ -3,19 +3,17 @@
 % You can adapt this file completely to your liking, but it should at least
 % contain the root `toctree` directive.
 
-# Welcome to Antarctic-plots's documentation!
-
 ```{include} ../../README.md
 :relative-images:
 ```
-
+Read installation instructions in {ref}`Installation`.
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
+
+usage
+notebooks/tutorial
 ```
+#
 
-# Indices and tables
 
-- {ref}`genindex`
-- {ref}`modindex`
-- {ref}`search`

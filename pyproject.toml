@@ -32,6 +32,7 @@ dev = [
     "myst-parser",
     "rst-to-myst",
     "furo",
+    "nbsphinx",
 ]
 ipython = [
     "ipykernel",

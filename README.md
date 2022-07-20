@@ -1,4 +1,5 @@
-# Automatically plot Antarctic data
+# Antarctic-plots
+Functions to automate Antarctic data visualization
 
 <!-- <p align="center">
     <img src="cover_fig.png" width="600">
