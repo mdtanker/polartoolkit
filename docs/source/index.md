@@ -11,9 +11,11 @@ Read installation instructions in {ref}`Installation`.
 :caption: 'Contents:'
 :maxdepth: 2
 
+api
 usage
 notebooks/tutorial
 ```
 #
+
 
 

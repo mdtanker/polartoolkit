@@ -30,9 +30,9 @@ dev = [
     "sphinx",
     "sphinx-rtd-theme",
     "myst-parser",
-    "rst-to-myst",
     "furo",
     "nbsphinx",
+    "sphinx-autoapi",
 ]
 ipython = [
     "ipykernel",
