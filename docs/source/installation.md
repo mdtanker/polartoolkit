@@ -2,23 +2,23 @@
 
 Here I use mamba to install packages, but conda should work as well:
 
-### Create a new python environment:
+## Create a new python environment:
 
     mamba create --name antarctic_plots python=3.9 
     mamba activate antarctic_plots
 
-### install the package: 
+## install the package: 
 
     pip install antarctic-plots --no-deps
 
-### install the dependencies seperately:
+## install the dependencies seperately:
     
     mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
 
 Optionally add ipykernel jupyterlab and notebook if you want to use iPython.
 
 
-### To install the latest development version from Github:
+## To install the latest development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots

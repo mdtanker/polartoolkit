@@ -19,6 +19,8 @@ dependencies = [
     "verde",
     "rioxarray",
     "netCDF4",
+    "pygmt",
+    "geopandas",
 ]
 
 [project.optional-dependencies]
