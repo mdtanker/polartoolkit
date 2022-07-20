@@ -5,4 +5,11 @@
 # This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 """Functions to automate Antarctic data visualization"""
-__version__ = "0.0.1"
+
+from importlib.metadata import version
+
+from antarctic_plots import profile
+from antarctic_plots import fetch
+from antarctic_plots import utils
+
+__version__ = version("antarctic_plots")

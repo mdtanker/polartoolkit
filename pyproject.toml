@@ -1,46 +1,15 @@
-[build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
-
-[project]
+[tool.poetry]
 name = "antarctic_plots"
-authors = [{name = "Matt Tankersley", email = "matt.d.tankersley@gmail.com"}]
+version = "0.1.0"
+description = "Functions to automate Antarctic data visualization"
+authors = ["Matt Tankersley <matt.d.tankersley@gmail.com>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.7"
-license = {file = "LICENSE"}
-classifiers = ["License :: OSI Approved :: MIT License"]
-dynamic = ["version", "description"]
-dependencies = [
-    "pandas",
-    "numpy",
-    "pooch",
-    "xarray",
-    "pyproj",
-    "verde",
-    "rioxarray",
-    "netCDF4",
-    "pygmt",
-    "geopandas",
-]
 
-[project.optional-dependencies]
-dev = [
-    "black[jupyter]",
-    "flake8",
-    "isort",
-    "pytest",
-    "sphinx",
-    "sphinx-rtd-theme",
-    "myst-parser",
-    "furo",
-    "nbsphinx",
-    "sphinx-autoapi",
-]
-ipython = [
-    "ipykernel",
-    "jupyterlab",
-    "notebook",
-]
+[tool.poetry.dependencies]
 
-[project.urls]
-Source = "https://github.com/mdtanker/antarctic_plots"
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
