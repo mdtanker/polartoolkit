@@ -11,7 +11,6 @@
 :caption: 'Contents:'
 :maxdepth: 2
 
-api
 installation
 notebooks/tutorial
 ```
