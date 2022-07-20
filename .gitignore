@@ -3,17 +3,10 @@
 # Compiled python modules.
 *.pyc
 
-# Setuptools distribution folder
-dist/
-
-# Docs build file
-docs/build/
-
 # Python egg metadata, regenerated from source files by setuptools.
 antarctic_plots.egg-info/
-
-# Github folder
-.github/
+build/
+dist/
 
 # Large data files
 data/ADMAP_2B_2017_R9_BAS_.tif
