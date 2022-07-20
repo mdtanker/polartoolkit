@@ -7,9 +7,7 @@
 dist/
 
 # Docs build file
-docs/_build/
-docs/_static/
-docs/_templates/
+docs/
 
 # Python egg metadata, regenerated from source files by setuptools.
 antarctic_plots.egg-info/

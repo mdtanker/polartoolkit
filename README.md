@@ -29,33 +29,22 @@ Create a new python environment:
     mamba create --name antarctic_plots python=3.9 
     mamba activate antarctic_plots
 
-### Option 1) install package and dependencies together: 
+### install the package: 
 
-    pip install antarctic-plots
+    pip install antarctic-plots --no-deps
 
-will require several dependencies to be install seperately
-
-    mamba install pygmt geopandas tqdm
-
-### Option 2) install seperately:
+### install the dependencies seperately:
     
     mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
 
 Optionally add ipykernel jupyterlab and notebook if you want to use iPython.
 
-    pip install antarctic-plots --no-deps
 
-### Option 3) install the latest development version from Github:
+### To install the latest development version from Github:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots
     pip install -e .
-
-Or once the repo is cloned, use the make file for installation:
-
-    cd antarctic_plots
-    make install
-    mamba install geopandas pygmt
 
 Test the install by running the first few cells of [examples/examples.ipynb](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb) or the equivalent [.py file](https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.py)
 
