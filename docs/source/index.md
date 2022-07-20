@@ -5,6 +5,10 @@
 
 # Welcome to Antarctic-plots's documentation!
 
+```{include} ../../README.md
+:relative-images:
+```
+
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
