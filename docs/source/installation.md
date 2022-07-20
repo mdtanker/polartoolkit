@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 Here I use mamba to install packages, but conda should work as well:
 
