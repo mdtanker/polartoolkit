@@ -33,6 +33,7 @@ dev = [
     "furo",
     "nbsphinx",
     "sphinx-autoapi",
+    "jupyer-book",
 ]
 ipython = [
     "ipykernel",
