@@ -8,6 +8,7 @@
 Add license notice to every source file if not present
 # adapted from the Fatiando a Terra project (https://www.fatiando.org)
 """
+
 import sys
 from argparse import ArgumentParser
 from pathlib import Path

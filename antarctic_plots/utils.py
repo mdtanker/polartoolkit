@@ -13,11 +13,13 @@ import verde as vd
 import xarray as xr
 from pyproj import Transformer
 
-
 def get_grid_info(grid):
-    """
-    Function to return spacing and region from grid.grid
-    returns tuple of spacing (int) and region (1x4 array)
+    """Returns the spacing and region of an input grid.
+
+    :param grid: input grid to get info from.
+    :type grid: str or xarray.DataArray
+    :return: a tuple of spacing and region as strings
+    :rtype: tuple
     """
     spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
     region = [int(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
@@ -25,9 +27,12 @@ def get_grid_info(grid):
 
 
 def dd2dms(dd):
-    """
-    Function to convert decimal degrees to minutes, seconds.
-    Modified from https://stackoverflow.com/a/10286690/18686384
+    """Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384
+
+    :param dd: decimal degree input
+    :type dd: float
+    :return: degrees in format D:M:S
+    :rtype: str
     """
     is_positive = dd >= 0
     dd = abs(dd)
@@ -43,13 +48,19 @@ def latlon_to_epsg3031(
     input=["lon", "lat"],
     output=["x", "y"],
 ):
-    """
-    Function to convert coordinates from EPSG:4326 WGS84 in decimal degrees to
+    """Convert coordinates from EPSG:4326 WGS84 in decimal degrees to
     EPSG:3031 Antarctic Polar Stereographic in meters.
-    default input dataframe columns are 'lon' and 'lat'
-    default output dataframe columns are 'x' and 'y'
-    default returns a dataframe with x, y, lat, and lon
-    if reg=True, returns a region in format [e, w, n, s]
+
+    :param df: input dataframe with columns ('lon', 'lat) or ('x','y')
+    :type df: pandas.DataFrame
+    :param reg: if true, returns a GMT formatted region strings, defaults to False
+    :type reg: bool, optional
+    :param input: set names for input columns, defaults to ["lon", "lat"]
+    :type input: list, optional
+    :param output: set names for output columns, defaults to ["x", "y"]
+    :type output: list, optional
+    :return: output dataframe with converted coordinate columns
+    :rtype: pandas.DataFrame
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df[output[0]], df[output[1]] = transformer.transform(
@@ -66,14 +77,14 @@ def latlon_to_epsg3031(
 
 
 def epsg3031_to_latlon(df, reg=False, input=["x", "y"], output=["lon", "lat"]):
-    """
-    Function to convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
-    EPSG:4326 WGS84 in decimal degrees.
-    default input dataframe columns are 'x' and 'y'
-    default output dataframe columns are 'lon' and 'lat'
-    default returns a dataframe with x, y, lat, and lon
-    if reg=True, returns a region in format [e, w, n, s]
-    """
+
+    # Function to convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+    # EPSG:4326 WGS84 in decimal degrees.
+    # default input dataframe columns are 'x' and 'y'
+    # default output dataframe columns are 'lon' and 'lat'
+    # default returns a dataframe with x, y, lat, and lon
+    # if reg=True, returns a region in format [e, w, n, s]
+
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
     df[output[1]], df[output[0]] = transformer.transform(
         df[input[1]].tolist(), df[input[0]].tolist()
@@ -89,11 +100,11 @@ def epsg3031_to_latlon(df, reg=False, input=["x", "y"], output=["lon", "lat"]):
 
 
 def reg_str_to_df(input, names=["x", "y"]):
-    """
-    Function to convert GMT region string [e, w, n, s] to pandas dataframe with 4 coordinates
-    input: array of 4 strings.
-    names: defauts to 'x', 'y', output df column names
-    """
+
+    # Function to convert GMT region string [e, w, n, s] to pandas dataframe with 4 coordinates
+    # input: array of 4 strings.
+    # names: defauts to 'x', 'y', output df column names
+
     bl = (input[0], input[2])
     br = (input[1], input[2])
     tl = (input[0], input[3])
@@ -168,8 +179,26 @@ def plot_grd(
     grd2cpt_name=False,
     origin_shift="initialize",
 ):
-    """
-    Function to automate PyGMT plotting
+    """Function to automate PyGMT plotting
+
+    :param grid: _description_
+    :type grid: _type_
+    :param cmap: _description_
+    :type cmap: str
+    :param cbar_label: _description_
+    :type cbar_label: str
+    :param plot_region: _description_, defaults to None
+    :type plot_region: _type_, optional
+    :param cmap_region: _description_, defaults to None
+    :type cmap_region: _type_, optional
+    :param coast: _description_, defaults to False
+    :type coast: bool, optional
+    :param constraints: _description_, defaults to False
+    :type constraints: bool, optional
+    :param grd2cpt_name: _description_, defaults to False
+    :type grd2cpt_name: bool, optional
+    :param origin_shift: _description_, defaults to "initialize"
+    :type origin_shift: str, optional
     """
     import warnings
 

@@ -3,15 +3,15 @@ PROJECT=antarctic_plots
 # TESTDIR=tmp-test-dir-with-unique-name
 # PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
 # NUMBATEST_ARGS=--doctest-modules -v --pyargs -m use_numba
-STYLE_CHECK_FILES= $(PROJECT) examples #doc/conf.py tools
+STYLE_CHECK_FILES= $(PROJECT) docs tools
 
 help:
 	@echo "Commands:"
 	@echo ""
 	@echo "  install   install in editable mode"
 	@echo "  test      run the test suite (including doctests) and report coverage"
-	@echo "  format    run isort and black to automatically format the code"
-	@echo "  check     run code style and quality checks (black, isort and flake8)"
+	@echo "  format    automatically format the code"
+	@echo "  check     run code style and quality checks"
 	@echo "  clean     clean up build and generated files"
 	@echo ""
 
@@ -26,7 +26,7 @@ test:
 	cp $(TESTDIR)/.coverage* .
 	rm -rvf $(TESTDIR)
 
-format: license isort black
+format: isort black license-add
 
 check: isort-check black-check license-check flake8
 
@@ -42,7 +42,7 @@ isort:
 isort-check:
 	isort --check $(STYLE_CHECK_FILES)
 
-license:
+license-add:
 	python tools/license_notice.py
 
 license-check:

@@ -1,11 +1,14 @@
 .ipynb_checkpoints*
 
 # Compiled python modules.
+__pycache__/
 *.pyc
 
 # Python egg metadata, regenerated from source files by setuptools.
-antarctic_plots.egg-info/
-build/
+*.egg-info/
+*.egg
+.eggs/
+docs/_build/
 dist/
 
 # Large data files

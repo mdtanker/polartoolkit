@@ -21,8 +21,7 @@ def create_profile(
     shp_num_points=None,
     shapefile=None,
 ):
-    """
-    function to create a pandas DataFrame of points
+    """function to create a pandas DataFrame of points
     along a line with multiple methods
     """
     if shapefile == None:

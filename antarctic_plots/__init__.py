@@ -8,8 +8,6 @@
 
 from importlib.metadata import version
 
-from antarctic_plots import profile
-from antarctic_plots import fetch
-from antarctic_plots import utils
+from antarctic_plots import fetch, profile, utils
 
 __version__ = version("antarctic_plots")

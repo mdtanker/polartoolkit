@@ -1,3 +1,9 @@
+# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Distributed under the terms of the MIT License.
+# SPDX-License-Identifier: MIT
+#
+# This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
