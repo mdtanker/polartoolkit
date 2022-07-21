@@ -5,9 +5,6 @@ description = "Functions to automate Antarctic data visualization"
 authors = ["Matt Tankersley <matt.d.tankersley@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "antarctic_plots" },
-]
 
 [tool.poetry.dependencies]
 python = "^3.8"

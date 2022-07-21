@@ -436,6 +436,17 @@ ssh = ["paramiko"]
 tqdm = ["tqdm"]
 
 [[package]]
+name = "gdal"
+version = "3.5.1"
+description = "GDAL: Geospatial Data Abstraction Library"
+category = "main"
+optional = false
+python-versions = ">=3.6.0"
+
+[package.extras]
+numpy = ["numpy (>1.0.0)"]
+
+[[package]]
 name = "geopandas"
 version = "0.11.0"
 description = "Geographic pandas extensions"
@@ -2274,7 +2285,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f681ecdcd7adea29af070deb18ea78024318027b68a205542754695c3c5c7c60"
+content-hash = "9a65fb881399f0de7dab44642f955fc182ba16bd52146bcbe6d7286eda3c4bb3"
 
 [metadata.files]
 affine = [
@@ -2567,6 +2578,9 @@ flake8 = [
 fsspec = [
     {file = "fsspec-2022.5.0-py3-none-any.whl", hash = "sha256:2c198c50eb541a80bbd03540b07602c4a957366f3fb416a1f270d34bd4ff0926"},
     {file = "fsspec-2022.5.0.tar.gz", hash = "sha256:7a5459c75c44e760fbe6a3ccb1f37e81e023cde7da8ba20401258d877ec483b4"},
+]
+gdal = [
+    {file = "GDAL-3.5.1.tar.gz", hash = "sha256:e2cfe1f338b9d84e8f6d93883712344d6d27ebaffaaa24733603a7713949a2be"},
 ]
 geopandas = [
     {file = "geopandas-0.11.0-py3-none-any.whl", hash = "sha256:0991f279d4f9e3a04e3666f32b1ac64d6ba439933da3d9654a26031e0ccea5dc"},
