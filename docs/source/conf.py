@@ -12,17 +12,18 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Antarctic-plots'
-copyright = '2022, Matt Tankersley'
-author = 'Matt Tankersley'
+project = "Antarctic-plots"
+copyright = "2022, Matt Tankersley"
+author = "Matt Tankersley"
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = "0.0.1"
 
 
 # -- General configuration ---------------------------------------------------
@@ -40,12 +41,12 @@ extensions = [
     "nbsphinx",
 ]
 
-autoapi_dirs = ['../../antarctic_plots']
+autoapi_dirs = ["../../antarctic_plots"]
 # autoapi_ignore = ["*/tests/*",
 #                   "*_version.py"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -58,4 +59,4 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
