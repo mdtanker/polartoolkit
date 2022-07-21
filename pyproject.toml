@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "antarctic_plots"
-version = "0.0.0"
+version = "0.0.2"
 description = "Functions to automate Antarctic data visualization"
 authors = ["Matt Tankersley <matt.d.tankersley@gmail.com>"]
 license = "MIT"
@@ -8,7 +8,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-geopandas = "^0.11.0"
 pandas = "^1.4.3"
 numpy = "^1.23.1"
 pooch = "^1.6.0"
@@ -26,13 +25,6 @@ flake8 = "^4.0.1"
 isort = "^5.10.1"
 jupyter-book = "^0.13.0"
 
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-metadata = true
-bump = true
-style = "pep440"
-
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

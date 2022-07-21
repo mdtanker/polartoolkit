@@ -1,0 +1,727 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>antarctic_plots.profile &#8212; Antarctic-plots</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Antarctic-plots</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Antarctic-plots
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../installation.html">
+   Welcome to the Antarctic-plots documentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../walkthrough.html">
+   Walkthrough
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../api.html">
+   API reference
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/mdtanker/antarctic_plots"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/mdtanker/antarctic_plots/issues/new?title=Issue%20on%20page%20%2F_modules/antarctic_plots/profile.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for antarctic_plots.profile</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2022 The Antarctic-Plots Developers.</span>
+<span class="c1"># Distributed under the terms of the MIT License.</span>
+<span class="c1"># SPDX-License-Identifier: MIT</span>
+<span class="c1">#</span>
+<span class="c1"># This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pygmt</span>
+<span class="kn">import</span> <span class="nn">verde</span> <span class="k">as</span> <span class="nn">vd</span>
+
+<span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">fetch</span>
+
+
+<div class="viewcode-block" id="create_profile"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.create_profile">[docs]</a><span class="k">def</span> <span class="nf">create_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">shp_num_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    function to create a pandas DataFrame of points</span>
+<span class="sd">    along a line with multiple methods</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">shapefile</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">shapefile</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">)</span>
+
+    <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="s2">&quot;shapefile&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid method type. Expected one of </span><span class="si">{</span><span class="n">methods</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;points&quot;</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;shapefile&quot;</span><span class="p">:</span>
+        <span class="n">shp</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">shapefile</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;coords&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shp</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span><span class="p">[:]</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">coordinates</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;shapefile&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">shp_num_points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;dist&quot;</span><span class="p">)</span>
+            <span class="n">dist_resampled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="n">coordinates</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                <span class="n">coordinates</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                <span class="n">shp_num_points</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">df1</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">dist_resampled</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">df2</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">df1</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">dist_resampled</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df2</span> <span class="o">=</span> <span class="n">coordinates</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df2</span> <span class="o">=</span> <span class="n">coordinates</span>
+
+    <span class="n">df_out</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;dist&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># region=vd.get_region((df_out.x, df_out.y))</span>
+
+    <span class="k">return</span> <span class="n">df_out</span></div>
+
+
+<div class="viewcode-block" id="sample_grids"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.sample_grids">[docs]</a><span class="k">def</span> <span class="nf">sample_grids</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    function to sample data at every point along a line</span>
+<span class="sd">    df: pandas DataFrame</span>
+<span class="sd">        should follow output of create_profile</span>
+<span class="sd">        first 3 columns in order are x, y, dist.</span>
+<span class="sd">    grid: str</span>
+<span class="sd">        grid file to be sampled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">grid</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">pygmt</span><span class="o">.</span><span class="n">grdtrack</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]],</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">newcolname</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)))[</span>
+        <span class="n">name</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="fill_nans"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.fill_nans">[docs]</a><span class="k">def</span> <span class="nf">fill_nans</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    function to fill NaN&#39;s in sampled layer with values from above layer.</span>
+<span class="sd">    Ignores first 3 columns as they are assumed to by x, y, dist.</span>
+<span class="sd">    df: pandas DataFrame</span>
+<span class="sd">        should follow output of sample_grids</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="shorten"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.shorten">[docs]</a><span class="k">def</span> <span class="nf">shorten</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    function to shorten profile on either end and recalculate distance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">max_dist</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_dist</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">min_dist</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">min_dist</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">shortened</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="o">.</span><span class="n">dist</span> <span class="o">&lt;</span> <span class="n">max_dist</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="n">min_dist</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">shortened</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">shortened</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">shortened</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">shortened</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">shortened</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">shortened</span></div>
+
+
+<div class="viewcode-block" id="make_data_dict"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.make_data_dict">[docs]</a><span class="k">def</span> <span class="nf">make_data_dict</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    function to create dictionary for attributes of platting data</span>
+<span class="sd">    names, grids, and colors are list or 1-d arrays</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">j</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="n">grids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">data_dict</span></div>
+
+
+<span class="k">def</span> <span class="nf">default_layers</span><span class="p">():</span>
+    <span class="n">surface</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;surface&quot;</span><span class="p">)</span>
+    <span class="n">icebase</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;surface&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;thickness&quot;</span><span class="p">)</span>
+    <span class="n">bed</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;bed&quot;</span><span class="p">)</span>
+    <span class="n">layer_names</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;surface&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;icebase&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bed&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">layer_colors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;lightskyblue&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;darkblue&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lightbrown&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">layer_grids</span> <span class="o">=</span> <span class="p">[</span><span class="n">surface</span><span class="p">,</span> <span class="n">icebase</span><span class="p">,</span> <span class="n">bed</span><span class="p">]</span>
+
+    <span class="n">layers_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">j</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">layer_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="n">layer_grids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">layer_colors</span><span class="p">[</span><span class="n">i</span><span class="p">]}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layer_names</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">layers_dict</span>
+
+
+<span class="k">def</span> <span class="nf">default_data</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">,</span> <span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">)</span>
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">magnetics</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s2">&quot;admap1&quot;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">10e3</span><span class="p">)</span>
+    <span class="n">FA_grav</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">gravity</span><span class="p">(</span><span class="s2">&quot;FA&quot;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">10e3</span><span class="p">)</span>
+    <span class="n">data_names</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;ADMAP-1 magnetics&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ANT-4d Free-air grav&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">data_grids</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">mag</span><span class="p">,</span>
+        <span class="n">FA_grav</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">data_colors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">j</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">data_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="n">data_grids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">data_colors</span><span class="p">[</span><span class="n">i</span><span class="p">]}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_names</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">data_dict</span>
+
+
+<div class="viewcode-block" id="plot_profile"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.plot_profile">[docs]</a><span class="k">def</span> <span class="nf">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">layers_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">shp_num_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">fillnans</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">buffer_perc</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">map_background</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">imagery</span><span class="p">(),</span>
+    <span class="n">map_cmap</span><span class="o">=</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to plot cross section of earth layers and optionally</span>
+<span class="sd">    add a plot of data along the same line. Optionally can plot</span>
+<span class="sd">    the line location on a map with an input grid for the background.</span>
+<span class="sd">    data_dict: nested dictionary of format {&#39;name&#39;: {&#39;name&#39;:str},</span>
+<span class="sd">                                                    {&#39;grid&#39;: xarray.DataArray},</span>
+<span class="sd">                                                    {&#39;color&#39;: str},}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># determine where to sample the grids</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">create_profile</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+        <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+        <span class="n">num</span><span class="o">=</span><span class="n">num</span><span class="p">,</span>
+        <span class="n">shapefile</span><span class="o">=</span><span class="n">shapefile</span><span class="p">,</span>
+        <span class="n">shp_num_points</span><span class="o">=</span><span class="n">shp_num_points</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">data_region</span> <span class="o">=</span> <span class="n">vd</span><span class="o">.</span><span class="n">get_region</span><span class="p">((</span><span class="n">points</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">layers_dict</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layers_dict</span> <span class="o">=</span> <span class="n">default_layers</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">data_dict</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="n">default_data</span><span class="p">(</span><span class="n">data_region</span><span class="p">)</span>
+
+    <span class="c1"># sample cross-section layers from grids</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">layers_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">df_layers</span> <span class="o">=</span> <span class="n">sample_grids</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;grid&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+
+    <span class="c1"># fill layers with above layer&#39;s values</span>
+    <span class="k">if</span> <span class="n">fillnans</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">df_layers</span> <span class="o">=</span> <span class="n">fill_nans</span><span class="p">(</span><span class="n">df_layers</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;dist&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">df_data</span> <span class="o">=</span> <span class="n">sample_grids</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;grid&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+
+    <span class="c1"># shorten profiles</span>
+    <span class="k">if</span> <span class="n">clip</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">df_layers</span> <span class="o">=</span> <span class="n">shorten</span><span class="p">(</span><span class="n">df_layers</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="n">min_dist</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df_data</span> <span class="o">=</span> <span class="n">shorten</span><span class="p">(</span><span class="n">df_data</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="n">min_dist</span><span class="p">)</span>
+
+    <span class="c1"># print(df_layers.describe())</span>
+    <span class="c1"># if data_dict is not None:</span>
+    <span class="c1">#     print(df_data.describe())</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PLOT MAP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">add_map</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Automatic data extent + buffer as % of line length</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">buffer_perc</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">df_layers</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">buffer</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">df_layers</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">buffer</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">df_layers</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">buffer</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">df_layers</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">buffer</span>
+
+        <span class="c1"># Set figure parameters</span>
+        <span class="n">fig_height</span> <span class="o">=</span> <span class="mi">90</span>  <span class="c1"># in mm</span>
+        <span class="n">fig_width</span> <span class="o">=</span> <span class="n">fig_height</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">s</span> <span class="o">-</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">fig_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span> <span class="o">-</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fig_height</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">fig_reg</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span>
+        <span class="n">fig_proj</span> <span class="o">=</span> <span class="s2">&quot;x1:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fig_ratio</span><span class="p">)</span>
+        <span class="n">fig_proj_ll</span> <span class="o">=</span> <span class="s2">&quot;s0/-90/-71/1:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fig_ratio</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">coast</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">fig_reg</span><span class="p">,</span>
+            <span class="n">projection</span><span class="o">=</span><span class="n">fig_proj_ll</span><span class="p">,</span>
+            <span class="n">land</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="n">water</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="n">frame</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nwse&quot;</span><span class="p">,</span> <span class="s2">&quot;xf100000&quot;</span><span class="p">,</span> <span class="s2">&quot;yf100000&quot;</span><span class="p">,</span> <span class="s2">&quot;g0&quot;</span><span class="p">],</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">grdimage</span><span class="p">(</span>
+            <span class="n">projection</span><span class="o">=</span><span class="n">fig_proj</span><span class="p">,</span>
+            <span class="n">grid</span><span class="o">=</span><span class="n">map_background</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="n">map_cmap</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># plot groundingline and coastlines</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">groundingline</span><span class="p">(),</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;1.2p,black&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Plot graticules overtop, at 4d latitude and 30d longitude</span>
+        <span class="k">with</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span>
+            <span class="n">MAP_ANNOT_OFFSET_PRIMARY</span><span class="o">=</span><span class="s2">&quot;-2p&quot;</span><span class="p">,</span>
+            <span class="n">MAP_FRAME_TYPE</span><span class="o">=</span><span class="s2">&quot;inside&quot;</span><span class="p">,</span>
+            <span class="n">MAP_ANNOT_OBLIQUE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">FONT_ANNOT_PRIMARY</span><span class="o">=</span><span class="s2">&quot;6p,black,-=2p,white&quot;</span><span class="p">,</span>
+            <span class="n">MAP_GRID_PEN_PRIMARY</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="n">MAP_TICK_LENGTH_PRIMARY</span><span class="o">=</span><span class="s2">&quot;-10p&quot;</span><span class="p">,</span>
+            <span class="n">MAP_TICK_PEN_PRIMARY</span><span class="o">=</span><span class="s2">&quot;thinnest,grey&quot;</span><span class="p">,</span>
+            <span class="n">FORMAT_GEO_MAP</span><span class="o">=</span><span class="s2">&quot;dddF&quot;</span><span class="p">,</span>
+            <span class="n">MAP_POLAR_CAP</span><span class="o">=</span><span class="s2">&quot;90/90&quot;</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span>
+                <span class="n">projection</span><span class="o">=</span><span class="n">fig_proj_ll</span><span class="p">,</span>
+                <span class="n">region</span><span class="o">=</span><span class="n">fig_reg</span><span class="p">,</span>
+                <span class="n">frame</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NSWE&quot;</span><span class="p">,</span> <span class="s2">&quot;xa30g15&quot;</span><span class="p">,</span> <span class="s2">&quot;ya4g2&quot;</span><span class="p">],</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">with</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">FONT_ANNOT_PRIMARY</span><span class="o">=</span><span class="s2">&quot;6p,black&quot;</span><span class="p">):</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span>
+                    <span class="n">projection</span><span class="o">=</span><span class="n">fig_proj_ll</span><span class="p">,</span>
+                    <span class="n">region</span><span class="o">=</span><span class="n">fig_reg</span><span class="p">,</span>
+                    <span class="n">frame</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NSWE&quot;</span><span class="p">,</span> <span class="s2">&quot;xa30&quot;</span><span class="p">,</span> <span class="s2">&quot;ya4&quot;</span><span class="p">],</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># plot profile location, and endpoints on map</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">projection</span><span class="o">=</span><span class="n">fig_proj</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">fig_reg</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;2p,red&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+            <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="n">font</span><span class="o">=</span><span class="s2">&quot;12p,Helvetica,black&quot;</span><span class="p">,</span>
+            <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;CM&quot;</span><span class="p">,</span>
+            <span class="n">clearance</span><span class="o">=</span><span class="s2">&quot;+tO&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()]</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">,</span>
+            <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="n">font</span><span class="o">=</span><span class="s2">&quot;12p,Helvetica,black&quot;</span><span class="p">,</span>
+            <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;CM&quot;</span><span class="p">,</span>
+            <span class="n">clearance</span><span class="o">=</span><span class="s2">&quot;+tO&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># shift figure to the right to make space for x-section and profiles</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">shift_origin</span><span class="p">(</span><span class="n">xshift</span><span class="o">=</span><span class="p">(</span><span class="n">fig_width</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PLOT CROSS SECTION AND PROFILES</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># add space above and below top and bottom x-section df_layers</span>
+    <span class="nb">min</span> <span class="o">=</span> <span class="n">df_layers</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="nb">max</span> <span class="o">=</span> <span class="n">df_layers</span><span class="p">[</span><span class="n">df_layers</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">y_buffer</span> <span class="o">=</span> <span class="p">(</span><span class="nb">max</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+    <span class="c1"># set region for x-section</span>
+    <span class="n">region_layers</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+        <span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+        <span class="nb">min</span> <span class="o">-</span> <span class="n">y_buffer</span><span class="p">,</span>
+        <span class="nb">max</span> <span class="o">+</span> <span class="n">y_buffer</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># if data for profiles is set, set region and plot them, if not,</span>
+    <span class="c1"># make region for x-section fill space</span>
+    <span class="k">if</span> <span class="n">data_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">region_data</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">df_data</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                    <span class="n">df_data</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                    <span class="n">df_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                    <span class="n">df_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                <span class="p">]</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">region</span><span class="o">=</span><span class="n">region_data</span><span class="p">,</span>
+                    <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;X9c/2.5c&quot;</span><span class="p">,</span>
+                    <span class="n">frame</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nSew&quot;</span><span class="p">,</span> <span class="s2">&quot;ag&quot;</span><span class="p">],</span>
+                    <span class="n">x</span><span class="o">=</span><span class="n">df_data</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">df_data</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                    <span class="n">pen</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;2p,</span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;JBR+jBL+o0c&quot;</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">shift_origin</span><span class="p">(</span><span class="n">yshift</span><span class="o">=</span><span class="s2">&quot;h+.5c&quot;</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region_layers</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;X9c/6c&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;error plotting data profiles&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No data profiles to plot&quot;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region_layers</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;X9c/9c&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># plot colored df_layers</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">layers_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_layers</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+            <span class="n">close</span><span class="o">=</span><span class="s2">&quot;+yb&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">],</span>
+            <span class="n">frame</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nSew&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="c1"># plot lines between df_layers</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">layers_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">df_layers</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">df_layers</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;1p,black&quot;</span><span class="p">)</span>
+
+    <span class="c1"># plot &#39;A&#39;,&#39;B&#39; locations</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">region_layers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">region_layers</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+        <span class="n">font</span><span class="o">=</span><span class="s2">&quot;20p,Helvetica,black&quot;</span><span class="p">,</span>
+        <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;CM&quot;</span><span class="p">,</span>
+        <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+        <span class="n">no_clip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">region_layers</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">region_layers</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">,</span>
+        <span class="n">font</span><span class="o">=</span><span class="s2">&quot;20p,Helvetica,black&quot;</span><span class="p">,</span>
+        <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;CM&quot;</span><span class="p">,</span>
+        <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+        <span class="n">no_clip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Matt Tankersley<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

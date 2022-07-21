@@ -1,0 +1,14 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: intro
+chapters:
+  - title: ⬇️ Installation
+    file: installation
+  - title: 🚶 Walkthrough
+    file: walkthrough
+  - title: 📖 API reference
+    file: api
+  - title: 📆 Changelog
+    file: changelog
