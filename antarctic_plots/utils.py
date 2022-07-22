@@ -13,8 +13,9 @@ import verde as vd
 import xarray as xr
 from pyproj import Transformer
 
+
 def get_grid_info(grid):
-   
+
     # Returns the spacing and region of an input grid.
 
     # :param grid: input grid to get info from.
@@ -29,14 +30,13 @@ def get_grid_info(grid):
 
 def dd2dms(dd):
 
-   
     # Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384
 
     # :param dd: decimal degree input
     # :type dd: float
     # :return: degrees in format D:M:S
     # :rtype: str
-   
+
     is_positive = dd >= 0
     dd = abs(dd)
     minutes, seconds = divmod(dd * 3600, 60)
@@ -51,7 +51,7 @@ def latlon_to_epsg3031(
     input=["lon", "lat"],
     output=["x", "y"],
 ):
-  
+
     # Convert coordinates from EPSG:4326 WGS84 in decimal degrees to
     # EPSG:3031 Antarctic Polar Stereographic in meters.
 
@@ -65,7 +65,7 @@ def latlon_to_epsg3031(
     # :type output: list, optional
     # :return: output dataframe with converted coordinate columns
     # :rtype: pandas.DataFrame
-   
+
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df[output[0]], df[output[1]] = transformer.transform(
         df[input[1]].tolist(), df[input[0]].tolist()
@@ -118,10 +118,10 @@ def reg_str_to_df(input, names=["x", "y"]):
 
 
 def GMT_reg_xy_to_ll(input):
-   
+
     # Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
     # input: array of 4 strings.
-   
+
     df = reg_str_to_df(input)
     df_proj = epsg3031_to_latlon(df, reg=True)
     output = [dd2dms(x) for x in df_proj]
@@ -138,7 +138,7 @@ def mask_from_shp(
     masked=False,
     crs="epsg:3031",
 ):
-    
+
     # Function to create a mask or a masked grid from area inside or outside of a shapefile.
     # shapefile: str; path to .shp filename.
     # invert: bool; mask inside or outside of shapefile, defaults to True.
@@ -147,7 +147,7 @@ def mask_from_shp(
     # region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]
     # spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.
     # crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code
-  
+
     shp = gpd.read_file(shapefile).geometry
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
@@ -179,11 +179,10 @@ def plot_grd(
     plot_region=None,
     cmap_region=None,
     coast=False,
-    constraints=False,
     grd2cpt_name=False,
     origin_shift="initialize",
 ):
-  
+
     # Function to automate PyGMT plotting
 
     # Args:
@@ -193,10 +192,8 @@ def plot_grd(
     #     plot_region (_type_, optional): _description_. Defaults to None.
     #     cmap_region (_type_, optional): _description_. Defaults to None.
     #     coast (bool, optional): _description_. Defaults to False.
-    #     constraints (bool, optional): _description_. Defaults to False.
     #     grd2cpt_name (bool, optional): _description_. Defaults to False.
     #     origin_shift (str, optional): _description_. Defaults to "initialize".
- 
 
     import warnings
 
@@ -205,13 +202,10 @@ def plot_grd(
 
     global fig, projection
     if plot_region is None:
-        plot_region = inv_reg
+        plot_region = (-3330000, 3330000, -3330000, 3330000)
     if cmap_region is None:
-        cmap_region = inv_reg
-    if plot_region == buffer_reg:
-        projection = buffer_proj
-    elif plot_region == inv_reg:
-        projection = inv_proj
+        cmap_region = (-3330000, 3330000, -3330000, 3330000)
+
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
         fig = pygmt.Figure()
@@ -247,25 +241,17 @@ def plot_grd(
         fig.plot(
             projection=projection,
             region=plot_region,
-            data=gpd.read_file("plotting/GroundingLine_Antarctica_v02.shp"),
+            # data=gpd.read_file("plotting/GroundingLine_Antarctica_v02.shp"),
+            data=gpd.read_file(fetch.groundingline()),
             pen="1.2p,black",
             verbose="q",
         )
 
-    fig.plot(
-        data=gpd.read_file("plotting/Coastline_Antarctica_v02.shp"),
-        pen="1.2p,black",
-        verbose="q",
-    )
-    if constraints == True:
-        fig.plot(
-            x=constraints_RIS_df.x,
-            y=constraints_RIS_df.y,
-            style="c1.2p",
-            color="black",
-            projection=projection,
-            region=plot_region,
-        )
+    # fig.plot(
+    #     data=gpd.read_file("plotting/Coastline_Antarctica_v02.shp"),
+    #     pen="1.2p,black",
+    #     verbose="q",
+    # )
 
     if plot_region == buffer_reg:
         fig.plot(

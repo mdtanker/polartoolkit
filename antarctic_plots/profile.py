@@ -4,6 +4,8 @@
 #
 # This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+import warnings
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -12,14 +14,17 @@ import verde as vd
 
 from antarctic_plots import fetch
 
+warnings.filterwarnings("ignore", message="Registry registered*")
+
 
 def create_profile(
-    method:str,
-    start=None,
-    stop=None,
+    method: str,
+    start: np.ndarray = None,
+    stop: np.ndarray = None,
+    shapefile: str = None,
     num=100,
-    shp_num_points:int=None,
-    shapefile:str=None,
+    shp_num_points: int = None,
+    **kwargs,
 ):
     """
     Create a pandas DataFrame of points along a line with multiple methods.
@@ -28,9 +33,9 @@ def create_profile(
     ----------
     method : str
         Choose sampling method, either "points" or "shapefile"
-    start :array, optional
+    start :np.ndarray, optional
         Coordinates for starting point of profile, by default None
-    stop : array, optional
+    stop : np.ndarray, optional
         Coordinates for eding point of profile, by default None
     num : int, optional
         Number of points between start and stop, by default 100
@@ -44,17 +49,18 @@ def create_profile(
     pd.Dataframe
         Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile path.
     """
-    if shapefile == None:
-        shapefile = fetch.sample_shp(name="Disco_deep_transect")
-
     methods = ["points", "shapefile"]
     if method not in methods:
         raise ValueError(f"Invalid method type. Expected one of {methods}")
     if method == "points":
+        if any(a is None for a in [start, stop]):
+            raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
             data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
         )
     elif method == "shapefile":
+        if shapefile == None:
+            raise ValueError(f"If method = {method}, need to provide a valid shapefile")
         shp = gpd.read_file(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
@@ -92,23 +98,23 @@ def create_profile(
     return df_out
 
 
-def sample_grids(df, grid, name:str=None):
+def sample_grids(df, grid, name: str = None):
     """
-    Sample data at every point along a line
+     Sample data at every point along a line
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe containing columns 'x', 'y'
-    grid : str or xr.DataArray
-        Grid to sample, either file name or xr.DataArray
-    name : str, optional
-        Name for sampled column, by default is str(grid)
+     Parameters
+     ----------
+     df : pd.DataFrame
+         Dataframe containing columns 'x', 'y'
+     grid : str or xr.DataArray
+         Grid to sample, either file name or xr.DataArray
+     name : str, optional
+         Name for sampled column, by default is str(grid)
 
-    Returns
-    -------
-   pd.DataFrame
-        Dataframe with new column (name) of sample values from (grid) 
+     Returns
+     -------
+    pd.DataFrame
+         Dataframe with new column (name) of sample values from (grid)
     """
     if name == None:
         name = grid
@@ -144,7 +150,7 @@ def fill_nans(
     return df
 
 
-def shorten(df, max_dist=None, min_dist=None):
+def shorten(df, max_dist=None, min_dist=None, **kwargs):
     """
     _summary_
 
@@ -161,7 +167,7 @@ def shorten(df, max_dist=None, min_dist=None):
     -------
     pd.DataFrame
         Shortened dataframe
-    """ 
+    """
     if max_dist == None:
         max_dist = df.dist.max()
     if min_dist == None:
@@ -174,10 +180,7 @@ def shorten(df, max_dist=None, min_dist=None):
     return shortened
 
 
-def make_data_dict(
-    names:list, 
-    grids:list, 
-    colors:list)-> dict:
+def make_data_dict(names: list, grids: list, colors: list) -> dict:
     """
     Create nested dictionary of data and attributes
 
@@ -202,7 +205,7 @@ def make_data_dict(
     return data_dict
 
 
-def default_layers()-> dict:
+def default_layers() -> dict:
     """
     Fetch default Bedmap2 layers.
 
@@ -233,7 +236,7 @@ def default_layers()-> dict:
     return layers_dict
 
 
-def default_data(region=None)-> dict:
+def default_data(region=None) -> dict:
     """
     Fetch default gravity and magnetic datasets.
 
@@ -270,83 +273,14 @@ def default_data(region=None)-> dict:
     return data_dict
 
 
-
 def plot_profile(
     method,
-    start=None,
-    stop=None,
-    num=100,
-    shapefile=None,
-    shp_num_points=None,
     layers_dict=None,
-    fillnans=True,
-    clip=False,
-    max_dist=None,
-    min_dist=None,
-    add_map=True,
-    buffer_perc=0.2,
-    map_background=fetch.imagery(),
-    map_cmap="earth",
     data_dict=None,
-    save=False,
-    path=None,):
-    """
-    _summary_
+    **kwargs,
+):
 
-    Parameters
-    ----------
-    method : _type_
-        _description_
-    start : _type_, optional
-        _description_, by default None
-    stop : _type_, optional
-        _description_, by default None
-    num : int, optional
-        _description_, by default 100
-    shapefile : _type_, optional
-        _description_, by default None
-    shp_num_points : _type_, optional
-        _description_, by default None
-    layers_dict : _type_, optional
-        _description_, by default None
-    fillnans : bool, optional
-        _description_, by default True
-    clip : bool, optional
-        _description_, by default False
-    max_dist : _type_, optional
-        _description_, by default None
-    min_dist : _type_, optional
-        _description_, by default None
-    add_map : bool, optional
-        _description_, by default True
-    buffer_perc : float, optional
-        _description_, by default 0.2
-    map_background : _type_, optional
-        _description_, by default fetch.imagery()
-    map_cmap : str, optional
-        _description_, by default "earth"
-    data_dict : _type_, optional
-        _description_, by default None
-    save : bool, optional
-        _description_, by default False
-    path : _type_, optional
-        _description_, by default None
-    """
-    # Function to plot cross section of earth layers and optionally
-    # add a plot of data along the same line. Optionally can plot
-    # the line location on a map with an input grid for the background.
-    # data_dict: nested dictionary of format {'name': {'name':str},
-    #                                                 {'grid': xarray.DataArray},
-    #                                                 {'color': str},}
-    # determine where to sample the grids
-    points = create_profile(
-        method=method,
-        start=start,
-        stop=stop,
-        num=num,
-        shapefile=shapefile,
-        shp_num_points=shp_num_points,
-    )
+    points = create_profile(method, **kwargs)
 
     data_region = vd.get_region((points.x, points.y))
 
@@ -361,7 +295,7 @@ def plot_profile(
         df_layers = sample_grids(points, v["grid"], name=v["name"])
 
     # fill layers with above layer's values
-    if fillnans == True:
+    if kwargs.get("fillnans", True) == True:
         df_layers = fill_nans(df_layers)
 
     if data_dict is not None:
@@ -370,20 +304,20 @@ def plot_profile(
             df_data = sample_grids(points, v["grid"], name=v["name"])
 
     # shorten profiles
-    if clip == True:
-        df_layers = shorten(df_layers, max_dist=max_dist, min_dist=min_dist)
+    if kwargs.get("clip") == True:
+        if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
+            raise ValueError(
+                f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
+            )
+        df_layers = shorten(df_layers, **kwargs)
         if data_dict is not None:
-            df_data = shorten(df_data, max_dist=max_dist, min_dist=min_dist)
-
-    # print(df_layers.describe())
-    # if data_dict is not None:
-    #     print(df_data.describe())
+            df_data = shorten(df_data, **kwargs)
 
     fig = pygmt.Figure()
-    #PLOT MAP
-    if add_map == True:
+
+    if kwargs.get("add_map") == True:
         # Automatic data extent + buffer as % of line length
-        buffer = df_layers.dist.max() * buffer_perc
+        buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.2)
         e = df_layers.x.min() - buffer
         w = df_layers.x.max() + buffer
         n = df_layers.y.min() - buffer
@@ -408,8 +342,8 @@ def plot_profile(
 
         fig.grdimage(
             projection=fig_proj,
-            grid=map_background,
-            cmap=map_cmap,
+            grid=kwargs.get("map_background", fetch.imagery()),
+            cmap=kwargs.get("map_cmap", "earth"),
             verbose="q",
         )
 
@@ -471,14 +405,14 @@ def plot_profile(
             justify="CM",
             clearance="+tO",
         )
-
         # shift figure to the right to make space for x-section and profiles
         fig.shift_origin(xshift=(fig_width / 10) + 1)
+
     # PLOT CROSS SECTION AND PROFILES
-    # add space above and below top and bottom x-section df_layers
+    # add space above and below top and bottom of cross-section
     min = df_layers[df_layers.columns[3:]].min().min()
     max = df_layers[df_layers.columns[3:]].max().max()
-    y_buffer = (max - min) * 0.1
+    y_buffer = (max - min) * kwargs.get("layer_buffer", 0.1)
     # set region for x-section
     region_layers = [
         df_layers.dist.min(),
@@ -486,17 +420,20 @@ def plot_profile(
         min - y_buffer,
         max + y_buffer,
     ]
-
     # if data for profiles is set, set region and plot them, if not,
     # make region for x-section fill space
     if data_dict is not None:
         try:
             for k, v in data_dict.items():
+                # add space above and below top and bottom of cross-section
+                min = df_data[k].min()
+                max = df_data[k].max()
+                y_buffer = (max - min) * kwargs.get("data_buffer", 0.1)
                 region_data = [
                     df_data.dist.min(),
                     df_data.dist.max(),
-                    df_data[k].min(),
-                    df_data[k].max(),
+                    min - y_buffer,
+                    max + y_buffer,
                 ]
                 fig.plot(
                     region=region_data,
@@ -513,7 +450,6 @@ def plot_profile(
         except:
             print("error plotting data profiles")
     else:
-        print("No data profiles to plot")
         fig.basemap(region=region_layers, projection="X9c/9c", frame=True)
 
     # plot colored df_layers
@@ -552,5 +488,7 @@ def plot_profile(
 
     fig.show()
 
-    if save == True:
-        fig.savefig(path, dpi=300)
+    if kwargs.get("save") == True:
+        if kwargs.get("path") is None:
+            raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
+        fig.savefig(kwargs.get("path"), dpi=300)

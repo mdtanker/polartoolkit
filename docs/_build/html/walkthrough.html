@@ -52,7 +52,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="next" title="Tips for choosing profile locations" href="tips.html" />
     <link rel="prev" title="Installation" href="installation.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -116,7 +116,12 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   🚶 Walkthrough
+   Walkthrough
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="tips.html">
+   Tips
   </a>
  </li>
  <li class="toctree-l1">
@@ -352,25 +357,54 @@ title="Print to PDF"
     </div>
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#cross-section">
-   Cross-section
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Walkthrough
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#make-a-simple-cross-section">
+     Make a simple cross-section
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#add-a-map">
+     Add a map
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#add-a-graph-of-data">
+     Add a graph of data
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#change-profile-length">
+     Change profile length
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#change-sampling-resolution">
+     Change sampling resolution
+    </a>
+   </li>
+  </ul>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#add-map">
-   Add map
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#alter-map-properies">
+   Alter map properies
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#add-graph-of-data">
-   Add graph of data
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#custom-layers-datasets-and-shapefiles">
-   custom layers, datasets, and shapefiles
-  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#minor-plot-tweaks">
+     Minor plot tweaks
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-layers-datasets-and-colors">
+     Custom layers, datasets, and colors
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -391,25 +425,54 @@ title="Print to PDF"
                         </div>
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#cross-section">
-   Cross-section
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Walkthrough
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#make-a-simple-cross-section">
+     Make a simple cross-section
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#add-a-map">
+     Add a map
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#add-a-graph-of-data">
+     Add a graph of data
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#change-profile-length">
+     Change profile length
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#change-sampling-resolution">
+     Change sampling resolution
+    </a>
+   </li>
+  </ul>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#add-map">
-   Add map
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#alter-map-properies">
+   Alter map properies
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#add-graph-of-data">
-   Add graph of data
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#custom-layers-datasets-and-shapefiles">
-   custom layers, datasets, and shapefiles
-  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#minor-plot-tweaks">
+     Minor plot tweaks
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-layers-datasets-and-colors">
+     Custom layers, datasets, and colors
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -426,14 +489,16 @@ title="Print to PDF"
 <p>import the functions</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">profile</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">profile</span>
 <span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">fetch</span>
 </pre></div>
 </div>
 </div>
 </div>
-<section id="cross-section">
-<h2>Cross-section<a class="headerlink" href="#cross-section" title="Permalink to this headline">#</a></h2>
+<section id="make-a-simple-cross-section">
+<h2>Make a simple cross-section<a class="headerlink" href="#make-a-simple-cross-section" title="Permalink to this headline">#</a></h2>
 <p>define a start and end point for a profile, in EPSG:3031 projection</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -450,143 +515,67 @@ title="Print to PDF"
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>filling grid nans with &quot;0&quot;
-filling grid nans with &quot;0&quot;
-No data profiles to plot
-</pre></div>
-</div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_5_2.png" src="_images/walkthrough_5_2.png" />
+<img alt="_images/walkthrough_5_1.png" src="_images/walkthrough_5_1.png" />
 </div>
 </div>
-<p>increase the resolution with the parameter “num”</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
-    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
-    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
-    <span class="n">num</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>filling grid nans with &quot;0&quot;
-filling grid nans with &quot;0&quot;
-No data profiles to plot
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
-</pre></div>
-</div>
-<img alt="_images/walkthrough_7_2.png" src="_images/walkthrough_7_2.png" />
-</div>
-</div>
-<p>Instead of a line defined by two points, sample along a shapefile.
-Defaults to an included shapefile over the Ross Ice Shelf from Mulock Glacier to the ice front through Discover Deep.</p>
+<p>Instead of using a line, we can sample along a shapefile. Provide a file name, or load a shapefile with the function <code class="docutils literal notranslate"><span class="pre">fetch</span></code>.</p>
+<p>Here is a path across the Ross Ice Shelf from Mulock Glacier to the ice front through Discover Deep.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PROJ: proj_create_from_database: SQLite error on SELECT key, value FROM metadata WHERE key IN (&#39;DATABASE.LAYOUT.VERSION.MAJOR&#39;, &#39;DATABASE.LAYOUT.VERSION.MINOR&#39;): no such table: metadata
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>filling grid nans with &quot;0&quot;
-filling grid nans with &quot;0&quot;
-No data profiles to plot
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
-</pre></div>
-</div>
-<img alt="_images/walkthrough_9_3.png" src="_images/walkthrough_9_3.png" />
+<img alt="_images/walkthrough_7_1.png" src="_images/walkthrough_7_1.png" />
 </div>
 </div>
-<p>change the sampling resolution with the parameter shp_num_points</p>
+</section>
+<section id="add-a-map">
+<h2>Add a map<a class="headerlink" href="#add-a-map" title="Permalink to this headline">#</a></h2>
+<p>show the profile location, background defaults to imagery</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">shp_num_points</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>filling grid nans with &quot;0&quot;
-filling grid nans with &quot;0&quot;
-No data profiles to plot
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
-</pre></div>
-</div>
-<img alt="_images/walkthrough_11_2.png" src="_images/walkthrough_11_2.png" />
+<img alt="_images/walkthrough_9_1.png" src="_images/walkthrough_9_1.png" />
 </div>
 </div>
 </section>
-<section id="add-map">
-<h2>Add map<a class="headerlink" href="#add-map" title="Permalink to this headline">#</a></h2>
-<p>add a map to show the profile location, background defaults to imagery</p>
+<section id="add-a-graph-of-data">
+<h2>Add a graph of data<a class="headerlink" href="#add-a-graph-of-data" title="Permalink to this headline">#</a></h2>
+<p>Show data along the profile. Default includes gravity and magnetics</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>customize the map background; show the surface topography instead of imagery</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span> <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">map_background</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;surface&quot;</span><span class="p">)</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>clip the profile (either end) based on distance</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">min_dist</span><span class="o">=</span><span class="mf">50e3</span><span class="p">,</span>
-    <span class="n">max_dist</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="add-graph-of-data">
-<h2>Add graph of data<a class="headerlink" href="#add-graph-of-data" title="Permalink to this headline">#</a></h2>
-<p>Add a graph of data along the profile. Defaults two include gravity and magnetics</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
     <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># save the plot to use in README</span>
@@ -595,19 +584,264 @@ No data profiles to plot
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_11_1.png" src="_images/walkthrough_11_1.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
-<section id="custom-layers-datasets-and-shapefiles">
-<h2>custom layers, datasets, and shapefiles<a class="headerlink" href="#custom-layers-datasets-and-shapefiles" title="Permalink to this headline">#</a></h2>
-<p>The input for both the data and the layers are nested dictionaries, where each dataset is a dictionary which contains keys: ‘name’, ‘grid’, and ‘color’.</p>
-<p>Use the function, <code class="docutils literal notranslate"><span class="pre">profile.make_data_dict()</span></code> to help create these dictionaries.
-It takes 3 inputs, which are an array of names, an array of grids (either file geotiff/netcdf file names or xarray.DataArrays, and an array of colors.</p>
-<p>For example, if you have a netcdf file ‘ice_velocity.nc’, you can make that into a dictionary with:
-<code class="docutils literal notranslate"><span class="pre">profile.make_data_dict(['ice</span> <span class="pre">velocity'],</span> <span class="pre">['ice_velocity.nc'],</span> <span class="pre">['orange'])</span></code></p>
-<p>Within the module <code class="docutils literal notranslate"><span class="pre">antarctic_plots.fetch</span></code> is a series of functions to help download, store, and call datasets. Feel free to use the examples there to add your own datasets, and load them into <code class="docutils literal notranslate"><span class="pre">profile.make_data_dict()</span></code> as shown below.</p>
+<section id="change-profile-length">
+<h2>Change profile length<a class="headerlink" href="#change-profile-length" title="Permalink to this headline">#</a></h2>
+<p>clip the profile (either end) based on distance</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># note, these datafile can be plotted at higher resolution by adding parameter &#39;spacing&#39; tp the &#39;fetch&#39; function:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">min_dist</span><span class="o">=</span><span class="mf">50e3</span><span class="p">,</span>
+    <span class="n">max_dist</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_13_1.png" src="_images/walkthrough_13_1.png" />
+</div>
+</div>
+</section>
+<section id="change-sampling-resolution">
+<h2>Change sampling resolution<a class="headerlink" href="#change-sampling-resolution" title="Permalink to this headline">#</a></h2>
+<p>increase the resolution with the parameter “num” (defaults to 100)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define new profile endpoints</span>
+<span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">590e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1070e3</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">100e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">545e3</span><span class="p">)</span>
+
+<span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+    <span class="n">num</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+    <span class="n">num</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_15_1.png" src="_images/walkthrough_15_1.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_15_3.png" src="_images/walkthrough_15_3.png" />
+</div>
+</div>
+<p>or for shapefiles, with shp_num_points</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Roosevelt_Island&quot;</span><span class="p">,)</span>
+    <span class="n">shp_num_points</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Roosevelt_Island&quot;</span><span class="p">,)</span>
+    <span class="n">shp_num_points</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_17_1.png" src="_images/walkthrough_17_1.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_17_3.png" src="_images/walkthrough_17_3.png" />
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="alter-map-properies">
+<h1>Alter map properies<a class="headerlink" href="#alter-map-properies" title="Permalink to this headline">#</a></h1>
+<p>customize the map background; show the surface topography instead of imagery</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">map_background</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;surface&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_19_1.png" src="_images/walkthrough_19_1.png" />
+</div>
+</div>
+<p>change the maps colorscale</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">map_background</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">bedmap2</span><span class="p">(</span><span class="s2">&quot;surface&quot;</span><span class="p">),</span>
+    <span class="n">map_cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_21_1.png" src="_images/walkthrough_21_1.png" />
+</div>
+</div>
+<section id="minor-plot-tweaks">
+<h2>Minor plot tweaks<a class="headerlink" href="#minor-plot-tweaks" title="Permalink to this headline">#</a></h2>
+<p>change the level of zoom on the map with the map_buffer argument.
+This is a percentage of total line distance, which defaults to 0.2 (120%) of profile length.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">map_buffer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">map_buffer</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_24_1.png" src="_images/walkthrough_24_1.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_24_3.png" src="_images/walkthrough_24_3.png" />
+</div>
+</div>
+<p>Change buffer above and below cross-section layers, defaults to 0.1 (10% of data spread added above/below)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">layer_buffer</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_26_1.png" src="_images/walkthrough_26_1.png" />
+</div>
+</div>
+<p>Change buffer above and below data graph, defaults to 0.1 (10% of data spread added above/below)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">data_buffer</span><span class="o">=</span><span class="mf">0.8</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_28_1.png" src="_images/walkthrough_28_1.png" />
+</div>
+</div>
+</section>
+<section id="custom-layers-datasets-and-colors">
+<h2>Custom layers, datasets, and colors<a class="headerlink" href="#custom-layers-datasets-and-colors" title="Permalink to this headline">#</a></h2>
+<p>The input for both the data and the layers are nested dictionaries, where each dictionary entry contains keys: ‘name’, ‘grid’, and ‘color’.</p>
+<p>Use the function, <code class="docutils literal notranslate"><span class="pre">profile.make_data_dict()</span></code> to help create these dictionaries.
+It takes 3 inputs, which are:</p>
+<ul class="simple">
+<li><p>a list of names</p></li>
+<li><p>a list of grids
+either geotiff/netcdf file names or xarray.DataArrays</p></li>
+<li><p>a list of colors.</p></li>
+</ul>
+<p>For example, if you have a netcdf file ‘ice_velocity.nc’, you can make that into a dictionary with:
+<code class="docutils literal notranslate"><span class="pre">profile.make_data_dict(['ice</span> <span class="pre">velocity'],</span> <span class="pre">['ice_velocity.nc'],</span> <span class="pre">['orange'])</span></code></p>
+<p>Optionally, you can use Pooch.fetch to help download and store dataset from urls, and easily load them.</p>
+<p>See the functions in the module <code class="docutils literal notranslate"><span class="pre">antarctic_plots.fetch</span></code> for  examples and feel free to make a PR and add your datasets there.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># note, these datafile can be plotted at higher resolution by adding parameter &#39;spacing&#39; to the &#39;fetch&#39; function:</span>
 <span class="c1"># fetch.gravity(&#39;BA&#39;, spacing=1e3) will use a 1km version of the Bouguer gravity anomaly.</span>
 <span class="n">data_dict</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">make_data_dict</span><span class="p">(</span>
     <span class="p">[</span><span class="s2">&quot;Bouguer gravity&quot;</span><span class="p">,</span> <span class="s2">&quot;DeepBedMap&quot;</span><span class="p">],</span>
@@ -617,6 +851,7 @@ It takes 3 inputs, which are an array of names, an array of grids (either file g
 
 <span class="c1"># get default bedmap2 layers</span>
 <span class="n">layers_dict</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">default_layers</span><span class="p">()</span>
+
 <span class="c1"># add dictionary entry of extra layer &#39;basement&#39;</span>
 <span class="n">layers_dict</span><span class="p">[</span><span class="s2">&quot;basement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">layers_dict</span><span class="p">[</span><span class="s2">&quot;basement&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;basement&quot;</span>
@@ -624,16 +859,22 @@ It takes 3 inputs, which are an array of names, an array of grids (either file g
 <span class="n">layers_dict</span><span class="p">[</span><span class="s2">&quot;basement&quot;</span><span class="p">][</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;chocolate&quot;</span>
 
 <span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span>
-        <span class="s2">&quot;Roosevelt_Island&quot;</span>
-    <span class="p">),</span>  <span class="c1"># to use your own shapefile, shapefile=&#39;yourshapefile.shp&#39;,</span>
+    <span class="s2">&quot;points&quot;</span><span class="p">,</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+    <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
     <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="n">data_dict</span><span class="p">,</span>
     <span class="n">layers_dict</span><span class="o">=</span><span class="n">layers_dict</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+psconvert [ERROR]: Registry registered C:\Program Files (x86)\GPLGS\gswin32c.exe does not exist. Resorting to the one provided in GMT.
+</pre></div>
+</div>
+<img alt="_images/walkthrough_30_1.png" src="_images/walkthrough_30_1.png" />
 </div>
 </div>
 <p>fill gaps in the input layers. Note that the additional layer ‘basement’, doesn’t extend past the groundingline. By default, NaN’s in any layer are set equal
@@ -641,28 +882,12 @@ to the layer above, causing the vertical line at ~100km.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Roosevelt_Island&quot;</span><span class="p">),</span>
     <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="n">data_dict</span><span class="p">,</span>
     <span class="n">layers_dict</span><span class="o">=</span><span class="n">layers_dict</span><span class="p">,</span>
     <span class="n">fillnans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>change the level of zoom on the map with the buffer_perc argument.
-This is a percentage of total line distance, so in this case we zoom out by 80% of 330km, so ~260km</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
-    <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Roosevelt_Island&quot;</span><span class="p">),</span>
-    <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">data_dict</span><span class="o">=</span><span class="n">data_dict</span><span class="p">,</span>
-    <span class="n">layers_dict</span><span class="o">=</span><span class="n">layers_dict</span><span class="p">,</span>
-    <span class="n">buffer_perc</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -705,10 +930,10 @@ This is a percentage of total line distance, so in this case we zoom out by 80% 
             <p class="prev-next-title">Installation</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="api.html" title="next page">
+    <a class='right-next' id="next-link" href="tips.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Tips for choosing profile locations</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

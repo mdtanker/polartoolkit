@@ -113,7 +113,12 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../walkthrough.html">
-   🚶 Walkthrough
+   Walkthrough
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tips.html">
+   Tips
   </a>
  </li>
  <li class="toctree-l1">
@@ -275,10 +280,10 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="sample_shp"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.sample_shp">[docs]</a><span class="k">def</span> <span class="nf">sample_shp</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    
+
     <span class="c1"># load 1 of 2 sample shapefiles</span>
     <span class="c1"># name =is either &#39;Disco_deep_transect&#39; or &#39;Roosevelt_Island&#39;</span>
-  
+
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
         <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://github.com/mdtanker/antarctic_plots/raw/main/data/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.zip&quot;</span><span class="p">,</span>
         <span class="n">processor</span><span class="o">=</span><span class="n">pooch</span><span class="o">.</span><span class="n">Unzip</span><span class="p">(),</span>
@@ -289,12 +294,12 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="imagery"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.imagery">[docs]</a><span class="k">def</span> <span class="nf">imagery</span><span class="p">():</span>
-    
+
     <span class="c1"># Antarctic imagery from LIMA: https://lima.usgs.gov/fullcontinent.php</span>
     <span class="c1"># will replace with below once figured out login issue with pooch</span>
     <span class="c1">#  MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ</span>
     <span class="c1"># Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/</span>
-  
+
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
         <span class="c1"># url=&quot;https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/moa750_2014_hp1_v01.tif&quot;,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://lima.usgs.gov/tiff_90pct.zip&quot;</span><span class="p">,</span>
@@ -307,10 +312,10 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="groundingline"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.groundingline">[docs]</a><span class="k">def</span> <span class="nf">groundingline</span><span class="p">():</span>
-  
+
     <span class="c1"># Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147</span>
     <span class="c1"># Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567</span>
-  
+
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://doi.pangaea.de/10013/epic.42133.d001&quot;</span><span class="p">,</span>
         <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -322,11 +327,11 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="basement"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.basement">[docs]</a><span class="k">def</span> <span class="nf">basement</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    
+
     <span class="c1"># Offshore and sub-Ross Ice Shelf basement topography.</span>
     <span class="c1"># from Tankersley et al. 2022: https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371</span>
     <span class="c1"># offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401</span>
-  
+
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc&quot;</span><span class="p">,</span>
         <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -340,12 +345,25 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">grd</span></div>
 
 
-<div class="viewcode-block" id="bedmap2"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.bedmap2">[docs]</a><span class="k">def</span> <span class="nf">bedmap2</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    
-    <span class="c1"># bedmap2 data, from https://doi.org/10.5194/tc-7-375-2013.</span>
-    <span class="c1"># layer is one of following strings:</span>
-    <span class="c1">#     &#39;thickness&#39;, &#39;bed&#39;, &#39;surface&#39;, &#39;geiod_to_WGS84&#39;</span>
-   
+<div class="viewcode-block" id="bedmap2"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.bedmap2">[docs]</a><span class="k">def</span> <span class="nf">bedmap2</span><span class="p">(</span><span class="n">layer</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch bedmap2 data. Note, nan&#39;s in surface grid are set to 0.</span>
+<span class="sd">    from https://doi.org/10.5194/tc-7-375-2013.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layer : str</span>
+<span class="sd">        choose which layer to fetch, &#39;thickness&#39;, &#39;bed&#39;, &#39;surface&#39;, or &#39;geiod_to_WGS84&#39;</span>
+<span class="sd">    plot : bool, optional</span>
+<span class="sd">        choose to plot grid, by default False</span>
+<span class="sd">    info : bool, optional</span>
+<span class="sd">        choose to print info on grid, by default False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xarray.DataArray</span>
+<span class="sd">        grid loaded into memory as an xarray.DataArray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip&quot;</span><span class="p">,</span>
         <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -357,7 +375,6 @@ title="Open an issue"
     <span class="n">grd</span> <span class="o">=</span> <span class="n">grd</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;surface&quot;</span><span class="p">:</span>
         <span class="n">grd</span> <span class="o">=</span> <span class="n">grd</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;filling grid nans with &quot;0&quot;&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">plot</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">grd</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">info</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
@@ -366,10 +383,10 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="deepbedmap"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.deepbedmap">[docs]</a><span class="k">def</span> <span class="nf">deepbedmap</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">10e3</span><span class="p">):</span>
-   
+
     <span class="c1"># DeepBedMap, from Leong and Horgan, 2020: https://doi.org/10.5194/tc-14-3687-2020</span>
     <span class="c1"># Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0</span>
-   
+
     <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2700000</span><span class="p">,</span> <span class="mi">2800000</span><span class="p">,</span> <span class="o">-</span><span class="mi">2200000</span><span class="p">,</span> <span class="mi">2300000</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
@@ -394,12 +411,12 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="gravity"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.gravity">[docs]</a><span class="k">def</span> <span class="nf">gravity</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">5e3</span><span class="p">):</span>
-   
+
     <span class="c1"># Preliminary compilation of Antarctica gravity and gravity gradient data.</span>
     <span class="c1"># Updates on 2016 AntGG compilation.</span>
     <span class="c1"># Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.</span>
     <span class="c1"># type is either &#39;FA&#39; or &#39;BA&#39;, for free-air and bouguer anomalies, respectively.</span>
-  
+
     <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">,</span> <span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">pooch</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span>
@@ -431,7 +448,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="magnetics"><a class="viewcode-back" href="../../api.html#antarctic_plots.fetch.magnetics">[docs]</a><span class="k">def</span> <span class="nf">magnetics</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">5e3</span><span class="p">):</span>
-   
+
     <span class="c1"># version, one of following strings:</span>
     <span class="c1">#     &#39;admap2&#39;, &#39;admap1&#39;, &#39;admap2_eq_src&#39;, &#39;admap2_gdb&#39;</span>
     <span class="c1"># 1)</span>
@@ -446,7 +463,6 @@ title="Open an issue"
     <span class="c1"># Geosoft-specific .gdb abridged files.</span>
     <span class="c1"># Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download</span>
 
- 
     <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">,</span> <span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;admap2&quot;</span><span class="p">:</span>
@@ -526,10 +542,10 @@ title="Open an issue"
 
 
 <span class="c1"># def geothermal(plot=False, info=False):</span>
-<span class="c1">#   </span>
+<span class="c1">#</span>
 <span class="c1">#    # Mean geothermal heat flow from various models.</span>
 <span class="c1">#    # From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: current and future directions</span>
-<span class="c1">#   </span>
+<span class="c1">#</span>
 <span class="c1">#     path = pooch.retrieve(</span>
 <span class="c1">#         url=&quot;https://doi.org/10.5194/tc-14-3843-2020-supplement&quot;,</span>
 <span class="c1">#         known_hash=None,</span>

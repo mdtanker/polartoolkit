@@ -16,8 +16,8 @@ help:
 	@echo ""
 
 install:
-	pip install -r requirements.txt
-	# --no-deps -e .
+	pip install --no-deps -e .
+
 
 test:
 	# Run a tmp folder to make sure the tests are run on the installed version

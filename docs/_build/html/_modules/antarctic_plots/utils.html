@@ -113,7 +113,12 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../walkthrough.html">
-   🚶 Walkthrough
+   Walkthrough
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tips.html">
+   Tips
   </a>
  </li>
  <li class="toctree-l1">
@@ -275,8 +280,9 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">pyproj</span> <span class="kn">import</span> <span class="n">Transformer</span>
 
+
 <div class="viewcode-block" id="get_grid_info"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.get_grid_info">[docs]</a><span class="k">def</span> <span class="nf">get_grid_info</span><span class="p">(</span><span class="n">grid</span><span class="p">):</span>
-   
+
     <span class="c1"># Returns the spacing and region of an input grid.</span>
 
     <span class="c1"># :param grid: input grid to get info from.</span>
@@ -290,14 +296,14 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="dd2dms"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.dd2dms">[docs]</a><span class="k">def</span> <span class="nf">dd2dms</span><span class="p">(</span><span class="n">dd</span><span class="p">):</span>
-   
+
     <span class="c1"># Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384</span>
 
     <span class="c1"># :param dd: decimal degree input</span>
     <span class="c1"># :type dd: float</span>
     <span class="c1"># :return: degrees in format D:M:S</span>
     <span class="c1"># :rtype: str</span>
-   
+
     <span class="n">is_positive</span> <span class="o">=</span> <span class="n">dd</span> <span class="o">&gt;=</span> <span class="mi">0</span>
     <span class="n">dd</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
     <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">dd</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
@@ -312,7 +318,7 @@ title="Open an issue"
     <span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">],</span>
     <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span>
 <span class="p">):</span>
-  
+
     <span class="c1"># Convert coordinates from EPSG:4326 WGS84 in decimal degrees to</span>
     <span class="c1"># EPSG:3031 Antarctic Polar Stereographic in meters.</span>
 
@@ -326,7 +332,7 @@ title="Open an issue"
     <span class="c1"># :type output: list, optional</span>
     <span class="c1"># :return: output dataframe with converted coordinate columns</span>
     <span class="c1"># :rtype: pandas.DataFrame</span>
-   
+
     <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span> <span class="s2">&quot;epsg:3031&quot;</span><span class="p">)</span>
     <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
         <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -379,10 +385,10 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="GMT_reg_xy_to_ll"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.GMT_reg_xy_to_ll">[docs]</a><span class="k">def</span> <span class="nf">GMT_reg_xy_to_ll</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
-   
+
     <span class="c1"># Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec</span>
     <span class="c1"># input: array of 4 strings.</span>
-   
+
     <span class="n">df</span> <span class="o">=</span> <span class="n">reg_str_to_df</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
     <span class="n">df_proj</span> <span class="o">=</span> <span class="n">epsg3031_to_latlon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">reg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">dd2dms</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df_proj</span><span class="p">]</span>
@@ -399,7 +405,7 @@ title="Open an issue"
     <span class="n">masked</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:3031&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-    
+
     <span class="c1"># Function to create a mask or a masked grid from area inside or outside of a shapefile.</span>
     <span class="c1"># shapefile: str; path to .shp filename.</span>
     <span class="c1"># invert: bool; mask inside or outside of shapefile, defaults to True.</span>
@@ -408,7 +414,7 @@ title="Open an issue"
     <span class="c1"># region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]</span>
     <span class="c1"># spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.</span>
     <span class="c1"># crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code</span>
-  
+
     <span class="n">shp</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">shapefile</span><span class="p">)</span><span class="o">.</span><span class="n">geometry</span>
     <span class="k">if</span> <span class="n">xr_grid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">grid_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">vd</span><span class="o">.</span><span class="n">grid_coordinates</span><span class="p">(</span>
@@ -440,11 +446,10 @@ title="Open an issue"
     <span class="n">plot_region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cmap_region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">coast</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">constraints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">grd2cpt_name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">origin_shift</span><span class="o">=</span><span class="s2">&quot;initialize&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-  
+
     <span class="c1"># Function to automate PyGMT plotting</span>
 
     <span class="c1"># Args:</span>
@@ -454,10 +459,8 @@ title="Open an issue"
     <span class="c1">#     plot_region (_type_, optional): _description_. Defaults to None.</span>
     <span class="c1">#     cmap_region (_type_, optional): _description_. Defaults to None.</span>
     <span class="c1">#     coast (bool, optional): _description_. Defaults to False.</span>
-    <span class="c1">#     constraints (bool, optional): _description_. Defaults to False.</span>
     <span class="c1">#     grd2cpt_name (bool, optional): _description_. Defaults to False.</span>
     <span class="c1">#     origin_shift (str, optional): _description_. Defaults to &quot;initialize&quot;.</span>
- 
 
     <span class="kn">import</span> <span class="nn">warnings</span>
 
@@ -466,13 +469,10 @@ title="Open an issue"
 
     <span class="k">global</span> <span class="n">fig</span><span class="p">,</span> <span class="n">projection</span>
     <span class="k">if</span> <span class="n">plot_region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">plot_region</span> <span class="o">=</span> <span class="n">inv_reg</span>
+        <span class="n">plot_region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">,</span> <span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cmap_region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cmap_region</span> <span class="o">=</span> <span class="n">inv_reg</span>
-    <span class="k">if</span> <span class="n">plot_region</span> <span class="o">==</span> <span class="n">buffer_reg</span><span class="p">:</span>
-        <span class="n">projection</span> <span class="o">=</span> <span class="n">buffer_proj</span>
-    <span class="k">elif</span> <span class="n">plot_region</span> <span class="o">==</span> <span class="n">inv_reg</span><span class="p">:</span>
-        <span class="n">projection</span> <span class="o">=</span> <span class="n">inv_proj</span>
+        <span class="n">cmap_region</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">,</span> <span class="o">-</span><span class="mi">3330000</span><span class="p">,</span> <span class="mi">3330000</span><span class="p">)</span>
+
     <span class="c1"># initialize figure or shift for new subplot</span>
     <span class="k">if</span> <span class="n">origin_shift</span> <span class="o">==</span> <span class="s2">&quot;initialize&quot;</span><span class="p">:</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
@@ -508,25 +508,17 @@ title="Open an issue"
         <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
             <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span>
             <span class="n">region</span><span class="o">=</span><span class="n">plot_region</span><span class="p">,</span>
-            <span class="n">data</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;plotting/GroundingLine_Antarctica_v02.shp&quot;</span><span class="p">),</span>
+            <span class="c1"># data=gpd.read_file(&quot;plotting/GroundingLine_Antarctica_v02.shp&quot;),</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">fetch</span><span class="o">.</span><span class="n">groundingline</span><span class="p">()),</span>
             <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;1.2p,black&quot;</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">data</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;plotting/Coastline_Antarctica_v02.shp&quot;</span><span class="p">),</span>
-        <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;1.2p,black&quot;</span><span class="p">,</span>
-        <span class="n">verbose</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">constraints</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-            <span class="n">x</span><span class="o">=</span><span class="n">constraints_RIS_df</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-            <span class="n">y</span><span class="o">=</span><span class="n">constraints_RIS_df</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-            <span class="n">style</span><span class="o">=</span><span class="s2">&quot;c1.2p&quot;</span><span class="p">,</span>
-            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
-            <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">plot_region</span><span class="p">,</span>
-        <span class="p">)</span>
+    <span class="c1"># fig.plot(</span>
+    <span class="c1">#     data=gpd.read_file(&quot;plotting/Coastline_Antarctica_v02.shp&quot;),</span>
+    <span class="c1">#     pen=&quot;1.2p,black&quot;,</span>
+    <span class="c1">#     verbose=&quot;q&quot;,</span>
+    <span class="c1"># )</span>
 
     <span class="k">if</span> <span class="n">plot_region</span> <span class="o">==</span> <span class="n">buffer_reg</span><span class="p">:</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
