@@ -1,22 +1,20 @@
-# API Reference
+API Reference
+=============
 
-## antarctic_plots.profile
-
-```{eval-rst}
+Profile
+--------
 .. automodule:: antarctic_plots.profile
     :members:
-```
+    :undoc-members:
 
-## antarctic_plots.fetch
-
-```{eval-rst}
+Fetch
+--------
 .. automodule:: antarctic_plots.fetch
     :members:
-```
+    :undoc-members:
 
-## antarctic_plots.utils
-
-```{eval-rst}
+Utils
+--------
 .. automodule:: antarctic_plots.utils
     :members:
-```
+    :undoc-members:

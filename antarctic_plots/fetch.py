@@ -13,10 +13,10 @@ from pyproj import Transformer
 
 
 def sample_shp(name):
-    """
-    load 1 of 2 sample shapefiles
-    name =is either 'Disco_deep_transect' or 'Roosevelt_Island'
-    """
+    
+    # load 1 of 2 sample shapefiles
+    # name =is either 'Disco_deep_transect' or 'Roosevelt_Island'
+  
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip",
         processor=pooch.Unzip(),
@@ -27,12 +27,12 @@ def sample_shp(name):
 
 
 def imagery():
-    """
-    Antarctic imagery from LIMA: https://lima.usgs.gov/fullcontinent.php
-    will replace with below once figured out login issue with pooch
-     MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
-    Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
-    """
+    
+    # Antarctic imagery from LIMA: https://lima.usgs.gov/fullcontinent.php
+    # will replace with below once figured out login issue with pooch
+    #  MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
+    # Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
+  
     path = pooch.retrieve(
         # url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/moa750_2014_hp1_v01.tif",
         url="https://lima.usgs.gov/tiff_90pct.zip",
@@ -45,10 +45,10 @@ def imagery():
 
 
 def groundingline():
-    """
-    Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147
-    Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
-    """
+  
+    # Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147
+    # Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
+  
     path = pooch.retrieve(
         url="https://doi.pangaea.de/10013/epic.42133.d001",
         known_hash=None,
@@ -60,11 +60,11 @@ def groundingline():
 
 
 def basement(plot=False, info=False):
-    """
-    Offshore and sub-Ross Ice Shelf basement topography.
-    from Tankersley et al. 2022: https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
-    offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
-    """
+    
+    # Offshore and sub-Ross Ice Shelf basement topography.
+    # from Tankersley et al. 2022: https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
+    # offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
+  
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",
         known_hash=None,
@@ -79,11 +79,11 @@ def basement(plot=False, info=False):
 
 
 def bedmap2(layer, plot=False, info=False):
-    """
-    bedmap2 data, from https://doi.org/10.5194/tc-7-375-2013.
-    layer is one of following strings:
-        'thickness', 'bed', 'surface', 'geiod_to_WGS84'
-    """
+    
+    # bedmap2 data, from https://doi.org/10.5194/tc-7-375-2013.
+    # layer is one of following strings:
+    #     'thickness', 'bed', 'surface', 'geiod_to_WGS84'
+   
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
         known_hash=None,
@@ -104,10 +104,10 @@ def bedmap2(layer, plot=False, info=False):
 
 
 def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
-    """
-    DeepBedMap, from Leong and Horgan, 2020: https://doi.org/10.5194/tc-14-3687-2020
-    Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0
-    """
+   
+    # DeepBedMap, from Leong and Horgan, 2020: https://doi.org/10.5194/tc-14-3687-2020
+    # Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0
+   
     if region == None:
         region = (-2700000, 2800000, -2200000, 2300000)
     path = pooch.retrieve(
@@ -132,12 +132,12 @@ def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
 
 
 def gravity(type, plot=False, info=False, region=None, spacing=5e3):
-    """
-    Preliminary compilation of Antarctica gravity and gravity gradient data.
-    Updates on 2016 AntGG compilation.
-    Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
-    type is either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
-    """
+   
+    # Preliminary compilation of Antarctica gravity and gravity gradient data.
+    # Updates on 2016 AntGG compilation.
+    # Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
+    # type is either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+  
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     path = pooch.retrieve(
@@ -169,22 +169,22 @@ def gravity(type, plot=False, info=False, region=None, spacing=5e3):
 
 
 def magnetics(version, plot=False, info=False, region=None, spacing=5e3):
-    """
-    version, one of following strings:
-        'admap2', 'admap1', 'admap2_eq_src', 'admap2_gdb'
-    1)
-    ADMAP2 magnetic anomaly compilation of Antarctica.
-    Non-geosoft specific files provide from Sasha Golynsky.
-    2)
-    ADMAP-2001 magnetic anomaly compilation of Antarctica.
-    https://admap.kongju.ac.kr/databases.html
-    3)
-    ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
-    4)
-    Geosoft-specific .gdb abridged files.
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
+   
+    # version, one of following strings:
+    #     'admap2', 'admap1', 'admap2_eq_src', 'admap2_gdb'
+    # 1)
+    # ADMAP2 magnetic anomaly compilation of Antarctica.
+    # Non-geosoft specific files provide from Sasha Golynsky.
+    # 2)
+    # ADMAP-2001 magnetic anomaly compilation of Antarctica.
+    # https://admap.kongju.ac.kr/databases.html
+    # 3)
+    # ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
+    # 4)
+    # Geosoft-specific .gdb abridged files.
+    # Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
-    """
+ 
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     if version == "admap2":
@@ -264,10 +264,10 @@ def magnetics(version, plot=False, info=False, region=None, spacing=5e3):
 
 
 # def geothermal(plot=False, info=False):
-#     """
-#     Mean geothermal heat flow from various models.
-#     From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: current and future directions
-#     """
+#   
+#    # Mean geothermal heat flow from various models.
+#    # From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: current and future directions
+#   
 #     path = pooch.retrieve(
 #         url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
 #         known_hash=None,

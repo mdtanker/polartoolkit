@@ -14,15 +14,35 @@ from antarctic_plots import fetch
 
 
 def create_profile(
-    method,
+    method:str,
     start=None,
     stop=None,
     num=100,
-    shp_num_points=None,
-    shapefile=None,
+    shp_num_points:int=None,
+    shapefile:str=None,
 ):
-    """function to create a pandas DataFrame of points
-    along a line with multiple methods
+    """
+    Create a pandas DataFrame of points along a line with multiple methods.
+
+    Parameters
+    ----------
+    method : str
+        Choose sampling method, either "points" or "shapefile"
+    start :array, optional
+        Coordinates for starting point of profile, by default None
+    stop : array, optional
+        Coordinates for eding point of profile, by default None
+    num : int, optional
+        Number of points between start and stop, by default 100
+    shp_num_points : int, optional
+        Number of points to resample shapefile to, by default None
+    shapefile : str, optional
+        shapefile file name to create points along, by default None
+
+    Returns
+    -------
+    pd.Dataframe
+        Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile path.
     """
     if shapefile == None:
         shapefile = fetch.sample_shp(name="Disco_deep_transect")
@@ -72,14 +92,23 @@ def create_profile(
     return df_out
 
 
-def sample_grids(df, grid, name=None):
+def sample_grids(df, grid, name:str=None):
     """
-    function to sample data at every point along a line
-    df: pandas DataFrame
-        should follow output of create_profile
-        first 3 columns in order are x, y, dist.
-    grid: str
-        grid file to be sampled.
+    Sample data at every point along a line
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns 'x', 'y'
+    grid : str or xr.DataArray
+        Grid to sample, either file name or xr.DataArray
+    name : str, optional
+        Name for sampled column, by default is str(grid)
+
+    Returns
+    -------
+   pd.DataFrame
+        Dataframe with new column (name) of sample values from (grid) 
     """
     if name == None:
         name = grid
@@ -94,10 +123,17 @@ def fill_nans(
     df,
 ):
     """
-    function to fill NaN's in sampled layer with values from above layer.
-    Ignores first 3 columns as they are assumed to by x, y, dist.
-    df: pandas DataFrame
-        should follow output of sample_grids
+    Fill NaN's in sampled layer with values from above layer.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        First 3 columns as they are assumed to by x, y, dist.
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with NaN's of lower layers filled
     """
     cols = df.columns[3:].values
     for i, j in enumerate(cols):
@@ -110,8 +146,22 @@ def fill_nans(
 
 def shorten(df, max_dist=None, min_dist=None):
     """
-    function to shorten profile on either end and recalculate distance
-    """
+    _summary_
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe to shorten and recalculate distance, must contain 'x', 'y', 'dist'
+    max_dist : int, optional
+        remove rows with dist>max_dist, by default None
+    min_dist : int, optional
+        remove rows with dist<min_dist, by default None
+
+    Returns
+    -------
+    pd.DataFrame
+        Shortened dataframe
+    """ 
     if max_dist == None:
         max_dist = df.dist.max()
     if min_dist == None:
@@ -124,10 +174,26 @@ def shorten(df, max_dist=None, min_dist=None):
     return shortened
 
 
-def make_data_dict(names, grids, colors):
+def make_data_dict(
+    names:list, 
+    grids:list, 
+    colors:list)-> dict:
     """
-    function to create dictionary for attributes of platting data
-    names, grids, and colors are list or 1-d arrays
+    Create nested dictionary of data and attributes
+
+    Parameters
+    ----------
+    names : list[str]
+        data names
+    grids : list[str or xarray.DataArray]
+        files or xarray.DataArray's
+    colors : list[str]
+        colors to plot data
+
+    Returns
+    -------
+    dict[dict]
+        Nested dictionaries of grids and attributes
     """
     data_dict = {
         j: {"name": names[i], "grid": grids[i], "color": colors[i]}
@@ -136,7 +202,15 @@ def make_data_dict(names, grids, colors):
     return data_dict
 
 
-def default_layers():
+def default_layers()-> dict:
+    """
+    Fetch default Bedmap2 layers.
+
+    Returns
+    -------
+    dict[dict]
+        Nested dictionary of Bedmap2 layers and attributes
+    """
     surface = fetch.bedmap2("surface")
     icebase = fetch.bedmap2("surface") - fetch.bedmap2("thickness")
     bed = fetch.bedmap2("bed")
@@ -159,7 +233,20 @@ def default_layers():
     return layers_dict
 
 
-def default_data(region=None):
+def default_data(region=None)-> dict:
+    """
+    Fetch default gravity and magnetic datasets.
+
+    Parameters
+    ----------
+    region : str or list[int], optional
+       region of Antarctic to load, by default is entire Antarctic region.
+
+    Returns
+    -------
+    dict[dict]
+        Nested dictionary of data and attributes
+    """
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     mag = fetch.magnetics(version="admap1", region=region, spacing=10e3)
@@ -183,14 +270,15 @@ def default_data(region=None):
     return data_dict
 
 
+
 def plot_profile(
     method,
     start=None,
     stop=None,
     num=100,
-    layers_dict=None,
     shapefile=None,
     shp_num_points=None,
+    layers_dict=None,
     fillnans=True,
     clip=False,
     max_dist=None,
@@ -201,16 +289,55 @@ def plot_profile(
     map_cmap="earth",
     data_dict=None,
     save=False,
-    path=None,
-):
+    path=None,):
     """
-    Function to plot cross section of earth layers and optionally
-    add a plot of data along the same line. Optionally can plot
-    the line location on a map with an input grid for the background.
-    data_dict: nested dictionary of format {'name': {'name':str},
-                                                    {'grid': xarray.DataArray},
-                                                    {'color': str},}
+    _summary_
+
+    Parameters
+    ----------
+    method : _type_
+        _description_
+    start : _type_, optional
+        _description_, by default None
+    stop : _type_, optional
+        _description_, by default None
+    num : int, optional
+        _description_, by default 100
+    shapefile : _type_, optional
+        _description_, by default None
+    shp_num_points : _type_, optional
+        _description_, by default None
+    layers_dict : _type_, optional
+        _description_, by default None
+    fillnans : bool, optional
+        _description_, by default True
+    clip : bool, optional
+        _description_, by default False
+    max_dist : _type_, optional
+        _description_, by default None
+    min_dist : _type_, optional
+        _description_, by default None
+    add_map : bool, optional
+        _description_, by default True
+    buffer_perc : float, optional
+        _description_, by default 0.2
+    map_background : _type_, optional
+        _description_, by default fetch.imagery()
+    map_cmap : str, optional
+        _description_, by default "earth"
+    data_dict : _type_, optional
+        _description_, by default None
+    save : bool, optional
+        _description_, by default False
+    path : _type_, optional
+        _description_, by default None
     """
+    # Function to plot cross section of earth layers and optionally
+    # add a plot of data along the same line. Optionally can plot
+    # the line location on a map with an input grid for the background.
+    # data_dict: nested dictionary of format {'name': {'name':str},
+    #                                                 {'grid': xarray.DataArray},
+    #                                                 {'color': str},}
     # determine where to sample the grids
     points = create_profile(
         method=method,
@@ -253,9 +380,7 @@ def plot_profile(
     #     print(df_data.describe())
 
     fig = pygmt.Figure()
-    """
-    PLOT MAP
-    """
+    #PLOT MAP
     if add_map == True:
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * buffer_perc
@@ -349,10 +474,7 @@ def plot_profile(
 
         # shift figure to the right to make space for x-section and profiles
         fig.shift_origin(xshift=(fig_width / 10) + 1)
-
-    """
-    PLOT CROSS SECTION AND PROFILES
-    """
+    # PLOT CROSS SECTION AND PROFILES
     # add space above and below top and bottom x-section df_layers
     min = df_layers[df_layers.columns[3:]].min().min()
     max = df_layers[df_layers.columns[3:]].max().max()

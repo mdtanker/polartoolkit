@@ -276,16 +276,35 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="create_profile"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.create_profile">[docs]</a><span class="k">def</span> <span class="nf">create_profile</span><span class="p">(</span>
-    <span class="n">method</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">shp_num_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">shapefile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">shp_num_points</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">shapefile</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    function to create a pandas DataFrame of points</span>
-<span class="sd">    along a line with multiple methods</span>
+<span class="sd">    Create a pandas DataFrame of points along a line with multiple methods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method : str</span>
+<span class="sd">        Choose sampling method, either &quot;points&quot; or &quot;shapefile&quot;</span>
+<span class="sd">    start :array, optional</span>
+<span class="sd">        Coordinates for starting point of profile, by default None</span>
+<span class="sd">    stop : array, optional</span>
+<span class="sd">        Coordinates for eding point of profile, by default None</span>
+<span class="sd">    num : int, optional</span>
+<span class="sd">        Number of points between start and stop, by default 100</span>
+<span class="sd">    shp_num_points : int, optional</span>
+<span class="sd">        Number of points to resample shapefile to, by default None</span>
+<span class="sd">    shapefile : str, optional</span>
+<span class="sd">        shapefile file name to create points along, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.Dataframe</span>
+<span class="sd">        Dataframe with &#39;x&#39;, &#39;y&#39;, and &#39;dist&#39; columns for points along line or shapefile path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">shapefile</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">shapefile</span> <span class="o">=</span> <span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">)</span>
@@ -337,13 +356,24 @@ title="Open an issue"
 
 <div class="viewcode-block" id="sample_grids"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.sample_grids">[docs]</a><span class="k">def</span> <span class="nf">sample_grids</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    function to sample data at every point along a line</span>
-<span class="sd">    df: pandas DataFrame</span>
-<span class="sd">        should follow output of create_profile</span>
-<span class="sd">        first 3 columns in order are x, y, dist.</span>
-<span class="sd">    grid: str</span>
-<span class="sd">        grid file to be sampled.</span>
+<span class="sd">    Sample data at every point along a line</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (_type_): _description_</span>
+<span class="sd">        grid (_type_): _description_</span>
+<span class="sd">        name (_type_, optional): _description_. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># </span>
+    <span class="c1"># df: pandas DataFrame</span>
+    <span class="c1">#     should follow output of create_profile</span>
+    <span class="c1">#     first 3 columns in order are x, y, dist.</span>
+    <span class="c1"># grid: str</span>
+    <span class="c1">#     grid file to be sampled.</span>
+
     <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">grid</span>
 
@@ -353,28 +383,28 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<div class="viewcode-block" id="fill_nans"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.fill_nans">[docs]</a><span class="k">def</span> <span class="nf">fill_nans</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">fill_nans</span><span class="p">(</span>
     <span class="n">df</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    function to fill NaN&#39;s in sampled layer with values from above layer.</span>
-<span class="sd">    Ignores first 3 columns as they are assumed to by x, y, dist.</span>
-<span class="sd">    df: pandas DataFrame</span>
-<span class="sd">        should follow output of sample_grids</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># function to fill NaN&#39;s in sampled layer with values from above layer.</span>
+    <span class="c1"># Ignores first 3 columns as they are assumed to by x, y, dist.</span>
+    <span class="c1"># df: pandas DataFrame</span>
+    <span class="c1">#     should follow output of sample_grids</span>
+
     <span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">df</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="k">return</span> <span class="n">df</span></div>
+    <span class="k">return</span> <span class="n">df</span>
 
 
-<div class="viewcode-block" id="shorten"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.shorten">[docs]</a><span class="k">def</span> <span class="nf">shorten</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    function to shorten profile on either end and recalculate distance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">shorten</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">max_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  
+    <span class="c1"># function to shorten profile on either end and recalculate distance</span>
+ 
     <span class="k">if</span> <span class="n">max_dist</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">max_dist</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">min_dist</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
@@ -384,19 +414,19 @@ title="Open an issue"
         <span class="p">(</span><span class="n">shortened</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">shortened</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="o">+</span> <span class="p">(</span><span class="n">shortened</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">shortened</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">shortened</span></div>
+    <span class="k">return</span> <span class="n">shortened</span>
 
 
-<div class="viewcode-block" id="make_data_dict"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.make_data_dict">[docs]</a><span class="k">def</span> <span class="nf">make_data_dict</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    function to create dictionary for attributes of platting data</span>
-<span class="sd">    names, grids, and colors are list or 1-d arrays</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">make_data_dict</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+    
+    <span class="c1"># function to create dictionary for attributes of platting data</span>
+    <span class="c1"># names, grids, and colors are list or 1-d arrays</span>
+    
     <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">j</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="n">grids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]}</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">data_dict</span></div>
+    <span class="k">return</span> <span class="n">data_dict</span>
 
 
 <span class="k">def</span> <span class="nf">default_layers</span><span class="p">():</span>
@@ -446,7 +476,7 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">data_dict</span>
 
 
-<div class="viewcode-block" id="plot_profile"><a class="viewcode-back" href="../../api.html#antarctic_plots.profile.plot_profile">[docs]</a><span class="k">def</span> <span class="nf">plot_profile</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -466,14 +496,14 @@ title="Open an issue"
     <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to plot cross section of earth layers and optionally</span>
-<span class="sd">    add a plot of data along the same line. Optionally can plot</span>
-<span class="sd">    the line location on a map with an input grid for the background.</span>
-<span class="sd">    data_dict: nested dictionary of format {&#39;name&#39;: {&#39;name&#39;:str},</span>
-<span class="sd">                                                    {&#39;grid&#39;: xarray.DataArray},</span>
-<span class="sd">                                                    {&#39;color&#39;: str},}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Function to plot cross section of earth layers and optionally</span>
+    <span class="c1"># add a plot of data along the same line. Optionally can plot</span>
+    <span class="c1"># the line location on a map with an input grid for the background.</span>
+    <span class="c1"># data_dict: nested dictionary of format {&#39;name&#39;: {&#39;name&#39;:str},</span>
+    <span class="c1">#                                                 {&#39;grid&#39;: xarray.DataArray},</span>
+    <span class="c1">#                                                 {&#39;color&#39;: str},}</span>
+    
     <span class="c1"># determine where to sample the grids</span>
     <span class="n">points</span> <span class="o">=</span> <span class="n">create_profile</span><span class="p">(</span>
         <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
@@ -694,7 +724,7 @@ title="Open an issue"
     <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">save</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 
               </div>

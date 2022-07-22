@@ -275,22 +275,29 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">pyproj</span> <span class="kn">import</span> <span class="n">Transformer</span>
 
-
 <div class="viewcode-block" id="get_grid_info"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.get_grid_info">[docs]</a><span class="k">def</span> <span class="nf">get_grid_info</span><span class="p">(</span><span class="n">grid</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to return spacing and region from grid.grid</span>
-<span class="sd">    returns tuple of spacing (int) and region (1x4 array)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="c1"># Returns the spacing and region of an input grid.</span>
+
+    <span class="c1"># :param grid: input grid to get info from.</span>
+    <span class="c1"># :type grid: str or xarray.DataArray</span>
+    <span class="c1"># :return: a tuple of spacing and region as strings</span>
+    <span class="c1"># :rtype: tuple</span>
+
     <span class="n">spacing</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">grdinfo</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">per_column</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="mi">7</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">region</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">pygmt</span><span class="o">.</span><span class="n">grdinfo</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">per_column</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="n">i</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
     <span class="k">return</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">region</span></div>
 
 
 <div class="viewcode-block" id="dd2dms"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.dd2dms">[docs]</a><span class="k">def</span> <span class="nf">dd2dms</span><span class="p">(</span><span class="n">dd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to convert decimal degrees to minutes, seconds.</span>
-<span class="sd">    Modified from https://stackoverflow.com/a/10286690/18686384</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="c1"># Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384</span>
+
+    <span class="c1"># :param dd: decimal degree input</span>
+    <span class="c1"># :type dd: float</span>
+    <span class="c1"># :return: degrees in format D:M:S</span>
+    <span class="c1"># :rtype: str</span>
+   
     <span class="n">is_positive</span> <span class="o">=</span> <span class="n">dd</span> <span class="o">&gt;=</span> <span class="mi">0</span>
     <span class="n">dd</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
     <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">dd</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
@@ -305,14 +312,21 @@ title="Open an issue"
     <span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">],</span>
     <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to convert coordinates from EPSG:4326 WGS84 in decimal degrees to</span>
-<span class="sd">    EPSG:3031 Antarctic Polar Stereographic in meters.</span>
-<span class="sd">    default input dataframe columns are &#39;lon&#39; and &#39;lat&#39;</span>
-<span class="sd">    default output dataframe columns are &#39;x&#39; and &#39;y&#39;</span>
-<span class="sd">    default returns a dataframe with x, y, lat, and lon</span>
-<span class="sd">    if reg=True, returns a region in format [e, w, n, s]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+  
+    <span class="c1"># Convert coordinates from EPSG:4326 WGS84 in decimal degrees to</span>
+    <span class="c1"># EPSG:3031 Antarctic Polar Stereographic in meters.</span>
+
+    <span class="c1"># :param df: input dataframe with columns (&#39;lon&#39;, &#39;lat) or (&#39;x&#39;,&#39;y&#39;)</span>
+    <span class="c1"># :type df: pandas.DataFrame</span>
+    <span class="c1"># :param reg: if true, returns a GMT formatted region strings, defaults to False</span>
+    <span class="c1"># :type reg: bool, optional</span>
+    <span class="c1"># :param input: set names for input columns, defaults to [&quot;lon&quot;, &quot;lat&quot;]</span>
+    <span class="c1"># :type input: list, optional</span>
+    <span class="c1"># :param output: set names for output columns, defaults to [&quot;x&quot;, &quot;y&quot;]</span>
+    <span class="c1"># :type output: list, optional</span>
+    <span class="c1"># :return: output dataframe with converted coordinate columns</span>
+    <span class="c1"># :rtype: pandas.DataFrame</span>
+   
     <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span> <span class="s2">&quot;epsg:3031&quot;</span><span class="p">)</span>
     <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
         <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -328,14 +342,14 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="epsg3031_to_latlon"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.epsg3031_to_latlon">[docs]</a><span class="k">def</span> <span class="nf">epsg3031_to_latlon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">reg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to</span>
-<span class="sd">    EPSG:4326 WGS84 in decimal degrees.</span>
-<span class="sd">    default input dataframe columns are &#39;x&#39; and &#39;y&#39;</span>
-<span class="sd">    default output dataframe columns are &#39;lon&#39; and &#39;lat&#39;</span>
-<span class="sd">    default returns a dataframe with x, y, lat, and lon</span>
-<span class="sd">    if reg=True, returns a region in format [e, w, n, s]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Function to convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to</span>
+    <span class="c1"># EPSG:4326 WGS84 in decimal degrees.</span>
+    <span class="c1"># default input dataframe columns are &#39;x&#39; and &#39;y&#39;</span>
+    <span class="c1"># default output dataframe columns are &#39;lon&#39; and &#39;lat&#39;</span>
+    <span class="c1"># default returns a dataframe with x, y, lat, and lon</span>
+    <span class="c1"># if reg=True, returns a region in format [e, w, n, s]</span>
+
     <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="s2">&quot;epsg:3031&quot;</span><span class="p">,</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">)</span>
     <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">df</span><span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
         <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -351,11 +365,11 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="reg_str_to_df"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.reg_str_to_df">[docs]</a><span class="k">def</span> <span class="nf">reg_str_to_df</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to convert GMT region string [e, w, n, s] to pandas dataframe with 4 coordinates</span>
-<span class="sd">    input: array of 4 strings.</span>
-<span class="sd">    names: defauts to &#39;x&#39;, &#39;y&#39;, output df column names</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Function to convert GMT region string [e, w, n, s] to pandas dataframe with 4 coordinates</span>
+    <span class="c1"># input: array of 4 strings.</span>
+    <span class="c1"># names: defauts to &#39;x&#39;, &#39;y&#39;, output df column names</span>
+
     <span class="n">bl</span> <span class="o">=</span> <span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">br</span> <span class="o">=</span> <span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">tl</span> <span class="o">=</span> <span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
@@ -365,10 +379,10 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="GMT_reg_xy_to_ll"><a class="viewcode-back" href="../../api.html#antarctic_plots.utils.GMT_reg_xy_to_ll">[docs]</a><span class="k">def</span> <span class="nf">GMT_reg_xy_to_ll</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec</span>
-<span class="sd">    input: array of 4 strings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="c1"># Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec</span>
+    <span class="c1"># input: array of 4 strings.</span>
+   
     <span class="n">df</span> <span class="o">=</span> <span class="n">reg_str_to_df</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
     <span class="n">df_proj</span> <span class="o">=</span> <span class="n">epsg3031_to_latlon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">reg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">dd2dms</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df_proj</span><span class="p">]</span>
@@ -385,16 +399,16 @@ title="Open an issue"
     <span class="n">masked</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:3031&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to create a mask or a masked grid from area inside or outside of a shapefile.</span>
-<span class="sd">    shapefile: str; path to .shp filename.</span>
-<span class="sd">    invert: bool; mask inside or outside of shapefile, defaults to True.</span>
-<span class="sd">    xr_grid: xarray.DataArray(); to use to define region, or to mask.</span>
-<span class="sd">    grid_gile: str; path to a .nc grid file to use to define region or to mask.</span>
-<span class="sd">    region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]</span>
-<span class="sd">    spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.</span>
-<span class="sd">    crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Function to create a mask or a masked grid from area inside or outside of a shapefile.</span>
+    <span class="c1"># shapefile: str; path to .shp filename.</span>
+    <span class="c1"># invert: bool; mask inside or outside of shapefile, defaults to True.</span>
+    <span class="c1"># xr_grid: xarray.DataArray(); to use to define region, or to mask.</span>
+    <span class="c1"># grid_gile: str; path to a .nc grid file to use to define region or to mask.</span>
+    <span class="c1"># region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]</span>
+    <span class="c1"># spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.</span>
+    <span class="c1"># crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code</span>
+  
     <span class="n">shp</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">shapefile</span><span class="p">)</span><span class="o">.</span><span class="n">geometry</span>
     <span class="k">if</span> <span class="n">xr_grid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">grid_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">vd</span><span class="o">.</span><span class="n">grid_coordinates</span><span class="p">(</span>
@@ -430,9 +444,21 @@ title="Open an issue"
     <span class="n">grd2cpt_name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">origin_shift</span><span class="o">=</span><span class="s2">&quot;initialize&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Function to automate PyGMT plotting</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+  
+    <span class="c1"># Function to automate PyGMT plotting</span>
+
+    <span class="c1"># Args:</span>
+    <span class="c1">#     grid (_type_): _description_</span>
+    <span class="c1">#     cmap (str): _description_</span>
+    <span class="c1">#     cbar_label (str): _description_</span>
+    <span class="c1">#     plot_region (_type_, optional): _description_. Defaults to None.</span>
+    <span class="c1">#     cmap_region (_type_, optional): _description_. Defaults to None.</span>
+    <span class="c1">#     coast (bool, optional): _description_. Defaults to False.</span>
+    <span class="c1">#     constraints (bool, optional): _description_. Defaults to False.</span>
+    <span class="c1">#     grd2cpt_name (bool, optional): _description_. Defaults to False.</span>
+    <span class="c1">#     origin_shift (str, optional): _description_. Defaults to &quot;initialize&quot;.</span>
+ 
+
     <span class="kn">import</span> <span class="nn">warnings</span>
 
     <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;pandas.Int64Index&quot;</span><span class="p">)</span>

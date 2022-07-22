@@ -14,26 +14,29 @@ import xarray as xr
 from pyproj import Transformer
 
 def get_grid_info(grid):
-    """Returns the spacing and region of an input grid.
+   
+    # Returns the spacing and region of an input grid.
 
-    :param grid: input grid to get info from.
-    :type grid: str or xarray.DataArray
-    :return: a tuple of spacing and region as strings
-    :rtype: tuple
-    """
+    # :param grid: input grid to get info from.
+    # :type grid: str or xarray.DataArray
+    # :return: a tuple of spacing and region as strings
+    # :rtype: tuple
+
     spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
     region = [int(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
     return spacing, region
 
 
 def dd2dms(dd):
-    """Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384
 
-    :param dd: decimal degree input
-    :type dd: float
-    :return: degrees in format D:M:S
-    :rtype: str
-    """
+   
+    # Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384
+
+    # :param dd: decimal degree input
+    # :type dd: float
+    # :return: degrees in format D:M:S
+    # :rtype: str
+   
     is_positive = dd >= 0
     dd = abs(dd)
     minutes, seconds = divmod(dd * 3600, 60)
@@ -48,20 +51,21 @@ def latlon_to_epsg3031(
     input=["lon", "lat"],
     output=["x", "y"],
 ):
-    """Convert coordinates from EPSG:4326 WGS84 in decimal degrees to
-    EPSG:3031 Antarctic Polar Stereographic in meters.
+  
+    # Convert coordinates from EPSG:4326 WGS84 in decimal degrees to
+    # EPSG:3031 Antarctic Polar Stereographic in meters.
 
-    :param df: input dataframe with columns ('lon', 'lat) or ('x','y')
-    :type df: pandas.DataFrame
-    :param reg: if true, returns a GMT formatted region strings, defaults to False
-    :type reg: bool, optional
-    :param input: set names for input columns, defaults to ["lon", "lat"]
-    :type input: list, optional
-    :param output: set names for output columns, defaults to ["x", "y"]
-    :type output: list, optional
-    :return: output dataframe with converted coordinate columns
-    :rtype: pandas.DataFrame
-    """
+    # :param df: input dataframe with columns ('lon', 'lat) or ('x','y')
+    # :type df: pandas.DataFrame
+    # :param reg: if true, returns a GMT formatted region strings, defaults to False
+    # :type reg: bool, optional
+    # :param input: set names for input columns, defaults to ["lon", "lat"]
+    # :type input: list, optional
+    # :param output: set names for output columns, defaults to ["x", "y"]
+    # :type output: list, optional
+    # :return: output dataframe with converted coordinate columns
+    # :rtype: pandas.DataFrame
+   
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df[output[0]], df[output[1]] = transformer.transform(
         df[input[1]].tolist(), df[input[0]].tolist()
@@ -114,10 +118,10 @@ def reg_str_to_df(input, names=["x", "y"]):
 
 
 def GMT_reg_xy_to_ll(input):
-    """
-    Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
-    input: array of 4 strings.
-    """
+   
+    # Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
+    # input: array of 4 strings.
+   
     df = reg_str_to_df(input)
     df_proj = epsg3031_to_latlon(df, reg=True)
     output = [dd2dms(x) for x in df_proj]
@@ -134,16 +138,16 @@ def mask_from_shp(
     masked=False,
     crs="epsg:3031",
 ):
-    """
-    Function to create a mask or a masked grid from area inside or outside of a shapefile.
-    shapefile: str; path to .shp filename.
-    invert: bool; mask inside or outside of shapefile, defaults to True.
-    xr_grid: xarray.DataArray(); to use to define region, or to mask.
-    grid_gile: str; path to a .nc grid file to use to define region or to mask.
-    region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]
-    spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.
-    crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code
-    """
+    
+    # Function to create a mask or a masked grid from area inside or outside of a shapefile.
+    # shapefile: str; path to .shp filename.
+    # invert: bool; mask inside or outside of shapefile, defaults to True.
+    # xr_grid: xarray.DataArray(); to use to define region, or to mask.
+    # grid_gile: str; path to a .nc grid file to use to define region or to mask.
+    # region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]
+    # spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.
+    # crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code
+  
     shp = gpd.read_file(shapefile).geometry
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
@@ -179,27 +183,21 @@ def plot_grd(
     grd2cpt_name=False,
     origin_shift="initialize",
 ):
-    """Function to automate PyGMT plotting
+  
+    # Function to automate PyGMT plotting
 
-    :param grid: _description_
-    :type grid: _type_
-    :param cmap: _description_
-    :type cmap: str
-    :param cbar_label: _description_
-    :type cbar_label: str
-    :param plot_region: _description_, defaults to None
-    :type plot_region: _type_, optional
-    :param cmap_region: _description_, defaults to None
-    :type cmap_region: _type_, optional
-    :param coast: _description_, defaults to False
-    :type coast: bool, optional
-    :param constraints: _description_, defaults to False
-    :type constraints: bool, optional
-    :param grd2cpt_name: _description_, defaults to False
-    :type grd2cpt_name: bool, optional
-    :param origin_shift: _description_, defaults to "initialize"
-    :type origin_shift: str, optional
-    """
+    # Args:
+    #     grid (_type_): _description_
+    #     cmap (str): _description_
+    #     cbar_label (str): _description_
+    #     plot_region (_type_, optional): _description_. Defaults to None.
+    #     cmap_region (_type_, optional): _description_. Defaults to None.
+    #     coast (bool, optional): _description_. Defaults to False.
+    #     constraints (bool, optional): _description_. Defaults to False.
+    #     grd2cpt_name (bool, optional): _description_. Defaults to False.
+    #     origin_shift (str, optional): _description_. Defaults to "initialize".
+ 
+
     import warnings
 
     warnings.filterwarnings("ignore", message="pandas.Int64Index")

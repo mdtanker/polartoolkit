@@ -236,7 +236,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/api.md"
+        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/api.rst"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -264,7 +264,7 @@ title="Edit this page"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="_sources/api.md"
+        <a href="_sources/api.rst"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -275,7 +275,7 @@ title="Download source file"
 <span class="headerbtn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.md</span>
+<span class="headerbtn__text-container">.rst</span>
 </a>
 
       </li>
@@ -325,17 +325,17 @@ title="Print to PDF"
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.profile">
-   antarctic_plots.profile
+   Profile
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.fetch">
-   antarctic_plots.fetch
+   Fetch
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.utils">
-   antarctic_plots.utils
+   Utils
   </a>
  </li>
 </ul>
@@ -359,17 +359,17 @@ title="Print to PDF"
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.profile">
-   antarctic_plots.profile
+   Profile
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.fetch">
-   antarctic_plots.fetch
+   Fetch
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.utils">
-   antarctic_plots.utils
+   Utils
   </a>
  </li>
 </ul>
@@ -382,231 +382,170 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="api-reference">
+  <section id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">#</a></h1>
 <section id="module-antarctic_plots.profile">
-<span id="antarctic-plots-profile"></span><h2>antarctic_plots.profile<a class="headerlink" href="#module-antarctic_plots.profile" title="Permalink to this headline">#</a></h2>
+<span id="profile"></span><h2>Profile<a class="headerlink" href="#module-antarctic_plots.profile" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.create_profile">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">create_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#create_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.create_profile" title="Permalink to this definition">#</a></dt>
-<dd><p>function to create a pandas DataFrame of points
-along a line with multiple methods</p>
+<span class="sig-name descname"><span class="pre">create_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#create_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.create_profile" title="Permalink to this definition">#</a></dt>
+<dd><p>Create a pandas DataFrame of points along a line with multiple methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>str</em>) – Choose sampling method, either “points” or “shapefile”</p></li>
+<li><p><strong>start</strong> (<em>array</em><em>, </em><em>optional</em>) – Coordinates for starting point of profile, by default None</p></li>
+<li><p><strong>stop</strong> (<em>array</em><em>, </em><em>optional</em>) – Coordinates for eding point of profile, by default None</p></li>
+<li><p><strong>num</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points between start and stop, by default 100</p></li>
+<li><p><strong>shp_num_points</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points to resample shapefile to, by default None</p></li>
+<li><p><strong>shapefile</strong> (<em>str</em><em>, </em><em>optional</em>) – shapefile file name to create points along, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dataframe with ‘x’, ‘y’, and ‘dist’ columns for points along line or shapefile path.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Dataframe</p>
+</dd>
+</dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.profile.default_data">
+<span class="sig-name descname"><span class="pre">default_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#default_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.default_data" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.profile.default_layers">
+<span class="sig-name descname"><span class="pre">default_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#default_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.default_layers" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.fill_nans">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">fill_nans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#fill_nans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.fill_nans" title="Permalink to this definition">#</a></dt>
-<dd><p>function to fill NaN’s in sampled layer with values from above layer.
-Ignores first 3 columns as they are assumed to by x, y, dist.
-df: pandas DataFrame</p>
-<blockquote>
-<div><p>should follow output of sample_grids</p>
-</div></blockquote>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">fill_nans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#fill_nans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.fill_nans" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.make_data_dict">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">make_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#make_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.make_data_dict" title="Permalink to this definition">#</a></dt>
-<dd><p>function to create dictionary for attributes of platting data
-names, grids, and colors are list or 1-d arrays</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">make_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#make_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.make_data_dict" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.plot_profile">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillnans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_perc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\48e7e250f03777eeea6460a4c74cf317-tiff_90pct.zip.unzip\\tiff_90pct\\00000-20080319-092059124.tif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'earth'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#plot_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.plot_profile" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to plot cross section of earth layers and optionally
-add a plot of data along the same line. Optionally can plot
-the line location on a map with an input grid for the background.
-data_dict: nested dictionary of format {‘name’: {‘name’:str},</p>
-<blockquote>
-<div><p>{‘grid’: xarray.DataArray},
-{‘color’: str},}</p>
-</div></blockquote>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillnans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_perc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\48e7e250f03777eeea6460a4c74cf317-tiff_90pct.zip.unzip\\tiff_90pct\\00000-20080319-092059124.tif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'earth'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#plot_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.plot_profile" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.sample_grids">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">sample_grids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#sample_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.sample_grids" title="Permalink to this definition">#</a></dt>
-<dd><p>function to sample data at every point along a line
-df: pandas DataFrame</p>
-<blockquote>
-<div><p>should follow output of create_profile
-first 3 columns in order are x, y, dist.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>grid: str</dt><dd><p>grid file to be sampled.</p>
+<span class="sig-name descname"><span class="pre">sample_grids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#sample_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.sample_grids" title="Permalink to this definition">#</a></dt>
+<dd><p>Sample data at every point along a line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>_type_</em>) – _description_</p></li>
+<li><p><strong>grid</strong> (<em>_type_</em>) – _description_</p></li>
+<li><p><strong>name</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>_type_</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.shorten">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.profile.</span></span><span class="sig-name descname"><span class="pre">shorten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#shorten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.shorten" title="Permalink to this definition">#</a></dt>
-<dd><p>function to shorten profile on either end and recalculate distance</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">shorten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#shorten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.shorten" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-antarctic_plots.fetch">
-<span id="antarctic-plots-fetch"></span><h2>antarctic_plots.fetch<a class="headerlink" href="#module-antarctic_plots.fetch" title="Permalink to this headline">#</a></h2>
+<span id="fetch"></span><h2>Fetch<a class="headerlink" href="#module-antarctic_plots.fetch" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.basement">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">basement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#basement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.basement" title="Permalink to this definition">#</a></dt>
-<dd><p>Offshore and sub-Ross Ice Shelf basement topography.
-from Tankersley et al. 2022: <a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371">https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371</a>
-offshore data from Lindeque et al. 2016: <a class="reference external" href="https://doi.org/10.1002/2016GC006401">https://doi.org/10.1002/2016GC006401</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">basement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#basement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.basement" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.bedmap2">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
-<dd><p>bedmap2 data, from <a class="reference external" href="https://doi.org/10.5194/tc-7-375-2013">https://doi.org/10.5194/tc-7-375-2013</a>.
-layer is one of following strings:</p>
-<blockquote>
-<div><p>‘thickness’, ‘bed’, ‘surface’, ‘geiod_to_WGS84’</p>
-</div></blockquote>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.deepbedmap">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">deepbedmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#deepbedmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.deepbedmap" title="Permalink to this definition">#</a></dt>
-<dd><p>DeepBedMap, from Leong and Horgan, 2020: <a class="reference external" href="https://doi.org/10.5194/tc-14-3687-2020">https://doi.org/10.5194/tc-14-3687-2020</a>
-Accessed from <a class="reference external" href="https://zenodo.org/record/4054246#.Ysy344RByp0">https://zenodo.org/record/4054246#.Ysy344RByp0</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">deepbedmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#deepbedmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.deepbedmap" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.gravity">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">gravity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#gravity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.gravity" title="Permalink to this definition">#</a></dt>
-<dd><p>Preliminary compilation of Antarctica gravity and gravity gradient data.
-Updates on 2016 AntGG compilation.
-Accessed from <a class="reference external" href="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/">https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/</a>.
-type is either ‘FA’ or ‘BA’, for free-air and bouguer anomalies, respectively.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">gravity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#gravity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.gravity" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.groundingline">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">groundingline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#groundingline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.groundingline" title="Permalink to this definition">#</a></dt>
-<dd><p>Antarctic groundingline shape file, from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.819147">https://doi.pangaea.de/10.1594/PANGAEA.819147</a>
-Supplement to Depoorter et al. 2013: <a class="reference external" href="https://doi.org/10.1038/nature12567">https://doi.org/10.1038/nature12567</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">groundingline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#groundingline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.groundingline" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.imagery">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">imagery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#imagery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.imagery" title="Permalink to this definition">#</a></dt>
-<dd><p>Antarctic imagery from LIMA: <a class="reference external" href="https://lima.usgs.gov/fullcontinent.php">https://lima.usgs.gov/fullcontinent.php</a>
-will replace with below once figured out login issue with pooch</p>
-<blockquote>
-<div><p>MODIS Mosaic of Antarctica: <a class="reference external" href="https://doi.org/10.5067/68TBT0CGJSOJ">https://doi.org/10.5067/68TBT0CGJSOJ</a></p>
-</div></blockquote>
-<p>Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/">https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">imagery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#imagery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.imagery" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.magnetics">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">magnetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#magnetics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.magnetics" title="Permalink to this definition">#</a></dt>
-<dd><dl class="simple">
-<dt>version, one of following strings:</dt><dd><p>‘admap2’, ‘admap1’, ‘admap2_eq_src’, ‘admap2_gdb’</p>
-</dd>
-</dl>
-<p>1)
-ADMAP2 magnetic anomaly compilation of Antarctica.
-Non-geosoft specific files provide from Sasha Golynsky.
-2)
-ADMAP-2001 magnetic anomaly compilation of Antarctica.
-<a class="reference external" href="https://admap.kongju.ac.kr/databases.html">https://admap.kongju.ac.kr/databases.html</a>
-3)
-ADMAP2 eqivalent sources, from <a class="reference external" href="https://admap.kongju.ac.kr/admapdata/">https://admap.kongju.ac.kr/admapdata/</a>
-4)
-Geosoft-specific .gdb abridged files.
-Accessed from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download">https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">magnetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#magnetics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.magnetics" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.sample_shp">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.fetch.</span></span><span class="sig-name descname"><span class="pre">sample_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#sample_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.sample_shp" title="Permalink to this definition">#</a></dt>
-<dd><p>load 1 of 2 sample shapefiles
-name =is either ‘Disco_deep_transect’ or ‘Roosevelt_Island’</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">sample_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#sample_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.sample_shp" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-antarctic_plots.utils">
-<span id="antarctic-plots-utils"></span><h2>antarctic_plots.utils<a class="headerlink" href="#module-antarctic_plots.utils" title="Permalink to this headline">#</a></h2>
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-antarctic_plots.utils" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.GMT_reg_xy_to_ll">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">GMT_reg_xy_to_ll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#GMT_reg_xy_to_ll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.GMT_reg_xy_to_ll" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
-input: array of 4 strings.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">GMT_reg_xy_to_ll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#GMT_reg_xy_to_ll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.GMT_reg_xy_to_ll" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.dd2dms">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">dd2dms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#dd2dms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.dd2dms" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to convert decimal degrees to minutes, seconds.
-Modified from <a class="reference external" href="https://stackoverflow.com/a/10286690/18686384">https://stackoverflow.com/a/10286690/18686384</a></p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">dd2dms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#dd2dms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.dd2dms" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.epsg3031_to_latlon">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">epsg3031_to_latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#epsg3031_to_latlon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.epsg3031_to_latlon" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
-EPSG:4326 WGS84 in decimal degrees.
-default input dataframe columns are ‘x’ and ‘y’
-default output dataframe columns are ‘lon’ and ‘lat’
-default returns a dataframe with x, y, lat, and lon
-if reg=True, returns a region in format [e, w, n, s]</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">epsg3031_to_latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#epsg3031_to_latlon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.epsg3031_to_latlon" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.get_grid_info">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">get_grid_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#get_grid_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.get_grid_info" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to return spacing and region from grid.grid
-returns tuple of spacing (int) and region (1x4 array)</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">get_grid_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#get_grid_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.get_grid_info" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.latlon_to_epsg3031">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">latlon_to_epsg3031</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#latlon_to_epsg3031"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.latlon_to_epsg3031" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to convert coordinates from EPSG:4326 WGS84 in decimal degrees to
-EPSG:3031 Antarctic Polar Stereographic in meters.
-default input dataframe columns are ‘lon’ and ‘lat’
-default output dataframe columns are ‘x’ and ‘y’
-default returns a dataframe with x, y, lat, and lon
-if reg=True, returns a region in format [e, w, n, s]</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">latlon_to_epsg3031</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#latlon_to_epsg3031"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.latlon_to_epsg3031" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.mask_from_shp">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">mask_from_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xr_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epsg:3031'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#mask_from_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.mask_from_shp" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to create a mask or a masked grid from area inside or outside of a shapefile.
-shapefile: str; path to .shp filename.
-invert: bool; mask inside or outside of shapefile, defaults to True.
-xr_grid: xarray.DataArray(); to use to define region, or to mask.
-grid_gile: str; path to a .nc grid file to use to define region or to mask.
-region: str or 1x4 array; use to make mock grid if no grids are supplied. GMT region string or 1x4 array [e,w,n,s]
-spacing: str or float; GMT spacing string or float to use to make a mock grid if none are supplied.
-crs: str; if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">mask_from_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xr_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epsg:3031'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#mask_from_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.mask_from_shp" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.plot_grd">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">plot_grd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grd2cpt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'initialize'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#plot_grd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.plot_grd" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to automate PyGMT plotting</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>cmap</strong> (<em>str</em>) – </p></li>
-<li><p><strong>cbar_label</strong> (<em>str</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">plot_grd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grd2cpt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'initialize'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#plot_grd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.plot_grd" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.reg_str_to_df">
-<span class="sig-prename descclassname"><span class="pre">antarctic_plots.utils.</span></span><span class="sig-name descname"><span class="pre">reg_str_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#reg_str_to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.reg_str_to_df" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to convert GMT region string [e, w, n, s] to pandas dataframe with 4 coordinates
-input: array of 4 strings.
-names: defauts to ‘x’, ‘y’, output df column names</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">reg_str_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#reg_str_to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.reg_str_to_df" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 </section>
