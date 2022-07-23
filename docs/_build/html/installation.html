@@ -116,12 +116,12 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="walkthrough.html">
-   Walkthrough
+   🚶 Walkthrough
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="tips.html">
-   Tips
+   ℹ️ Tips
   </a>
  </li>
  <li class="toctree-l1">
@@ -343,6 +343,28 @@ title="Print to PDF"
    To install the latest development version from Github:
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#to-build-the-docs-for-developers-only">
+   To build the docs (for developers only)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#format-and-check-all-the-code">
+     format and check all the code
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manually-build-the-docs">
+     Manually build the docs
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#automatically-build-the-docs">
+     Automatically build the docs
+    </a>
+   </li>
+  </ul>
+ </li>
 </ul>
 
     </nav>
@@ -376,6 +398,28 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#to-install-the-latest-development-version-from-github">
    To install the latest development version from Github:
   </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#to-build-the-docs-for-developers-only">
+   To build the docs (for developers only)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#format-and-check-all-the-code">
+     format and check all the code
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manually-build-the-docs">
+     Manually build the docs
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#automatically-build-the-docs">
+     Automatically build the docs
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -423,7 +467,43 @@ pip install -e .
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install ipykernel --update-deps --force-reinstall
 </pre></div>
 </div>
+</section>
+<section id="to-build-the-docs-for-developers-only">
+<h2>To build the docs (for developers only)<a class="headerlink" href="#to-build-the-docs-for-developers-only" title="Permalink to this headline">#</a></h2>
+<section id="format-and-check-all-the-code">
+<h3>format and check all the code<a class="headerlink" href="#format-and-check-all-the-code" title="Permalink to this headline">#</a></h3>
+<p>First run all the .ipynb so their results can be included in the docs.</p>
+<p>Then format and check the code with:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>make format
+make check
+</pre></div>
+</div>
+<p>Fix issues shown in make check.</p>
+</section>
+<section id="manually-build-the-docs">
+<h3>Manually build the docs<a class="headerlink" href="#manually-build-the-docs" title="Permalink to this headline">#</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>jupyter-book build docs/
+</pre></div>
+</div>
+<p>Open <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in docs/_build/html/ to view the docs</p>
+</section>
+<section id="automatically-build-the-docs">
+<h3>Automatically build the docs<a class="headerlink" href="#automatically-build-the-docs" title="Permalink to this headline">#</a></h3>
+<p>This uses the doc_requirements.txt included in the repository, which was create with the below code:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create --name doc_requirements python=3.9
+conda activate doc_requirements
+mamba install pytest flake8 isort jupyter-book 
+pip install black[jupyer]
+pip list --format=freeze &gt; doc_requirements.txt
+</pre></div>
+</div>
+<p>This should be included in the .readthedocs.yaml, so it should be the env RTD uses to build.
+Since <code class="docutils literal notranslate"><span class="pre">execute_notebooks:</span> <span class="pre">&quot;off&quot;</span></code> is set in _config.yml, RTD shouldn’t need any other packages installed to build.</p>
+<p>Add, commit, and push all changes to Github, and RTD should automatically build the docs</p>
 <!-- ## Older instructions
+
+
+
 ## install the dependencies seperately:
     
     mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
@@ -449,6 +529,7 @@ or with hashes
 
 pip install -e .
 conda install pygmt geopandas -->
+</section>
 </section>
 </section>
 

@@ -5,7 +5,6 @@ Profile
 --------
 .. automodule:: antarctic_plots.profile
     :members:
-    :undoc-members:
 
 Fetch
 --------

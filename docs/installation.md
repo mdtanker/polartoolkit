@@ -31,7 +31,56 @@ If you get an error related to traitlets run the following command as discuss [h
     conda install ipykernel --update-deps --force-reinstall
 
 
+## To build the docs (for developers only)
+### format and check all the code
+First run all the .ipynb so their results can be included in the docs.
+
+Then format and check the code with:
+
+    make format
+    make check
+
+Fix issues shown in make check.
+
+### Manually build the docs 
+
+    jupyter-book build docs/
+
+Open `index.html` in docs/_build/html/ to view the docs
+
+### Automatically build the docs 
+
+This uses the doc_requirements.txt included in the repository, which was create with the below code:
+
+    conda create --name doc_requirements python=3.9
+    conda activate doc_requirements
+    mamba install pytest flake8 isort jupyter-book 
+    pip install black[jupyer]
+    pip list --format=freeze > doc_requirements.txt
+
+This should be included in the .readthedocs.yaml, so it should be the env RTD uses to build.
+Since `execute_notebooks: "off"` is set in _config.yml, RTD shouldn't need any other packages installed to build.
+
+Add, commit, and push all changes to Github, and RTD should automatically build the docs
+
+### Need local install to build
+
+    conda create --name ant_plots_build --clone doc_requirements
+    conda activate ant_plots_build
+    conda install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas
+
+Export to requirements.txt
+    
+    pip list --format=freeze > requirements.txt
+
+Add them to poetry.lock file
+    cat requirements.txt | xargs poetry add
+    pip install -r requirements.txt
+
 <!-- ## Older instructions
+
+
+
 ## install the dependencies seperately:
     
     mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm

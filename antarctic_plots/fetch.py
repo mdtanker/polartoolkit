@@ -12,11 +12,20 @@ import xarray as xr
 from pyproj import Transformer
 
 
-def sample_shp(name):
+def sample_shp(name: str) -> str:
+    """
+    Load the file path of sample shapefiles
 
-    # load 1 of 2 sample shapefiles
-    # name =is either 'Disco_deep_transect' or 'Roosevelt_Island'
+    Parameters
+    ----------
+    name : str
+        chose which sample shapefile to load, either 'Disco_deep_transect' or 'Roosevelt_Island'
 
+    Returns
+    -------
+    str
+        file path as a string
+    """
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip",
         processor=pooch.Unzip(),
@@ -26,13 +35,18 @@ def sample_shp(name):
     return file
 
 
-def imagery():
+def imagery() -> str:
+    """
+    Load the file path of Antarctic imagery geotiff from LIMA: https://lima.usgs.gov/fullcontinent.php
+    will replace with below once figured out login issue with pooch
+    MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
+    Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
 
-    # Antarctic imagery from LIMA: https://lima.usgs.gov/fullcontinent.php
-    # will replace with below once figured out login issue with pooch
-    #  MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
-    # Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
-
+    Returns
+    -------
+    str
+        file path
+    """
     path = pooch.retrieve(
         # url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/moa750_2014_hp1_v01.tif",
         url="https://lima.usgs.gov/tiff_90pct.zip",
@@ -44,27 +58,46 @@ def imagery():
     return file
 
 
-def groundingline():
+def groundingline() -> str:
+    """
+    Load the file path of a groundingline shapefile
+    Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147
+    Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
 
-    # Antarctic groundingline shape file, from https://doi.pangaea.de/10.1594/PANGAEA.819147
-    # Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
-
+    Returns
+    -------
+    str
+        file path
+    """
     path = pooch.retrieve(
         url="https://doi.pangaea.de/10013/epic.42133.d001",
         known_hash=None,
         processor=pooch.Unzip(),
         progressbar=True,
-    )  # [3]
+    )
     file = [p for p in path if p.endswith(".shp")][0]
     return file
 
 
-def basement(plot=False, info=False):
+def basement(plot: bool = False, info: bool = False) -> xr.DataArray:
+    """
+    Load a grid of basement topography.
+    Offshore and sub-Ross Ice Shelf basement topography.
+    from Tankersley et al. 2022: https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
+    offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
 
-    # Offshore and sub-Ross Ice Shelf basement topography.
-    # from Tankersley et al. 2022: https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
-    # offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
+    Parameters
+    ----------
+    plot : bool, optional
+        plot the fetched grid, by default False
+    info : bool, optional
+        print info on the fetched grid, by default False
 
+    Returns
+    -------
+    xr.DataArray
+        dataarray of basement depths
+    """
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",
         known_hash=None,
@@ -78,9 +111,13 @@ def basement(plot=False, info=False):
     return grd
 
 
-def bedmap2(layer: str, plot=False, info=False):
+def bedmap2(
+    layer: str,
+    plot: bool = False,
+    info: bool = False,
+) -> xr.DataArray:
     """
-    Fetch bedmap2 data. Note, nan's in surface grid are set to 0.
+    Load bedmap2 data. Note, nan's in surface grid are set to 0.
     from https://doi.org/10.5194/tc-7-375-2013.
 
     Parameters
@@ -94,8 +131,8 @@ def bedmap2(layer: str, plot=False, info=False):
 
     Returns
     -------
-    xarray.DataArray
-        grid loaded into memory as an xarray.DataArray
+    xr.DataArray
+        Returns a bedmap2 grid
     """
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
@@ -115,10 +152,29 @@ def bedmap2(layer: str, plot=False, info=False):
     return grd
 
 
-def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
+def deepbedmap(
+    plot: bool = False, info: bool = False, region=None, spacing=10e3
+) -> xr.DataArray:
+    """
+    Load DeepBedMap data,  from Leong and Horgan, 2020: https://doi.org/10.5194/tc-14-3687-2020
+    Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0
 
-    # DeepBedMap, from Leong and Horgan, 2020: https://doi.org/10.5194/tc-14-3687-2020
-    # Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0
+    Parameters
+    ----------
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of DeepBedMap.
+    """
 
     if region == None:
         region = (-2700000, 2800000, -2200000, 2300000)
@@ -143,13 +199,33 @@ def deepbedmap(plot=False, info=False, region=None, spacing=10e3):
     return grd
 
 
-def gravity(type, plot=False, info=False, region=None, spacing=5e3):
+def gravity(
+    type: str, plot: bool = False, info: bool = False, region=None, spacing=10e3
+) -> xr.DataArray:
+    """
+    Loads an Antarctic gravity grid
+    Preliminary compilation of Antarctica gravity and gravity gradient data.
+    Updates on 2016 AntGG compilation.
+    Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
 
-    # Preliminary compilation of Antarctica gravity and gravity gradient data.
-    # Updates on 2016 AntGG compilation.
-    # Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
-    # type is either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+    Parameters
+    ----------
+    type : str
+        either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
 
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of either free-air or Bouguer gravity anomalies.
+    """
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     path = pooch.retrieve(
@@ -180,22 +256,41 @@ def gravity(type, plot=False, info=False, region=None, spacing=5e3):
     return grd
 
 
-def magnetics(version, plot=False, info=False, region=None, spacing=5e3):
+def magnetics(
+    version: str, plot: bool = False, info: bool = False, region=None, spacing=10e3
+) -> xr.DataArray:
+    """
+    Load 1 of 4 `versions` of Antarctic magnetic anomaly grid .
+    version='admap2'
+        ADMAP2 magnetic anomaly compilation of Antarctica.
+        Non-geosoft specific files provide from Sasha Golynsky.
+    version='admap1'
+        ADMAP-2001 magnetic anomaly compilation of Antarctica.
+        https://admap.kongju.ac.kr/databases.html
+    version='admap2_eq_src'
+        ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
+    version='admap2_gdb'
+        Geosoft-specific .gdb abridged files.
+        Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
-    # version, one of following strings:
-    #     'admap2', 'admap1', 'admap2_eq_src', 'admap2_gdb'
-    # 1)
-    # ADMAP2 magnetic anomaly compilation of Antarctica.
-    # Non-geosoft specific files provide from Sasha Golynsky.
-    # 2)
-    # ADMAP-2001 magnetic anomaly compilation of Antarctica.
-    # https://admap.kongju.ac.kr/databases.html
-    # 3)
-    # ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
-    # 4)
-    # Geosoft-specific .gdb abridged files.
-    # Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
+    Parameters
+    ----------
+    version : str
+        Either 'admap2', 'admap1', 'admap2_eq_src', or 'admap2_gdb'
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
 
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of magnetic anomalies.
+    """
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     if version == "admap2":
@@ -274,7 +369,7 @@ def magnetics(version, plot=False, info=False, region=None, spacing=5e3):
     return grd
 
 
-# def geothermal(plot=False, info=False):
+# def geothermal(plot=False, info=False)-> xr.DataArray:
 #
 #    # Mean geothermal heat flow from various models.
 #    # From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: current and future directions

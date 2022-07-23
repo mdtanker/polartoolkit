@@ -14,8 +14,6 @@ import verde as vd
 
 from antarctic_plots import fetch
 
-warnings.filterwarnings("ignore", message="Registry registered*")
-
 
 def create_profile(
     method: str,
@@ -152,7 +150,7 @@ def fill_nans(
 
 def shorten(df, max_dist=None, min_dist=None, **kwargs):
     """
-    _summary_
+    Shorten a dataframe at either end based on distance column.
 
     Parameters
     ----------
@@ -274,11 +272,51 @@ def default_data(region=None) -> dict:
 
 
 def plot_profile(
-    method,
-    layers_dict=None,
-    data_dict=None,
+    method: str,
+    layers_dict: dict = None,
+    data_dict: dict = None,
+    add_map: bool = False,
     **kwargs,
 ):
+    """
+    Show sampled layers and/or data on a cross section, with an optional location map.
+
+    Parameters
+    ----------
+    method : str
+        Choose the sample method, either 'points', or 'shapefile'.
+    layers_dict : dict, optional
+        nested dictionary of layers to include in cross-section, construct with `profile.make_data_dict`, by default is Bedmap2 layers.
+    data_dict : dict, optional
+        nested dictionary of data to include in option graph, construct with `profile.make_data_dict`, by default is gravity and magnetic anomalies.
+    add_map : bool = False
+        Choose whether to add a location map, by default is False.
+    Other Parameters
+    ----------------
+    fillnans: bool
+        Choose whether to fill nans in layers, defaults to True
+    clip: bool
+        Choose whether to clip the profile based on distance
+    max_dist: int
+        Clip all distances greater than.
+    min_dist: int
+        Clip all distances less than.
+    **kwargs : dict
+        map_background: str or xarray.DataArray
+            Change the map background by passing a filename string or grid, by default is imagery.
+        map_cmap: str
+            Change the map colorscale by passing a valid GMT cmap string, by default is 'earth'.
+        map_buffer: float (0-1)
+            Change map zoom as relative percentage of profile length, by default is 0.2
+        layer_buffer: float (0-1)
+            Change vertical white space within cross-section, by default is 0.1
+        data_buffer: float (0-1)
+            Change vertical white space within data graph, by default is 0.1
+        save: bool
+            Choose to save the image, by default is False
+        path: str
+            Filename for saving image, by default is None.
+    """
 
     points = create_profile(method, **kwargs)
 
@@ -315,7 +353,7 @@ def plot_profile(
 
     fig = pygmt.Figure()
 
-    if kwargs.get("add_map") == True:
+    if add_map == True:
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.2)
         e = df_layers.x.min() - buffer

@@ -8,7 +8,7 @@ chapters:
     file: installation
   - title: 🚶 Walkthrough
     file: walkthrough
-  - title: :information_source: Tips
+  - title: ℹ️ Tips
     file: tips
   - title: 📖 API reference
     file: api
