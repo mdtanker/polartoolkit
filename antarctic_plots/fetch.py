@@ -226,6 +226,7 @@ def gravity(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of either free-air or Bouguer gravity anomalies.
     """
+    
     if region == None:
         region = (-3330000, 3330000, -3330000, 3330000)
     path = pooch.retrieve(

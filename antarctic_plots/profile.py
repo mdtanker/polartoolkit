@@ -98,21 +98,21 @@ def create_profile(
 
 def sample_grids(df, grid, name: str = None):
     """
-     Sample data at every point along a line
+    Sample data at every point along a line
 
-     Parameters
-     ----------
-     df : pd.DataFrame
-         Dataframe containing columns 'x', 'y'
-     grid : str or xr.DataArray
-         Grid to sample, either file name or xr.DataArray
-     name : str, optional
-         Name for sampled column, by default is str(grid)
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns 'x', 'y'
+    grid : str or xr.DataArray
+        Grid to sample, either file name or xr.DataArray
+    name : str, optional
+        Name for sampled column, by default is str(grid)
 
-     Returns
-     -------
+    Returns
+    -------
     pd.DataFrame
-         Dataframe with new column (name) of sample values from (grid)
+        Dataframe with new column (name) of sample values from (grid)
     """
     if name == None:
         name = grid
