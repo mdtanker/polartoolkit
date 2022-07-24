@@ -261,18 +261,15 @@ def magnetics(
     version: str, plot: bool = False, info: bool = False, region=None, spacing=10e3
 ) -> xr.DataArray:
     """
-    Load 1 of 4 `versions` of Antarctic magnetic anomaly grid .
+    Load 1 of 4 'versions' of Antarctic magnetic anomaly grid.
     version='admap2'
-        ADMAP2 magnetic anomaly compilation of Antarctica.
-        Non-geosoft specific files provide from Sasha Golynsky.
+    ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files provide from Sasha Golynsky.
     version='admap1'
-        ADMAP-2001 magnetic anomaly compilation of Antarctica.
-        https://admap.kongju.ac.kr/databases.html
+    ADMAP-2001 magnetic anomaly compilation of Antarctica. https://admap.kongju.ac.kr/databases.html
     version='admap2_eq_src'
-        ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
+    ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
     version='admap2_gdb'
-        Geosoft-specific .gdb abridged files.
-        Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
+    Geosoft-specific .gdb abridged files. Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
     Parameters
     ----------
