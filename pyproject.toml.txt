@@ -2,21 +2,21 @@
 name = "antarctic_plots"
 version = "0.0.2"
 description = "Functions to automate Antarctic data visualization"
-authors = ["mdtanker <matt.d.tankersley@gmail.com>"]
+authors = ["Matt Tankersley <matt.d.tankersley@gmail.com>"]
 license = "MIT"
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 pandas = "^1.4.3"
 numpy = "^1.23.1"
 pooch = "^1.6.0"
-xarray = "^2022.6.0"
+xarray = "^2022.3.0"
 pyproj = "^3.3.1"
 verde = "^1.7.0"
 rioxarray = "^0.11.1"
 netCDF4 = "^1.6.0"
 pygmt = "^0.7.0"
-geopandas = "^0.11.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"

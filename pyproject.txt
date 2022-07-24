@@ -22,6 +22,22 @@ dependencies = [
     "pygmt",
     "geopandas",
 ]
+pandas
+numpy
+pooch
+xarray
+pyproj
+verde
+rioxarray
+netCDF4
+pygmt
+geopandas
+
+black
+pytest
+flake8
+isort
+jupyter-book
 
 [project.optional-dependencies]
 dev = [
