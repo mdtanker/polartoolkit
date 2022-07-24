@@ -53,7 +53,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Walkthrough" href="walkthrough.html" />
-    <link rel="prev" title="Antarctic-plots" href="intro.html" />
+    <link rel="prev" title="Antarctic-plots" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -103,7 +103,7 @@ const thebe_selector_output = ".output, .cell_output"
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
-                <a class="reference internal" href="intro.html">
+                <a class="reference internal" href="index.html">
                     Antarctic-plots
                 </a>
             </li>
@@ -363,6 +363,11 @@ title="Print to PDF"
      Automatically build the docs
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#need-local-install-to-build">
+     Need local install to build
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -417,6 +422,11 @@ title="Print to PDF"
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#automatically-build-the-docs">
      Automatically build the docs
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#need-local-install-to-build">
+     Need local install to build
     </a>
    </li>
   </ul>
@@ -500,6 +510,21 @@ pip list --format=freeze &gt; doc_requirements.txt
 <p>This should be included in the .readthedocs.yaml, so it should be the env RTD uses to build.
 Since <code class="docutils literal notranslate"><span class="pre">execute_notebooks:</span> <span class="pre">&quot;off&quot;</span></code> is set in _config.yml, RTD shouldn’t need any other packages installed to build.</p>
 <p>Add, commit, and push all changes to Github, and RTD should automatically build the docs</p>
+</section>
+<section id="need-local-install-to-build">
+<h3>Need local install to build<a class="headerlink" href="#need-local-install-to-build" title="Permalink to this headline">#</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create --name ant_plots_build --clone doc_requirements
+conda activate ant_plots_build
+conda install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas
+</pre></div>
+</div>
+<p>Export to requirements.txt</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip list --format=freeze &gt; requirements.txt
+</pre></div>
+</div>
+<p>Add them to poetry.lock file
+cat requirements.txt | xargs poetry add
+pip install -r requirements.txt</p>
 <!-- ## Older instructions
 
 
@@ -560,7 +585,7 @@ conda install pygmt geopandas -->
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="intro.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>

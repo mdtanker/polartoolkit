@@ -63,6 +63,20 @@ Since `execute_notebooks: "off"` is set in _config.yml, RTD shouldn't need any o
 
 Add, commit, and push all changes to Github, and RTD should automatically build the docs
 
+### Need local install to build
+
+    conda create --name ant_plots_build --clone doc_requirements
+    conda activate ant_plots_build
+    conda install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas
+
+Export to requirements.txt
+    
+    pip list --format=freeze > requirements.txt
+
+Add them to poetry.lock file
+    cat requirements.txt | xargs poetry add
+    pip install -r requirements.txt
+
 <!-- ## Older instructions
 
 

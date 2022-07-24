@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book # use book format, alternative is article
-root: intro # first page,
+root: index # first page,
 chapters:
   - title: ⬇️ Installation
     file: installation
