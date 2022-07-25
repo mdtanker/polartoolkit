@@ -1,5 +1,24 @@
 # Changelog
 
+## Release v0.0.3 
+
+### 💫 Highlights
+* Finally succeeded in building the docs!
+
+### 📖 Documentation
+
+* Added `make build-docs` to execute and overwrite .ipynb to use in docs, since `PyGMT` can't be included in dependencies and therefore RTD's can't execute the .ipynb's. 
+
+### ⛔ Maintenance
+
+* Closed [Issue #7](https://github.com/mdtanker/antarctic_plots/issues/7)
+
+### 🧑‍🤝‍🧑 Contributors
+
+[@mdtanker](https://github.com/mdtanker)
+
+---
+
 ## Release v0.0.2 
 
 ### 💫 Highlights
@@ -11,21 +30,16 @@
 
 * Added `Tips` for generating shapefiles and picking start/end points
 
-### 🚀 Features
-
-* 
-* 
-
-
 ### 📖 Documentation
 
-* 
-*
+* Re-wrote docstrings to follow `NumPy` format.
+* Added type-hints to docstrings.
 
 ### ⛔ Maintenance
 
-* 
-* 
+* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13)
+* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9)
+* Closed [Issue #2](https://github.com/mdtanker/antarctic_plots/issues/2)
 
 
 ### 🧑‍🤝‍🧑 Contributors

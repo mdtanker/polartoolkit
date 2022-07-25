@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "antarctic_plots"
-version = "0.0.2"
+version = "0.0.3"
 description = "Functions to automate Antarctic data visualization"
 readme = "README.md" 
 authors = ["mdtanker <matt.d.tankersley@gmail.com>"]

@@ -60,6 +60,7 @@ Follow all the above instructions for building the docs
 Increase the version number in `pyproject.toml`
 
 Then run the following:
+
     poetry shell
     make publish
 
