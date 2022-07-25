@@ -5,7 +5,6 @@ description = "Functions to automate Antarctic data visualization"
 authors = ["mdtanker <matt.d.tankersley@gmail.com>"]
 license = "MIT"
 homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
-packages = [{ include = "antarctic_plots"},]
 
 [tool.poetry.dependencies]
 python = "^3.9"
