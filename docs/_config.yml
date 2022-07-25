@@ -40,4 +40,4 @@ sphinx:
     - 'sphinx.ext.viewcode'
   config:
     add_module_names: False
-    autodoc_mock_imports: ["pygmt"]
+    autodoc_mock_imports: ["pygmt", "geopandas"]

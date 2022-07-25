@@ -21,7 +21,7 @@ Make a virtual env to install into:
     mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
 
-Install the package and PyGMT:
+Install the package and PyGMT/GeoPandas:
     make install
 
 Test the install by running the first few cells of `docs/walkthrough.ipynb`.

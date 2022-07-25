@@ -17,7 +17,7 @@ help:
 
 install:
 	pip install -e .
-	conda install pygmt
+	conda install pygmt geopandas
 
 test:
 	# Run a tmp folder to make sure the tests are run on the installed version
