@@ -1,6 +1,6 @@
 # Antarctic-plots
 Functions to automate Antarctic data visualization
-[![Jupyter Book Badge](https://jupyterbook.org/badge.svg)](<YOUR URL HERE>)
+[![Jupyter Book Badge](https://jupyterbook.org/badge.svg)](https://antarctic-plots.readthedocs.io/en/latest/index.html)
 
 ![](cover_fig.png)
 
