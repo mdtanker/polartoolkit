@@ -1,8 +1,8 @@
 # Contribution guide
 ## To build the docs
-The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included a C program (GMT) in a pip-installed package, `PyGMT` isn't included in the package dependencies, so `RTD` can't run the scripts which are part of the docs (i.e. `walkthrough.ipynb`). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
+The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included C programs (GMT and GDAL) in a pip-installed package, `PyGMT` and `GeoPandas` aren't included in the package dependencies, so `RTD` can't run the scripts which are part of the docs (i.e. `walkthrough.ipynb`). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
 
-We also use `Poetry` as a package manager, which also can't include `PyGMT`. To get around this, we will export the poetry venv, add PyGMT, run the .ipynb's for the docs, then build the docs.
+Additionally we use `Poetry` as a package manager, which also can't include `PyGMT` or `GeoPandas` successfully. To get around this, we will export the poetry venv, add `PyGMT` and `Geopandas`, run the .ipynb's for the docs, then build the docs.
 
 ### Set up a virtual environment
 
@@ -24,9 +24,9 @@ Install with pip in a conda/mamba env:
     mamba activate antarctic_plots
     pip install --no-deps -r requirements.txt
 
-Add PyGMT:
+Add PyGMT and GeoPandas:
 
-    mamba install pygmt
+    mamba install pygmt geopandas
 
 Add antarctic_plots in editable mode:
 
