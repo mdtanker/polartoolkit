@@ -2,7 +2,8 @@
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
-# This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 import warnings
 
@@ -45,7 +46,8 @@ def create_profile(
     Returns
     -------
     pd.Dataframe
-        Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile path.
+        Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile
+        path.
     """
     methods = ["points", "shapefile"]
     if method not in methods:
@@ -57,7 +59,7 @@ def create_profile(
             data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
         )
     elif method == "shapefile":
-        if shapefile == None:
+        if shapefile is None:
             raise ValueError(f"If method = {method}, need to provide a valid shapefile")
         shp = gpd.read_file(shapefile)
         df = pd.DataFrame()
@@ -114,7 +116,7 @@ def sample_grids(df, grid, name: str = None):
     pd.DataFrame
         Dataframe with new column (name) of sample values from (grid)
     """
-    if name == None:
+    if name is None:
         name = grid
 
     df[name] = (pygmt.grdtrack(points=df[["x", "y"]], grid=grid, newcolname=str(name)))[
@@ -166,9 +168,9 @@ def shorten(df, max_dist=None, min_dist=None, **kwargs):
     pd.DataFrame
         Shortened dataframe
     """
-    if max_dist == None:
+    if max_dist is None:
         max_dist = df.dist.max()
-    if min_dist == None:
+    if min_dist is None:
         min_dist = df.dist.min()
     shortened = df[(df.dist < max_dist) & (df.dist > min_dist)].copy()
     shortened["dist"] = np.sqrt(
@@ -248,7 +250,7 @@ def default_data(region=None) -> dict:
     dict[dict]
         Nested dictionary of data and attributes
     """
-    if region == None:
+    if region is None:
         region = (-3330000, 3330000, -3330000, 3330000)
     mag = fetch.magnetics(version="admap1", region=region, spacing=10e3)
     FA_grav = fetch.gravity("FA", region=region, spacing=10e3)
@@ -286,9 +288,11 @@ def plot_profile(
     method : str
         Choose the sample method, either 'points', or 'shapefile'.
     layers_dict : dict, optional
-        nested dictionary of layers to include in cross-section, construct with `profile.make_data_dict`, by default is Bedmap2 layers.
+        nested dictionary of layers to include in cross-section, construct with
+        `profile.make_data_dict`, by default is Bedmap2 layers.
     data_dict : dict, optional
-        nested dictionary of data to include in option graph, construct with `profile.make_data_dict`, by default is gravity and magnetic anomalies.
+        nested dictionary of data to include in option graph, construct with
+        `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
     Other Parameters
@@ -303,9 +307,11 @@ def plot_profile(
         Clip all distances less than.
     **kwargs : dict
         map_background: str or xarray.DataArray
-            Change the map background by passing a filename string or grid, by default is imagery.
+            Change the map background by passing a filename string or grid, by default
+            is imagery.
         map_cmap: str
-            Change the map colorscale by passing a valid GMT cmap string, by default is 'earth'.
+            Change the map colorscale by passing a valid GMT cmap string, by default is
+            'earth'.
         map_buffer: float (0-1)
             Change map zoom as relative percentage of profile length, by default is 0.2
         layer_buffer: float (0-1)
@@ -322,7 +328,7 @@ def plot_profile(
 
     data_region = vd.get_region((points.x, points.y))
 
-    if layers_dict == None:
+    if layers_dict is None:
         layers_dict = default_layers()
 
     if data_dict == "default":
@@ -333,7 +339,7 @@ def plot_profile(
         df_layers = sample_grids(points, v["grid"], name=v["name"])
 
     # fill layers with above layer's values
-    if kwargs.get("fillnans", True) == True:
+    if kwargs.get("fillnans", True) is True:
         df_layers = fill_nans(df_layers)
 
     if data_dict is not None:
@@ -342,7 +348,7 @@ def plot_profile(
             df_data = sample_grids(points, v["grid"], name=v["name"])
 
     # shorten profiles
-    if kwargs.get("clip") == True:
+    if kwargs.get("clip") is True:
         if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
             raise ValueError(
                 f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
@@ -353,7 +359,7 @@ def plot_profile(
 
     fig = pygmt.Figure()
 
-    if add_map == True:
+    if add_map is True:
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.2)
         e = df_layers.x.min() - buffer
@@ -526,7 +532,7 @@ def plot_profile(
 
     fig.show()
 
-    if kwargs.get("save") == True:
+    if kwargs.get("save") is True:
         if kwargs.get("path") is None:
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)

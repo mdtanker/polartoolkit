@@ -50,6 +50,7 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://antarctic-plots.readthedocs.io/en/latest/installation.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Walkthrough" href="walkthrough.html" />
@@ -132,6 +133,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="changelog.html">
    📆 Changelog
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   👷 Contribution guide
   </a>
  </li>
 </ul>
@@ -334,8 +340,8 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package">
-   install the package:
+  <a class="reference internal nav-link" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+   install the package and pygmt (latest stable release, see Contribution guide for installing the development version):
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -344,31 +350,9 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#to-build-the-docs-for-developers-only">
-   To build the docs (for developers only)
+  <a class="reference internal nav-link" href="#common-errors">
+   Common errors
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#format-and-check-all-the-code">
-     format and check all the code
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#manually-build-the-docs">
-     Manually build the docs
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#automatically-build-the-docs">
-     Automatically build the docs
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#need-local-install-to-build">
-     Need local install to build
-    </a>
-   </li>
-  </ul>
  </li>
 </ul>
 
@@ -395,8 +379,8 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package">
-   install the package:
+  <a class="reference internal nav-link" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+   install the package and pygmt (latest stable release, see Contribution guide for installing the development version):
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -405,31 +389,9 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#to-build-the-docs-for-developers-only">
-   To build the docs (for developers only)
+  <a class="reference internal nav-link" href="#common-errors">
+   Common errors
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#format-and-check-all-the-code">
-     format and check all the code
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#manually-build-the-docs">
-     Manually build the docs
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#automatically-build-the-docs">
-     Automatically build the docs
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#need-local-install-to-build">
-     Need local install to build
-    </a>
-   </li>
-  </ul>
  </li>
 </ul>
 
@@ -443,6 +405,7 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
+<p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> to be already installed (via conda for example) it can’t be included in the dependencies. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
 <p>Here I use mamba to install packages, but conda should work as well:</p>
 <section id="create-a-new-python-environment">
 <h2>Create a new python environment:<a class="headerlink" href="#create-a-new-python-environment" title="Permalink to this headline">#</a></h2>
@@ -451,17 +414,10 @@ mamba activate antarctic_plots
 </pre></div>
 </div>
 </section>
-<section id="install-the-package">
-<h2>install the package:<a class="headerlink" href="#install-the-package" title="Permalink to this headline">#</a></h2>
+<section id="install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+<h2>install the package and pygmt (latest stable release, see Contribution guide for installing the development version):<a class="headerlink" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version" title="Permalink to this headline">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install antarctic-plots
-</pre></div>
-</div>
-<p>This will install most of the dependencies, except for geopandas, which you’ll need to install seperately</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install geopandas
-</pre></div>
-</div>
-<p>You may need to re-install pygmt</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install pygmt
+mamba install pygmt
 </pre></div>
 </div>
 </section>
@@ -469,92 +425,21 @@ mamba activate antarctic_plots
 <h2>To install the latest development version from Github:<a class="headerlink" href="#to-install-the-latest-development-version-from-github" title="Permalink to this headline">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mdtanker/antarctic_plots.git
 cd antarctic_plots
-pip install -e .
 </pre></div>
 </div>
-<p>Test the install by running the first few cells of <a class="reference external" href="https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.ipynb">examples/examples.ipynb</a> or the equivalent <a class="reference external" href="https://github.com/mdtanker/antarctic_plots/blob/main/examples/examples.py">.py file</a></p>
-<p>If you get an error related to traitlets run the following command as discuss <a class="reference external" href="https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285">here</a>:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install ipykernel --update-deps --force-reinstall
-</pre></div>
-</div>
+<p>Make a virtual env to install into:
+mamba create –name antarctic_plots python=3.9
+mamba activate antarctic_plots</p>
+<p>Install the package and PyGMT:
+make install</p>
+<p>Test the install by running the first few cells of <code class="docutils literal notranslate"><span class="pre">docs/walkthrough.ipynb</span></code>.</p>
 </section>
-<section id="to-build-the-docs-for-developers-only">
-<h2>To build the docs (for developers only)<a class="headerlink" href="#to-build-the-docs-for-developers-only" title="Permalink to this headline">#</a></h2>
-<section id="format-and-check-all-the-code">
-<h3>format and check all the code<a class="headerlink" href="#format-and-check-all-the-code" title="Permalink to this headline">#</a></h3>
-<p>First run all the .ipynb so their results can be included in the docs.</p>
-<p>Then format and check the code with:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>make format
-make check
+<section id="common-errors">
+<h2>Common errors<a class="headerlink" href="#common-errors" title="Permalink to this headline">#</a></h2>
+<p>If you get an error related to traitlets run the following command as discussed <a class="reference external" href="https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285">here</a>:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install ipykernel --update-deps --force-reinstall
 </pre></div>
 </div>
-<p>Fix issues shown in make check.</p>
-</section>
-<section id="manually-build-the-docs">
-<h3>Manually build the docs<a class="headerlink" href="#manually-build-the-docs" title="Permalink to this headline">#</a></h3>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>jupyter-book build docs/
-</pre></div>
-</div>
-<p>Open <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in docs/_build/html/ to view the docs</p>
-</section>
-<section id="automatically-build-the-docs">
-<h3>Automatically build the docs<a class="headerlink" href="#automatically-build-the-docs" title="Permalink to this headline">#</a></h3>
-<p>This uses the doc_requirements.txt included in the repository, which was create with the below code:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create --name doc_requirements python=3.9
-conda activate doc_requirements
-mamba install pytest flake8 isort jupyter-book 
-pip install black[jupyer]
-pip list --format=freeze &gt; doc_requirements.txt
-</pre></div>
-</div>
-<p>This should be included in the .readthedocs.yaml, so it should be the env RTD uses to build.
-Since <code class="docutils literal notranslate"><span class="pre">execute_notebooks:</span> <span class="pre">&quot;off&quot;</span></code> is set in _config.yml, RTD shouldn’t need any other packages installed to build.</p>
-<p>Add, commit, and push all changes to Github, and RTD should automatically build the docs</p>
-</section>
-<section id="need-local-install-to-build">
-<h3>Need local install to build<a class="headerlink" href="#need-local-install-to-build" title="Permalink to this headline">#</a></h3>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create --name ant_plots_build --clone doc_requirements
-conda activate ant_plots_build
-conda install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas
-</pre></div>
-</div>
-<p>Export to requirements.txt</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip list --format=freeze &gt; requirements.txt
-</pre></div>
-</div>
-<p>Add them to poetry.lock file
-cat requirements.txt | xargs poetry add
-pip install -r requirements.txt</p>
-<!-- ## Older instructions
-
-
-
-## install the dependencies seperately:
-    
-    mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
-
-Optionally add ipykernel jupyterlab and notebook if you want to use iPython.
-
-## to import working env into poetry
-    mamba create --name antarctic_plots python=3.8
-    mamba activate antarctic_plots
-    mamba install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas black pytest flake8 isort jupyter-book
-    pip list --format=freeze > requirements.txt
-    cat requirements.txt | xargs poetry add
-    pip insteal -e . 
-
-## to get poetry to work
-without hashes
-    poetry export -f requirements.txt --output requirements.txt --dev --without-hashes
-    pip install -r requirements.txt
-
-or with hashes
-    poetry export -f requirements.txt --output requirements.txt --dev 
-    pip install --no-deps -r requirements.txt
-
-pip install -e .
-conda install pygmt geopandas -->
-</section>
 </section>
 </section>
 

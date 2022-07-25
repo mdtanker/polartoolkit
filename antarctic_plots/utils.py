@@ -2,13 +2,13 @@
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
-# This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pygmt
-import rioxarray
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
@@ -26,7 +26,8 @@ def get_grid_info(grid):
     Returns
     -------
     tuple
-        tuple, first item is a string of grid spacing, second item is an array with the region boundaries
+        tuple, first item is a string of grid spacing, second item is
+        an array with the region boundaries
     """
 
     spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
@@ -36,7 +37,8 @@ def get_grid_info(grid):
 
 def dd2dms(dd: float):
     """
-    Convert decimal degrees to minutes, seconds. Modified from https://stackoverflow.com/a/10286690/18686384
+    Convert decimal degrees to minutes, seconds. Modified from
+    https://stackoverflow.com/a/10286690/18686384
 
     Parameters
     ----------
@@ -63,7 +65,8 @@ def latlon_to_epsg3031(
     output=["x", "y"],
 ):
     """
-    Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic Polar Stereographic in meters.
+    Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
+    Polar Stereographic in meters.
 
     Parameters
     ----------
@@ -79,13 +82,14 @@ def latlon_to_epsg3031(
     Returns
     -------
     pd.DataFrame or np.ndarray
-        Updated dataframe with new easting and northing columns or np.ndarray in format [e, w, n, s]
+        Updated dataframe with new easting and northing columns or np.ndarray in format
+        [e, w, n, s]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
     df[output[0]], df[output[1]] = transformer.transform(
         df[input[1]].tolist(), df[input[0]].tolist()
     )
-    if reg == True:
+    if reg is True:
         df = [
             df[output[0]].min(),
             df[output[0]].max(),
@@ -97,7 +101,8 @@ def latlon_to_epsg3031(
 
 def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
     """
-        Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to EPSG:4326 WGS84 in decimal degrees.
+        Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+        EPSG:4326 WGS84 in decimal degrees.
 
     Parameters
     ----------
@@ -113,13 +118,14 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     Returns
     -------
     pd.DataFrame or np.ndarray
-        Updated dataframe with new latitude and longitude columns or np.ndarray in format [e, w, n, s]
+        Updated dataframe with new latitude and longitude columns or np.ndarray in
+        format [e, w, n, s]
     """
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
     df[output[1]], df[output[0]] = transformer.transform(
         df[input[1]].tolist(), df[input[0]].tolist()
     )
-    if reg == True:
+    if reg is True:
         df = [
             df[output[0]].min(),
             df[output[0]].max(),
@@ -131,7 +137,8 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
 
 def reg_str_to_df(input, names=["x", "y"]):
     """
-    Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of region corners
+    Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of
+    region corners
 
     Parameters
     ----------
@@ -143,7 +150,8 @@ def reg_str_to_df(input, names=["x", "y"]):
     Returns
     -------
     pd.DataFrame
-        Dataframe with easting and northing columns, and a row for each corner of the region.
+        Dataframe with easting and northing columns, and a row for each corner of the
+        region.
     """
     bl = (input[0], input[2])
     br = (input[1], input[2])
@@ -189,21 +197,27 @@ def mask_from_shp(
     Parameters
     ----------
     shapefile : str
-        path to .shp filename, must by in same directory as accompanying files : .shx, .prj, .dbf, should be a closed polygon file.
+        path to .shp filename, must by in same directory as accompanying files : .shx,
+        .prj, .dbf, should be a closed polygon file.
     invert : bool, optional
-        choose whether to mask data outside the shape (False) or inside the shape (True), by default True (masks inside of shape)
+        choose whether to mask data outside the shape (False) or inside the shape
+        (True), by default True (masks inside of shape)
     xr_grid : xarray.DataArray, optional
         _xarray.DataArray; to use to define region, or to mask, by default None
     grid_file : str, optional
         path to a .nc or .tif file to use to define region or to mask, by default None
     region : str or np.ndarray, optional
-        GMT region string or 1x4 ndarray in meters to create a dummy grid if none are supplied, by default None
+        GMT region string or 1x4 ndarray in meters to create a dummy grid if none are
+        supplied, by default None
     spacing : str or int, optional
-        grid spacing in meters to create a dummy grid if none are supplied, by default None
+        grid spacing in meters to create a dummy grid if none are supplied, by default
+        None
     masked : bool, optional
-        choose whether to return the masked grid (True) or the mask itself (False), by default False
+        choose whether to return the masked grid (True) or the mask itself (False), by
+        default False
     crs : str, optional
-        if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code, by default "epsg:3031"
+        if grid is provided, rasterio needs to assign a coordinate reference system via
+        an epsg code, by default "epsg:3031"
 
     Returns
     -------
@@ -227,102 +241,106 @@ def mask_from_shp(
     masked_grd = xds.rio.clip(shp.geometry, xds.rio.crs, drop=False, invert=invert)
     mask_grd = np.isfinite(masked_grd)
 
-    if masked == True:
+    if masked is True:
         output = masked_grd
-    elif masked == False:
+    elif masked is False:
         output = mask_grd
     return output
 
 
-def plot_grd(
-    grid,
-    cmap: str,
-    cbar_label: str,
-    plot_region=None,
-    cmap_region=None,
-    coast=False,
-    grd2cpt_name=False,
-    origin_shift="initialize",
-):
-    """
-    Function to automate PyGMT plotting
+# def plot_grd(
+#     grid,
+#     cmap: str,
+#     cbar_label: str,
+#     plot_region=None,
+#     cmap_region=None,
+#     coast=False,
+#     grd2cpt_name=False,
+#     origin_shift="initialize",
+# ):
+#     """
+#     Function to automate PyGMT plotting
 
-    Parameters
-    ----------
-    grid : str or xarray.DataArray
-        grid to plot.
-    cmap : str
-        GMT colorscale to use.
-    cbar_label : str
-        label to add to colorbar.
-    plot_region : str or np.ndarray, optional
-        GMT region to set map extent to, by default is entire Antarctic region
-    cmap_region : str or np.ndarray, optional
-        GMT region to define the color scale limits, by default is equal to plot_region
-    coast : bool, optional
-        choose to plot coastline and groundingline, by default False
-    grd2cpt_name : bool, optional
-        file name which will be given to a cpt create with pygmt.grd2cpt() and used in the plot, by default False
-    origin_shift : str, optional
-        choose whether to start a new figure:'initialize', create a new subplot to the right:'xshift', or create a new subplot above:'yshift', by default "initialize"
-    """
-    import warnings
+#     Parameters
+#     ----------
+#     grid : str or xarray.DataArray
+#         grid to plot.
+#     cmap : str
+#         GMT colorscale to use.
+#     cbar_label : str
+#         label to add to colorbar.
+#     plot_region : str or np.ndarray, optional
+#         GMT region to set map extent to, by default is entire Antarctic region
+#     cmap_region : str or np.ndarray, optional
+#         GMT region to define the color scale limits, by default is equal to
+#           plot_region
+#     coast : bool, optional
+#         choose to plot coastline and groundingline, by default False
+#     grd2cpt_name : bool, optional
+#         file name which will be given to a cpt create with pygmt.grd2cpt() and used in
+#         the plot, by default False
+#     origin_shift : str, optional
+#         choose whether to start a new figure:'initialize', create a new subplot to the
+#         right:'xshift', or create a new subplot above:'yshift', by default
+#           "initialize"
+#     """
+#     import warnings
 
-    warnings.filterwarnings("ignore", message="pandas.Int64Index")
-    warnings.filterwarnings("ignore", message="pandas.Float64Index")
+#     warnings.filterwarnings("ignore", message="pandas.Int64Index")
+#     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
-    global fig, projection
-    if plot_region is None:
-        plot_region = (-3330000, 3330000, -3330000, 3330000)
-    if cmap_region is None:
-        cmap_region = plot_region
+#     global fig, projection
+#     if plot_region is None:
+#         plot_region = (-3330000, 3330000, -3330000, 3330000)
+#     if cmap_region is None:
+#         cmap_region = plot_region
 
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-    elif origin_shift == "xshift":
-        fig.shift_origin(xshift=(fig_width + 2) / 10)
-    elif origin_shift == "yshift":
-        fig.shift_origin(yshift=(fig_height + 12) / 10)
+#     # initialize figure or shift for new subplot
+#     if origin_shift == "initialize":
+#         fig = pygmt.Figure()
+#     elif origin_shift == "xshift":
+#         fig.shift_origin(xshift=(fig_width + 2) / 10)
+#     elif origin_shift == "yshift":
+#         fig.shift_origin(yshift=(fig_height + 12) / 10)
 
-    # set cmap
-    if grd2cpt_name:
-        pygmt.grd2cpt(
-            cmap=cmap,
-            grid=grid,
-            region=cmap_region,
-            background=True,
-            continuous=True,
-            output=f"plotting/{grd2cpt_name}.cpt",
-        )
-        cmap = f"plotting/{grd2cpt_name}.cpt"
+#     # set cmap
+#     if grd2cpt_name:
+#         pygmt.grd2cpt(
+#             cmap=cmap,
+#             grid=grid,
+#             region=cmap_region,
+#             background=True,
+#             continuous=True,
+#             output=f"plotting/{grd2cpt_name}.cpt",
+#         )
+#         cmap = f"plotting/{grd2cpt_name}.cpt"
 
-    fig.grdimage(
-        grid=grid,
-        cmap=cmap,
-        projection=projection,
-        region=plot_region,
-        nan_transparent=True,
-        frame=["+gwhite"],
-    )
+#     fig.grdimage(
+#         grid=grid,
+#         cmap=cmap,
+#         projection=projection,
+#         region=plot_region,
+#         nan_transparent=True,
+#         frame=["+gwhite"],
+#     )
 
-    fig.colorbar(cmap=cmap, position="jBC+jTC+h", frame=f'x+l"{cbar_label}"')
+#     fig.colorbar(cmap=cmap, position="jBC+jTC+h", frame=f'x+l"{cbar_label}"')
 
-    if coast == True:
-        fig.plot(
-            projection=projection,
-            region=plot_region,
-            # data=gpd.read_file("plotting/GroundingLine_Antarctica_v02.shp"),
-            data=gpd.read_file(fetch.groundingline()),
-            pen="1.2p,black",
-            verbose="q",
-        )
+#     if coast == True:
+#         fig.plot(
+#             projection=projection,
+#             region=plot_region,
+#             # data=gpd.read_file("plotting/GroundingLine_Antarctica_v02.shp"),
+#             data=gpd.read_file(fetch.groundingline()),
+#             pen="1.2p,black",
+#             verbose="q",
+#         )
 
-    if plot_region == buffer_reg:
-        fig.plot(
-            x=[inv_reg[0], inv_reg[0], inv_reg[1], inv_reg[1], inv_reg[0]],
-            y=[inv_reg[2], inv_reg[3], inv_reg[3], inv_reg[2], inv_reg[2]],
-            pen="2p,black",
-            projection=projection,
-            region=plot_region,
-        )
+#     if plot_region == buffer_reg:
+#         fig.plot(
+#             x=[inv_reg[0], inv_reg[0], inv_reg[1], inv_reg[1], inv_reg[0]],
+#             y=[inv_reg[2], inv_reg[3], inv_reg[3], inv_reg[2], inv_reg[2]],
+#             pen="2p,black",
+#             projection=projection,
+#             region=plot_region,
+#         )

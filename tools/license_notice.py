@@ -2,7 +2,8 @@
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
-# This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 """
 Add license notice to every source file if not present
@@ -22,7 +23,8 @@ NOTICE = f"""
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
-# This code is part of the package: Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 """.strip()
 CHECK_HELP = """

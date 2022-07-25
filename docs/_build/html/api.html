@@ -50,6 +50,7 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://antarctic-plots.readthedocs.io/en/latest/api.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
@@ -132,6 +133,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="changelog.html">
    📆 Changelog
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   👷 Contribution guide
   </a>
  </li>
 </ul>
@@ -407,7 +413,8 @@ title="Print to PDF"
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Dataframe with ‘x’, ‘y’, and ‘dist’ columns for points along line or shapefile path.</p>
+<dd class="field-even"><p>Dataframe with ‘x’, ‘y’, and ‘dist’ columns for points along line or shapefile
+path.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pd.Dataframe</p>
@@ -492,17 +499,21 @@ title="Print to PDF"
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> (<em>str</em>) – Choose the sample method, either ‘points’, or ‘shapefile’.</p></li>
-<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with <cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
-<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with <cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
+<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with
+<cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
+<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with
+<cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
 <li><p><strong>add_map</strong> (<em>bool = False</em>) – Choose whether to add a location map, by default is False.</p></li>
 <li><p><strong>fillnans</strong> (<em>bool</em>) – Choose whether to fill nans in layers, defaults to True</p></li>
 <li><p><strong>clip</strong> (<em>bool</em>) – Choose whether to clip the profile based on distance</p></li>
 <li><p><strong>max_dist</strong> (<em>int</em>) – Clip all distances greater than.</p></li>
 <li><p><strong>min_dist</strong> (<em>int</em>) – Clip all distances less than.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em>) – <dl class="simple">
-<dt>map_background: str or xarray.DataArray</dt><dd><p>Change the map background by passing a filename string or grid, by default is imagery.</p>
+<dt>map_background: str or xarray.DataArray</dt><dd><p>Change the map background by passing a filename string or grid, by default
+is imagery.</p>
 </dd>
-<dt>map_cmap: str</dt><dd><p>Change the map colorscale by passing a valid GMT cmap string, by default is ‘earth’.</p>
+<dt>map_cmap: str</dt><dd><p>Change the map colorscale by passing a valid GMT cmap string, by default is
+‘earth’.</p>
 </dd>
 <dt>map_buffer: float (0-1)</dt><dd><p>Change map zoom as relative percentage of profile length, by default is 0.2</p>
 </dd>
@@ -571,7 +582,8 @@ title="Print to PDF"
 <span class="sig-name descname"><span class="pre">basement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#basement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.basement" title="Permalink to this definition">#</a></dt>
 <dd><p>Load a grid of basement topography.
 Offshore and sub-Ross Ice Shelf basement topography.
-from Tankersley et al. 2022: <a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371">https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371</a>
+from Tankersley et al. 2022:
+<a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371">https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371</a>
 offshore data from Lindeque et al. 2016: <a class="reference external" href="https://doi.org/10.1002/2016GC006401">https://doi.org/10.1002/2016GC006401</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -614,7 +626,8 @@ from <a class="reference external" href="https://doi.org/10.5194/tc-7-375-2013">
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.deepbedmap">
 <span class="sig-name descname"><span class="pre">deepbedmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#deepbedmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.deepbedmap" title="Permalink to this definition">#</a></dt>
-<dd><p>Load DeepBedMap data,  from Leong and Horgan, 2020: <a class="reference external" href="https://doi.org/10.5194/tc-14-3687-2020">https://doi.org/10.5194/tc-14-3687-2020</a>
+<dd><p>Load DeepBedMap data,  from Leong and Horgan, 2020:
+<a class="reference external" href="https://doi.org/10.5194/tc-14-3687-2020">https://doi.org/10.5194/tc-14-3687-2020</a>
 Accessed from <a class="reference external" href="https://zenodo.org/record/4054246#.Ysy344RByp0">https://zenodo.org/record/4054246#.Ysy344RByp0</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -652,7 +665,8 @@ Accessed from <a class="reference external" href="https://ftp.space.dtu.dk/pub/R
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of either free-air or Bouguer gravity anomalies.</p>
+<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of either free-air or
+Bouguer gravity anomalies.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xr.DataArray</p>
@@ -664,7 +678,8 @@ Accessed from <a class="reference external" href="https://ftp.space.dtu.dk/pub/R
 <dt class="sig sig-object py" id="antarctic_plots.fetch.groundingline">
 <span class="sig-name descname"><span class="pre">groundingline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#groundingline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.groundingline" title="Permalink to this definition">#</a></dt>
 <dd><p>Load the file path of a groundingline shapefile
-Antarctic groundingline shape file, from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.819147">https://doi.pangaea.de/10.1594/PANGAEA.819147</a>
+Antarctic groundingline shape file, from
+<a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.819147">https://doi.pangaea.de/10.1594/PANGAEA.819147</a>
 Supplement to Depoorter et al. 2013: <a class="reference external" href="https://doi.org/10.1038/nature12567">https://doi.org/10.1038/nature12567</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -679,10 +694,11 @@ Supplement to Depoorter et al. 2013: <a class="reference external" href="https:/
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.imagery">
 <span class="sig-name descname"><span class="pre">imagery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#imagery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.imagery" title="Permalink to this definition">#</a></dt>
-<dd><p>Load the file path of Antarctic imagery geotiff from LIMA: <a class="reference external" href="https://lima.usgs.gov/fullcontinent.php">https://lima.usgs.gov/fullcontinent.php</a>
+<dd><p>Load the file path of Antarctic imagery geotiff from LIMA:
+<a class="reference external" href="https://lima.usgs.gov/fullcontinent.php">https://lima.usgs.gov/fullcontinent.php</a>
 will replace with below once figured out login issue with pooch
 MODIS Mosaic of Antarctica: <a class="reference external" href="https://doi.org/10.5067/68TBT0CGJSOJ">https://doi.org/10.5067/68TBT0CGJSOJ</a>
-Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/">https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/</a></p>
+Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/">https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/</a> # noqa</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>file path</p>
@@ -698,13 +714,16 @@ Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.or
 <span class="sig-name descname"><span class="pre">magnetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#magnetics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.magnetics" title="Permalink to this definition">#</a></dt>
 <dd><p>Load 1 of 4 ‘versions’ of Antarctic magnetic anomaly grid.
 version=’admap2’
-ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files provide from Sasha Golynsky.
+ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
+provide from Sasha Golynsky.
 version=’admap1’
-ADMAP-2001 magnetic anomaly compilation of Antarctica. <a class="reference external" href="https://admap.kongju.ac.kr/databases.html">https://admap.kongju.ac.kr/databases.html</a>
+ADMAP-2001 magnetic anomaly compilation of Antarctica.
+<a class="reference external" href="https://admap.kongju.ac.kr/databases.html">https://admap.kongju.ac.kr/databases.html</a>
 version=’admap2_eq_src’
 ADMAP2 eqivalent sources, from <a class="reference external" href="https://admap.kongju.ac.kr/admapdata/">https://admap.kongju.ac.kr/admapdata/</a>
 version=’admap2_gdb’
-Geosoft-specific .gdb abridged files. Accessed from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download">https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download</a></p>
+Geosoft-specific .gdb abridged files. Accessed from
+<a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download">https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -730,7 +749,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dd><p>Load the file path of sample shapefiles</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – chose which sample shapefile to load, either ‘Disco_deep_transect’ or ‘Roosevelt_Island’</p>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – chose which sample shapefile to load, either ‘Disco_deep_transect’ or
+‘Roosevelt_Island’</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>file path as a string</p>
@@ -764,7 +784,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.dd2dms">
 <span class="sig-name descname"><span class="pre">dd2dms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#dd2dms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.dd2dms" title="Permalink to this definition">#</a></dt>
-<dd><p>Convert decimal degrees to minutes, seconds. Modified from <a class="reference external" href="https://stackoverflow.com/a/10286690/18686384">https://stackoverflow.com/a/10286690/18686384</a></p>
+<dd><p>Convert decimal degrees to minutes, seconds. Modified from
+<a class="reference external" href="https://stackoverflow.com/a/10286690/18686384">https://stackoverflow.com/a/10286690/18686384</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>dd</strong> (<em>float</em>) – input decimal degrees</p>
@@ -782,7 +803,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dt class="sig sig-object py" id="antarctic_plots.utils.epsg3031_to_latlon">
 <span class="sig-name descname"><span class="pre">epsg3031_to_latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#epsg3031_to_latlon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.epsg3031_to_latlon" title="Permalink to this definition">#</a></dt>
 <dd><blockquote>
-<div><p>Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to EPSG:4326 WGS84 in decimal degrees.</p>
+<div><p>Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+EPSG:4326 WGS84 in decimal degrees.</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -794,7 +816,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Updated dataframe with new latitude and longitude columns or np.ndarray in format [e, w, n, s]</p>
+<dd class="field-even"><p>Updated dataframe with new latitude and longitude columns or np.ndarray in
+format [e, w, n, s]</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pd.DataFrame or np.ndarray</p>
@@ -811,7 +834,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dd class="field-odd"><p><strong>grid</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – Input grid to get info from. Filename string or loaded grid.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>tuple, first item is a string of grid spacing, second item is an array with the region boundaries</p>
+<dd class="field-even"><p>tuple, first item is a string of grid spacing, second item is
+an array with the region boundaries</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tuple</p>
@@ -822,7 +846,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.latlon_to_epsg3031">
 <span class="sig-name descname"><span class="pre">latlon_to_epsg3031</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#latlon_to_epsg3031"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.latlon_to_epsg3031" title="Permalink to this definition">#</a></dt>
-<dd><p>Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic Polar Stereographic in meters.</p>
+<dd><p>Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
+Polar Stereographic in meters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -833,7 +858,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Updated dataframe with new easting and northing columns or np.ndarray in format [e, w, n, s]</p>
+<dd class="field-even"><p>Updated dataframe with new easting and northing columns or np.ndarray in format
+[e, w, n, s]</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pd.DataFrame or np.ndarray</p>
@@ -848,14 +874,20 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>shapefile</strong> (<em>str</em>) – path to .shp filename, must by in same directory as accompanying files : .shx, .prj, .dbf, should be a closed polygon file.</p></li>
-<li><p><strong>invert</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose whether to mask data outside the shape (False) or inside the shape (True), by default True (masks inside of shape)</p></li>
+<li><p><strong>shapefile</strong> (<em>str</em>) – path to .shp filename, must by in same directory as accompanying files : .shx,
+.prj, .dbf, should be a closed polygon file.</p></li>
+<li><p><strong>invert</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose whether to mask data outside the shape (False) or inside the shape
+(True), by default True (masks inside of shape)</p></li>
 <li><p><strong>xr_grid</strong> (<em>xarray.DataArray</em><em>, </em><em>optional</em>) – _xarray.DataArray; to use to define region, or to mask, by default None</p></li>
 <li><p><strong>grid_file</strong> (<em>str</em><em>, </em><em>optional</em>) – path to a .nc or .tif file to use to define region or to mask, by default None</p></li>
-<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT region string or 1x4 ndarray in meters to create a dummy grid if none are supplied, by default None</p></li>
-<li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing in meters to create a dummy grid if none are supplied, by default None</p></li>
-<li><p><strong>masked</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose whether to return the masked grid (True) or the mask itself (False), by default False</p></li>
-<li><p><strong>crs</strong> (<em>str</em><em>, </em><em>optional</em>) – if grid is provided, rasterio needs to assign a coordinate reference system via an epsg code, by default “epsg:3031”</p></li>
+<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT region string or 1x4 ndarray in meters to create a dummy grid if none are
+supplied, by default None</p></li>
+<li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing in meters to create a dummy grid if none are supplied, by default
+None</p></li>
+<li><p><strong>masked</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose whether to return the masked grid (True) or the mask itself (False), by
+default False</p></li>
+<li><p><strong>crs</strong> (<em>str</em><em>, </em><em>optional</em>) – if grid is provided, rasterio needs to assign a coordinate reference system via
+an epsg code, by default “epsg:3031”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -868,29 +900,10 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="antarctic_plots.utils.plot_grd">
-<span class="sig-name descname"><span class="pre">plot_grd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grd2cpt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'initialize'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#plot_grd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.plot_grd" title="Permalink to this definition">#</a></dt>
-<dd><p>Function to automate PyGMT plotting</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>grid</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – grid to plot.</p></li>
-<li><p><strong>cmap</strong> (<em>str</em>) – GMT colorscale to use.</p></li>
-<li><p><strong>cbar_label</strong> (<em>str</em>) – label to add to colorbar.</p></li>
-<li><p><strong>plot_region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT region to set map extent to, by default is entire Antarctic region</p></li>
-<li><p><strong>cmap_region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT region to define the color scale limits, by default is equal to plot_region</p></li>
-<li><p><strong>coast</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot coastline and groundingline, by default False</p></li>
-<li><p><strong>grd2cpt_name</strong> (<em>bool</em><em>, </em><em>optional</em>) – file name which will be given to a cpt create with pygmt.grd2cpt() and used in the plot, by default False</p></li>
-<li><p><strong>origin_shift</strong> (<em>str</em><em>, </em><em>optional</em>) – choose whether to start a new figure:’initialize’, create a new subplot to the right:’xshift’, or create a new subplot above:’yshift’, by default “initialize”</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.reg_str_to_df">
 <span class="sig-name descname"><span class="pre">reg_str_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#reg_str_to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.reg_str_to_df" title="Permalink to this definition">#</a></dt>
-<dd><p>Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of region corners</p>
+<dd><p>Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of
+region corners</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -899,7 +912,8 @@ Geosoft-specific .gdb abridged files. Accessed from <a class="reference external
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Dataframe with easting and northing columns, and a row for each corner of the region.</p>
+<dd class="field-even"><p>Dataframe with easting and northing columns, and a row for each corner of the
+region.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pd.DataFrame</p>

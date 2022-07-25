@@ -50,6 +50,7 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://antarctic-plots.readthedocs.io/en/latest/walkthrough.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tips for choosing profile locations" href="tips.html" />
@@ -134,6 +135,11 @@ const thebe_selector_output = ".output, .cell_output"
    📆 Changelog
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   👷 Contribution guide
+  </a>
+ </li>
 </ul>
 
     </div>
@@ -185,35 +191,6 @@ title="Toggle navigation"
         
     </div>
     <div class="header-article__right">
-<div class="menu-dropdown menu-dropdown-launch-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Launch interactive content">
-      <i class="fas fa-rocket"></i>
-  </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://mybinder.org/v2/gh/mdtanker/antarctic_plots/main?urlpath=tree/docs/walkthrough.ipynb"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Launch on Binder"
->
-  
-
-<span class="headerbtn__icon-container">
-  
-    <img src="_static/images/logo_binder.svg">
-  </span>
-<span class="headerbtn__text-container">Binder</span>
-</a>
-
-      </li>
-      
-    </ul>
-  </div>
-</div>
-
 <button onclick="toggleFullScreen()"
   class="headerbtn"
   data-toggle="tooltip"
@@ -270,7 +247,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/walkthrough.ipynb"
+        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/walkthrough.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -298,7 +275,7 @@ title="Edit this page"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="_sources/walkthrough.ipynb"
+        <a href="_sources/walkthrough.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -309,7 +286,7 @@ title="Download source file"
 <span class="headerbtn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.ipynb</span>
+<span class="headerbtn__text-container">.md</span>
 </a>
 
       </li>
@@ -479,31 +456,18 @@ title="Print to PDF"
   <section class="tex2jax_ignore mathjax_ignore" id="walkthrough">
 <h1>Walkthrough<a class="headerlink" href="#walkthrough" title="Permalink to this headline">#</a></h1>
 <p>import the functions</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load_ext autoreload</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load_ext autoreload</span>
 <span class="c1"># %autoreload 2</span>
 <span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">profile</span>
 <span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">fetch</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;frozen importlib._bootstrap&gt;:219: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
-</pre></div>
-</div>
-</div>
-</div>
 <section id="make-a-simple-cross-section">
 <h2>Make a simple cross-section<a class="headerlink" href="#make-a-simple-cross-section" title="Permalink to this headline">#</a></h2>
 <p>define a start and end point for a profile, in EPSG:3031 projection</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1200e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1400e3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1200e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1400e3</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1000e3</span><span class="p">,</span> <span class="mf">1400e3</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
 </div>
 <p>sample bedmap2 layers between these points, and plot the cross section</p>
 <p>This may take a few minutes the first time it’s executed. The function calls fetch.bedmap2(), which is a function that uses the python package Pooch to handle dataset download and storage. All the functions in the <code class="docutils literal notranslate"><span class="pre">antarctic_plots.fetch</span></code> module use Pooch and download the data to your following local file:</p>
@@ -512,74 +476,43 @@ title="Print to PDF"
 <li><p>Unix: <code class="docutils literal notranslate"><span class="pre">~/.cache/&lt;AppName&gt;</span></code> or the value of the XDG_CACHE_HOME environment variable, if defined.</p></li>
 <li><p>Windows: <code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;user&gt;\AppData\Local\&lt;AppAuthor&gt;\&lt;AppName&gt;\Cache</span></code></p></li>
 </ul>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<img alt="_images/walkthrough_5_0.png" src="_images/walkthrough_5_0.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_5_0.png" /></p>
 <p>Instead of using a line, we can sample along a shapefile. Provide a file name, or load a shapefile with the function <code class="docutils literal notranslate"><span class="pre">fetch</span></code>.</p>
 <p>Here is a path across the Ross Ice Shelf from Mulock Glacier to the ice front through Discover Deep.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading data from &#39;https://github.com/mdtanker/antarctic_plots/raw/main/data/Disco_deep_transect.zip&#39; to file &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\40138f622c6bcccd2055b578977c09f2-Disco_deep_transect.zip&#39;.
-SHA256 hash of downloaded file: 70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e
-Use this value as the &#39;known_hash&#39; argument of &#39;pooch.retrieve&#39; to ensure that the file hasn&#39;t changed if it is downloaded again in the future.
-Unzipping contents of &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\40138f622c6bcccd2055b578977c09f2-Disco_deep_transect.zip&#39; to &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\40138f622c6bcccd2055b578977c09f2-Disco_deep_transect.zip.unzip&#39;
-</pre></div>
-</div>
-<img alt="_images/walkthrough_7_1.png" src="_images/walkthrough_7_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_7_0.png" /></p>
 </section>
 <section id="add-a-map">
 <h2>Add a map<a class="headerlink" href="#add-a-map" title="Permalink to this headline">#</a></h2>
 <p>show the profile location, background defaults to imagery</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading data from &#39;https://doi.pangaea.de/10013/epic.42133.d001&#39; to file &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\59b83225c5ac3e98f93bc7cc9cfdd984-epic.42133.d001&#39;.
-100%|#####################################| 16.6M/16.6M [00:00&lt;00:00, 8.32GB/s]
-SHA256 hash of downloaded file: e4c5918240e334680aed1329f109527efd8f43b6a277bb8e77b66f84f8c16619
-Use this value as the &#39;known_hash&#39; argument of &#39;pooch.retrieve&#39; to ensure that the file hasn&#39;t changed if it is downloaded again in the future.
-Unzipping contents of &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\59b83225c5ac3e98f93bc7cc9cfdd984-epic.42133.d001&#39; to &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\59b83225c5ac3e98f93bc7cc9cfdd984-epic.42133.d001.unzip&#39;
-gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_9_1.png" src="_images/walkthrough_9_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_9_1.png" /></p>
 </section>
 <section id="add-a-graph-of-data">
 <h2>Add a graph of data<a class="headerlink" href="#add-a-graph-of-data" title="Permalink to this headline">#</a></h2>
 <p>Show data along the profile. Default includes gravity and magnetics</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -589,31 +522,15 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading data from &#39;https://admap.kongju.ac.kr/admapdata/ant_new.zip&#39; to file &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\ff759f994d3c002bb92f99ba36645d4b-ant_new.zip&#39;.
-100%|#####################################| 9.79M/9.79M [00:00&lt;00:00, 4.91GB/s]
-SHA256 hash of downloaded file: 3fe567c4dfe75be9d5a7772623c72cd27fa386b09a82f03bdb0153a7d64e8524
-Use this value as the &#39;known_hash&#39; argument of &#39;pooch.retrieve&#39; to ensure that the file hasn&#39;t changed if it is downloaded again in the future.
-Unzipping contents of &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\ff759f994d3c002bb92f99ba36645d4b-ant_new.zip&#39; to &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\ff759f994d3c002bb92f99ba36645d4b-ant_new.zip.unzip&#39;
-Downloading data from &#39;https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip&#39; to file &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\d67898fde9120794c55bed825b434333-ant4d_gravity.zip&#39;.
-100%|#####################################| 11.7M/11.7M [00:00&lt;00:00, 11.7GB/s]
-SHA256 hash of downloaded file: 1013a8fa610c16198bc3c901039fd535cf939e4f21f99e6434849bb505094974
-Use this value as the &#39;known_hash&#39; argument of &#39;pooch.retrieve&#39; to ensure that the file hasn&#39;t changed if it is downloaded again in the future.
-Unzipping contents of &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\d67898fde9120794c55bed825b434333-ant4d_gravity.zip&#39; to &#39;C:\Users\mtankersley\AppData\Local\pooch\pooch\Cache\d67898fde9120794c55bed825b434333-ant4d_gravity.zip.unzip&#39;
-gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_11_1.png" src="_images/walkthrough_11_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_11_1.png" /></p>
 </section>
 <section id="change-profile-length">
 <h2>Change profile length<a class="headerlink" href="#change-profile-length" title="Permalink to this headline">#</a></h2>
 <p>clip the profile (either end) based on distance</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
@@ -624,21 +541,15 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_13_1.png" src="_images/walkthrough_13_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_13_1.png" /></p>
 </section>
 <section id="change-sampling-resolution">
 <h2>Change sampling resolution<a class="headerlink" href="#change-sampling-resolution" title="Permalink to this headline">#</a></h2>
 <p>increase the resolution with the parameter “num” (defaults to 100)</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define new profile endpoints</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># define new profile endpoints</span>
 <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">590e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1070e3</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">100e3</span><span class="p">,</span> <span class="o">-</span><span class="mf">545e3</span><span class="p">)</span>
 
@@ -661,22 +572,16 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_15_1.png" src="_images/walkthrough_15_1.png" />
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<p><img alt="png" src="_images/walkthrough_15_1.png" /></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_15_3.png" src="_images/walkthrough_15_3.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_15_3.png" /></p>
 <p>or for shapefiles, with shp_num_points</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span>
         <span class="s2">&quot;Roosevelt_Island&quot;</span><span class="p">,</span>
@@ -697,25 +602,19 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_17_1.png" src="_images/walkthrough_17_1.png" />
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<p><img alt="png" src="_images/walkthrough_17_1.png" /></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_17_3.png" src="_images/walkthrough_17_3.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_17_3.png" /></p>
 </section>
 <section id="alter-map-properies">
 <h2>Alter map properies<a class="headerlink" href="#alter-map-properies" title="Permalink to this headline">#</a></h2>
 <p>customize the map background; show the surface topography instead of imagery</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
@@ -724,18 +623,12 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_19_1.png" src="_images/walkthrough_19_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_19_1.png" /></p>
 <p>change the maps colorscale</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;shapefile&quot;</span><span class="p">,</span>
     <span class="n">shapefile</span><span class="o">=</span><span class="n">fetch</span><span class="o">.</span><span class="n">sample_shp</span><span class="p">(</span><span class="s2">&quot;Disco_deep_transect&quot;</span><span class="p">),</span>
     <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
@@ -745,19 +638,13 @@ gmtset [WARNING]: Representation of font type not recognized. Using default.
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_21_1.png" src="_images/walkthrough_21_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_21_1.png" /></p>
 <p>change the level of zoom on the map with the map_buffer argument.
 This is a percentage of total line distance, which defaults to 0.2 (120%) of profile length.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
@@ -776,25 +663,19 @@ This is a percentage of total line distance, which defaults to 0.2 (120%) of pro
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_23_1.png" src="_images/walkthrough_23_1.png" />
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<p><img alt="png" src="_images/walkthrough_23_1.png" /></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_23_3.png" src="_images/walkthrough_23_3.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_23_3.png" /></p>
 </section>
 <section id="alter-cross-section-properties">
 <h2>Alter Cross-section properties<a class="headerlink" href="#alter-cross-section-properties" title="Permalink to this headline">#</a></h2>
 <p>Change buffer above and below cross-section layers, defaults to 0.1 (10% of data spread added above/below)</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
@@ -804,33 +685,23 @@ This is a percentage of total line distance, which defaults to 0.2 (120%) of pro
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_25_1.png" src="_images/walkthrough_25_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_25_1.png" /></p>
 </section>
 <section id="id1">
 <h2>Alter Cross-section properties<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
 <p>Change buffer above and below data graph, defaults to 0.1 (10% of data spread added above/below)</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">data_dict</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">add_map</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">data_buffer</span><span class="o">=</span><span class="mf">0.8</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_27_1.png" src="_images/walkthrough_27_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_27_1.png" /></p>
 </section>
 <section id="custom-layers-datasets-and-colors">
 <h2>Custom layers, datasets, and colors<a class="headerlink" href="#custom-layers-datasets-and-colors" title="Permalink to this headline">#</a></h2>
@@ -848,9 +719,7 @@ either geotiff/netcdf file names or xarray.DataArrays</p></li>
 <p>Optionally, you can use Pooch.fetch to help download and store dataset from urls, and easily load them.</p>
 <p>See the functions in the module <code class="docutils literal notranslate"><span class="pre">antarctic_plots.fetch</span></code> for  examples and feel free to make a PR and add your datasets there.</p>
 <p><code class="docutils literal notranslate"> <span class="pre">WARNING</span> <span class="pre">-</span> <span class="pre">the</span> <span class="pre">DeepBedMap</span> <span class="pre">file</span> <span class="pre">is</span> <span class="pre">relatively</span> <span class="pre">large</span> <span class="pre">(0.5</span> <span class="pre">Gb)</span> <span class="pre">and</span> <span class="pre">may</span> <span class="pre">take</span> <span class="pre">some</span> <span class="pre">time</span> <span class="pre">to</span> <span class="pre">download</span></code></p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># note, these datafile can be plotted at higher resolution by adding parameter &#39;spacing&#39; to the &#39;fetch&#39; function:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># note, these datafile can be plotted at higher resolution by adding parameter &#39;spacing&#39; to the &#39;fetch&#39; function:</span>
 <span class="c1"># fetch.gravity(&#39;BA&#39;, spacing=1e3) will use a 1km version of the Bouguer gravity anomaly.</span>
 <span class="n">data_dict</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">make_data_dict</span><span class="p">(</span>
     <span class="p">[</span><span class="s2">&quot;Bouguer gravity&quot;</span><span class="p">,</span> <span class="s2">&quot;DeepBedMap&quot;</span><span class="p">],</span>
@@ -877,19 +746,13 @@ either geotiff/netcdf file names or xarray.DataArrays</p></li>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_29_1.png" src="_images/walkthrough_29_1.png" />
-</div>
-</div>
+<p><img alt="png" src="_images/walkthrough_29_1.png" /></p>
 <p>Control wheather to fill gaps in the cross-section layers. Note that the additional layer ‘basement’, doesn’t extend past the groundingline. By default, NaN’s in any layer are set equal
 to the layer above, causing the vertical line at ~100km.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="o">.</span><span class="n">plot_profile</span><span class="p">(</span>
     <span class="s2">&quot;points&quot;</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
     <span class="n">stop</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
@@ -900,13 +763,12 @@ to the layer above, causing the vertical line at ~100km.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gmtset [WARNING]: Representation of font type not recognized. Using default.
 </pre></div>
 </div>
-<img alt="_images/walkthrough_31_1.png" src="_images/walkthrough_31_1.png" />
-</div>
+<p><img alt="png" src="_images/walkthrough_31_1.png" /></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
 </div>
 </section>
 </section>

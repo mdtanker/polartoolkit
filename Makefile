@@ -16,8 +16,8 @@ help:
 	@echo ""
 
 install:
-	pip install --no-deps -e .
-
+	pip install -e .
+	conda install pygmt
 
 test:
 	# Run a tmp folder to make sure the tests are run on the installed version
@@ -49,7 +49,20 @@ license-check:
 	python tools/license_notice.py --check
 
 flake8:
-	flake8 $(STYLE_CHECK_FILES)
+	flake8p $(STYLE_CHECK_FILES)
+
+run_doc_files:
+	jupyter nbconvert --execute --to markdown docs/tips.ipynb
+	jupyter nbconvert --execute --to markdown docs/walkthrough.ipynb
+
+build_docs:
+	jupyter-book build docs/
+
+publish:
+	poetry publish --build
+
+package:
+	poetry build
 
 clean:
 	find . -name "*.pyc" -exec rm -v {} \;
