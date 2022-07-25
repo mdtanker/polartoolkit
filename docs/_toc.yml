@@ -7,9 +7,9 @@ chapters:
   - title: ⬇️ Installation
     file: installation
   - title: 🚶 Walkthrough
-    file: walkthrough.md
+    file: walkthrough
   - title: ℹ️ Tips
-    file: tips.md
+    file: tips
   - title: 📖 API reference
     file: api
   - title: 📆 Changelog

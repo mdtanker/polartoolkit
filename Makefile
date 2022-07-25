@@ -52,8 +52,7 @@ flake8:
 	flake8p $(STYLE_CHECK_FILES)
 
 run_doc_files:
-	jupyter nbconvert --execute --to markdown docs/tips.ipynb
-	jupyter nbconvert --execute --to markdown docs/walkthrough.ipynb
+	jupyter nbconvert --execute --inplace docs/*.ipynb
 
 build_docs:
 	jupyter-book build docs/

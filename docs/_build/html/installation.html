@@ -137,7 +137,7 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
-   👷 Contribution guide
+   🛠️ Contribution guide
   </a>
  </li>
 </ul>
@@ -335,13 +335,13 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment">
-   Create a new python environment:
+  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-installed">
+   Create a new python environment with PyGMT installed:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-   install the package and pygmt (latest stable release, see Contribution guide for installing the development version):
+  <a class="reference internal nav-link" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+   install the package (latest stable release, see Contribution guide for installing the development version):
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -374,13 +374,13 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment">
-   Create a new python environment:
+  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-installed">
+   Create a new python environment with PyGMT installed:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-   install the package and pygmt (latest stable release, see Contribution guide for installing the development version):
+  <a class="reference internal nav-link" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+   install the package (latest stable release, see Contribution guide for installing the development version):
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -407,17 +407,16 @@ title="Print to PDF"
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
 <p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> to be already installed (via conda for example) it can’t be included in the dependencies. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
 <p>Here I use mamba to install packages, but conda should work as well:</p>
-<section id="create-a-new-python-environment">
-<h2>Create a new python environment:<a class="headerlink" href="#create-a-new-python-environment" title="Permalink to this headline">#</a></h2>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba create --name antarctic_plots python=3.9 
+<section id="create-a-new-python-environment-with-pygmt-installed">
+<h2>Create a new python environment with PyGMT installed:<a class="headerlink" href="#create-a-new-python-environment-with-pygmt-installed" title="Permalink to this headline">#</a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
 mamba activate antarctic_plots
 </pre></div>
 </div>
 </section>
-<section id="install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-<h2>install the package and pygmt (latest stable release, see Contribution guide for installing the development version):<a class="headerlink" href="#install-the-package-and-pygmt-latest-stable-release-see-contribution-guide-for-installing-the-development-version" title="Permalink to this headline">#</a></h2>
+<section id="install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
+<h2>install the package (latest stable release, see Contribution guide for installing the development version):<a class="headerlink" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version" title="Permalink to this headline">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install antarctic-plots
-mamba install pygmt
 </pre></div>
 </div>
 </section>
