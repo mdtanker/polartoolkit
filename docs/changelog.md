@@ -3,7 +3,13 @@
 ## Release v0.0.2 
 
 ### 💫 Highlights
-* 
+* Created a [website for the documentation!](https://antarctic-plots.readthedocs.io/en/latest/installation.html#) 
+
+* Added `NumPy` formatted docstrings to the modules
+
+* Wrote contribution guide, which outlines the unique case of publishing a package with dependencies which need C packages, like `PyGMT` (`GMT`) and `GeoPandas` (`GDAL`). 
+
+* Added `Tips` for generating shapefiles and picking start/end points
 
 ### 🚀 Features
 

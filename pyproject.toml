@@ -2,9 +2,13 @@
 name = "antarctic_plots"
 version = "0.0.2"
 description = "Functions to automate Antarctic data visualization"
+readme = "README.md" 
 authors = ["mdtanker <matt.d.tankersley@gmail.com>"]
 license = "MIT"
 homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
+repository = "https://github.com/mdtanker/antarctic_plots"
+documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
+keywords = ["antarctica", "plotting", "pygmt", cross-section"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
