@@ -16,7 +16,7 @@
  <p align="center">
  <a href=LICENSE><img src="https://img.shields.io/pypi/l/antarctic-plots?style=flat-square" alt="license"></a>
  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/static/v1?label=code style&message=black&color=black&style=flat-square"></a>
-<a href=https://readthedocs.org/projects/antarctic-plots/><img src="https://readthedocs.org/projects/pip/badge/?version=latest&style=flat-square" alt="docs"></a>
+<a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
  </p>
 
 ![](cover_fig.png)
