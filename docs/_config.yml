@@ -41,4 +41,3 @@ sphinx:
   config:
     add_module_names: False
     autodoc_mock_imports: ["pygmt", "geopandas"]
-    html_theme: "sphinx_rtd_dark_mode" 
