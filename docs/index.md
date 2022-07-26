@@ -1,8 +1,8 @@
-<h1 align="center">Antarctic-plots</h1>
+# Antarctic-plots
 
-<p align="center">Functions to automate Antarctic data visualization
+## Functions to automate Antarctic data visualization
 
- 
+<p align="center">
 <a href="https://pypi.org/project/antarctic-plots/"><img src="https://img.shields.io/pypi/v/antarctic-plots?style=flat-square" alt="Latest version on PyPI"></a>
 <a href="https://pypi.org/project/antarctic-plots/"><img src="https://img.shields.io/pypi/pyversions/antarctic-plots?style=flat-square" alt="Compatible Python versions."></a>
 <a href="https://doi.org/10.5281/zenodo.3530749"><img src="https://img.shields.io/badge/doi-10.5281%2Fzenodo.3530749-blue?style=flat-square" alt="DOI used to cite Boule"></a>
