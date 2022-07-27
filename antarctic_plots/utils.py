@@ -247,6 +247,92 @@ def mask_from_shp(
         output = mask_grd
     return output
 
+# def make_subplots(gridlist, cmaplist, shadinglist, framelist, show=True):
+#     figheight=180 # in mm
+#     #RIS extent
+# #     ris_xl=-800_000
+# #     ris_yl=-1_500_000
+# #     ris_xh=500_000
+# #     ris_yh=-200_000
+#     #Ross Embayment extent
+#     ris_xl= -760_000
+#     ris_yl= -2_200_000 #N extent
+#     ris_xh= 600_000
+#     ris_yh= -350_000 #S extent
+#     figwidth=figheight*(ris_xh-ris_xl)/(ris_yh-ris_yl)
+#     risratio = (ris_yh - ris_yl) / (figheight/1000)
+#     risreg = str(ris_xl) + '/' + str(ris_xh) + '/' + str(ris_yl) + '/' + str(ris_yh) #W/E/S/N
+#     risproj = "x1:" + str(risratio)
+#     risproj_ll = "s0/-90/-71/1:" + str(risratio)
+#     def indiv_subplot(grid, cmap, shading, frame, region=risreg, projection=risproj):
+#         with pygmt.config(MAP_FRAME_TYPE = 'inside'):
+#             fig.coast(region=region, projection=risproj_ll, land='grey', water='grey', frame = ["nwse", "xf100000", "yf100000", "g0"],verbose='e')
+#         # plot MODIS moa
+#         #fig.grdimage(region=region, projection=projection, grid ='../PyGMT/Venturelli2020/moa750_2009_hp1_v1.1.tif', cmap = '../PyGMT/Venturelli2020/moa.cpt')
+#         # Plot ice velocities
+#         #fig.grdimage(region=region, projection=projection, grid = '../PyGMT/Venturelli2020/antarctic_ice_vel_phase_map_v01-vmag.nc', cmap = '../PyGMT/Venturelli2020/vel.cpt', transparency = 30, nan_transparent =True)
+#         fig.grdimage(grid=grid,region=region, projection=projection, cmap=cmap, shading=shading, nan_transparent=True, dpi=100)
+#         # Plot graticules overtop, at 2d latitude and 15d longitude
+#         with pygmt.config(MAP_ANNOT_OFFSET_PRIMARY = '-2p', MAP_FRAME_TYPE = 'inside',
+#                           MAP_ANNOT_OBLIQUE = 0, FONT_ANNOT_PRIMARY = '8p,dimgrey',
+#                           MAP_GRID_PEN_PRIMARY = 'dimgrey', MAP_TICK_LENGTH_PRIMARY = '-10p',
+#                           MAP_TICK_PEN_PRIMARY = 'thinnest,dimgrey', FORMAT_GEO_MAP = 'dddF', MAP_POLAR_CAP = '90/90'):
+#             #fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"], F='+gwhite+p0.5p,black+c3p', transparency='20') 
+#             fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"],verbose='e') 
+#         # Plot Bell et al. 2006 Basins
+#         fig.plot(projection = risproj,
+#                  data = '../shapefiles/bell_2006_outline.shp', 
+#                  pen = 'thick,black', verbose = 'e')    
+#         # Plot Goodge 2020 Faults
+#         fig.plot(projection = risproj,
+#                  data = '../shapefiles/goodge_faults.shp', 
+#                  pen = 'thickest,magenta')
+        
+#         # Plot the grounding/coast lines
+#         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_groundingline.shp', pen='0.5p,black', dpi=100,verbose='e')
+#         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_coastline.shp', pen='0.5p,black', dpi=100, verbose='e')
+#         # COLORBAR
+#         barwidth = figwidth/10 * 0.6
+#         bar_offset = figwidth/10 * 0.06
+#         bar_pos = 'jCT+w' + str(barwidth) + 'c+h+ml+e+o0c/' + str(bar_offset) + 'c'
+#         with pygmt.config(FONT_ANNOT_PRIMARY='16p,black', FONT_LABEL='20p,black', 
+#                           MAP_ANNOT_OFFSET_PRIMARY='4p', MAP_TICK_PEN_PRIMARY='1p,black', 
+#                           MAP_TICK_LENGTH_PRIMARY='6p', MAP_FRAME_PEN='1p,black', MAP_LABEL_OFFSET='8p'):
+#             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, box = '+gwhite+p0.5p,black+c3p', transparency = '20', verbose='e')
+#             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, verbose='e')
+#         # SCALEBAR
+#         with pygmt.config(FONT_ANNOT_PRIMARY='8p,black', FONT_LABEL='8p,black', MAP_SCALE_HEIGHT='5p', MAP_TICK_PEN_PRIMARY='0.5p,black'):
+# #             fig.basemap(projection=risproj_ll, map_scale='jMB+w400k+c170E/71S+f+l"km"+ar', verbose='e')
+#             scale_offset = figwidth/10 * 0.03
+#             scale_pos = 'jCB+w400k+f+l"km"+ar+o0c/' + str(scale_offset) + 'c'
+#             fig.basemap(projection=risproj_ll, map_scale=scale_pos, F='+gwhite+p0.5p,black', transparency='50',verbose='e')
+#             fig.basemap(projection=risproj_ll, map_scale=scale_pos,verbose='e')
+#         if "profile" in globals():
+#             fig.plot(projection=projection, x=profile.x, y=profile.y, pen='2p,red')
+#     #####################################
+#     fig = pygmt.Figure()
+#     if len(gridlist)>1:
+#         rows=int(np.ceil(len(gridlist)/2))
+#         cols=int(np.ceil(len(gridlist)/rows))
+#         with fig.subplot(nrows=rows, ncols=cols, region=risreg, projection=risproj, subsize="18c/18c",#subsize='15c/15c', 
+#                          autolabel='+JTL', margins='0.2c/0.5c', frame="WSne"):
+#             for i in range(rows):
+#                 for j in range(cols):
+#                     index = i * cols + j
+#                     if index < len(gridlist):
+#                         with fig.set_panel(panel=index):
+#                             indiv_subplot(  grid=gridlist[index],
+#                                             cmap=cmaplist[index],
+#                                             shading=shadinglist[index],
+#                                             frame=framelist[index])
+#     else:
+#          indiv_subplot(grid=gridlist[0], 
+#                        cmap=cmaplist[0],
+#                        shading=shadinglist[0],
+#                        frame=framelist[0])
+#     if show==True:
+#         fig.show()   
+
 
 # def plot_grd(
 #     grid,
