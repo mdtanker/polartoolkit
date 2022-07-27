@@ -137,7 +137,7 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
-   👷 Contribution guide
+   🛠️ Contribution guide
   </a>
  </li>
 </ul>
@@ -499,34 +499,24 @@ path.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> (<em>str</em>) – Choose the sample method, either ‘points’, or ‘shapefile’.</p></li>
-<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with
-<cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
-<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with
-<cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
+<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with <cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
+<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with <cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
 <li><p><strong>add_map</strong> (<em>bool = False</em>) – Choose whether to add a location map, by default is False.</p></li>
-<li><p><strong>fillnans</strong> (<em>bool</em>) – Choose whether to fill nans in layers, defaults to True</p></li>
-<li><p><strong>clip</strong> (<em>bool</em>) – Choose whether to clip the profile based on distance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>fillnans</strong> (<em>bool</em>) – Choose whether to fill nans in layers, defaults to True.</p></li>
+<li><p><strong>clip</strong> (<em>bool</em>) – Choose whether to clip the profile based on distance.</p></li>
 <li><p><strong>max_dist</strong> (<em>int</em>) – Clip all distances greater than.</p></li>
 <li><p><strong>min_dist</strong> (<em>int</em>) – Clip all distances less than.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em>) – <dl class="simple">
-<dt>map_background: str or xarray.DataArray</dt><dd><p>Change the map background by passing a filename string or grid, by default
-is imagery.</p>
-</dd>
-<dt>map_cmap: str</dt><dd><p>Change the map colorscale by passing a valid GMT cmap string, by default is
-‘earth’.</p>
-</dd>
-<dt>map_buffer: float (0-1)</dt><dd><p>Change map zoom as relative percentage of profile length, by default is 0.2</p>
-</dd>
-<dt>layer_buffer: float (0-1)</dt><dd><p>Change vertical white space within cross-section, by default is 0.1</p>
-</dd>
-<dt>data_buffer: float (0-1)</dt><dd><p>Change vertical white space within data graph, by default is 0.1</p>
-</dd>
-<dt>save: bool</dt><dd><p>Choose to save the image, by default is False</p>
-</dd>
-<dt>path: str</dt><dd><p>Filename for saving image, by default is None.</p>
-</dd>
-</dl>
-</p></li>
+<li><p><strong>map_background</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – Change the map background by passing a filename string or grid, by default is imagery.</p></li>
+<li><p><strong>map_cmap</strong> (<em>str</em>) – Change the map colorscale by passing a valid GMT cmap string, by default is ‘earth’.</p></li>
+<li><p><strong>map_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change map zoom as relative percentage of profile length, by default is 0.2.</p></li>
+<li><p><strong>layer_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change vertical white space within cross-section, by default is 0.1.</p></li>
+<li><p><strong>data_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change vertical white space within data graph, by default is 0.1.</p></li>
+<li><p><strong>save</strong> (<em>bool</em>) – Choose to save the image, by default is False.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – Filename for saving image, by default is None.</p></li>
 </ul>
 </dd>
 </dl>

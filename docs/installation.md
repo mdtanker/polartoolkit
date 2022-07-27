@@ -3,16 +3,16 @@ This package and most of it's dependencies can be installed with a simple call t
 
 Here I use mamba to install packages, but conda should work as well:
 
-## Create a new python environment with PyGMT and GeoPandas installed:
+## Create an environment:
 
     mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
 
-## install the package (latest stable release, see Contribution guide for installing the development version): 
+## Install the package: 
 
     pip install antarctic-plots
 
-## To install the latest development version from Github:
+## To install the dev version:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots

@@ -20,9 +20,9 @@ def create_profile(
     method: str,
     start: np.ndarray = None,
     stop: np.ndarray = None,
-    shapefile: str = None,
     num=100,
     shp_num_points: int = None,
+    shapefile: str = None,
     **kwargs,
 ):
     """
@@ -125,9 +125,7 @@ def sample_grids(df, grid, name: str = None):
     return df
 
 
-def fill_nans(
-    df,
-):
+def fill_nans(df):
     """
     Fill NaN's in sampled layer with values from above layer.
 
@@ -288,41 +286,36 @@ def plot_profile(
     method : str
         Choose the sample method, either 'points', or 'shapefile'.
     layers_dict : dict, optional
-        nested dictionary of layers to include in cross-section, construct with
-        `profile.make_data_dict`, by default is Bedmap2 layers.
+        nested dictionary of layers to include in cross-section, construct with `profile.make_data_dict`, by default is Bedmap2 layers.
     data_dict : dict, optional
-        nested dictionary of data to include in option graph, construct with
-        `profile.make_data_dict`, by default is gravity and magnetic anomalies.
+        nested dictionary of data to include in option graph, construct with `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
-    
-    Other Parameters
-    ----------------
+
+    Keyword Args
+    ------------
     fillnans: bool
-        Choose whether to fill nans in layers, defaults to True
+        Choose whether to fill nans in layers, defaults to True.
     clip: bool
-        Choose whether to clip the profile based on distance
+        Choose whether to clip the profile based on distance.
     max_dist: int
         Clip all distances greater than.
     min_dist: int
         Clip all distances less than.
-    **kwargs : dict
-        map_background: str or xarray.DataArray
-            Change the map background by passing a filename string or grid, by default
-            is imagery.
-        map_cmap: str
-            Change the map colorscale by passing a valid GMT cmap string, by default is
-            'earth'.
-        map_buffer: float (0-1)
-            Change map zoom as relative percentage of profile length, by default is 0.2
-        layer_buffer: float (0-1)
-            Change vertical white space within cross-section, by default is 0.1
-        data_buffer: float (0-1)
-            Change vertical white space within data graph, by default is 0.1
-        save: bool
-            Choose to save the image, by default is False
-        path: str
-            Filename for saving image, by default is None.
+    map_background: str or xarray.DataArray
+        Change the map background by passing a filename string or grid, by default is imagery.
+    map_cmap: str
+        Change the map colorscale by passing a valid GMT cmap string, by default is 'earth'.
+    map_buffer: float (0-1)
+        Change map zoom as relative percentage of profile length, by default is 0.2.
+    layer_buffer: float (0-1)
+        Change vertical white space within cross-section, by default is 0.1.
+    data_buffer: float (0-1)
+        Change vertical white space within data graph, by default is 0.1.
+    save: bool
+        Choose to save the image, by default is False.
+    path: str
+        Filename for saving image, by default is None.
     """
 
     points = create_profile(method, **kwargs)
@@ -492,7 +485,7 @@ def plot_profile(
             fig.legend(position="JBR+jBL+o0c", box=True)
             fig.shift_origin(yshift="h+.5c")
             fig.basemap(region=region_layers, projection="X9c/6c", frame=True)
-        except:
+        except Exception:
             print("error plotting data profiles")
     else:
         fig.basemap(region=region_layers, projection="X9c/9c", frame=True)

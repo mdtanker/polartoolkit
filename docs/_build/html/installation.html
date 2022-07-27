@@ -335,8 +335,8 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-installed">
-   Create a new python environment with PyGMT installed:
+  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed">
+   Create a new python environment with PyGMT and GeoPandas installed:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -374,8 +374,8 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-installed">
-   Create a new python environment with PyGMT installed:
+  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed">
+   Create a new python environment with PyGMT and GeoPandas installed:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -405,10 +405,10 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
-<p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> to be already installed (via conda for example) it can’t be included in the dependencies. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
+<p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> and <code class="docutils literal notranslate"><span class="pre">GeoPandas</span></code> require <code class="docutils literal notranslate"><span class="pre">GDAL</span></code>, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
 <p>Here I use mamba to install packages, but conda should work as well:</p>
-<section id="create-a-new-python-environment-with-pygmt-installed">
-<h2>Create a new python environment with PyGMT installed:<a class="headerlink" href="#create-a-new-python-environment-with-pygmt-installed" title="Permalink to this headline">#</a></h2>
+<section id="create-a-new-python-environment-with-pygmt-and-geopandas-installed">
+<h2>Create a new python environment with PyGMT and GeoPandas installed:<a class="headerlink" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed" title="Permalink to this headline">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
 mamba activate antarctic_plots
 </pre></div>
@@ -427,9 +427,9 @@ cd antarctic_plots
 </pre></div>
 </div>
 <p>Make a virtual env to install into:
-mamba create –name antarctic_plots python=3.9
+mamba create –name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
 mamba activate antarctic_plots</p>
-<p>Install the package and PyGMT:
+<p>Install the package and PyGMT/GeoPandas:
 make install</p>
 <p>Test the install by running the first few cells of <code class="docutils literal notranslate"><span class="pre">docs/walkthrough.ipynb</span></code>.</p>
 </section>

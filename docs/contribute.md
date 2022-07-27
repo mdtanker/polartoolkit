@@ -1,5 +1,5 @@
 # Contribution guide
-## To build the docs
+## Build the docs
 The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included C programs (GMT and GDAL) in a pip-installed package, `PyGMT` and `GeoPandas` aren't included in the package dependencies, so `RTD` can't run the scripts which are part of the docs (i.e. `walkthrough.ipynb`). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
 
 Additionally we use `Poetry` as a package manager, which also can't include `PyGMT` or `GeoPandas` successfully. To get around this, we will export the poetry venv, add `PyGMT` and `Geopandas`, run the .ipynb's for the docs, then build the docs.
@@ -18,19 +18,22 @@ Deactivate poetry shell:
     
     deactivate
 
-Install with pip in a conda/mamba env:
+Create a conda/mamba env:
 
-    mamba create --name antarctic_plots python=3.9
+    mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
+
+Add pinned dependencies
+
     pip install --no-deps -r requirements.txt
 
-Add PyGMT and GeoPandas:
-
-    mamba install pygmt geopandas
-
-Add antarctic_plots in editable mode:
+Install local antarctic_plots in editable mode:
 
     pip install -e .
+
+Or install from PyPI (docs won't update if you build them!):
+
+    pip install antarctic_plots
 
 ### Run all .ipynb's to update them
 
@@ -54,7 +57,7 @@ Check for returned errors and open `index.html` in docs/_build/html/ to view the
 
 Add, commit, and push all changes to Github in a Pull Request, and RTD should automatically build the docs.
 
-## To build and publish the package
+## Build and publish the package
 Follow all the above instructions for building the docs
 
 Increase the version number in `pyproject.toml`
@@ -66,7 +69,7 @@ Then run the following:
 
 This will both build the dist files, and upload to PyPI. Now push the changes to Github and make a release with the matching version #. 
 
-## To update the dependencies
+## Update the dependencies
 The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, do to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. To update any other dependencies, use the below commands:
 
     poetry add <PACKAGE>

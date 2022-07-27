@@ -1,9 +1,9 @@
 # Installation
-This package and most of it's dependencies can be installed with a simple call to `pip`, but since `PyGMT` requires `GMT` to be already installed (via conda for example) it can't be included in the dependencies. The below instructions should successfully install antarctic-plots, and all the dependencies:
+This package and most of it's dependencies can be installed with a simple call to `pip`, but since `PyGMT` requires `GMT` and `GeoPandas` require `GDAL`, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:
 
 Here I use mamba to install packages, but conda should work as well:
 
-## Create a new python environment with PyGMT installed:
+## Create a new python environment with PyGMT and GeoPandas installed:
 
     mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
@@ -18,10 +18,10 @@ Here I use mamba to install packages, but conda should work as well:
     cd antarctic_plots
 
 Make a virtual env to install into:
-    mamba create --name antarctic_plots python=3.9 
+    mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
 
-Install the package and PyGMT:
+Install the package and PyGMT/GeoPandas:
     make install
 
 Test the install by running the first few cells of `docs/walkthrough.ipynb`.

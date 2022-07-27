@@ -247,6 +247,7 @@ def mask_from_shp(
         output = mask_grd
     return output
 
+
 # def make_subplots(gridlist, cmaplist, shadinglist, framelist, show=True):
 #     figheight=180 # in mm
 #     #RIS extent
@@ -277,17 +278,17 @@ def mask_from_shp(
 #                           MAP_ANNOT_OBLIQUE = 0, FONT_ANNOT_PRIMARY = '8p,dimgrey',
 #                           MAP_GRID_PEN_PRIMARY = 'dimgrey', MAP_TICK_LENGTH_PRIMARY = '-10p',
 #                           MAP_TICK_PEN_PRIMARY = 'thinnest,dimgrey', FORMAT_GEO_MAP = 'dddF', MAP_POLAR_CAP = '90/90'):
-#             #fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"], F='+gwhite+p0.5p,black+c3p', transparency='20') 
-#             fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"],verbose='e') 
+#             #fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"], F='+gwhite+p0.5p,black+c3p', transparency='20')
+#             fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"],verbose='e')
 #         # Plot Bell et al. 2006 Basins
 #         fig.plot(projection = risproj,
-#                  data = '../shapefiles/bell_2006_outline.shp', 
-#                  pen = 'thick,black', verbose = 'e')    
+#                  data = '../shapefiles/bell_2006_outline.shp',
+#                  pen = 'thick,black', verbose = 'e')
 #         # Plot Goodge 2020 Faults
 #         fig.plot(projection = risproj,
-#                  data = '../shapefiles/goodge_faults.shp', 
+#                  data = '../shapefiles/goodge_faults.shp',
 #                  pen = 'thickest,magenta')
-        
+
 #         # Plot the grounding/coast lines
 #         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_groundingline.shp', pen='0.5p,black', dpi=100,verbose='e')
 #         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_coastline.shp', pen='0.5p,black', dpi=100, verbose='e')
@@ -295,8 +296,8 @@ def mask_from_shp(
 #         barwidth = figwidth/10 * 0.6
 #         bar_offset = figwidth/10 * 0.06
 #         bar_pos = 'jCT+w' + str(barwidth) + 'c+h+ml+e+o0c/' + str(bar_offset) + 'c'
-#         with pygmt.config(FONT_ANNOT_PRIMARY='16p,black', FONT_LABEL='20p,black', 
-#                           MAP_ANNOT_OFFSET_PRIMARY='4p', MAP_TICK_PEN_PRIMARY='1p,black', 
+#         with pygmt.config(FONT_ANNOT_PRIMARY='16p,black', FONT_LABEL='20p,black',
+#                           MAP_ANNOT_OFFSET_PRIMARY='4p', MAP_TICK_PEN_PRIMARY='1p,black',
 #                           MAP_TICK_LENGTH_PRIMARY='6p', MAP_FRAME_PEN='1p,black', MAP_LABEL_OFFSET='8p'):
 #             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, box = '+gwhite+p0.5p,black+c3p', transparency = '20', verbose='e')
 #             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, verbose='e')
@@ -314,7 +315,7 @@ def mask_from_shp(
 #     if len(gridlist)>1:
 #         rows=int(np.ceil(len(gridlist)/2))
 #         cols=int(np.ceil(len(gridlist)/rows))
-#         with fig.subplot(nrows=rows, ncols=cols, region=risreg, projection=risproj, subsize="18c/18c",#subsize='15c/15c', 
+#         with fig.subplot(nrows=rows, ncols=cols, region=risreg, projection=risproj, subsize="18c/18c",#subsize='15c/15c',
 #                          autolabel='+JTL', margins='0.2c/0.5c', frame="WSne"):
 #             for i in range(rows):
 #                 for j in range(cols):
@@ -326,12 +327,12 @@ def mask_from_shp(
 #                                             shading=shadinglist[index],
 #                                             frame=framelist[index])
 #     else:
-#          indiv_subplot(grid=gridlist[0], 
+#          indiv_subplot(grid=gridlist[0],
 #                        cmap=cmaplist[0],
 #                        shading=shadinglist[0],
 #                        frame=framelist[0])
 #     if show==True:
-#         fig.show()   
+#         fig.show()
 
 
 # def plot_grd(
