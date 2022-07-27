@@ -295,6 +295,7 @@ def plot_profile(
         `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
+    
     Other Parameters
     ----------------
     fillnans: bool
