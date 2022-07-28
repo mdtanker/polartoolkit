@@ -44,7 +44,7 @@ Or install from PyPI (docs won't update if you build them!):
     make format
     make check
 
-Fix issues shown in `make check`. If lines are too long, split them. If they are urls, and you want flake8 to ignore the line, ad `# noqa` at the end of the line. 
+Fix issues shown in `make check`. If lines are too long, split them. If they are urls, and you want flake8 to ignore the line, add `# noqa` at the end of the line. 
 
 ### Check the build manually
 
