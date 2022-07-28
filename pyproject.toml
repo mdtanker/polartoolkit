@@ -8,7 +8,7 @@ license = "MIT"
 homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
 repository = "https://github.com/mdtanker/antarctic_plots"
 documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
-keywords = ["antarctica", "plotting", "pygmt", "cross-section"]
+keywords = ["antarctica", "plotting", "pygmt", "cross-section", "bedmap"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -16,11 +16,9 @@ pandas = "^1.4.3"
 numpy = "^1.23.1"
 pooch = "^1.6.0"
 xarray = "^2022.6.0"
-pyproj = "^3.3.1"
 verde = "^1.7.0"
 rioxarray = "^0.11.1"
 netCDF4 = "^1.6.0"
-geopandas = "^0.11.0"
 jupyter-book = "^0.13.0"
 
 [tool.poetry.dev-dependencies]

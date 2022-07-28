@@ -361,7 +361,7 @@ def magnetics(
             verbose="q",
         )
     elif version == "admap2_gdb":
-        files = pooch.retrieve(
+        path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
             known_hash=None,
             processor=pooch.Unzip(),

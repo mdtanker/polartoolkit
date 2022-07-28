@@ -70,7 +70,7 @@ Then run the following:
 This will both build the dist files, and upload to PyPI. Now push the changes to Github and make a release with the matching version #. 
 
 ## Update the dependencies
-The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, do to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. To update any other dependencies, use the below commands:
+The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relygin on `GDAL`. To update any other dependencies, use the below commands:
 
     poetry add <PACKAGE>
 
@@ -81,7 +81,9 @@ or if the package is only for development/documentation
 Then:
 
     poetry lock
-    poetry install
+    poetry install <optionally add --remove-untracked>
+
+Note, you may need to deleted the .lock file, and run `poetry install --remove-untracked for removals to take place. This will take some time.
 
 This will solve the dependencies for the added package, re-write the `poetry.lock` file, and install the new lock file. 
 

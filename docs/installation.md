@@ -8,21 +8,22 @@ Here I use mamba to install packages, but conda should work as well:
     mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
     mamba activate antarctic_plots
 
-## Install the package: 
+## Option 1) Install the PyPI package: 
 
     pip install antarctic-plots
 
-## To install the dev version:
+## Option 2) Install the dev version:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots
 
-Make a virtual env to install into:
-    mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
-    mamba activate antarctic_plots
-
 Install the package and PyGMT/GeoPandas:
+
     make install
+
+Or
+
+    pip install -e .
 
 Test the install by running the first few cells of `docs/walkthrough.ipynb`.
 

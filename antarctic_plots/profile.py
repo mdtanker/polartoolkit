@@ -5,7 +5,6 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
-import warnings
 
 import geopandas as gpd
 import numpy as np
