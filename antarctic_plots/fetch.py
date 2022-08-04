@@ -10,6 +10,7 @@ import pooch
 import pygmt
 import xarray as xr
 from pyproj import Transformer
+from typing import Union
 
 
 def sample_shp(name: str) -> str:

@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import pygmt
 import verde as vd
+from typing import Union
 
 from antarctic_plots import fetch
 

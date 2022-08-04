@@ -12,11 +12,14 @@ import pygmt
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
+from typing import Union
+import warnings
 
+from antarctic_plots import fetch
 
 def get_grid_info(grid):
     """
-    Returns the spacing and region of an input grid.
+    Returns information of the specified grid.
 
     Parameters
     ----------
@@ -25,14 +28,16 @@ def get_grid_info(grid):
 
     Returns
     -------
-    tuple
-        tuple, first item is a string of grid spacing, second item is
-        an array with the region boundaries
+    list
+        (string of grid spacing, array with the region boundaries, data min, data max)
     """
 
     spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
     region = [int(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
-    return spacing, region
+    min = float(pygmt.grdinfo(grid, per_column="n",o=4)[:-1])
+    max = float(pygmt.grdinfo(grid, per_column="n",o=5)[:-1])
+
+    return spacing, region, min, max
 
 
 def dd2dms(dd: float):
@@ -247,187 +252,212 @@ def mask_from_shp(
         output = mask_grd
     return output
 
+def alter_region(
+    starting_region: np.ndarray,
+    zoom: float = 0,
+    n_shift: float = 0,
+    w_shift: float = 0,
+    buffer: float = 0,):
+ 
+    e = starting_region[0] +zoom + w_shift
+    w = starting_region[1] -zoom + w_shift
+    n = starting_region[2] +zoom - n_shift
+    s = starting_region[3] -zoom - n_shift
+    region = [e, w, n, s]
 
-# def make_subplots(gridlist, cmaplist, shadinglist, framelist, show=True):
-#     figheight=180 # in mm
-#     #RIS extent
-# #     ris_xl=-800_000
-# #     ris_yl=-1_500_000
-# #     ris_xh=500_000
-# #     ris_yh=-200_000
-#     #Ross Embayment extent
-#     ris_xl= -760_000
-#     ris_yl= -2_200_000 #N extent
-#     ris_xh= 600_000
-#     ris_yh= -350_000 #S extent
-#     figwidth=figheight*(ris_xh-ris_xl)/(ris_yh-ris_yl)
-#     risratio = (ris_yh - ris_yl) / (figheight/1000)
-#     risreg = str(ris_xl) + '/' + str(ris_xh) + '/' + str(ris_yl) + '/' + str(ris_yh) #W/E/S/N
-#     risproj = "x1:" + str(risratio)
-#     risproj_ll = "s0/-90/-71/1:" + str(risratio)
-#     def indiv_subplot(grid, cmap, shading, frame, region=risreg, projection=risproj):
-#         with pygmt.config(MAP_FRAME_TYPE = 'inside'):
-#             fig.coast(region=region, projection=risproj_ll, land='grey', water='grey', frame = ["nwse", "xf100000", "yf100000", "g0"],verbose='e')
-#         # plot MODIS moa
-#         #fig.grdimage(region=region, projection=projection, grid ='../PyGMT/Venturelli2020/moa750_2009_hp1_v1.1.tif', cmap = '../PyGMT/Venturelli2020/moa.cpt')
-#         # Plot ice velocities
-#         #fig.grdimage(region=region, projection=projection, grid = '../PyGMT/Venturelli2020/antarctic_ice_vel_phase_map_v01-vmag.nc', cmap = '../PyGMT/Venturelli2020/vel.cpt', transparency = 30, nan_transparent =True)
-#         fig.grdimage(grid=grid,region=region, projection=projection, cmap=cmap, shading=shading, nan_transparent=True, dpi=100)
-#         # Plot graticules overtop, at 2d latitude and 15d longitude
-#         with pygmt.config(MAP_ANNOT_OFFSET_PRIMARY = '-2p', MAP_FRAME_TYPE = 'inside',
-#                           MAP_ANNOT_OBLIQUE = 0, FONT_ANNOT_PRIMARY = '8p,dimgrey',
-#                           MAP_GRID_PEN_PRIMARY = 'dimgrey', MAP_TICK_LENGTH_PRIMARY = '-10p',
-#                           MAP_TICK_PEN_PRIMARY = 'thinnest,dimgrey', FORMAT_GEO_MAP = 'dddF', MAP_POLAR_CAP = '90/90'):
-#             #fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"], F='+gwhite+p0.5p,black+c3p', transparency='20')
-#             fig.basemap(region=region, projection=risproj_ll, frame=["NSWE", "xa15g15", "ya2g2"],verbose='e')
-#         # Plot Bell et al. 2006 Basins
-#         fig.plot(projection = risproj,
-#                  data = '../shapefiles/bell_2006_outline.shp',
-#                  pen = 'thick,black', verbose = 'e')
-#         # Plot Goodge 2020 Faults
-#         fig.plot(projection = risproj,
-#                  data = '../shapefiles/goodge_faults.shp',
-#                  pen = 'thickest,magenta')
+    e_buff, w_buff, n_buff, s_buff = int(e-buffer), int(w+buffer), int(n-buffer), int(s+buffer)
 
-#         # Plot the grounding/coast lines
-#         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_groundingline.shp', pen='0.5p,black', dpi=100,verbose='e')
-#         fig.plot(region=region, projection=projection, data='../shapefiles/MEaSUREs_coastline.shp', pen='0.5p,black', dpi=100, verbose='e')
-#         # COLORBAR
-#         barwidth = figwidth/10 * 0.6
-#         bar_offset = figwidth/10 * 0.06
-#         bar_pos = 'jCT+w' + str(barwidth) + 'c+h+ml+e+o0c/' + str(bar_offset) + 'c'
-#         with pygmt.config(FONT_ANNOT_PRIMARY='16p,black', FONT_LABEL='20p,black',
-#                           MAP_ANNOT_OFFSET_PRIMARY='4p', MAP_TICK_PEN_PRIMARY='1p,black',
-#                           MAP_TICK_LENGTH_PRIMARY='6p', MAP_FRAME_PEN='1p,black', MAP_LABEL_OFFSET='8p'):
-#             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, box = '+gwhite+p0.5p,black+c3p', transparency = '20', verbose='e')
-#             fig.colorbar(cmap=cmap, position=bar_pos, frame=frame, verbose='e')
-#         # SCALEBAR
-#         with pygmt.config(FONT_ANNOT_PRIMARY='8p,black', FONT_LABEL='8p,black', MAP_SCALE_HEIGHT='5p', MAP_TICK_PEN_PRIMARY='0.5p,black'):
-# #             fig.basemap(projection=risproj_ll, map_scale='jMB+w400k+c170E/71S+f+l"km"+ar', verbose='e')
-#             scale_offset = figwidth/10 * 0.03
-#             scale_pos = 'jCB+w400k+f+l"km"+ar+o0c/' + str(scale_offset) + 'c'
-#             fig.basemap(projection=risproj_ll, map_scale=scale_pos, F='+gwhite+p0.5p,black', transparency='50',verbose='e')
-#             fig.basemap(projection=risproj_ll, map_scale=scale_pos,verbose='e')
-#         if "profile" in globals():
-#             fig.plot(projection=projection, x=profile.x, y=profile.y, pen='2p,red')
-#     #####################################
-#     fig = pygmt.Figure()
-#     if len(gridlist)>1:
-#         rows=int(np.ceil(len(gridlist)/2))
-#         cols=int(np.ceil(len(gridlist)/rows))
-#         with fig.subplot(nrows=rows, ncols=cols, region=risreg, projection=risproj, subsize="18c/18c",#subsize='15c/15c',
-#                          autolabel='+JTL', margins='0.2c/0.5c', frame="WSne"):
-#             for i in range(rows):
-#                 for j in range(cols):
-#                     index = i * cols + j
-#                     if index < len(gridlist):
-#                         with fig.set_panel(panel=index):
-#                             indiv_subplot(  grid=gridlist[index],
-#                                             cmap=cmaplist[index],
-#                                             shading=shadinglist[index],
-#                                             frame=framelist[index])
-#     else:
-#          indiv_subplot(grid=gridlist[0],
-#                        cmap=cmaplist[0],
-#                        shading=shadinglist[0],
-#                        frame=framelist[0])
-#     if show==True:
-#         fig.show()
+    buffer_region = [e_buff, w_buff, n_buff, s_buff]
+
+    fig_height = 80
+    fig_width = fig_height*(w-e)/(s-n)
+    
+    ratio = (s-n)/(fig_height/1000)
+
+    proj = f"x1:{ratio}"
+
+    print(f"region is {int((w-e)/1e3)} x {int((s-n)/1e3)} km")
+    return region, buffer_region, proj
+
+def set_proj(
+    region : Union[str or np.ndarray],
+    fig_height : float = 10,
+) -> str:
+    """
+    Gives GMT format projection string from region and figure height.
+    Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
+
+    Parameters
+    ----------
+    region : Union[str or np.ndarray]
+        GMT-format region str or list (e, w, n, s) in meters EPSG:3031
+    fig_height : float
+        desired figure height in cm
+
+    Returns
+    -------
+    str
+        _description_
+    """
+    e, w, n, s = region
+    fig_width = (fig_height*10)*(w-e)/(s-n)
+    
+    ratio = (s-n)/(fig_height/100)
+    proj = f"x1:{ratio}"
+    proj_latlon = f"s0/-90/-71/1:{ratio}"
+
+    return proj, proj_latlon, fig_width
 
 
-# def plot_grd(
-#     grid,
-#     cmap: str,
-#     cbar_label: str,
-#     plot_region=None,
-#     cmap_region=None,
-#     coast=False,
-#     grd2cpt_name=False,
-#     origin_shift="initialize",
-# ):
-#     """
-#     Function to automate PyGMT plotting
+def plot_grd(
+    grid : Union[str or xr.DataArray], 
+    cmap : str = 'viridis',
+    plot_region : Union[str or np.ndarray] = None, 
+    coast : bool = False,
+    origin_shift: str = 'initialize',
+    **kwargs
+    ):
+    """
+    Helps easily create PyGMT maps, individually or as subplots.
 
-#     Parameters
-#     ----------
-#     grid : str or xarray.DataArray
-#         grid to plot.
-#     cmap : str
-#         GMT colorscale to use.
-#     cbar_label : str
-#         label to add to colorbar.
-#     plot_region : str or np.ndarray, optional
-#         GMT region to set map extent to, by default is entire Antarctic region
-#     cmap_region : str or np.ndarray, optional
-#         GMT region to define the color scale limits, by default is equal to
-#           plot_region
-#     coast : bool, optional
-#         choose to plot coastline and groundingline, by default False
-#     grd2cpt_name : bool, optional
-#         file name which will be given to a cpt create with pygmt.grd2cpt() and used in
-#         the plot, by default False
-#     origin_shift : str, optional
-#         choose whether to start a new figure:'initialize', create a new subplot to the
-#         right:'xshift', or create a new subplot above:'yshift', by default
-#           "initialize"
-#     """
-#     import warnings
+    Parameters
+    ----------
+    grid : Union[str or xr.DataArray]
+        grid file to plot, either loaded xr.DataArray or string of a filename
+    cmap : str, optional
+        GMT color scale to use, by default 'viridis'
+    plot_region : Union[str or np.ndarray], optional
+        region to plot, by default is extent of input grid
+    coast : bool, optional
+        choose whether to plot Antarctic coastline and grounding line, by default False
+    origin_shift : str, optional
+        set to 'x_shift' to instead add plot to right of previous plot, or 'y_shift' to 
+        add plot above previous plot, by default 'initialize'.
 
-#     warnings.filterwarnings("ignore", message="pandas.Int64Index")
-#     warnings.filterwarnings("ignore", message="pandas.Float64Index")
+    Keyword Args
+    ------------
+    grd2cpt : bool
+        use GMT module grd2cpt to set color scale from grid values, by default is False
+    cmap_region : Union[str or np.ndarray]
+        region to use to define color scale if grd2cpt is True, by default is plot_region
+    cbar_label : str
+        label to add to colorbar.
+    points : pd.DataFrame
+        points to plot on map, must contain columns 'x' and 'y'.
+    square : np.ndarray
+        GMT-format region to use to plot a square.
+    cpt_lims : Union[str or tuple]
+        limits to use for color scale max and min, by default is max and min of data.
+    fig : pygmt.Figure()
+        if adding subplots, set the first returned figure to a variable, and add that 
+        variable as the kwargs 'fig' to subsequent calls to plot_grd.
+    
+    Returns
+    -------
+    PyGMT.Figure() 
+        
 
-#     global fig, projection
-#     if plot_region is None:
-#         plot_region = (-3330000, 3330000, -3330000, 3330000)
-#     if cmap_region is None:
-#         cmap_region = plot_region
+    Example
+    -------
+    ::
 
-#     # initialize figure or shift for new subplot
-#     if origin_shift == "initialize":
-#         fig = pygmt.Figure()
-#     elif origin_shift == "xshift":
-#         fig.shift_origin(xshift=(fig_width + 2) / 10)
-#     elif origin_shift == "yshift":
-#         fig.shift_origin(yshift=(fig_height + 12) / 10)
+        fig = utils.plot_grd('grid1.nc')
 
-#     # set cmap
-#     if grd2cpt_name:
-#         pygmt.grd2cpt(
-#             cmap=cmap,
-#             grid=grid,
-#             region=cmap_region,
-#             background=True,
-#             continuous=True,
-#             output=f"plotting/{grd2cpt_name}.cpt",
-#         )
-#         cmap = f"plotting/{grd2cpt_name}.cpt"
+        utils.plot_grd(
+            'grid2.nc',
+            origin_shift='xshift',
+            fig=fig
+            )
+       
+    
+    """
 
-#     fig.grdimage(
-#         grid=grid,
-#         cmap=cmap,
-#         projection=projection,
-#         region=plot_region,
-#         nan_transparent=True,
-#         frame=["+gwhite"],
-#     )
+    warnings.filterwarnings('ignore', message="pandas.Int64Index")
+    warnings.filterwarnings('ignore', message="pandas.Float64Index")
 
-#     fig.colorbar(cmap=cmap, position="jBC+jTC+h", frame=f'x+l"{cbar_label}"')
+    if plot_region is None:
+        plot_region = get_grid_info(grid)[1]
 
-#     if coast == True:
-#         fig.plot(
-#             projection=projection,
-#             region=plot_region,
-#             # data=gpd.read_file("plotting/GroundingLine_Antarctica_v02.shp"),
-#             data=gpd.read_file(fetch.groundingline()),
-#             pen="1.2p,black",
-#             verbose="q",
-#         )
+    cmap_region = kwargs.get('cmap_region', plot_region) 
+    square = kwargs.get('square', None)
+    cpt_lims = kwargs.get('cpt_lims', None)
 
-#     if plot_region == buffer_reg:
-#         fig.plot(
-#             x=[inv_reg[0], inv_reg[0], inv_reg[1], inv_reg[1], inv_reg[0]],
-#             y=[inv_reg[2], inv_reg[3], inv_reg[3], inv_reg[2], inv_reg[2]],
-#             pen="2p,black",
-#             projection=projection,
-#             region=plot_region,
-#         )
+    proj, proj_latlon, fig_width = set_proj(plot_region)
+
+    # initialize figure or shift for new subplot
+    if origin_shift=='initialize':
+        fig = pygmt.Figure()   
+    elif origin_shift=='xshift':
+        fig=kwargs.get('fig')
+        fig.shift_origin(xshift=(fig_width + 2)/10)
+    elif origin_shift=='yshift':
+        fig=kwargs.get('fig')
+        fig.shift_origin(yshift=(fig_height + 12)/10)
+
+    # set cmap
+    if kwargs.get('grd2cpt', False) is True:
+        pygmt.grd2cpt(
+            cmap=cmap, 
+            grid=grid, 
+            region=kwargs.get('cmap_region'), 
+            background=True, 
+            continuous=True,
+        )
+    elif cpt_lims is not None:
+        pygmt.makecpt(
+            cmap=cmap, 
+            background=True, 
+            continuous=True,
+            series=cpt_lims,
+        )
+    else:
+        min, max = get_grid_info(grid)[2:]
+        pygmt.makecpt(
+            cmap=cmap, 
+            background=True, 
+            continuous=True,
+            series=(min, max),
+        )
+
+    # display grid
+    fig.grdimage(
+        grid=grid,
+        cmap=True,
+        projection=proj, 
+        region=plot_region,
+        nan_transparent=True,
+        frame=['+gwhite'],
+    )
+
+    # display colorbar
+    fig.colorbar(
+        cmap=True, 
+        position='jBC+jTC+h', 
+        frame=f"x+l{kwargs.get('cbar_label',' ')}",
+    )
+
+    # plot groundingline and coastlines    
+    if coast==True:
+        fig.plot(
+            data=fetch.groundingline(),
+            pen="1.2p,black",
+        )
+
+    # add datapoints
+    if kwargs.get('points', None) is not None:
+        fig.plot(
+            x = points.x, 
+            y = points.y, 
+            style = 'c1.2p',
+            color = 'black',
+        )
+
+    # add square
+    if square is not None:
+        fig.plot(
+            x = [square[0], square[0], square[1], square[1], square[0]], 
+            y = [square[2], square[3], square[3], square[2], square[2]], 
+            pen = '2p,black', 
+        )
+    
+    return fig
