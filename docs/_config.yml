@@ -38,9 +38,15 @@ sphinx:
     - 'sphinx.ext.intersphinx'
     - 'sphinx.ext.napoleon'
     - 'sphinx.ext.viewcode'
-    - 'nbsphinx'
-    - 'sphinx_gallery.load_style'
+    - 'sphinx_gallery.gen_gallery'
+    # - 'nbsphinx'
+    # - 'sphinx_gallery.load_style'
   config:
     add_module_names: False
     autodoc_mock_imports: ["pygmt", "geopandas"]
-    source_suffix: ['.rst', '.ipynb']
+    sphinx_gallery_conf : {
+      'examples_dirs': "examples",
+      'gallery_dirs': "auto_examples",
+      # 'image_scrapers': pygmt.sphinx_gallery.PyGMTScraper(),
+                          }
+    # source_suffix: ['.rst', '.ipynb']

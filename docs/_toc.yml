@@ -17,4 +17,6 @@ chapters:
   - title: 🛠️ Contribution guide
     file: contribute
   - title: 👀 Gallery
-    file: gallery/gallery
+    file: auto_examples/index
+  #   file: examples
+    # file: gallery/gallery
