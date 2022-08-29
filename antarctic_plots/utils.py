@@ -5,20 +5,22 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+import warnings
+from typing import Union
+
 import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pygmt
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from typing import Union
-import warnings
 
 from antarctic_plots import fetch
+
+# import seaborn as sns
+
 
 def get_grid_info(grid):
     """
@@ -32,22 +34,26 @@ def get_grid_info(grid):
     Returns
     -------
     list
-        (string of grid spacing, array with the region boundaries, data min, data max)
+        (string of grid spacing,
+        array with the region boundaries,
+        data min,
+        data max,
+        grid registration)
     """
 
     spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
-    region = [int(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
-    min = float(pygmt.grdinfo(grid, per_column="n",o=4)[:-1])
-    max = float(pygmt.grdinfo(grid, per_column="n",o=5)[:-1])
-    
+    region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
+    zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+    zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+
     if isinstance(grid, str):
         grid = pygmt.load_dataarray(grid)
-    
+
     reg = grid.gmt.registration
 
-    registration = 'g' if reg == 0 else 'p'
+    registration = "g" if reg == 0 else "p"
 
-    return spacing, region, min, max, registration
+    return spacing, region, zmin, zmax, registration
 
 
 def dd2dms(dd: float):
@@ -262,36 +268,46 @@ def mask_from_shp(
         output = mask_grd
     return output
 
+
 def alter_region(
     starting_region: np.ndarray,
     zoom: float = 0,
     n_shift: float = 0,
     w_shift: float = 0,
-    buffer: float = 0,):
- 
-    e = starting_region[0] +zoom + w_shift
-    w = starting_region[1] -zoom + w_shift
-    n = starting_region[2] +zoom - n_shift
-    s = starting_region[3] -zoom - n_shift
+    buffer: float = 0,
+    print_reg: bool = False,
+):
+
+    e = starting_region[0] + zoom + w_shift
+    w = starting_region[1] - zoom + w_shift
+    n = starting_region[2] + zoom - n_shift
+    s = starting_region[3] - zoom - n_shift
     region = [e, w, n, s]
 
-    e_buff, w_buff, n_buff, s_buff = int(e-buffer), int(w+buffer), int(n-buffer), int(s+buffer)
+    e_buff, w_buff, n_buff, s_buff = (
+        int(e - buffer),
+        int(w + buffer),
+        int(n - buffer),
+        int(s + buffer),
+    )
 
     buffer_region = [e_buff, w_buff, n_buff, s_buff]
 
     fig_height = 80
-    fig_width = fig_height*(w-e)/(s-n)
-    
-    ratio = (s-n)/(fig_height/1000)
+    fig_width = fig_height * (w - e) / (s - n)
+
+    ratio = (s - n) / (fig_height / 1000)
 
     proj = f"x1:{ratio}"
 
-    print(f"inner region is {int((w-e)/1e3)} x {int((s-n)/1e3)} km")
+    if print_reg is True:
+        print(f"inner region is {int((w-e)/1e3)} x {int((s-n)/1e3)} km")
     return region, buffer_region, proj
 
+
 def set_proj(
-    region : Union[str or np.ndarray],
-    fig_height : float = 10,
+    region: Union[str or np.ndarray],
+    fig_height: float = 10,
 ) -> str:
     """
     Gives GMT format projection string from region and figure height.
@@ -310,175 +326,21 @@ def set_proj(
         _description_
     """
     e, w, n, s = region
-    fig_width = (fig_height*10)*(w-e)/(s-n)
-    
-    ratio = (s-n)/(fig_height/100)
+    fig_width = fig_height * (w - e) / (s - n)
+
+    ratio = (s - n) / (fig_height / 100)
     proj = f"x1:{ratio}"
     proj_latlon = f"s0/-90/-71/1:{ratio}"
 
-    return proj, proj_latlon, fig_width
-
-
-def plot_grd(
-    grid : Union[str or xr.DataArray], 
-    cmap : str = 'viridis',
-    plot_region : Union[str or np.ndarray] = None, 
-    coast : bool = False,
-    origin_shift: str = 'initialize',
-    **kwargs
-    ):
-    """
-    Helps easily create PyGMT maps, individually or as subplots.
-
-    Parameters
-    ----------
-    grid : Union[str or xr.DataArray]
-        grid file to plot, either loaded xr.DataArray or string of a filename
-    cmap : str, optional
-        GMT color scale to use, by default 'viridis'
-    plot_region : Union[str or np.ndarray], optional
-        region to plot, by default is extent of input grid
-    coast : bool, optional
-        choose whether to plot Antarctic coastline and grounding line, by default False
-    origin_shift : str, optional
-        set to 'x_shift' to instead add plot to right of previous plot, or 'y_shift' to 
-        add plot above previous plot, by default 'initialize'.
-
-    Keyword Args
-    ------------
-    grd2cpt : bool
-        use GMT module grd2cpt to set color scale from grid values, by default is False
-    cmap_region : Union[str or np.ndarray]
-        region to use to define color scale if grd2cpt is True, by default is plot_region
-    cbar_label : str
-        label to add to colorbar.
-    points : pd.DataFrame
-        points to plot on map, must contain columns 'x' and 'y'.
-    square : np.ndarray
-        GMT-format region to use to plot a square.
-    cpt_lims : Union[str or tuple]
-        limits to use for color scale max and min, by default is max and min of data.
-    fig : pygmt.Figure()
-        if adding subplots, set the first returned figure to a variable, and add that 
-        variable as the kwargs 'fig' to subsequent calls to plot_grd.
-    
-    Returns
-    -------
-    PyGMT.Figure() 
-        
-
-    Example
-    -------
-    ::
-
-        fig = utils.plot_grd('grid1.nc')
-
-        utils.plot_grd(
-            'grid2.nc',
-            origin_shift='xshift',
-            fig=fig
-            )
-       
-    
-    """
-
-    warnings.filterwarnings('ignore', message="pandas.Int64Index")
-    warnings.filterwarnings('ignore', message="pandas.Float64Index")
-
-    if plot_region is None:
-        plot_region = get_grid_info(grid)[1]
-
-    cmap_region = kwargs.get('cmap_region', plot_region) 
-    square = kwargs.get('square', None)
-    cpt_lims = kwargs.get('cpt_lims', None)
-
-    proj, proj_latlon, fig_width = set_proj(plot_region)
-
-    # initialize figure or shift for new subplot
-    if origin_shift=='initialize':
-        fig = pygmt.Figure()   
-    elif origin_shift=='xshift':
-        fig=kwargs.get('fig')
-        fig.shift_origin(xshift=(fig_width + 2)/10)
-    elif origin_shift=='yshift':
-        fig=kwargs.get('fig')
-        fig.shift_origin(yshift=(fig_height + 12)/10)
-
-    # set cmap
-    if kwargs.get('grd2cpt', False) is True:
-        pygmt.grd2cpt(
-            cmap=cmap, 
-            grid=grid, 
-            region=kwargs.get('cmap_region'), 
-            background=True, 
-            continuous=True,
-        )
-    elif cpt_lims is not None:
-        pygmt.makecpt(
-            cmap=cmap, 
-            background=True, 
-            continuous=True,
-            series=cpt_lims,
-        )
-    else:
-        min, max = get_grid_info(grid)[2:]
-        pygmt.makecpt(
-            cmap=cmap, 
-            background=True, 
-            continuous=True,
-            series=(min, max),
-        )
-
-    # display grid
-    fig.grdimage(
-        grid=grid,
-        cmap=True,
-        projection=proj, 
-        region=plot_region,
-        nan_transparent=True,
-        frame=['+gwhite'],
-    )
-
-    # display colorbar
-    fig.colorbar(
-        cmap=True, 
-        position='jBC+jTC+h', 
-        frame=f"x+l{kwargs.get('cbar_label',' ')}",
-    )
-
-    # plot groundingline and coastlines    
-    if coast==True:
-        fig.plot(
-            data=fetch.groundingline(),
-            pen="1.2p,black",
-        )
-
-    # add datapoints
-    if kwargs.get('points', None) is not None:
-        fig.plot(
-            x = points.x, 
-            y = points.y, 
-            style = 'c1.2p',
-            color = 'black',
-        )
-
-    # add square
-    if square is not None:
-        fig.plot(
-            x = [square[0], square[0], square[1], square[1], square[0]], 
-            y = [square[2], square[3], square[3], square[2], square[2]], 
-            pen = '2p,black', 
-        )
-    
-    return fig
+    return proj, proj_latlon, fig_width, fig_height
 
 
 def grd_trend(
-    da: xr.DataArray, 
-    coords: list =['x', 'y', 'z'], 
-    deg: int =1,
-    plot_all: bool =False,
-    ):
+    da: xr.DataArray,
+    coords: list = ["x", "y", "z"],
+    deg: int = 1,
+    plot_all: bool = False,
+):
     """
     Fit an arbitrary order trend to a grid and use it to detrend.
 
@@ -499,52 +361,73 @@ def grd_trend(
         returns xr.DataArrays of the fitted surface, and the detrended grid.
     """
 
-    df = vd.grid_to_table(da).astype('float64')
+    df = vd.grid_to_table(da).astype("float64")
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
-    df['fit'] = trend.predict((df[coords[0]], df[coords[1]]))
-    df['detrend'] = df[coords[2]] - df.fit
+    df["fit"] = trend.predict((df[coords[0]], df[coords[1]]))
+    df["detrend"] = df[coords[2]] - df.fit
 
     info = get_grid_info(da)
     spacing = info[0]
     region = info[1]
     registration = info[4]
 
-    fit = pygmt.xyz2grd(data=df[[coords[0], coords[1], 'fit']], 
-                region=region,
-                spacing=spacing,
-                registration=registration,)
-    
-    detrend = pygmt.xyz2grd(data=df[[coords[0], coords[1], 'detrend']], 
-                region=region,
-                spacing=spacing,
-                registration=registration,)
+    fit = pygmt.xyz2grd(
+        data=df[[coords[0], coords[1], "fit"]],
+        region=region,
+        spacing=spacing,
+        registration=registration,
+    )
+
+    detrend = pygmt.xyz2grd(
+        data=df[[coords[0], coords[1], "detrend"]],
+        region=region,
+        spacing=spacing,
+        registration=registration,
+    )
 
     if plot_all is True:
-        fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20,20))
-        da.plot(ax=ax[0], robust=True, cmap='viridis',
-            cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8), 'label':'test'})
-        ax[0].set_title('Input grid')
-        fit.plot(ax=ax[1], robust=True,  cmap='viridis',
-            cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8)})
-        ax[1].set_title(f'Trend order {deg}')
-        detrend.plot(ax=ax[2], robust=True,  cmap='viridis',
-            cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8)})
-        ax[2].set_title('Detrended')
+        fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+        da.plot(
+            ax=ax[0],
+            robust=True,
+            cmap="viridis",
+            cbar_kwargs={
+                "orientation": "horizontal",
+                "anchor": (1, 1.8),
+                "label": "test",
+            },
+        )
+        ax[0].set_title("Input grid")
+        fit.plot(
+            ax=ax[1],
+            robust=True,
+            cmap="viridis",
+            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+        )
+        ax[1].set_title(f"Trend order {deg}")
+        detrend.plot(
+            ax=ax[2],
+            robust=True,
+            cmap="viridis",
+            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+        )
+        ax[2].set_title("Detrended")
         for a in ax:
             a.set_xticklabels([])
             a.set_yticklabels([])
-            a.set_xlabel('')
-            a.set_ylabel('')
-            a.set_aspect('equal')
+            a.set_xlabel("")
+            a.set_ylabel("")
+            a.set_aspect("equal")
     return fit, detrend
 
+
 def grd_compare(
-    da1: Union[xr.DataArray, str], 
-    da2: Union[xr.DataArray, str], 
+    da1: Union[xr.DataArray, str],
+    da2: Union[xr.DataArray, str],
     **kwargs,
-    ):
+):
     """
-    Find the difference between 2 grids and plot the results, if necessary resample and 
+    Find the difference between 2 grids and plot the results, if necessary resample and
     cut grids to match
 
     Parameters
@@ -565,7 +448,7 @@ def grd_compare(
     xr.DataArray
         the result of da1 - da2
     """
-    shp_mask = kwargs.get('shp_mask', None)
+    shp_mask = kwargs.get("shp_mask", None)
 
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
@@ -586,80 +469,86 @@ def grd_compare(
     n = max(da1_reg[2], da2_reg[2])
     s = min(da1_reg[3], da2_reg[3])
 
-    region = [e,w,n,s]
+    region = [e, w, n, s]
 
     if (da1_spacing != da2_spacing) and (da1_reg != da2_reg):
-        print('grid spacings and regions dont match, using smaller spacing',
-            f'({spacing}m) and inner region.')
-        grid1 = pygmt.grdsample(da1, spacing = spacing, region = region, 
-            registration='p')
-        grid2 = pygmt.grdsample(da2, spacing = spacing, region = region, 
-            registration='p')
+        print(
+            "grid spacings and regions dont match, using smaller spacing",
+            f"({spacing}m) and inner region.",
+        )
+        grid1 = pygmt.grdsample(da1, spacing=spacing, region=region, registration="p")
+        grid2 = pygmt.grdsample(da2, spacing=spacing, region=region, registration="p")
     elif da1_spacing != da2_spacing:
-        print('grid spacings dont match, using smaller spacing of supplied grids')
-        grid1 = pygmt.grdsample(da1, spacing = spacing, registration='p')
-        grid2 = pygmt.grdsample(da2, spacing = spacing, registration='p')
+        print("grid spacings dont match, using smaller spacing of supplied grids")
+        grid1 = pygmt.grdsample(da1, spacing=spacing, registration="p")
+        grid2 = pygmt.grdsample(da2, spacing=spacing, registration="p")
     elif da1_reg != da2_reg:
-        print('grid regions dont match, using inner region of supplied grids')
-        grid1 = pygmt.grdcut(da1, region = region, registration='p')
-        grid2 = pygmt.grdcut(da2, region = region, registration='p')
+        print("grid regions dont match, using inner region of supplied grids")
+        grid1 = pygmt.grdcut(da1, region=region, registration="p")
+        grid2 = pygmt.grdcut(da2, region=region, registration="p")
     else:
-        print('grid regions and spacing match')
-        grid1=da1
-        grid2=da2
+        print("grid regions and spacing match")
+        grid1 = da1
+        grid2 = da2
 
-    dif = grid1 - grid2 
+    dif = grid1 - grid2
 
     vmin = min((np.nanmin(da1), np.nanmin(da2)))
     vmax = max((np.nanmax(da1), np.nanmax(da2)))
 
-    if kwargs.get('robust', False) is True:
+    if kwargs.get("robust", False) is True:
         vmin, vmax = None, None
     if shp_mask is not None:
-        masked1 = mask_from_shp(shp_mask, xr_grid=grid1, 
-                masked=True, invert=False)
-        masked2 = mask_from_shp(shp_mask, xr_grid=grid2, 
-                masked=True, invert=False)          
+        masked1 = mask_from_shp(shp_mask, xr_grid=grid1, masked=True, invert=False)
+        masked2 = mask_from_shp(shp_mask, xr_grid=grid2, masked=True, invert=False)
         vmin = min((np.nanmin(masked1), np.nanmin(masked2)))
         vmax = max((np.nanmax(masked1), np.nanmax(masked2)))
- 
-    fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20,20))
-    grid1.plot(ax=ax[0], cmap = 'viridis', 
-        vmin = vmin, vmax= vmax, 
+
+    fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+    grid1.plot(
+        ax=ax[0],
+        cmap="viridis",
+        vmin=vmin,
+        vmax=vmax,
         robust=True,
-        cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8)}
-        )
-    grid2.plot(ax=ax[1], cmap = 'viridis', 
-        vmin = vmin, vmax= vmax, 
+        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+    )
+    grid2.plot(
+        ax=ax[1],
+        cmap="viridis",
+        vmin=vmin,
+        vmax=vmax,
         robust=True,
-        cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8)}
-        )
-    dif.plot(ax=ax[2], robust=True, 
-        cbar_kwargs={'orientation':'horizontal', 'anchor':(1,1.8)}
-        )
+        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+    )
+    dif.plot(
+        ax=ax[2],
+        robust=True,
+        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+    )
     for a in ax:
         a.set_xticklabels([])
         a.set_yticklabels([])
-        a.set_xlabel('')
-        a.set_ylabel('')
-        a.set_aspect('equal')
+        a.set_xlabel("")
+        a.set_ylabel("")
+        a.set_aspect("equal")
 
     return dif
 
 
 def make_grid(
     region: Union[str, np.ndarray],
-    spacing: float, 
-    value: float, 
+    spacing: float,
+    value: float,
     name: str,
-    ):
+):
     """
     Return a xr.Dataset with variable 'name' of constant value.
 
     Parameters
     ----------
     region : str or np.ndarray
-        GMT format region for the inverion, by default is extent of gravity data, 
+        GMT format region for the inverion, by default is extent of gravity data,
     spacing : float
         spacing for grid
     value : float
@@ -668,18 +557,18 @@ def make_grid(
         name for variable
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
-    data = np.ones_like(coords[0])+value
-    grid = vd.make_xarray_grid(coords, data, dims=['y','x'], data_names=name)
+    data = np.ones_like(coords[0]) + value
+    grid = vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
     return grid
 
 
 def raps(
-    data : Union[pd.DataFrame, xr.DataArray, xr.Dataset], 
-    names : np.ndarray,
-    plot_type: str = 'mpl',
+    data: Union[pd.DataFrame, xr.DataArray, xr.Dataset],
+    names: np.ndarray,
+    plot_type: str = "mpl",
     filter: str = None,
-    **kwargs
-    ):
+    **kwargs,
+):
     """
     Compute and plot the Radially Averaged Power Spectrum input data.
 
@@ -698,97 +587,99 @@ def raps(
     Keyword Args
     ------------
     region : Union[str, np.ndarray]
-        grid region if input is not a grid 
+        grid region if input is not a grid
     spacing : float
         grid spacing if input is not a grid
     """
-    region = kwargs.get('region', None)
-    spacing = kwargs.get('spacing', None)
+    region = kwargs.get("region", None)
+    spacing = kwargs.get("spacing", None)
 
-    if plot_type == 'pygmt':
-            import random
-            spec = pygmt.Figure()
-            spec.basemap(
-                    region='10/1000/.001/10000', 
-                    projection="X-10cl/10cl", 
-                    frame=["WSne", 'xa1f3p+l"Wavelength (km)"',
-                        'ya1f3p+l"Power (mGal@+2@+km)"'])
-    elif plot_type == 'mpl':
+    if plot_type == "pygmt":
+        import random
+
+        spec = pygmt.Figure()
+        spec.basemap(
+            region="10/1000/.001/10000",
+            projection="X-10cl/10cl",
+            frame=[
+                "WSne",
+                'xa1f3p+l"Wavelength (km)"',
+                'ya1f3p+l"Power (mGal@+2@+km)"',
+            ],
+        )
+    elif plot_type == "mpl":
         plt.figure()
-    for i,j in enumerate(names):
-            if isinstance(data, pd.DataFrame):
-                df = data
-                grid = pygmt.xyz2grd(df[['x','y', j]], registration='p', 
-                            region=region, spacing=spacing,)
-                pygmt.grdfill(grid, mode='n', outgrid='tmp_outputs/fft.nc')
-                grid = 'tmp_outputs/fft.nc'
-            elif isinstance(data, str):
-                grid = data
-            elif isinstance(data, list):
-                data[i].to_netcdf('tmp_outputs/fft.nc')
-                pygmt.grdfill('tmp_outputs/fft.nc', mode='n', 
-                    outgrid='tmp_outputs/fft.nc')
-                grid = 'tmp_outputs/fft.nc'
-            elif isinstance(data, xr.Dataset):
-                data[j].to_netcdf('tmp_outputs/fft.nc')
-                pygmt.grdfill('tmp_outputs/fft.nc', mode='n', 
-                    outgrid='tmp_outputs/fft.nc')
-                grid = 'tmp_outputs/fft.nc'
-            elif isinstance(data, xr.DataArray):
-                data.to_netcdf('tmp_outputs/fft.nc')
-                pygmt.grdfill('tmp_outputs/fft.nc', mode='n', 
-                    outgrid='tmp_outputs/fft.nc')
-                grid = 'tmp_outputs/fft.nc'
-            if filter is not None:
-                with pygmt.clib.Session() as session:
-                    fin = grid
-                    fout = 'tmp_outputs/fft.nc'
-                    args = f"{fin} -F{filter} -D0 -G{fout}"
-                    session.call_module('grdfilter', args)
-                grid = 'tmp_outputs/fft.nc'
+    for i, j in enumerate(names):
+        if isinstance(data, pd.DataFrame):
+            df = data
+            grid = pygmt.xyz2grd(
+                df[["x", "y", j]],
+                registration="p",
+                region=region,
+                spacing=spacing,
+            )
+            pygmt.grdfill(grid, mode="n", outgrid="tmp_outputs/fft.nc")
+            grid = "tmp_outputs/fft.nc"
+        elif isinstance(data, str):
+            grid = data
+        elif isinstance(data, list):
+            data[i].to_netcdf("tmp_outputs/fft.nc")
+            pygmt.grdfill("tmp_outputs/fft.nc", mode="n", outgrid="tmp_outputs/fft.nc")
+            grid = "tmp_outputs/fft.nc"
+        elif isinstance(data, xr.Dataset):
+            data[j].to_netcdf("tmp_outputs/fft.nc")
+            pygmt.grdfill("tmp_outputs/fft.nc", mode="n", outgrid="tmp_outputs/fft.nc")
+            grid = "tmp_outputs/fft.nc"
+        elif isinstance(data, xr.DataArray):
+            data.to_netcdf("tmp_outputs/fft.nc")
+            pygmt.grdfill("tmp_outputs/fft.nc", mode="n", outgrid="tmp_outputs/fft.nc")
+            grid = "tmp_outputs/fft.nc"
+        if filter is not None:
             with pygmt.clib.Session() as session:
-                fin = grid 
-                fout = 'tmp_outputs/raps.txt'
-                args = f"{fin} -Er+wk -Na+d -G{fout}"
-                session.call_module('grdfft', args)
-            if plot_type == 'mpl':
-                raps = pd.read_csv('tmp_outputs/raps.txt', header=None, 
-                    delimiter='\t', 
-                    names=('wavelength','power','stdev'))
-                ax = sns.lineplot(raps.wavelength, raps.power, 
-                    label=j, palette='viridis')
-                ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
-                ax.set_xlabel('Wavelength (km)')
-                ax.set_ylabel('Radially Averaged Power ($mGal^{2}km$)')
-                
-            elif plot_type == 'pygmt':
-                color=f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"
-                spec.plot('tmp_outputs/raps.txt', pen=f"1p,{color}")
-                spec.plot(
-                        'tmp_outputs/raps.txt',
-                        color=color,
-                        style='T5p',
-                        # error_bar='y+p0.5p',
-                        label=j,
-                        )
-    if plot_type == 'mpl':
-            ax.invert_xaxis()
-            ax.set_yscale('log')
-            ax.set_xlim(200,0)
-            # ax.set_xscale('log')
-    elif plot_type == 'pygmt':
-            spec.show()
-    
+                fin = grid
+                fout = "tmp_outputs/fft.nc"
+                args = f"{fin} -F{filter} -D0 -G{fout}"
+                session.call_module("grdfilter", args)
+            grid = "tmp_outputs/fft.nc"
+        with pygmt.clib.Session() as session:
+            fin = grid
+            fout = "tmp_outputs/raps.txt"
+            args = f"{fin} -Er+wk -Na+d -G{fout}"
+            session.call_module("grdfft", args)
+        if plot_type == "mpl":
+            # raps = pd.read_csv('tmp_outputs/raps.txt', header=None,
+            #     delimiter='\t',
+            #     names=('wavelength','power','stdev'))
+            # ax = sns.lineplot(raps.wavelength, raps.power,
+            #     label=j, palette='viridis')
+            # ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
+            # ax.set_xlabel('Wavelength (km)')
+            # ax.set_ylabel('Radially Averaged Power ($mGal^{2}km$)')
+            pass
+        elif plot_type == "pygmt":
+            color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"
+            spec.plot("tmp_outputs/raps.txt", pen=f"1p,{color}")
+            spec.plot(
+                "tmp_outputs/raps.txt",
+                color=color,
+                style="T5p",
+                # error_bar='y+p0.5p',
+                label=j,
+            )
+    if plot_type == "mpl":
+        ax.invert_xaxis()
+        ax.set_yscale("log")
+        ax.set_xlim(200, 0)
+        # ax.set_xscale('log')
+    elif plot_type == "pygmt":
+        spec.show()
+
     # plt.phase_spectrum(df_anomalies.ice_forward_grav, label='phase spectrum')
     # plt.psd(df_anomalies.ice_forward_grav, label='psd')
     # plt.legend()
 
 
-def coherency(
-    grids : list, 
-    label : str,
-    **kwargs
-    ):
+def coherency(grids: list, label: str, **kwargs):
     """
     Compute and plot the Radially Averaged Power Spectrum input data.
 
@@ -806,44 +697,65 @@ def coherency(
     spacing : float
         grid spacing if input is pd.DataFrame
     """
-    region = kwargs.get('region', None)
-    spacing = kwargs.get('spacing', None)
+    region = kwargs.get("region", None)
+    spacing = kwargs.get("spacing", None)
 
     # plt.figure()
 
     if isinstance(grids[0], (str, xr.DataArray)):
-        pygmt.grdfill(grids[0], mode='n', outgrid=f'tmp_outputs/fft_1.nc')
-        pygmt.grdfill(grids[1], mode='n', outgrid=f'tmp_outputs/fft_2.nc')
-    
+        pygmt.grdfill(grids[0], mode="n", outgrid=f"tmp_outputs/fft_1.nc")
+        pygmt.grdfill(grids[1], mode="n", outgrid=f"tmp_outputs/fft_2.nc")
+
     elif isinstance(grids[0], pd.DataFrame):
-        grid1 = pygmt.xyz2grd(grids[0], registration='p', 
-                    region=region, spacing=spacing,)
-        grid2 = pygmt.xyz2grd(grids[1], registration='p', 
-                    region=region, spacing=spacing,)    
-        pygmt.grdfill(grid1, mode='n', outgrid=f'tmp_outputs/fft_1.nc')
-        pygmt.grdfill(grid2, mode='n', outgrid=f'tmp_outputs/fft_2.nc')
+        grid1 = pygmt.xyz2grd(
+            grids[0],
+            registration="p",
+            region=region,
+            spacing=spacing,
+        )
+        grid2 = pygmt.xyz2grd(
+            grids[1],
+            registration="p",
+            region=region,
+            spacing=spacing,
+        )
+        pygmt.grdfill(grid1, mode="n", outgrid=f"tmp_outputs/fft_1.nc")
+        pygmt.grdfill(grid2, mode="n", outgrid=f"tmp_outputs/fft_2.nc")
 
     with pygmt.clib.Session() as session:
         fin1 = "tmp_outputs/fft_1.nc"
         fin2 = "tmp_outputs/fft_2.nc"
-        fout = 'tmp_outputs/coherency.txt'
+        fout = "tmp_outputs/coherency.txt"
         args = f"{fin1} {fin2} -E+wk+n -Na+d -G{fout}"
-        session.call_module('grdfft', args)
+        session.call_module("grdfft", args)
 
-    df = pd.read_csv('tmp_outputs/coherency.txt', header=None,delimiter='\t', 
-    names=(
-        'Wavelength (km)', 
-        'Xpower', 'stdev_xp',
-        'Ypower', 'stdev_yp',
-        'coherent power', 'stdev_cp',
-        'noise power', 'stdev_np',
-        'phase', 'stdev_p',
-        'admittance', 'stdev_a',
-        'gain', 'stdev_g',
-        'coherency', 'stdev_c'))
-    ax = sns.lineplot(df['Wavelength (km)'], df.coherency, label=label)
-    ax = sns.scatterplot(x=df['Wavelength (km)'], y=df.coherency)
-    
+    df = pd.read_csv(
+        "tmp_outputs/coherency.txt",
+        header=None,
+        delimiter="\t",
+        names=(
+            "Wavelength (km)",
+            "Xpower",
+            "stdev_xp",
+            "Ypower",
+            "stdev_yp",
+            "coherent power",
+            "stdev_cp",
+            "noise power",
+            "stdev_np",
+            "phase",
+            "stdev_p",
+            "admittance",
+            "stdev_a",
+            "gain",
+            "stdev_g",
+            "coherency",
+            "stdev_c",
+        ),
+    )
+    # ax = sns.lineplot(df['Wavelength (km)'], df.coherency, label=label)
+    # ax = sns.scatterplot(x=df['Wavelength (km)'], y=df.coherency)
+
     ax.invert_xaxis()
     # ax.set_yscale('log')
     # ax.set_xscale('log')

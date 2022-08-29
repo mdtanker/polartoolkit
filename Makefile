@@ -56,6 +56,9 @@ run_doc_files:
 build_docs:
 	jupyter-book build docs/
 
+# html-noplot:
+#         $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+
 publish:
 	poetry publish --build
 

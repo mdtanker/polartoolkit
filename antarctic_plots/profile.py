@@ -6,14 +6,15 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
+from typing import Union
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pygmt
 import verde as vd
-from typing import Union
 
-from antarctic_plots import fetch
+from antarctic_plots import fetch, maps, utils
 
 
 def create_profile(
@@ -355,19 +356,13 @@ def plot_profile(
 
     if add_map is True:
         # Automatic data extent + buffer as % of line length
+        df_reg = vd.get_region((df_layers.x, df_layers.y))
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.2)
-        e = df_layers.x.min() - buffer
-        w = df_layers.x.max() + buffer
-        n = df_layers.y.min() - buffer
-        s = df_layers.y.max() + buffer
-
+        fig_reg = utils.alter_region(df_reg, buffer=buffer)[1]
         # Set figure parameters
-        fig_height = 90  # in mm
-        fig_width = fig_height * (w - e) / (s - n)
-        fig_ratio = (s - n) / (fig_height / 1000)
-        fig_reg = [e, w, n, s]
-        fig_proj = "x1:" + str(fig_ratio)
-        fig_proj_ll = "s0/-90/-71/1:" + str(fig_ratio)
+        fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
+            fig_reg, fig_height=9
+        )
 
         fig.coast(
             region=fig_reg,
@@ -444,7 +439,7 @@ def plot_profile(
             clearance="+tO",
         )
         # shift figure to the right to make space for x-section and profiles
-        fig.shift_origin(xshift=(fig_width / 10) + 1)
+        fig.shift_origin(xshift=(fig_width) + 1)
 
     # PLOT CROSS SECTION AND PROFILES
     # add space above and below top and bottom of cross-section

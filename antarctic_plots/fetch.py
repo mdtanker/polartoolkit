@@ -5,12 +5,13 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+from typing import Union
+
 import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
 from pyproj import Transformer
-from typing import Union
 
 
 def sample_shp(name: str) -> str:
@@ -206,7 +207,11 @@ def deepbedmap(
 
 
 def gravity(
-    type: str, plot: bool = False, info: bool = False, region=None, spacing=10e3
+    type: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=10e3,
 ) -> xr.DataArray:
     """
     Loads an Antarctic gravity grid
@@ -265,7 +270,11 @@ def gravity(
 
 
 def magnetics(
-    version: str, plot: bool = False, info: bool = False, region=None, spacing=10e3
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=10e3,
 ) -> xr.DataArray:
     """
     Load 1 of 4 'versions' of Antarctic magnetic anomaly grid.
@@ -284,7 +293,7 @@ def magnetics(
     Parameters
     ----------
     version : str
-        Either 'admap2', 'admap1', 'admap2_eq_src', or 'admap2_gdb'
+        Either 'admap1', 'admap2_eq_src', or 'admap2_gdb'
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -301,20 +310,20 @@ def magnetics(
     """
     if region is None:
         region = (-3330000, 3330000, -3330000, 3330000)
-    if version == "admap2":
-        path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
-        grd = xr.load_dataarray(path)
-        grd = grd.squeeze()
-        grd = pygmt.grdfilter(
-            grid=grd,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            verbose="q",
-        )
-    elif version == "admap1":
+    # if version == "admap2":
+    #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
+    #     grd = xr.load_dataarray(path)
+    #     grd = grd.squeeze()
+    #     grd = pygmt.grdfilter(
+    #         grid=grd,
+    #         filter=f"g{spacing}",
+    #         spacing=spacing,
+    #         region=region,
+    #         distance="0",
+    #         nans="r",
+    #         verbose="q",
+    #     )
+    if version == "admap1":
         path = pooch.retrieve(
             url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
             known_hash=None,

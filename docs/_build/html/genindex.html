@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,6 +25,7 @@
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -33,6 +34,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -43,6 +45,7 @@
     <script src="_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="_static/design-tabs.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -53,7 +56,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -113,8 +116,8 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="walkthrough.html">
-   🚶 Walkthrough
+  <a class="reference internal" href="tutorial/walkthrough.html">
+   🚶 Tutorial
   </a>
  </li>
  <li class="toctree-l1">
@@ -135,6 +138,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    🛠️ Contribution guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gallery/gallery.html">
+   👀 Gallery
   </a>
  </li>
 </ul>
@@ -292,6 +300,8 @@ title="Open an issue"
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#antarctic_plots.utils.alter_region">alter_region() (in module antarctic_plots.utils)</a>
+</li>
       <li>
     antarctic_plots.fetch
 
@@ -300,14 +310,21 @@ title="Open an issue"
 </li>
       </ul></li>
       <li>
+    antarctic_plots.maps
+
+      <ul>
+        <li><a href="api.html#module-antarctic_plots.maps">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     antarctic_plots.profile
 
       <ul>
         <li><a href="api.html#module-antarctic_plots.profile">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     antarctic_plots.utils
 
@@ -332,6 +349,10 @@ title="Open an issue"
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#antarctic_plots.utils.coherency">coherency() (in module antarctic_plots.utils)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#antarctic_plots.profile.create_profile">create_profile() (in module antarctic_plots.profile)</a>
 </li>
@@ -377,9 +398,13 @@ title="Open an issue"
 </li>
       <li><a href="api.html#antarctic_plots.utils.GMT_reg_xy_to_ll">GMT_reg_xy_to_ll() (in module antarctic_plots.utils)</a>
 </li>
+      <li><a href="api.html#antarctic_plots.fetch.gravity">gravity() (in module antarctic_plots.fetch)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#antarctic_plots.fetch.gravity">gravity() (in module antarctic_plots.fetch)</a>
+      <li><a href="api.html#antarctic_plots.utils.grd_compare">grd_compare() (in module antarctic_plots.utils)</a>
+</li>
+      <li><a href="api.html#antarctic_plots.utils.grd_trend">grd_trend() (in module antarctic_plots.utils)</a>
 </li>
       <li><a href="api.html#antarctic_plots.fetch.groundingline">groundingline() (in module antarctic_plots.fetch)</a>
 </li>
@@ -409,6 +434,8 @@ title="Open an issue"
 </li>
       <li><a href="api.html#antarctic_plots.profile.make_data_dict">make_data_dict() (in module antarctic_plots.profile)</a>
 </li>
+      <li><a href="api.html#antarctic_plots.utils.make_grid">make_grid() (in module antarctic_plots.utils)</a>
+</li>
       <li><a href="api.html#antarctic_plots.utils.mask_from_shp">mask_from_shp() (in module antarctic_plots.utils)</a>
 </li>
   </ul></td>
@@ -418,6 +445,8 @@ title="Open an issue"
 
       <ul>
         <li><a href="api.html#module-antarctic_plots.fetch">antarctic_plots.fetch</a>
+</li>
+        <li><a href="api.html#module-antarctic_plots.maps">antarctic_plots.maps</a>
 </li>
         <li><a href="api.html#module-antarctic_plots.profile">antarctic_plots.profile</a>
 </li>
@@ -430,6 +459,10 @@ title="Open an issue"
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#antarctic_plots.maps.plot_grd">plot_grd() (in module antarctic_plots.maps)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#antarctic_plots.profile.plot_profile">plot_profile() (in module antarctic_plots.profile)</a>
 </li>
   </ul></td>
@@ -437,6 +470,10 @@ title="Open an issue"
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#antarctic_plots.utils.raps">raps() (in module antarctic_plots.utils)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#antarctic_plots.utils.reg_str_to_df">reg_str_to_df() (in module antarctic_plots.utils)</a>
 </li>
@@ -448,9 +485,11 @@ title="Open an issue"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#antarctic_plots.profile.sample_grids">sample_grids() (in module antarctic_plots.profile)</a>
 </li>
+      <li><a href="api.html#antarctic_plots.fetch.sample_shp">sample_shp() (in module antarctic_plots.fetch)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#antarctic_plots.fetch.sample_shp">sample_shp() (in module antarctic_plots.fetch)</a>
+      <li><a href="api.html#antarctic_plots.utils.set_proj">set_proj() (in module antarctic_plots.utils)</a>
 </li>
       <li><a href="api.html#antarctic_plots.profile.shorten">shorten() (in module antarctic_plots.profile)</a>
 </li>

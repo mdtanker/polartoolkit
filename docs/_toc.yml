@@ -6,8 +6,8 @@ root: index # first page,
 chapters:
   - title: ⬇️ Installation
     file: installation
-  - title: 🚶 Walkthrough
-    file: walkthrough
+  - title: 🚶 Tutorial
+    file: tutorial/walkthrough
   - title: ℹ️ Tips
     file: tips
   - title: 📖 API reference
@@ -16,3 +16,5 @@ chapters:
     file: changelog
   - title: 🛠️ Contribution guide
     file: contribute
+  - title: 👀 Gallery
+    file: gallery/gallery

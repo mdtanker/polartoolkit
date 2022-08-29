@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>API Reference &#8212; Antarctic-plots</title>
     
@@ -26,6 +26,7 @@
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -34,6 +35,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -44,6 +46,7 @@
     <script src="_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="_static/design-tabs.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -56,7 +59,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Tips for choosing profile locations" href="tips.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -116,8 +119,8 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="walkthrough.html">
-   🚶 Walkthrough
+  <a class="reference internal" href="tutorial/walkthrough.html">
+   🚶 Tutorial
   </a>
  </li>
  <li class="toctree-l1">
@@ -138,6 +141,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    🛠️ Contribution guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gallery/gallery.html">
+   👀 Gallery
   </a>
  </li>
 </ul>
@@ -247,7 +255,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/api.rst"
+        <a href="https://github.com/mdtanker/antarctic_plots/edit/main/docs/api.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -275,7 +283,7 @@ title="Edit this page"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="_sources/api.rst"
+        <a href="_sources/api.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -286,7 +294,7 @@ title="Download source file"
 <span class="headerbtn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.rst</span>
+<span class="headerbtn__text-container">.md</span>
 </a>
 
       </li>
@@ -335,6 +343,11 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-antarctic_plots.maps">
+   Maps
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.profile">
    Profile
   </a>
@@ -369,6 +382,11 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-antarctic_plots.maps">
+   Maps
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-antarctic_plots.profile">
    Profile
   </a>
@@ -393,16 +411,69 @@ title="Print to PDF"
                 
               <div>
                 
-  <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
+<section id="module-antarctic_plots.maps">
+<span id="maps"></span><h2>Maps<a class="headerlink" href="#module-antarctic_plots.maps" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.maps.plot_grd">
+<span class="sig-name descname"><span class="pre">plot_grd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coast</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'initialize'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/maps.html#plot_grd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.maps.plot_grd" title="Permalink to this definition">#</a></dt>
+<dd><p>Helps easily create PyGMT maps, individually or as subplots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>xr.DataArray</em><em>]</em>) – grid file to plot, either loaded xr.DataArray or string of a filename</p></li>
+<li><p><strong>cmap</strong> (<em>str</em><em>, </em><em>optional</em>) – GMT color scale to use, by default ‘viridis’</p></li>
+<li><p><strong>plot_region</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>np.ndarray</em><em>]</em><em>, </em><em>optional</em>) – region to plot, by default is extent of input grid</p></li>
+<li><p><strong>coast</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose whether to plot Antarctic coastline and grounding line, by default False</p></li>
+<li><p><strong>origin_shift</strong> (<em>str</em><em>, </em><em>optional</em>) – automatically will create a new figure, set to ‘xshift’ to instead add plot to
+right of previous plot, or ‘yshift’ to add plot above previous plot, by
+default ‘initialize’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>grd2cpt</strong> (<em>bool</em>) – use GMT module grd2cpt to set color scale from grid values, by default is False</p></li>
+<li><p><strong>cmap_region</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>np.ndarray</em><em>]</em>) – region to use to define color scale if grd2cpt is True, by default is plot_region</p></li>
+<li><p><strong>cbar_label</strong> (<em>str</em>) – label to add to colorbar.</p></li>
+<li><p><strong>points</strong> (<em>pd.DataFrame</em>) – points to plot on map, must contain columns ‘x’ and ‘y’.</p></li>
+<li><p><strong>square</strong> (<em>np.ndarray</em>) – GMT-format region to use to plot a square.</p></li>
+<li><p><strong>cpt_lims</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>tuple</em><em>]</em>) – limits to use for color scale max and min, by default is max and min of data.</p></li>
+<li><p><strong>fig</strong> (<em>pygmt.Figure</em><em>(</em><em>)</em>) – if adding subplots, set the first returned figure to a variable, and add that
+variable as the kwargs ‘fig’ to subsequent calls to plot_grd.</p></li>
+<li><p><strong>grid_lines</strong> (<em>bool</em>) – choose to plot lat/long grid lines, by default is False</p></li>
+<li><p><strong>inset</strong> (<em>bool</em>) – choose to plot inset map showing figure location, by default is False</p></li>
+<li><p><strong>inset_pos</strong> (<em>str</em>) – position for inset map; either ‘TL’, ‘TR’, BL’, ‘BR’, by default is ‘TL’</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PyGMT.Figure()</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">antarctic_plots</span> <span class="kn">import</span> <span class="n">maps</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">plot_grd</span><span class="p">(</span><span class="s1">&#39;grid1.nc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">plot_grd</span><span class="p">(</span>
+<span class="gp">... </span><span class="s1">&#39;grid2.nc&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">origin_shift</span> <span class="o">=</span> <span class="s1">&#39;xshift&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
 <section id="module-antarctic_plots.profile">
-<span id="profile"></span><h2>Profile<a class="headerlink" href="#module-antarctic_plots.profile" title="Permalink to this headline">#</a></h2>
+<span id="profile"></span><h2>Profile<a class="headerlink" href="#module-antarctic_plots.profile" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.profile.create_profile">
-<span class="sig-name descname"><span class="pre">create_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#create_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.create_profile" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shp_num_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#create_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.create_profile" title="Permalink to this definition">#</a></dt>
 <dd><p>Create a pandas DataFrame of points along a line with multiple methods.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> (<em>str</em>) – Choose sampling method, either “points” or “shapefile”</p></li>
 <li><p><strong>start</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Coordinates for starting point of profile, by default None</p></li>
@@ -412,11 +483,11 @@ title="Print to PDF"
 <li><p><strong>shapefile</strong> (<em>str</em><em>, </em><em>optional</em>) – shapefile file name to create points along, by default None</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dataframe with ‘x’, ‘y’, and ‘dist’ columns for points along line or shapefile
 path.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.Dataframe</p>
 </dd>
 </dl>
@@ -427,13 +498,13 @@ path.</p>
 <span class="sig-name descname"><span class="pre">default_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/antarctic_plots/profile.html#default_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.default_data" title="Permalink to this definition">#</a></dt>
 <dd><p>Fetch default gravity and magnetic datasets.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>region</strong> (<em>str</em><em> or </em><em>list</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – region of Antarctic to load, by default is entire Antarctic region.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Nested dictionary of data and attributes</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict[dict]</p>
 </dd>
 </dl>
@@ -444,10 +515,10 @@ path.</p>
 <span class="sig-name descname"><span class="pre">default_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/antarctic_plots/profile.html#default_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.default_layers" title="Permalink to this definition">#</a></dt>
 <dd><p>Fetch default Bedmap2 layers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Nested dictionary of Bedmap2 layers and attributes</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict[dict]</p>
 </dd>
 </dl>
@@ -458,13 +529,13 @@ path.</p>
 <span class="sig-name descname"><span class="pre">fill_nans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#fill_nans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.fill_nans" title="Permalink to this definition">#</a></dt>
 <dd><p>Fill NaN’s in sampled layer with values from above layer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – First 3 columns as they are assumed to by x, y, dist.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dataframe with NaN’s of lower layers filled</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
@@ -475,17 +546,17 @@ path.</p>
 <span class="sig-name descname"><span class="pre">make_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/antarctic_plots/profile.html#make_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.make_data_dict" title="Permalink to this definition">#</a></dt>
 <dd><p>Create nested dictionary of data and attributes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>names</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – data names</p></li>
 <li><p><strong>grids</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>xarray.DataArray</em><em>]</em>) – files or xarray.DataArray’s</p></li>
 <li><p><strong>colors</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – colors to plot data</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Nested dictionaries of grids and attributes</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict[dict]</p>
 </dd>
 </dl>
@@ -496,7 +567,7 @@ path.</p>
 <span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#plot_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.plot_profile" title="Permalink to this definition">#</a></dt>
 <dd><p>Show sampled layers and/or data on a cross section, with an optional location map.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> (<em>str</em>) – Choose the sample method, either ‘points’, or ‘shapefile’.</p></li>
 <li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with <cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
@@ -504,7 +575,7 @@ path.</p>
 <li><p><strong>add_map</strong> (<em>bool = False</em>) – Choose whether to add a location map, by default is False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Keyword Arguments</dt>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>fillnans</strong> (<em>bool</em>) – Choose whether to fill nans in layers, defaults to True.</p></li>
 <li><p><strong>clip</strong> (<em>bool</em>) – Choose whether to clip the profile based on distance.</p></li>
@@ -527,17 +598,17 @@ path.</p>
 <span class="sig-name descname"><span class="pre">sample_grids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#sample_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.sample_grids" title="Permalink to this definition">#</a></dt>
 <dd><p>Sample data at every point along a line</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Dataframe containing columns ‘x’, ‘y’</p></li>
 <li><p><strong>grid</strong> (<em>str</em><em> or </em><em>xr.DataArray</em>) – Grid to sample, either file name or xr.DataArray</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name for sampled column, by default is str(grid)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dataframe with new column (name) of sample values from (grid)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
@@ -548,17 +619,17 @@ path.</p>
 <span class="sig-name descname"><span class="pre">shorten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/profile.html#shorten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.profile.shorten" title="Permalink to this definition">#</a></dt>
 <dd><p>Shorten a dataframe at either end based on distance column.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Dataframe to shorten and recalculate distance, must contain ‘x’, ‘y’, ‘dist’</p></li>
 <li><p><strong>max_dist</strong> (<em>int</em><em>, </em><em>optional</em>) – remove rows with dist&gt;max_dist, by default None</p></li>
 <li><p><strong>min_dist</strong> (<em>int</em><em>, </em><em>optional</em>) – remove rows with dist&lt;min_dist, by default None</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Shortened dataframe</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
@@ -566,26 +637,26 @@ path.</p>
 
 </section>
 <section id="module-antarctic_plots.fetch">
-<span id="fetch"></span><h2>Fetch<a class="headerlink" href="#module-antarctic_plots.fetch" title="Permalink to this headline">#</a></h2>
+<span id="fetch"></span><h2>Fetch<a class="headerlink" href="#module-antarctic_plots.fetch" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.basement">
-<span class="sig-name descname"><span class="pre">basement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#basement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.basement" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">basement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#basement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.basement" title="Permalink to this definition">#</a></dt>
 <dd><p>Load a grid of basement topography.
 Offshore and sub-Ross Ice Shelf basement topography.
 from Tankersley et al. 2022:
 <a class="reference external" href="https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371">https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371</a>
 offshore data from Lindeque et al. 2016: <a class="reference external" href="https://doi.org/10.1002/2016GC006401">https://doi.org/10.1002/2016GC006401</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – plot the fetched grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – print info on the fetched grid, by default False</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dataarray of basement depths</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
@@ -593,21 +664,21 @@ offshore data from Lindeque et al. 2016: <a class="reference external" href="htt
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.bedmap2">
-<span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
 <dd><p>Load bedmap2 data. Note, nan’s in surface grid are set to 0.
 from <a class="reference external" href="https://doi.org/10.5194/tc-7-375-2013">https://doi.org/10.5194/tc-7-375-2013</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layer</strong> (<em>str</em>) – choose which layer to fetch, ‘thickness’, ‘bed’, ‘surface’, or ‘geiod_to_WGS84’</p></li>
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns a bedmap2 grid</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
@@ -615,12 +686,12 @@ from <a class="reference external" href="https://doi.org/10.5194/tc-7-375-2013">
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.deepbedmap">
-<span class="sig-name descname"><span class="pre">deepbedmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#deepbedmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.deepbedmap" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">deepbedmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#deepbedmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.deepbedmap" title="Permalink to this definition">#</a></dt>
 <dd><p>Load DeepBedMap data,  from Leong and Horgan, 2020:
 <a class="reference external" href="https://doi.org/10.5194/tc-14-3687-2020">https://doi.org/10.5194/tc-14-3687-2020</a>
 Accessed from <a class="reference external" href="https://zenodo.org/record/4054246#.Ysy344RByp0">https://zenodo.org/record/4054246#.Ysy344RByp0</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
@@ -628,10 +699,10 @@ Accessed from <a class="reference external" href="https://zenodo.org/record/4054
 <li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing to resample the loaded grid to, by default 10e3</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of DeepBedMap.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
@@ -639,13 +710,13 @@ Accessed from <a class="reference external" href="https://zenodo.org/record/4054
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.gravity">
-<span class="sig-name descname"><span class="pre">gravity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#gravity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.gravity" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">gravity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#gravity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.gravity" title="Permalink to this definition">#</a></dt>
 <dd><p>Loads an Antarctic gravity grid
 Preliminary compilation of Antarctica gravity and gravity gradient data.
 Updates on 2016 AntGG compilation.
 Accessed from <a class="reference external" href="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/">https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>type</strong> (<em>str</em>) – either ‘FA’ or ‘BA’, for free-air and bouguer anomalies, respectively.</p></li>
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
@@ -654,11 +725,11 @@ Accessed from <a class="reference external" href="https://ftp.space.dtu.dk/pub/R
 <li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing to resample the loaded grid to, by default 10e3</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of either free-air or
 Bouguer gravity anomalies.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
@@ -672,10 +743,10 @@ Antarctic groundingline shape file, from
 <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.819147">https://doi.pangaea.de/10.1594/PANGAEA.819147</a>
 Supplement to Depoorter et al. 2013: <a class="reference external" href="https://doi.org/10.1038/nature12567">https://doi.org/10.1038/nature12567</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>file path</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
 </dd>
 </dl>
@@ -690,10 +761,10 @@ will replace with below once figured out login issue with pooch
 MODIS Mosaic of Antarctica: <a class="reference external" href="https://doi.org/10.5067/68TBT0CGJSOJ">https://doi.org/10.5067/68TBT0CGJSOJ</a>
 Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/">https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/</a> # noqa</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>file path</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
 </dd>
 </dl>
@@ -701,7 +772,7 @@ Assessed from <a class="reference external" href="https://daacdata.apps.nsidc.or
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.magnetics">
-<span class="sig-name descname"><span class="pre">magnetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#magnetics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.magnetics" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">magnetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#magnetics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.magnetics" title="Permalink to this definition">#</a></dt>
 <dd><p>Load 1 of 4 ‘versions’ of Antarctic magnetic anomaly grid.
 version=’admap2’
 ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
@@ -715,19 +786,19 @@ version=’admap2_gdb’
 Geosoft-specific .gdb abridged files. Accessed from
 <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download">https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>version</strong> (<em>str</em>) – Either ‘admap2’, ‘admap1’, ‘admap2_eq_src’, or ‘admap2_gdb’</p></li>
+<li><p><strong>version</strong> (<em>str</em>) – Either ‘admap1’, ‘admap2_eq_src’, or ‘admap2_gdb’</p></li>
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
 <li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT-format region to clip the loaded grid to, by default doesn’t clip</p></li>
 <li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing to resample the loaded grid to, by default 10e3</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of magnetic anomalies.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
@@ -738,14 +809,14 @@ Geosoft-specific .gdb abridged files. Accessed from
 <span class="sig-name descname"><span class="pre">sample_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#sample_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.sample_shp" title="Permalink to this definition">#</a></dt>
 <dd><p>Load the file path of sample shapefiles</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – chose which sample shapefile to load, either ‘Disco_deep_transect’ or
 ‘Roosevelt_Island’</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>file path as a string</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -753,20 +824,46 @@ Geosoft-specific .gdb abridged files. Accessed from
 
 </section>
 <section id="module-antarctic_plots.utils">
-<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-antarctic_plots.utils" title="Permalink to this headline">#</a></h2>
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-antarctic_plots.utils" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.GMT_reg_xy_to_ll">
 <span class="sig-name descname"><span class="pre">GMT_reg_xy_to_ll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#GMT_reg_xy_to_ll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.GMT_reg_xy_to_ll" title="Permalink to this definition">#</a></dt>
 <dd><p>Convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>input</strong> (<em>np.ndarray</em>) – Array of 4 strings in GMT format; [e, w, n, s] in meters</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Array of 4 strings in GMT format; [e, w, n, s] in lat, lon</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.alter_region">
+<span class="sig-name descname"><span class="pre">alter_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#alter_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.alter_region" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.coherency">
+<span class="sig-name descname"><span class="pre">coherency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#coherency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.coherency" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute and plot the Radially Averaged Power Spectrum input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> (<em>list</em>) – list of 2 grids to calculate the cohereny between.
+grid format can be str (filename), xr.DataArray, or pd.DataFrame.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – used to label line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>region</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – grid region if input is pd.DataFrame</p></li>
+<li><p><strong>spacing</strong> (<em>float</em>) – grid spacing if input is pd.DataFrame</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -777,13 +874,13 @@ Geosoft-specific .gdb abridged files. Accessed from
 <dd><p>Convert decimal degrees to minutes, seconds. Modified from
 <a class="reference external" href="https://stackoverflow.com/a/10286690/18686384">https://stackoverflow.com/a/10286690/18686384</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dd</strong> (<em>float</em>) – input decimal degrees</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>degrees in the format “DD:MM:SS”</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -797,7 +894,7 @@ Geosoft-specific .gdb abridged files. Accessed from
 EPSG:4326 WGS84 in decimal degrees.</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pd.DataFrame</em>) – input dataframe with easting and northing columns</p></li>
 <li><p><strong>reg</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, returns a GMT formatted region string, by default False</p></li>
@@ -805,11 +902,11 @@ EPSG:4326 WGS84 in decimal degrees.</p>
 <li><p><strong>output</strong> (<em>list</em><em>, </em><em>optional</em>) – set names for output columns, by default [“lon”, “lat”]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Updated dataframe with new latitude and longitude columns or np.ndarray in
 format [e, w, n, s]</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame or np.ndarray</p>
 </dd>
 </dl>
@@ -818,16 +915,68 @@ format [e, w, n, s]</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.get_grid_info">
 <span class="sig-name descname"><span class="pre">get_grid_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#get_grid_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.get_grid_info" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the spacing and region of an input grid.</p>
+<dd><p>Returns information of the specified grid.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>grid</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – Input grid to get info from. Filename string or loaded grid.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>tuple, first item is a string of grid spacing, second item is
-an array with the region boundaries</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(string of grid spacing,
+array with the region boundaries,
+data min,
+data max,
+grid registration)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.grd_compare">
+<span class="sig-name descname"><span class="pre">grd_compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">da2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#grd_compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.grd_compare" title="Permalink to this definition">#</a></dt>
+<dd><p>Find the difference between 2 grids and plot the results, if necessary resample and
+cut grids to match</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>da1</strong> (<em>xr.DataArray</em><em> or </em><em>str</em>) – first grid, loaded grid of filename</p></li>
+<li><p><strong>da2</strong> (<em>xr.DataArray</em><em> or </em><em>str</em>) – second grid, loaded grid of filename</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>shp_mask</strong> (<em>str</em>) – shapefile filename to use to mask the grids for setting the color range.</p></li>
+<li><p><strong>robust</strong> (<em>bool</em>) – use xarray robust color lims instead of min and max, by default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the result of da1 - da2</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>xr.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.grd_trend">
+<span class="sig-name descname"><span class="pre">grd_trend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y',</span> <span class="pre">'z']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#grd_trend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.grd_trend" title="Permalink to this definition">#</a></dt>
+<dd><p>Fit an arbitrary order trend to a grid and use it to detrend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>da</strong> (<em>xr.DataArray</em>) – input grid</p></li>
+<li><p><strong>coords</strong> (<em>list</em><em>, </em><em>optional</em>) – coordinate names of grid, by default [‘x’, ‘y’, ‘z’]</p></li>
+<li><p><strong>deg</strong> (<em>int</em><em>, </em><em>optional</em>) – trend order to use, by default 1</p></li>
+<li><p><strong>plot_all</strong> (<em>bool</em><em>, </em><em>optional</em>) – plot the results, by default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns xr.DataArrays of the fitted surface, and the detrended grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -839,7 +988,7 @@ an array with the region boundaries</p>
 <dd><p>Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
 Polar Stereographic in meters.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pd.DataFrame</em>) – input dataframe with latitude and longitude columns</p></li>
 <li><p><strong>reg</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, returns a GMT formatted region string, by default False</p></li>
@@ -847,12 +996,28 @@ Polar Stereographic in meters.</p>
 <li><p><strong>output</strong> (<em>list</em><em>, </em><em>optional</em>) – set names for output columns, by default [“x”, “y”]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Updated dataframe with new easting and northing columns or np.ndarray in format
 [e, w, n, s]</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.make_grid">
+<span class="sig-name descname"><span class="pre">make_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#make_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.make_grid" title="Permalink to this definition">#</a></dt>
+<dd><p>Return a xr.Dataset with variable ‘name’ of constant value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em>) – GMT format region for the inverion, by default is extent of gravity data,</p></li>
+<li><p><strong>spacing</strong> (<em>float</em>) – spacing for grid</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – constant value to use for variable</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name for variable</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -862,7 +1027,7 @@ Polar Stereographic in meters.</p>
 <span class="sig-name descname"><span class="pre">mask_from_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xr_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'epsg:3031'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#mask_from_shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.mask_from_shp" title="Permalink to this definition">#</a></dt>
 <dd><p>Create a mask or a masked grid from area inside or outside of a closed shapefile.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>shapefile</strong> (<em>str</em>) – path to .shp filename, must by in same directory as accompanying files : .shx,
 .prj, .dbf, should be a closed polygon file.</p></li>
@@ -880,11 +1045,35 @@ default False</p></li>
 an epsg code, by default “epsg:3031”</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns either a masked grid, or the mask grid itself.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xarray.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.raps">
+<span class="sig-name descname"><span class="pre">raps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dataset</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mpl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#raps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.raps" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute and plot the Radially Averaged Power Spectrum input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>pd.DataFrame</em><em>, </em><em>str</em><em>, </em><em>list</em><em>, </em><em>xr.Dataset</em><em>, </em><em>xr.Dataarray</em><em>]</em>) – if dataframe: need with columns ‘x’, ‘y’, and other columns to calc RAPS for.
+if str: should be a .nc or .tif file.
+if list: list of grids or filenames.</p></li>
+<li><p><strong>names</strong> (<em>np.ndarray</em>) – names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or files to calculate and plot RAPS for.</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – choose whether to plot with PyGMT or matplotlib, by default ‘mpl’</p></li>
+<li><p><strong>filter</strong> (<em>str</em>) – GMT string to use for pre-filtering data, ex. “c100e3+h” is a 100km low-pass cosine filter, by default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>region</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – grid region if input is not a grid</p></li>
+<li><p><strong>spacing</strong> (<em>float</em>) – grid spacing if input is not a grid</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -895,22 +1084,69 @@ an epsg code, by default “epsg:3031”</p></li>
 <dd><p>Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of
 region corners</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input</strong> (<em>np.ndarray</em>) – Array of 4 strings in GMT format; [e, w, n, s]</p></li>
 <li><p><strong>names</strong> (<em>list</em><em>, </em><em>optional</em>) – Names of names to use for easting and northing, by default [“x”, “y”]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dataframe with easting and northing columns, and a row for each corner of the
 region.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.utils.set_proj">
+<span class="sig-name descname"><span class="pre">set_proj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/antarctic_plots/utils.html#set_proj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.set_proj" title="Permalink to this definition">#</a></dt>
+<dd><p>Gives GMT format projection string from region and figure height.
+Inspired from <a class="reference external" href="https://github.com/mrsiegfried/Venturelli2020-GRL">https://github.com/mrsiegfried/Venturelli2020-GRL</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>np.ndarray</em><em>]</em>) – GMT-format region str or list (e, w, n, s) in meters EPSG:3031</p></li>
+<li><p><strong>fig_height</strong> (<em>float</em>) – desired figure height in cm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<!-- .. API Reference
+.. =============
+
+.. Maps
+.. --------
+.. .. automodule:: antarctic_plots.maps
+..     :members:
+..     :undoc-members:
+
+.. Profile
+.. --------
+.. .. automodule:: antarctic_plots.profile
+..     :members:
+..     :undoc-members:
+
+.. Fetch
+.. --------
+.. .. automodule:: antarctic_plots.fetch
+..     :members:
+..     :undoc-members:
+
+.. Utils
+.. --------
+.. .. automodule:: antarctic_plots.utils
+..     :members:
+..     :undoc-members: -->
 </section>
 </section>
 

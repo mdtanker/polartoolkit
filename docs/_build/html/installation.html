@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Installation &#8212; Antarctic-plots</title>
     
@@ -26,6 +26,7 @@
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -34,6 +35,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -44,6 +46,7 @@
     <script src="_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="_static/design-tabs.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -53,10 +56,10 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="canonical" href="https://antarctic-plots.readthedocs.io/en/latest/installation.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Walkthrough" href="walkthrough.html" />
+    <link rel="next" title="Walkthrough" href="tutorial/walkthrough.html" />
     <link rel="prev" title="Antarctic-plots" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -116,8 +119,8 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="walkthrough.html">
-   🚶 Walkthrough
+  <a class="reference internal" href="tutorial/walkthrough.html">
+   🚶 Tutorial
   </a>
  </li>
  <li class="toctree-l1">
@@ -138,6 +141,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    🛠️ Contribution guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gallery/gallery.html">
+   👀 Gallery
   </a>
  </li>
 </ul>
@@ -335,18 +343,18 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed">
-   Create a new python environment with PyGMT and GeoPandas installed:
+  <a class="reference internal nav-link" href="#create-an-environment">
+   Create an environment:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-   install the package (latest stable release, see Contribution guide for installing the development version):
+  <a class="reference internal nav-link" href="#option-1-install-the-pypi-package">
+   Option 1) Install the PyPI package:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#to-install-the-latest-development-version-from-github">
-   To install the latest development version from Github:
+  <a class="reference internal nav-link" href="#option-2-install-the-dev-version">
+   Option 2) Install the dev version:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -374,18 +382,18 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed">
-   Create a new python environment with PyGMT and GeoPandas installed:
+  <a class="reference internal nav-link" href="#create-an-environment">
+   Create an environment:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-   install the package (latest stable release, see Contribution guide for installing the development version):
+  <a class="reference internal nav-link" href="#option-1-install-the-pypi-package">
+   Option 1) Install the PyPI package:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#to-install-the-latest-development-version-from-github">
-   To install the latest development version from Github:
+  <a class="reference internal nav-link" href="#option-2-install-the-dev-version">
+   Option 2) Install the dev version:
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -404,37 +412,40 @@ title="Print to PDF"
               <div>
                 
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
 <p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> and <code class="docutils literal notranslate"><span class="pre">GeoPandas</span></code> require <code class="docutils literal notranslate"><span class="pre">GDAL</span></code>, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
 <p>Here I use mamba to install packages, but conda should work as well:</p>
-<section id="create-a-new-python-environment-with-pygmt-and-geopandas-installed">
-<h2>Create a new python environment with PyGMT and GeoPandas installed:<a class="headerlink" href="#create-a-new-python-environment-with-pygmt-and-geopandas-installed" title="Permalink to this headline">#</a></h2>
+<section id="create-an-environment">
+<h2>Create an environment:<a class="headerlink" href="#create-an-environment" title="Permalink to this heading">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
 mamba activate antarctic_plots
 </pre></div>
 </div>
 </section>
-<section id="install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version">
-<h2>install the package (latest stable release, see Contribution guide for installing the development version):<a class="headerlink" href="#install-the-package-latest-stable-release-see-contribution-guide-for-installing-the-development-version" title="Permalink to this headline">#</a></h2>
+<section id="option-1-install-the-pypi-package">
+<h2>Option 1) Install the PyPI package:<a class="headerlink" href="#option-1-install-the-pypi-package" title="Permalink to this heading">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install antarctic-plots
 </pre></div>
 </div>
 </section>
-<section id="to-install-the-latest-development-version-from-github">
-<h2>To install the latest development version from Github:<a class="headerlink" href="#to-install-the-latest-development-version-from-github" title="Permalink to this headline">#</a></h2>
+<section id="option-2-install-the-dev-version">
+<h2>Option 2) Install the dev version:<a class="headerlink" href="#option-2-install-the-dev-version" title="Permalink to this heading">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mdtanker/antarctic_plots.git
 cd antarctic_plots
 </pre></div>
 </div>
-<p>Make a virtual env to install into:
-mamba create –name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
-mamba activate antarctic_plots</p>
-<p>Install the package and PyGMT/GeoPandas:
-make install</p>
+<p>Install the package and PyGMT/GeoPandas:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>make install
+</pre></div>
+</div>
+<p>Or</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install -e .
+</pre></div>
+</div>
 <p>Test the install by running the first few cells of <code class="docutils literal notranslate"><span class="pre">docs/walkthrough.ipynb</span></code>.</p>
 </section>
 <section id="common-errors">
-<h2>Common errors<a class="headerlink" href="#common-errors" title="Permalink to this headline">#</a></h2>
+<h2>Common errors<a class="headerlink" href="#common-errors" title="Permalink to this heading">#</a></h2>
 <p>If you get an error related to traitlets run the following command as discussed <a class="reference external" href="https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285">here</a>:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install ipykernel --update-deps --force-reinstall
 </pre></div>
@@ -476,7 +487,7 @@ make install</p>
             <p class="prev-next-title">Antarctic-plots</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="walkthrough.html" title="next page">
+    <a class='right-next' id="next-link" href="tutorial/walkthrough.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Walkthrough</p>
