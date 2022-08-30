@@ -117,6 +117,103 @@ def basement(plot: bool = False, info: bool = False) -> xr.DataArray:
     return grd
 
 
+def bedmachine(
+    layer: str,
+    reference: str = 'geoid',
+    plot: bool = False, 
+    info: bool = False, 
+    region=None, 
+    spacing=10e3
+) -> xr.DataArray:
+    """
+    Load BedMachine data,  from Morlighem et al. 2020:
+    https://doi.org/10.1038/s41561-019-0510-8
+
+    orignally from https://nsidc.org/data/nsidc-0756/versions/1.
+    Added to Google Bucket as described in the following notebook:
+        https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
+
+    Parameters
+    ----------
+    layer : str
+        choose which layer to fetch:
+        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed', 'source'
+        'icebase' will give results of surface-thickness
+    reference : str
+        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid' (WGS84), by default is 'geoid'
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of DeepBedMap.
+    """
+
+    if region is None:
+        region = (-2800e3, 2800e3, -2800e3, 2800e3)
+    path = pooch.retrieve(
+        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",
+        known_hash=None,
+        progressbar=True,
+    )
+
+    if layer == 'icebase':
+        surface = pygmt.grdfilter(
+            grid=f"{path}?surface",
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        thickness = pygmt.grdfilter(
+            grid=f"{path}?thickness",
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        grd = surface - thickness
+
+    else:
+        grd = pygmt.grdfilter(
+            grid=f"{path}?{layer}",
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+
+    if reference == 'ellipsoid':
+        geoid = pygmt.grdfilter(
+            grid=f"{path}?geoid",
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        grd = grd + geoid
+        
+    if plot is True:
+        grd.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(grd))
+    return grd
+
 def bedmap2(
     layer: str,
     plot: bool = False,
@@ -159,7 +256,10 @@ def bedmap2(
 
 
 def deepbedmap(
-    plot: bool = False, info: bool = False, region=None, spacing=10e3
+    plot: bool = False, 
+    info: bool = False, 
+    region=None, 
+    spacing=10e3
 ) -> xr.DataArray:
     """
     Load DeepBedMap data,  from Leong and Horgan, 2020:
@@ -184,7 +284,7 @@ def deepbedmap(
     """
 
     if region is None:
-        region = (-2700000, 2800000, -2200000, 2300000)
+        region = (-2800e3, 2800e3, -2800e3, 2800e3)
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         known_hash=None,
