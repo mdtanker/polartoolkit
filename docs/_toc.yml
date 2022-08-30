@@ -6,8 +6,11 @@ root: index # first page,
 chapters:
   - title: ⬇️ Installation
     file: installation
-  - title: 🚶 Tutorial
-    file: tutorial/walkthrough
+  - title: 📺 Example Gallery
+    # file: auto_examples/index
+    file: gallery/gallery
+  - title: 🚶 Tutorials
+    file: tutorial/profile_walkthrough.ipynb
   - title: ℹ️ Tips
     file: tips
   - title: 📖 API reference
@@ -16,7 +19,3 @@ chapters:
     file: changelog
   - title: 🛠️ Contribution guide
     file: contribute
-  - title: 👀 Gallery
-    file: auto_examples/index
-  #   file: examples
-    # file: gallery/gallery
