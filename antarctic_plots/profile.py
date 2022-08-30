@@ -313,11 +313,17 @@ def plot_profile(
         Change vertical white space within cross-section, by default is 0.1.
     data_buffer: float (0-1)
         Change vertical white space within data graph, by default is 0.1.
+    inset : bool
+        choose to plot inset map showing figure location, by default is True
+    inset_pos : str
+        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
     save: bool
         Choose to save the image, by default is False.
     path: str
         Filename for saving image, by default is None.
     """
+    inset = kwargs.get("inset", True)
+    inset_pos = kwargs.get("inset_pos", "TL")
 
     points = create_profile(method, **kwargs)
 
@@ -438,6 +444,43 @@ def plot_profile(
             justify="CM",
             clearance="+tO",
         )
+
+        # add inset map
+        if inset is True:
+            inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
+            inset_map = f"X{fig_width*.25}c"
+
+            with fig.inset(
+                position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
+                verbose="q",
+            ):
+                gdf = gpd.read_file(fetch.groundingline())
+                fig.plot(
+                    projection=inset_map,
+                    region=inset_reg,
+                    data=gdf[gdf.Id_text == "Ice shelf"],
+                    color="skyblue",
+                )
+                fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
+                fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+
+                fig.plot(
+                    x=[
+                        fig_reg[0],
+                        fig_reg[0],
+                        fig_reg[1],
+                        fig_reg[1],
+                        fig_reg[0],
+                    ],
+                    y=[
+                        fig_reg[2],
+                        fig_reg[3],
+                        fig_reg[3],
+                        fig_reg[2],
+                        fig_reg[2],
+                    ],
+                    pen="1p,black",
+                )
         # shift figure to the right to make space for x-section and profiles
         fig.shift_origin(xshift=(fig_width) + 1)
 
@@ -447,7 +490,7 @@ def plot_profile(
     max = df_layers[df_layers.columns[3:]].max().max()
     y_buffer = (max - min) * kwargs.get("layer_buffer", 0.1)
     # set region for x-section
-    region_layers = [
+    fig_reg = [
         df_layers.dist.min(),
         df_layers.dist.max(),
         min - y_buffer,
@@ -479,11 +522,11 @@ def plot_profile(
                 )
             fig.legend(position="JBR+jBL+o0c", box=True)
             fig.shift_origin(yshift="h+.5c")
-            fig.basemap(region=region_layers, projection="X9c/6c", frame=True)
+            fig.basemap(region=fig_reg, projection="X9c/6c", frame=True)
         except Exception:
             print("error plotting data profiles")
     else:
-        fig.basemap(region=region_layers, projection="X9c/9c", frame=True)
+        fig.basemap(region=fig_reg, projection="X9c/9c", frame=True)
 
     # plot colored df_layers
     for k, v in layers_dict.items():
@@ -501,8 +544,8 @@ def plot_profile(
 
     # plot 'A','B' locations
     fig.text(
-        x=region_layers[0],
-        y=region_layers[3],
+        x=fig_reg[0],
+        y=fig_reg[3],
         text="A",
         font="20p,Helvetica,black",
         justify="CM",
@@ -510,8 +553,8 @@ def plot_profile(
         no_clip=True,
     )
     fig.text(
-        x=region_layers[1],
-        y=region_layers[3],
+        x=fig_reg[1],
+        y=fig_reg[3],
         text="B",
         font="20p,Helvetica,black",
         justify="CM",
