@@ -131,7 +131,7 @@ def bedmachine(
 
     orignally from https://nsidc.org/data/nsidc-0756/versions/1.
     Added to Google Bucket as described in the following notebook:
-        https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
+    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
 
     Parameters
     ----------

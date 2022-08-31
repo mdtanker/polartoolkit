@@ -10,7 +10,7 @@ chapters:
     # file: auto_examples/index
     file: gallery/gallery
   - title: 🚶 Tutorials
-    file: tutorial/profile_walkthrough.ipynb
+    file: tutorial/tutorials
   - title: ℹ️ Tips
     file: tips
   - title: 📖 API reference
