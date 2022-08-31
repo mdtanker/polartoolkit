@@ -9,7 +9,7 @@
 import warnings
 from typing import Union
 
-import geopandas as gpd
+import pyogrio
 import pygmt
 
 from antarctic_plots import fetch, utils
@@ -229,7 +229,8 @@ def plot_grd(
             position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
             verbose="q",
         ):
-            gdf = gpd.read_file(fetch.groundingline())
+            # gdf = gpd.read_file(fetch.groundingline())
+            gdf = pyogrio.read_dataframe(fetch.groundingline())
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,

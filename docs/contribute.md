@@ -1,39 +1,27 @@
 # Contribution guide
 ## Build the docs
-The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included C programs (GMT and GDAL) in a pip-installed package, `PyGMT` and `GeoPandas` aren't included in the package dependencies, so `RTD` can't run the scripts which are part of the docs (i.e. `walkthrough.ipynb`). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
+The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included C programs (GMT and GDAL) in a pip-installed package, `PyGMT` and `GeoPandas` aren't included in the package dependencies, so `Read the Docs` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
 
-Additionally we use `Poetry` as a package manager, which also can't include `PyGMT` or `GeoPandas` successfully. To get around this, we will export the poetry venv, add `PyGMT` and `Geopandas`, run the .ipynb's for the docs, then build the docs.
+Additionally we use `Poetry` as a package manager, which also can't include `PyGMT` or `GeoPandas` successfully (since it installs with Pip). To get around this, we will export the poetry venv, add `PyGMT` and `Geopandas` independently, run the .ipynb's for the docs, then build the docs.
 
 ### Set up a virtual environment
 
-Set up the poetry virutal environment:
+Set up the poetry virtual environment:
 
-    poetry install
+    make poetry_env
 
-Export to a requirements.txt:
+This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
 
-    poetry export -f requirements.txt --output requirements.txt --dev
+Next we need to create a conda/mamba env:
+    make delete_env
+    make new_env
 
-Deactivate poetry shell:
-    
-    deactivate
+This will create a new conda env `antarctic_plots_dev` and install `PyGMT`.
 
-Create a conda/mamba env:
+Activate it and install the package requirements and local antarctic_plots package in editable mode:
 
-    mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
-    mamba activate antarctic_plots
-
-Add pinned dependencies
-
-    pip install --no-deps -r requirements.txt
-
-Install local antarctic_plots in editable mode:
-
-    pip install -e .
-
-Or install from PyPI (docs won't update if you build them!):
-
-    pip install antarctic_plots
+    mamba activate antarctic_plots_dev
+    make install_reqs
 
 ### Run all .ipynb's to update them
 
@@ -78,14 +66,9 @@ or if the package is only for development/documentation
 
     poetry add <PACKAGE> -D
 
-Then:
+Then run through the commands at the top of this page again to update the environement.
 
-    poetry lock
-    poetry install <optionally add --remove-untracked>
 
-Note, you may need to deleted the .lock file, and run `poetry install --remove-untracked for removals to take place. This will take some time.
-
-This will solve the dependencies for the added package, re-write the `poetry.lock` file, and install the new lock file. 
 
 <!-- This uses the doc_requirements.txt included in the repository, which was create with the below code:
 

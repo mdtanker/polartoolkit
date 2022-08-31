@@ -8,7 +8,6 @@
 import warnings
 from typing import Union
 
-import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -647,14 +646,14 @@ def raps(
             args = f"{fin} -Er+wk -Na+d -G{fout}"
             session.call_module("grdfft", args)
         if plot_type == "mpl":
-            # raps = pd.read_csv('tmp_outputs/raps.txt', header=None,
-            #     delimiter='\t',
-            #     names=('wavelength','power','stdev'))
-            # ax = sns.lineplot(raps.wavelength, raps.power,
-            #     label=j, palette='viridis')
-            # ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
-            # ax.set_xlabel('Wavelength (km)')
-            # ax.set_ylabel('Radially Averaged Power ($mGal^{2}km$)')
+            raps = pd.read_csv('tmp_outputs/raps.txt', header=None,
+                delimiter='\t',
+                names=('wavelength','power','stdev'))
+            ax = sns.lineplot(raps.wavelength, raps.power,
+                label=j, palette='viridis')
+            ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
+            ax.set_xlabel('Wavelength (km)')
+            ax.set_ylabel('Radially Averaged Power ($mGal^{2}km$)')
             pass
         elif plot_type == "pygmt":
             color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"
@@ -700,7 +699,7 @@ def coherency(grids: list, label: str, **kwargs):
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
-    # plt.figure()
+    plt.figure()
 
     if isinstance(grids[0], (str, xr.DataArray)):
         pygmt.grdfill(grids[0], mode="n", outgrid=f"tmp_outputs/fft_1.nc")

@@ -65,6 +65,20 @@ publish:
 package:
 	poetry build
 
+poetry_env: 
+	poetry install --sync
+	poetry export -f requirements.txt --output requirements.txt --with dev
+	
+delete_env:
+	mamba remove --name antarctic_plots_dev --all --yes
+
+new_env:
+	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
+
+install_reqs:
+	pip install --no-deps --requirement requirements.txt
+	pip install --editable .
+
 clean:
 	find . -name "*.pyc" -exec rm -v {} \;
 	find . -name ".coverage.*" -exec rm -v {} \;
