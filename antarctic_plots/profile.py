@@ -8,7 +8,7 @@
 
 from typing import Union
 
-import geopandas as gpd
+import pyogrio
 import numpy as np
 import pandas as pd
 import pygmt
@@ -62,7 +62,8 @@ def create_profile(
     elif method == "shapefile":
         if shapefile is None:
             raise ValueError(f"If method = {method}, need to provide a valid shapefile")
-        shp = gpd.read_file(shapefile)
+        # shp = gpd.read_file(shapefile)
+        shp = pyogrio.read_dataframe(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates = df.coords.apply(pd.Series, index=["x", "y"])
@@ -206,16 +207,17 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
 
 def default_layers() -> dict:
     """
-    Fetch default Bedmap2 layers.
+    Fetch default Bedmachine layers.
 
     Returns
     -------
     dict[dict]
-        Nested dictionary of Bedmap2 layers and attributes
+        Nested dictionary of Bedmachine layers and attributes
     """
-    surface = fetch.bedmap2("surface")
-    icebase = fetch.bedmap2("surface") - fetch.bedmap2("thickness")
-    bed = fetch.bedmap2("bed")
+    surface = fetch.bedmachine("surface")
+    # icebase = fetch.bedmachine("surface") - fetch.bedmachine("thickness")
+    icebase = fetch.bedmachine('icebase')
+    bed = fetch.bedmachine("bed")
     layer_names = [
         "surface",
         "icebase",
@@ -308,7 +310,7 @@ def plot_profile(
     map_cmap: str
         Change the map colorscale by passing a valid GMT cmap string, by default is 'earth'.
     map_buffer: float (0-1)
-        Change map zoom as relative percentage of profile length, by default is 0.2.
+        Change map zoom as relative percentage of profile length, by default is 0.3.
     layer_buffer: float (0-1)
         Change vertical white space within cross-section, by default is 0.1.
     data_buffer: float (0-1)
@@ -363,7 +365,7 @@ def plot_profile(
     if add_map is True:
         # Automatic data extent + buffer as % of line length
         df_reg = vd.get_region((df_layers.x, df_layers.y))
-        buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.2)
+        buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
         fig_reg = utils.alter_region(df_reg, buffer=buffer)[1]
         # Set figure parameters
         fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
@@ -454,7 +456,8 @@ def plot_profile(
                 position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
                 verbose="q",
             ):
-                gdf = gpd.read_file(fetch.groundingline())
+                # gdf = gpd.read_file(fetch.groundingline())
+                gdf = pyogrio.read_dataframe(fetch.groundingline())
                 fig.plot(
                     projection=inset_map,
                     region=inset_reg,

@@ -14,12 +14,12 @@ keywords = ["antarctica", "plotting", "pygmt", "cross-section", "bedmap"]
 python = "^3.9"
 pandas = "^1.4.3"
 numpy = "^1.23.1"
-pooch = "^1.6.0"
-xarray = "^2022.6.0"
+pooch = {extras = ["progress"], version = "^1.6.0"}
 verde = "^1.7.0"
-rioxarray = "^0.11.1"
-netCDF4 = "^1.6.0"
-jupyter-book = "^0.13.0"
+xarray = {extras = ["io"], version = "^2022.6.0"}
+pyproj = "^3.3.1"
+matplotlib = "^3.5.3"
+pyogrio = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -27,6 +27,9 @@ flake8 = "^4.0.1"
 isort = "^5.10.1"
 Flake8-pyproject = "^0.9.0"
 black = {extras = ["jupyter"], version = "^22.6.0"}
+nbsphinx = "^0.8.9"
+sphinx-gallery = "^0.11.1"
+jupyter-book = "^0.13.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
