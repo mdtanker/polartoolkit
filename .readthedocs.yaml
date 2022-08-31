@@ -16,9 +16,8 @@ build:
       - "jupyter-book config sphinx docs/"
 
 python:
-  extra_requirements:
-    - dev
   install:
+  - requirements: doc_requirements.txt
     - method: pip
       path: .
 
