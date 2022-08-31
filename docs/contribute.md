@@ -38,7 +38,7 @@ Fix issues shown in `make check`. If lines are too long, split them. If they are
 
     make build_docs
 
-This will run the `.ipynb` files, and convert them to markdown to be included in the dos.
+This will run the `.ipynb` files, and convert them to markdown to be included in the docs.
 Check for returned errors and open `index.html` in docs/_build/html/ to view the docs.
 
 ### Automatically build the docs 
@@ -55,7 +55,7 @@ Then run the following:
     poetry shell
     make publish
 
-This will both build the dist files, and upload to PyPI. Now push the changes to Github and make a release with the matching version #. 
+This will both build the dist files, and upload to PyPI. Now push the changes to Github and make a release with the matching version number. 
 
 ## Update the dependencies
 The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relygin on `GDAL`. To update any other dependencies, use the below commands:

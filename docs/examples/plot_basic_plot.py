@@ -1,3 +1,10 @@
+# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Distributed under the terms of the MIT License.
+# SPDX-License-Identifier: MIT
+#
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+#
 """
 Basic Plot
 ====================
@@ -5,7 +12,7 @@ Basic Plot
 Create a simple map from Bedmap2 data.
 """
 # %%
-from antarctic_plots import maps, fetch
+from antarctic_plots import fetch, maps
 
 # load a grid file to plot
 ice_thickness = fetch.bedmap2(layer="thickness")

@@ -646,14 +646,16 @@ def raps(
             args = f"{fin} -Er+wk -Na+d -G{fout}"
             session.call_module("grdfft", args)
         if plot_type == "mpl":
-            raps = pd.read_csv('tmp_outputs/raps.txt', header=None,
-                delimiter='\t',
-                names=('wavelength','power','stdev'))
-            ax = sns.lineplot(raps.wavelength, raps.power,
-                label=j, palette='viridis')
+            raps = pd.read_csv(
+                "tmp_outputs/raps.txt",
+                header=None,
+                delimiter="\t",
+                names=("wavelength", "power", "stdev"),
+            )
+            ax = sns.lineplot(raps.wavelength, raps.power, label=j, palette="viridis")
             ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
-            ax.set_xlabel('Wavelength (km)')
-            ax.set_ylabel('Radially Averaged Power ($mGal^{2}km$)')
+            ax.set_xlabel("Wavelength (km)")
+            ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
             pass
         elif plot_type == "pygmt":
             color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"

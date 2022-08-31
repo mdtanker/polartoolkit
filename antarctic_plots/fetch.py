@@ -119,11 +119,11 @@ def basement(plot: bool = False, info: bool = False) -> xr.DataArray:
 
 def bedmachine(
     layer: str,
-    reference: str = 'geoid',
-    plot: bool = False, 
-    info: bool = False, 
-    region=None, 
-    spacing=10e3
+    reference: str = "geoid",
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=10e3,
 ) -> xr.DataArray:
     """
     Load BedMachine data,  from Morlighem et al. 2020:
@@ -164,7 +164,7 @@ def bedmachine(
         progressbar=True,
     )
 
-    if layer == 'icebase':
+    if layer == "icebase":
         surface = pygmt.grdfilter(
             grid=f"{path}?surface",
             filter=f"g{spacing}",
@@ -196,7 +196,7 @@ def bedmachine(
             verbose="q",
         )
 
-    if reference == 'ellipsoid':
+    if reference == "ellipsoid":
         geoid = pygmt.grdfilter(
             grid=f"{path}?geoid",
             filter=f"g{spacing}",
@@ -207,12 +207,13 @@ def bedmachine(
             verbose="q",
         )
         grd = grd + geoid
-        
+
     if plot is True:
         grd.plot(robust=True)
     if info is True:
         print(pygmt.grdinfo(grd))
     return grd
+
 
 def bedmap2(
     layer: str,
@@ -256,10 +257,7 @@ def bedmap2(
 
 
 def deepbedmap(
-    plot: bool = False, 
-    info: bool = False, 
-    region=None, 
-    spacing=10e3
+    plot: bool = False, info: bool = False, region=None, spacing=10e3
 ) -> xr.DataArray:
     """
     Load DeepBedMap data,  from Leong and Horgan, 2020:
