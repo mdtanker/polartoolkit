@@ -8,10 +8,10 @@
 
 from typing import Union
 
-import pyogrio
 import numpy as np
 import pandas as pd
 import pygmt
+import pyogrio
 import verde as vd
 
 from antarctic_plots import fetch, maps, utils
@@ -216,7 +216,7 @@ def default_layers() -> dict:
     """
     surface = fetch.bedmachine("surface")
     # icebase = fetch.bedmachine("surface") - fetch.bedmachine("thickness")
-    icebase = fetch.bedmachine('icebase')
+    icebase = fetch.bedmachine("icebase")
     bed = fetch.bedmachine("bed")
     layer_names = [
         "surface",

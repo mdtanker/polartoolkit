@@ -9,8 +9,8 @@
 import warnings
 from typing import Union
 
-import pyogrio
 import pygmt
+import pyogrio
 
 from antarctic_plots import fetch, utils
 
