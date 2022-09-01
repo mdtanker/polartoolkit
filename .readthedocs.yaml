@@ -17,11 +17,10 @@ build:
 
 python:
   install:
-  - requirements: doc_requirements.txt
+    - requirements: doc_requirements.txt
     - method: pip
       path: .
 
 sphinx:
   builder: html
   fail_on_warning: true
-  
