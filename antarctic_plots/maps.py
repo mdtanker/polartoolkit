@@ -67,6 +67,7 @@ def plot_grd(
     Returns
     -------
     PyGMT.Figure()
+        Returns a figure object, which can be passed to the `fig` kwarg to add subplots or other `PyGMT` plotting methods.
 
     Example
     -------

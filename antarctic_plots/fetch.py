@@ -282,7 +282,7 @@ def deepbedmap(
     """
 
     if region is None:
-        region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        region = (-2700e3, 2800e3, -2200e3, 2300e3)
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         known_hash=None,

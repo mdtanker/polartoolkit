@@ -532,15 +532,38 @@ def plot_profile(
         fig.basemap(region=fig_reg, projection="X9c/9c", frame=True)
 
     # plot colored df_layers
-    for k, v in layers_dict.items():
+    for i, (k, v) in enumerate(layers_dict.items()):
         fig.plot(
-            x=df_layers.dist,
-            y=df_layers[k],
-            close="+yb",
-            color=v["color"],
-            frame=["nSew", "a"],
-        )
-
+                x=df_layers.dist,
+                y=df_layers[k],
+                close="+yb",
+                color=v["color"],
+                frame=["nSew", "a"],
+            )
+        # if i == len(layers_dict)-1:
+        #     fig.plot(
+        #         x=df_layers.dist,
+        #         y=df_layers[k],
+        #         close="+yb",
+        #         color=v["color"],
+        #         frame=["nSew", "a"],
+        #     )
+        #     fig.plot(
+        #         x=df_layers.dist,
+        #         y=df_layers[k],
+        #         close="+yb",
+        #         color=v["color"],
+        #         frame=["nSew", "a"],
+        #     )
+        # else:
+        #     fig.plot(
+        #         x=df_layers.dist,
+        #         y=df_layers[k],
+        #         close="+yb",
+        #         color=v["color"],
+        #         frame=["nSew", "a"],
+        #     )
+        
     # plot lines between df_layers
     for k, v in layers_dict.items():
         fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
