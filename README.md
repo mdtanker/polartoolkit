@@ -33,7 +33,7 @@ I welcome any feedback, ideas, or contributions! Please submit an [issue on Gith
 
 The **Antarctic-plots** python package provides some basic tools for creating maps and plots specific to Antarctica. It includes code to download common continent-wide datasets (i.e. Bedmap2, AntGG, ADMAP), and visualize them in a variety of ways, including cross sections and maps. Check out our [Documentation](https://antarctic-plots.readthedocs.io/en/latest/) for instructions on installing and using the package.
 
-Feel free to use, share, modify, and contribute to this project. I've mostly made this for personal usage so expect signficant changes and hopefully I'll implement some test's and more Gallery examples soon. 
+Feel free to use, share, modify, and contribute to this project. I've mostly made this for personal usage so expect significant changes and hopefully I'll implement some tests and more Gallery examples soon. 
 
 ## Project goals
 
