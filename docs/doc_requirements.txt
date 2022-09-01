@@ -1,0 +1,4 @@
+jupyter-book==0.13.1
+nbsphinx==0.8.9
+Sphinx==4.5.0
+sphinx-gallery==0.11.1
