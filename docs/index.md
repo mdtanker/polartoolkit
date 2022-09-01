@@ -15,7 +15,7 @@ Functions to automate Antarctic data visualization
 <a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
  </p>
  
-![](../cover_fig.png)
+![](cover_fig.png)
 
 ## Disclaimer
 
