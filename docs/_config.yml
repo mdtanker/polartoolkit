@@ -4,6 +4,9 @@
 title: Antarctic-plots
 author: Matt Tankersley
 
+# files to skip
+exclude_patterns: [examples]
+
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
