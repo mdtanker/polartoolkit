@@ -121,8 +121,7 @@ def latlon_to_epsg3031(
 
 def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
     """
-        Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
-        EPSG:4326 WGS84 in decimal degrees.
+    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to EPSG:4326 WGS84 in decimal degrees.
 
     Parameters
     ----------
@@ -276,7 +275,29 @@ def alter_region(
     buffer: float = 0,
     print_reg: bool = False,
 ):
+    """
+    Change a region string by shifting the box east/west or north/south, zooming in or out, or adding a seperate buffer region.
 
+    Parameters
+    ----------
+    starting_region : np.ndarray
+        Initial GMT formatted region in meters, [e,w,n,s]
+    zoom : float, optional
+        zoom in or out, in meters, by default 0
+    n_shift : float, optional
+        shift north, or south if negative, in meters, by default 0
+    w_shift : float, optional
+        shift west, or eash if negative, in meters, by default 0
+    buffer : float, optional
+        create a new region which is zoomed out in all direction, in meters, by default 0
+    print_reg : bool, optional
+        print out the dimensions of the altered region, by default False
+
+    Returns
+    -------
+    list
+        Returns of list of the following variables (region, buffer_region, proj)
+    """
     e = starting_region[0] + zoom + w_shift
     w = starting_region[1] - zoom + w_shift
     n = starting_region[2] + zoom - n_shift
@@ -321,8 +342,8 @@ def set_proj(
 
     Returns
     -------
-    str
-        _description_
+    list
+        returns a list of the following variables: (proj, proj_latlon, fig_width, fig_height)
     """
     e, w, n, s = region
     fig_width = fig_height * (w - e) / (s - n)
@@ -542,11 +563,11 @@ def make_grid(
     name: str,
 ):
     """
-    Return a xr.Dataset with variable 'name' of constant value.
+    Create a grid with 1 variable by defining a region, spacing, name and constant value
 
     Parameters
     ----------
-    region : str or np.ndarray
+    region : Union[str, np.ndarray]
         GMT format region for the inverion, by default is extent of gravity data,
     spacing : float
         spacing for grid
@@ -554,6 +575,11 @@ def make_grid(
         constant value to use for variable
     name : str
         name for variable
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a xr.DataArray with 1 variable of constant value.
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) + value
