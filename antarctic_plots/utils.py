@@ -15,6 +15,7 @@ import pygmt
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
+import pyogrio
 
 from antarctic_plots import fetch
 
@@ -243,7 +244,9 @@ def mask_from_shp(
     xarray.DataArray
         Returns either a masked grid, or the mask grid itself.
     """
-    shp = gpd.read_file(shapefile).geometry
+    # shp = gpd.read_file(shapefile).geometry
+    shp = pyogrio.read_dataframe(shapefile)
+    
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
             region=region, spacing=spacing, pixel_register=True

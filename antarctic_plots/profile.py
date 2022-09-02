@@ -289,9 +289,11 @@ def plot_profile(
     method : str
         Choose the sample method, either 'points', or 'shapefile'.
     layers_dict : dict, optional
-        nested dictionary of layers to include in cross-section, construct with `profile.make_data_dict`, by default is Bedmap2 layers.
+        nested dictionary of layers to include in cross-section, construct with 
+        `profile.make_data_dict`, by default is Bedmap2 layers.
     data_dict : dict, optional
-        nested dictionary of data to include in option graph, construct with `profile.make_data_dict`, by default is gravity and magnetic anomalies.
+        nested dictionary of data to include in option graph, construct with 
+        `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
 
@@ -306,9 +308,11 @@ def plot_profile(
     min_dist: int
         Clip all distances less than.
     map_background: str or xarray.DataArray
-        Change the map background by passing a filename string or grid, by default is imagery.
+        Change the map background by passing a filename string or grid, by default is 
+        imagery.
     map_cmap: str
-        Change the map colorscale by passing a valid GMT cmap string, by default is 'earth'.
+        Change the map colorscale by passing a valid GMT cmap string, by default is 
+        'earth'.
     map_buffer: float (0-1)
         Change map zoom as relative percentage of profile length, by default is 0.3.
     layer_buffer: float (0-1)

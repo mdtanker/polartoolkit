@@ -46,7 +46,8 @@ def plot_grd(
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : Union[str or np.ndarray]
-        region to use to define color scale if grd2cpt is True, by default is plot_region
+        region to use to define color scale if grd2cpt is True, by default is 
+        plot_region
     cbar_label : str
         label to add to colorbar.
     points : pd.DataFrame
@@ -67,7 +68,8 @@ def plot_grd(
     Returns
     -------
     PyGMT.Figure()
-        Returns a figure object, which can be passed to the `fig` kwarg to add subplots or other `PyGMT` plotting methods.
+        Returns a figure object, which can be passed to the `fig` kwarg to add subplots 
+        or other `PyGMT` plotting methods.
 
     Example
     -------

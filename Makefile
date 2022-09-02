@@ -54,7 +54,12 @@ run_doc_files:
 	jupyter nbconvert --execute --inplace docs/*.ipynb
 
 build_docs:
+	@echo
+	@echo "Building HTML files."
+	@echo
 	jupyter-book build docs/
+	@echo
+	@echo "Build finished. The HTML pages are in docs/build/html."
 
 # html-noplot:
 #         $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
@@ -78,6 +83,10 @@ new_env:
 install_reqs:
 	pip install --no-deps --requirement requirements.txt
 	pip install --editable .
+
+binder_yaml:
+	mamba create --name antarctic_plots_binder --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 pandas=1.4.3 numpy=1.23.1 pooch=1.6.0 tqdm=4.64.0 verde=1.7.0 xarray=2022.6.0 cfgrib=0.9.10.1 rasterio=1.3.2 cftime=1.6.1 zarr=2.12.0 pydap=3.2.2 scipy=1.6.1 h5netcdf=1.0.2 netcdf4=1.6.0 pyproj=3.3.1 matplotlib=3.5.3 pyogrio=0.4.1
+	conda env export --name antarctic_plots_binder --from-history --no-build > binder/environment.yml
 
 clean:
 	find . -name "*.pyc" -exec rm -v {} \;
