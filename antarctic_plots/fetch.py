@@ -131,16 +131,17 @@ def bedmachine(
 
     orignally from https://nsidc.org/data/nsidc-0756/versions/1.
     Added to Google Bucket as described in the following notebook:
-    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
+    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
     Parameters
     ----------
     layer : str
         choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed', 'source'
-        'icebase' will give results of surface-thickness
+        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed', 
+        'source', 'icebase' will give results of surface-thickness
     reference : str
-        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid' (WGS84), by default is 'geoid'
+        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid' 
+        (WGS84), by default is 'geoid'
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -159,7 +160,7 @@ def bedmachine(
     if region is None:
         region = (-2800e3, 2800e3, -2800e3, 2800e3)
     path = pooch.retrieve(
-        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",
+        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc", # noqa
         known_hash=None,
         progressbar=True,
     )
