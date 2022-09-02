@@ -68,7 +68,18 @@ or if the package is only for development/documentation
 
 Then run through the commands at the top of this page again to update the environement.
 
+## Set up the binder configuration
+To run examples online, Read the Docs will automatically create a Binder instance for this package. The configuration file is `/binder/environment.yml`. To create this or update it do the following:
 
+    make binder_yaml
+
+This will create an environment with the core dependencies, and export it to a .yml. Open this file and add the following at the bottom of the list of dependencies:
+
+  - pip
+  - pip:
+    --ignore-installed --no-deps git+https://github.com/mdtanker/antarctic_plots.git@main
+
+Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement. 
 
 <!-- This uses the doc_requirements.txt included in the repository, which was create with the below code:
 
