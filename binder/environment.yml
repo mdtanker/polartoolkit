@@ -22,4 +22,7 @@ dependencies:
   - pyproj=3.3.1
   - matplotlib=3.5.3
   - pyogrio=0.4.1
+  - pip
+  - pip:
+    --ignore-installed --no-deps git+https://github.com/mdtanker/antarctic_plots.git@main
 prefix: C:\Users\matthewt\AppData\Local\miniforge3\envs\antarctic_plots_binder
