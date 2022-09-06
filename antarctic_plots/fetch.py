@@ -5,13 +5,14 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+from antarctic_plots import utils
 from typing import Union
-
 import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
 from pyproj import Transformer
+import os
 
 
 def sample_shp(name: str) -> str:
@@ -339,7 +340,7 @@ def gravity(
     """
 
     if region is None:
-        region = (-3330000, 3330000, -3330000, 3330000)
+        region = (-2800e3, 2800e3, -2800e3, 2800e3)
     path = pooch.retrieve(
         url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
         known_hash=None,
@@ -408,7 +409,7 @@ def magnetics(
         Returns a loaded, and optional clip/resampled grid of magnetic anomalies.
     """
     if region is None:
-        region = (-3330000, 3330000, -3330000, 3330000)
+        region = (-2800e3, 2800e3, -2800e3, 2800e3)
     # if version == "admap2":
     #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
     #     grd = xr.load_dataarray(path)
@@ -485,24 +486,133 @@ def magnetics(
     return grd
 
 
-# def geothermal(plot=False, info=False)-> xr.DataArray:
-#
-#    # Mean geothermal heat flow from various models.
-#    # From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in
-# Antarctica: current and future directions
-#
-#     path = pooch.retrieve(
-#         url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
-#         known_hash=None,
-#         processor=pooch.Unzip(
-#             extract_dir='Burton_Johnson_2020',),
-#         progressbar=True,)
-#     file = [p for p in path if p.endswith('Mean.tif')][0]
-#     grd = xr.load_dataarray(file)
-#     grd = grd.squeeze()
+def geothermal(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing: int = None,
+) -> xr.DataArray:
+    """
+    Load 1 of 3 'versions' of Antarctic geothermal heat flux grids.
+    version='burton-johnson-2020'
+    From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: 
+    current and future directions, https://doi.org/10.5194/tc-14-3843-2020
+    Accessed from supplementary material
+    version='losing-ebbing-2021'
+    From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a 
+    Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6), 
+    https://doi.org/10.1029/2020JB021499
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
+    version='aq1'
+    From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI: 
+    https://doi.org/10.1029/2020GC009428 
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
+    verion='shen-2020':
+    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically 
+    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+    
+    Parameters
+    ----------
+    version : str
+        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : int, optional
+       grid spacing to resample the loaded grid to, by default spacing is read from downloaded files
 
-#     if plot is True:
-#         grd.plot(robust=True)
-#     if info is True:
-#         print(pygmt.grdinfo(grd))
-#     return grd
+    Returns
+    -------
+    xr.DataArray
+         Returns a loaded, and optional clip/resampled grid of GHF data.
+    """
+    # if region is None:
+    #     region = (-3330000, 3330000, -3330000, 3330000)
+    if version == "burton-johnson-2020":
+        path = pooch.retrieve(
+            url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
+            known_hash=None,
+            processor=pooch.Unzip(
+                extract_dir='Burton_Johnson_2020',),
+            progressbar=True,)
+        try:
+            os.rename(
+                'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical GHF Summary Statistics Maps',
+                'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical_GHF_Summary_Statistics_Maps'
+            )
+        except:
+            pass
+        file = [p for p in path if p.endswith('Mean.tif')][0]
+        if region is None:
+            region = utils.get_grid_info(file)[1]
+        if spacing is None:
+            spacing = utils.get_grid_info(file)[0]
+
+        grd = pygmt.grdfilter(
+            grid=file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+
+    elif version == "losing-ebbing-2021":
+        path = pooch.retrieve(
+            url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
+            known_hash=None,
+            progressbar=True,)
+        df = pd.read_csv(path)
+        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        df["x"], df["y"] = transformer.transform(df.Lat.tolist(), df.Lon.tolist())
+       
+        if region is None:
+            region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        if spacing is None:
+            spacing = 20e3
+
+        df = pygmt.blockmedian(
+            df[["x", "y", "HF [mW/m2]"]], spacing=spacing, region=region, verbose="q"
+        )
+        grd = pygmt.surface(
+            data=df[["x", "y", "HF [mW/m2]"]],
+            spacing=spacing,
+            region=region,
+            M="2c",
+            verbose="q",
+        )
+    elif version == "aq1":
+        path = pooch.retrieve(
+            url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
+            known_hash=None,
+            progressbar=True,)
+        file = xr.load_dataset(path)['Q']
+        if region is None:
+            region = utils.get_grid_info(file)[1]
+        if spacing is None:
+            spacing = utils.get_grid_info(file)[0]
+
+        grd = pygmt.grdfilter(
+            grid=file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        grd=grd*1000
+      
+    else:
+        print("invalid version string")
+    if plot is True:
+        grd.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(grd))
+    return grd
