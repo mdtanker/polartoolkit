@@ -47,8 +47,11 @@ def get_grid_info(grid):
     zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
 
     if isinstance(grid, str):
-        grid = pygmt.load_dataarray(grid)
-
+        try:
+            grid = pygmt.load_dataarray(grid)
+        except:
+            grid = xr.open_rasterio(grid)
+            
     reg = grid.gmt.registration
 
     registration = "g" if reg == 0 else "p"
