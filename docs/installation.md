@@ -30,11 +30,7 @@ Install the package and PyGMT/GeoPandas:
 
     make install
 
-Or
-
-    pip install -e .
-
-Test the install by running the first few cells of `docs/walkthrough.ipynb`.
+Test the install by running any of the {doc}`gallery/gallery` examples.
 
 ## Common errors
 
