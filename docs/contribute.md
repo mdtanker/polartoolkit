@@ -68,6 +68,8 @@ or if the package is only for development/documentation
 
 Then run through the commands at the top of this page again to update the environement.
 
+If you add a dependency, make sure to include it in the Binder config file. See below.
+
 ## Set up the binder configuration
 To run examples online, Read the Docs will automatically create a Binder instance for this package. The configuration file is `/binder/environment.yml`. To create this or update it do the following:
 
