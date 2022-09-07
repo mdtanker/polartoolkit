@@ -36,7 +36,7 @@ This python package provides some basic tools for creating maps and plots specif
 
 Look through the {doc}`gallery/gallery` examples and the {doc}`tutorial/tutorials` to see some of the main functions and usages of this package.
 
-Feel free to use, share, modify, and contribute to this project. I've mostly made this for personal usage so expect signficant changes and hopefully I'll implement some test's and more Gallery examples soon. 
+Feel free to use, share, modify, and contribute to this project. I've mostly made this for personal usage so expect signficant changes and hopefully I'll implement some tests and more Gallery examples soon. 
 
 ## Project goals
 
