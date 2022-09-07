@@ -11,6 +11,7 @@ import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
+# import rioxarray
 from pyproj import Transformer
 import os
 
@@ -39,7 +40,10 @@ def sample_shp(name: str) -> str:
     return file
 
 
-def imagery() -> str:
+def imagery(
+    # plot: bool = False,
+    # region= None,
+) -> xr.DataArray:
     """
     Load the file path of Antarctic imagery geotiff from LIMA:
     https://lima.usgs.gov/fullcontinent.php
@@ -59,8 +63,64 @@ def imagery() -> str:
         known_hash=None,
         progressbar=True,
     )
-    file = [p for p in path if p.endswith(".tif")][0]
-    return file
+    image = [p for p in path if p.endswith(".tif")][0]
+
+    # if region is not None:
+    #     grd = pygmt.grdcut(
+    #         grid=image,
+    #         region=region,  
+    #         verbose='q')
+        
+    # grd = rioxarray.open_rasterio(image)
+
+    # if region is not None:
+    #     grd = grd.rio.clip_box(
+    #         minx=region[0],
+    #         maxx=region[1],
+    #         miny=region[2],
+    #         maxy=region[3],
+    #         )
+
+    # spacing = kwargs.get('spacing', None)
+    
+    # region = utils.get_grid_info(image)[1]
+    # spacing = utils.get_grid_info(image)[0]
+
+    # if region is not None and spacing is None:
+    #     print('using input region with grdcut')
+    #     grd = pygmt.grdcut(
+    #         grid=image,
+    #         region=region,  
+    #         verbose='q')
+    # elif spacing is not None and region is None:
+    #     print('using input spacing')
+    #     grd = pygmt.grdfilter(
+    #         grid=image,
+    #         filter=f"g{spacing}",
+    #         spacing=spacing,
+    #         region=utils.get_grid_info(image)[1],
+    #         distance="0",
+    #         nans="r",
+    #         verbose="q",
+    #     )
+    # elif region and spacing is not None:
+    #     print('using input region and spacing')
+    #     grd = pygmt.grdfilter(
+    #         grid=image,
+    #         filter=f"g{spacing}",
+    #         spacing=spacing,
+    #         region=region,
+    #         distance="0",
+    #         nans="r",
+    #         verbose="q",
+    #     )
+    # else:
+    #     grd = image
+
+    # if plot is True:
+    #     grd.plot.imshow()
+
+    return image
 
 
 def groundingline() -> str:
