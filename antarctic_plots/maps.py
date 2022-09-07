@@ -43,6 +43,8 @@ def plot_grd(
 
     Keyword Args
     ------------
+    image : bool
+        set to True if plotting imagery to correctly set colorscale.
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : Union[str or np.ndarray]
