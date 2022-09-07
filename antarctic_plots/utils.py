@@ -5,19 +5,17 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
-import warnings
+
 from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pygmt
+import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-import pyogrio
-
-from antarctic_plots import fetch
 
 # import seaborn as sns
 
@@ -49,9 +47,9 @@ def get_grid_info(grid):
     if isinstance(grid, str):
         try:
             grid = pygmt.load_dataarray(grid)
-        except:
+        except ValueError:
             grid = xr.open_rasterio(grid)
-            
+
     reg = grid.gmt.registration
 
     registration = "g" if reg == 0 else "p"
@@ -125,7 +123,8 @@ def latlon_to_epsg3031(
 
 def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
     """
-    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to EPSG:4326 WGS84 in decimal degrees.
+    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+    EPSG:4326 WGS84 in decimal degrees.
 
     Parameters
     ----------
@@ -249,7 +248,7 @@ def mask_from_shp(
     """
     # shp = gpd.read_file(shapefile).geometry
     shp = pyogrio.read_dataframe(shapefile)
-    
+
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
             region=region, spacing=spacing, pixel_register=True
@@ -282,7 +281,8 @@ def alter_region(
     print_reg: bool = False,
 ):
     """
-    Change a region string by shifting the box east/west or north/south, zooming in or out, or adding a seperate buffer region.
+    Change a region string by shifting the box east/west or north/south, zooming in or
+    out, or adding a seperate buffer region.
 
     Parameters
     ----------
@@ -295,7 +295,7 @@ def alter_region(
     w_shift : float, optional
         shift west, or eash if negative, in meters, by default 0
     buffer : float, optional
-        create a new region which is zoomed out in all direction, in meters, by default 0
+        create new region which is zoomed out in all direction, in meters, by default 0
     print_reg : bool, optional
         print out the dimensions of the altered region, by default False
 
@@ -320,7 +320,7 @@ def alter_region(
     buffer_region = [e_buff, w_buff, n_buff, s_buff]
 
     fig_height = 80
-    fig_width = fig_height * (w - e) / (s - n)
+    # fig_width = fig_height * (w - e) / (s - n)
 
     ratio = (s - n) / (fig_height / 1000)
 
@@ -349,7 +349,8 @@ def set_proj(
     Returns
     -------
     list
-        returns a list of the following variables: (proj, proj_latlon, fig_width, fig_height)
+        returns a list of the following variables: (proj, proj_latlon, fig_width,
+        fig_height)
     """
     e, w, n, s = region
     fig_width = fig_height * (w - e) / (s - n)
@@ -610,11 +611,13 @@ def raps(
         if str: should be a .nc or .tif file.
         if list: list of grids or filenames.
     names : np.ndarray
-        names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or files to calculate and plot RAPS for.
+        names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or
+        files to calculate and plot RAPS for.
     plot_type : str, optional
         choose whether to plot with PyGMT or matplotlib, by default 'mpl'
     filter : str
-        GMT string to use for pre-filtering data, ex. "c100e3+h" is a 100km low-pass cosine filter, by default is None.
+        GMT string to use for pre-filtering data, ex. "c100e3+h" is a 100km low-pass
+        cosine filter, by default is None.
     Keyword Args
     ------------
     region : Union[str, np.ndarray]
@@ -622,6 +625,11 @@ def raps(
     spacing : float
         grid spacing if input is not a grid
     """
+    try:
+        import seaborn as sns
+    except ImportError:
+        print("package `seaborn` not installed")
+
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
@@ -690,7 +698,7 @@ def raps(
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
             pass
         elif plot_type == "pygmt":
-            color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"
+            color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"  # noqa
             spec.plot("tmp_outputs/raps.txt", pen=f"1p,{color}")
             spec.plot(
                 "tmp_outputs/raps.txt",
@@ -730,14 +738,18 @@ def coherency(grids: list, label: str, **kwargs):
     spacing : float
         grid spacing if input is pd.DataFrame
     """
+    try:
+        import seaborn as sns
+    except ImportError:
+        print("package `seaborn` not installed")
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
     plt.figure()
 
     if isinstance(grids[0], (str, xr.DataArray)):
-        pygmt.grdfill(grids[0], mode="n", outgrid=f"tmp_outputs/fft_1.nc")
-        pygmt.grdfill(grids[1], mode="n", outgrid=f"tmp_outputs/fft_2.nc")
+        pygmt.grdfill(grids[0], mode="n", outgrid="tmp_outputs/fft_1.nc")
+        pygmt.grdfill(grids[1], mode="n", outgrid="tmp_outputs/fft_2.nc")
 
     elif isinstance(grids[0], pd.DataFrame):
         grid1 = pygmt.xyz2grd(
@@ -752,8 +764,8 @@ def coherency(grids: list, label: str, **kwargs):
             region=region,
             spacing=spacing,
         )
-        pygmt.grdfill(grid1, mode="n", outgrid=f"tmp_outputs/fft_1.nc")
-        pygmt.grdfill(grid2, mode="n", outgrid=f"tmp_outputs/fft_2.nc")
+        pygmt.grdfill(grid1, mode="n", outgrid="tmp_outputs/fft_1.nc")
+        pygmt.grdfill(grid2, mode="n", outgrid="tmp_outputs/fft_2.nc")
 
     with pygmt.clib.Session() as session:
         fin1 = "tmp_outputs/fft_1.nc"
@@ -786,14 +798,14 @@ def coherency(grids: list, label: str, **kwargs):
             "stdev_c",
         ),
     )
-    # ax = sns.lineplot(df['Wavelength (km)'], df.coherency, label=label)
-    # ax = sns.scatterplot(x=df['Wavelength (km)'], y=df.coherency)
+    ax = sns.lineplot(df["Wavelength (km)"], df.coherency, label=label)
+    ax = sns.scatterplot(x=df["Wavelength (km)"], y=df.coherency)
 
     ax.invert_xaxis()
-    # ax.set_yscale('log')
-    # ax.set_xscale('log')
-    # ax.set_xlim(2000, 10)
-    # return ax
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_xlim(2000, 10)
+    return ax
     """
     Examples:
     utils.coherency(

@@ -342,6 +342,16 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#online-usage-binder">
+   Online usage (Binder)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#install-package">
+   Install package
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#create-an-environment">
    Create an environment:
   </a>
@@ -381,6 +391,16 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#online-usage-binder">
+   Online usage (Binder)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#install-package">
+   Install package
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#create-an-environment">
    Create an environment:
   </a>
@@ -412,8 +432,16 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
+<section id="online-usage-binder">
+<h2>Online usage (Binder)<a class="headerlink" href="#online-usage-binder" title="Permalink to this headline">#</a></h2>
+<p>See below for the full installation instructions. If instead you’d like to use this package online, without needing to install anything, check out our <a class="reference external" href="https://mybinder.org/v2/gh/mdtanker/antarctic_plots/c88a23c9dfe92c36f0bfdbbc277d926c2de763de">Binder link</a>, which gives full access the the package in an online environment.</p>
+<p>This Binder environment can also be accessed by clicking the Binder icon in any of the <a class="reference internal" href="gallery/gallery.html"><span class="doc">Gallery</span></a> examples.</p>
+</section>
+<section id="install-package">
+<h2>Install package<a class="headerlink" href="#install-package" title="Permalink to this headline">#</a></h2>
 <p>This package and most of it’s dependencies can be installed with a simple call to <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but since <code class="docutils literal notranslate"><span class="pre">PyGMT</span></code> requires <code class="docutils literal notranslate"><span class="pre">GMT</span></code> and <code class="docutils literal notranslate"><span class="pre">GeoPandas</span></code> require <code class="docutils literal notranslate"><span class="pre">GDAL</span></code>, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:</p>
 <p>Here I use mamba to install packages, but conda should work as well:</p>
+</section>
 <section id="create-an-environment">
 <h2>Create an environment:<a class="headerlink" href="#create-an-environment" title="Permalink to this headline">#</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
@@ -437,14 +465,14 @@ cd antarctic_plots
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>make install
 </pre></div>
 </div>
-<p>Or</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install -e .
-</pre></div>
-</div>
-<p>Test the install by running the first few cells of <code class="docutils literal notranslate"><span class="pre">docs/walkthrough.ipynb</span></code>.</p>
+<p>Test the install by running any of the <a class="reference internal" href="gallery/gallery.html"><span class="doc">Gallery</span></a> examples.</p>
 </section>
 <section id="common-errors">
 <h2>Common errors<a class="headerlink" href="#common-errors" title="Permalink to this headline">#</a></h2>
+<p>If you get errors related to GDAL and GMT, try reinstall Geopandas and PyGMT with the following command:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install geopandas pygmt --force-reinstall
+</pre></div>
+</div>
 <p>If you get an error related to traitlets run the following command as discussed <a class="reference external" href="https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285">here</a>:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mamba install ipykernel --update-deps --force-reinstall
 </pre></div>

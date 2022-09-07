@@ -7,12 +7,16 @@
 #
 
 import warnings
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import pygmt
 import pyogrio
 
 from antarctic_plots import fetch, utils
+
+if TYPE_CHECKING:
+    import numpy as np
+    import xarray as xr
 
 
 def plot_grd(
@@ -48,7 +52,7 @@ def plot_grd(
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : Union[str or np.ndarray]
-        region to use to define color scale if grd2cpt is True, by default is 
+        region to use to define color scale if grd2cpt is True, by default is
         plot_region
     cbar_label : str
         label to add to colorbar.
@@ -70,7 +74,7 @@ def plot_grd(
     Returns
     -------
     PyGMT.Figure()
-        Returns a figure object, which can be passed to the `fig` kwarg to add subplots 
+        Returns a figure object, which can be passed to the `fig` kwarg to add subplots
         or other `PyGMT` plotting methods.
 
     Example
@@ -169,7 +173,7 @@ def plot_grd(
         )
 
     # plot groundingline and coastlines
-    if coast == True:
+    if coast is True:
         fig.plot(
             data=fetch.groundingline(),
             pen=".6p,black",

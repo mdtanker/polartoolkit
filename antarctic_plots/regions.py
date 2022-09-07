@@ -1,5 +1,12 @@
+# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Distributed under the terms of the MIT License.
+# SPDX-License-Identifier: MIT
+#
+# This code is part of the package:
+# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+#
 """
-Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic 
+Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic
 Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 """
 
@@ -7,7 +14,7 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 antarctica = [-2800e3, 2800e3, -2800e3, 2800e3]
 west_antarctica = [-2740e3, 570e3, -2150e3, 1670e3]
 east_antarctica = [-840e3, 2880e3, -2400e3, 2600e3]
-ross_embayment =  [-760e3, 600e3, -2200e3, -350e3] 
+ross_embayment = [-760e3, 600e3, -2200e3, -350e3]
 antarctic_peninsula = [-2600e3, -1200e3, 170e3, 1800e3]
 marie_byrd_land = [-1400e3, -400e3, -1460e3, -200e3]
 victoria_land = [160e3, 1350e3, -2240e3, -990e3]
