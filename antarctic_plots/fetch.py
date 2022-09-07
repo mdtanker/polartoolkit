@@ -5,14 +5,15 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
-from antarctic_plots import utils
-from typing import Union
+import os
+
 import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
 from pyproj import Transformer
-import os
+
+from antarctic_plots import utils
 
 
 def sample_shp(name: str) -> str:
@@ -67,9 +68,9 @@ def imagery(
     # if region is not None:
     #     grd = pygmt.grdcut(
     #         grid=image,
-    #         region=region,  
+    #         region=region,
     #         verbose='q')
-        
+
     # grd = rioxarray.open_rasterio(image)
 
     # if region is not None:
@@ -81,7 +82,7 @@ def imagery(
     #         )
 
     # spacing = kwargs.get('spacing', None)
-    
+
     # region = utils.get_grid_info(image)[1]
     # spacing = utils.get_grid_info(image)[0]
 
@@ -89,7 +90,7 @@ def imagery(
     #     print('using input region with grdcut')
     #     grd = pygmt.grdcut(
     #         grid=image,
-    #         region=region,  
+    #         region=region,
     #         verbose='q')
     # elif spacing is not None and region is None:
     #     print('using input spacing')
@@ -197,10 +198,10 @@ def bedmachine(
     ----------
     layer : str
         choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed', 
+        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed',
         'source'; 'icebase' will give results of surface-thickness
     reference : str
-        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid' 
+        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid'
         (WGS84), by default is 'geoid'
     plot : bool, optional
         choose to plot grid, by default False
@@ -220,7 +221,7 @@ def bedmachine(
     if region is None:
         region = (-2800e3, 2800e3, -2800e3, 2800e3)
     path = pooch.retrieve(
-        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc", # noqa
+        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",  # noqa
         known_hash=None,
         progressbar=True,
     )
@@ -285,7 +286,8 @@ def bedmap2(
     spacing=10e3,
 ) -> xr.DataArray:
     """
-    Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the 'reference' parameter to convert to the ellipsoid.
+    Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
+    'reference' parameter to convert to the ellipsoid.
     Note, nan's in surface grid are set to 0.
     from https://doi.org/10.5194/tc-7-375-2013.
 
@@ -293,10 +295,10 @@ def bedmap2(
     ----------
     layer : str
         choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84', 'icebase' will give results of 
-        surface-thickness
+        'surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84', 'icebase' will give
+        results of surface-thickness
     reference : str
-        choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid' 
+        choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
         (WGS84), by default is 'geoid'
     plot : bool, optional
         choose to plot grid, by default False
@@ -322,7 +324,7 @@ def bedmap2(
     )
 
     if layer == "icebase":
-        surface_file = [p for p in path if p.endswith(f"surface.tif")][0]
+        surface_file = [p for p in path if p.endswith("surface.tif")][0]
         # fill nans with 0 for surface
         surface = pygmt.grdfilter(
             grid=surface_file,
@@ -333,7 +335,7 @@ def bedmap2(
             nans="r",
             verbose="q",
         )
-        thickness_file = [p for p in path if p.endswith(f"thickness.tif")][0]
+        thickness_file = [p for p in path if p.endswith("thickness.tif")][0]
         thickness = pygmt.grdfilter(
             grid=thickness_file,
             filter=f"g{spacing}",
@@ -360,7 +362,7 @@ def bedmap2(
             verbose="q",
         )
 
-    if reference == "ellipsoid" and layer != 'thickness':
+    if reference == "ellipsoid" and layer != "thickness":
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
         geoid = pygmt.grdfilter(
             grid=geoid_file,
@@ -621,27 +623,27 @@ def geothermal(
     """
     Load 1 of 3 'versions' of Antarctic geothermal heat flux grids.
     version='burton-johnson-2020'
-    From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica: 
+    From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
     current and future directions, https://doi.org/10.5194/tc-14-3843-2020
     Accessed from supplementary material
     version='losing-ebbing-2021'
-    From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a 
-    Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6), 
+    From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
+    Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6),
     https://doi.org/10.1029/2020JB021499
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
     version='aq1'
-    From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI: 
-    https://doi.org/10.1029/2020GC009428 
+    From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
+    https://doi.org/10.1029/2020GC009428
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
     verion='shen-2020':
-    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically 
+    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
     Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-    
+
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 
+        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -649,7 +651,8 @@ def geothermal(
     region : str or np.ndarray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
-       grid spacing to resample the loaded grid to, by default spacing is read from downloaded files
+       grid spacing to resample the loaded grid to, by default spacing is read from
+       downloaded files
 
     Returns
     -------
@@ -663,16 +666,19 @@ def geothermal(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
             known_hash=None,
             processor=pooch.Unzip(
-                extract_dir='Burton_Johnson_2020',),
-            progressbar=True,)
+                extract_dir="Burton_Johnson_2020",
+            ),
+            progressbar=True,
+        )
         try:
             os.rename(
-                'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical GHF Summary Statistics Maps',
-                'C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical_GHF_Summary_Statistics_Maps'
+                "C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical GHF Summary Statistics Maps",  # noqa
+                "C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical_GHF_Summary_Statistics_Maps",  # noqa
             )
-        except:
+        except FileNotFoundError:
             pass
-        file = [p for p in path if p.endswith('Mean.tif')][0]
+
+        file = [p for p in path if p.endswith("Mean.tif")][0]
         if region is None:
             region = utils.get_grid_info(file)[1]
         if spacing is None:
@@ -690,13 +696,14 @@ def geothermal(
 
     elif version == "losing-ebbing-2021":
         path = pooch.retrieve(
-            url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
+            url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",  # noqa
             known_hash=None,
-            progressbar=True,)
+            progressbar=True,
+        )
         df = pd.read_csv(path)
         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
         df["x"], df["y"] = transformer.transform(df.Lat.tolist(), df.Lon.tolist())
-       
+
         if region is None:
             region = (-2800e3, 2800e3, -2800e3, 2800e3)
         if spacing is None:
@@ -716,8 +723,9 @@ def geothermal(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             known_hash=None,
-            progressbar=True,)
-        file = xr.load_dataset(path)['Q']
+            progressbar=True,
+        )
+        file = xr.load_dataset(path)["Q"]
         if region is None:
             region = utils.get_grid_info(file)[1]
         if spacing is None:
@@ -732,8 +740,8 @@ def geothermal(
             nans="r",
             verbose="q",
         )
-        grd=grd*1000
-      
+        grd = grd * 1000
+
     else:
         print("invalid version string")
     if plot is True:

@@ -432,8 +432,10 @@ default ‘initialize’.</p></li>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
+<li><p><strong>image</strong> (<em>bool</em>) – set to True if plotting imagery to correctly set colorscale.</p></li>
 <li><p><strong>grd2cpt</strong> (<em>bool</em>) – use GMT module grd2cpt to set color scale from grid values, by default is False</p></li>
-<li><p><strong>cmap_region</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>np.ndarray</em><em>]</em>) – region to use to define color scale if grd2cpt is True, by default is plot_region</p></li>
+<li><p><strong>cmap_region</strong> (<em>Union</em><em>[</em><em>str</em><em> or </em><em>np.ndarray</em><em>]</em>) – region to use to define color scale if grd2cpt is True, by default is
+plot_region</p></li>
 <li><p><strong>cbar_label</strong> (<em>str</em>) – label to add to colorbar.</p></li>
 <li><p><strong>points</strong> (<em>pd.DataFrame</em>) – points to plot on map, must contain columns ‘x’ and ‘y’.</p></li>
 <li><p><strong>square</strong> (<em>np.ndarray</em>) – GMT-format region to use to plot a square.</p></li>
@@ -445,8 +447,12 @@ variable as the kwargs ‘fig’ to subsequent calls to plot_grd.</p></li>
 <li><p><strong>inset_pos</strong> (<em>str</em>) – position for inset map; either ‘TL’, ‘TR’, BL’, ‘BR’, by default is ‘TL’</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>PyGMT.Figure()</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Returns a figure object, which can be passed to the <cite>fig</cite> kwarg to add subplots
+or other <cite>PyGMT</cite> plotting methods.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>PyGMT.Figure()</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -569,8 +575,10 @@ path.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> (<em>str</em>) – Choose the sample method, either ‘points’, or ‘shapefile’.</p></li>
-<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with <cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
-<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with <cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
+<li><p><strong>layers_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of layers to include in cross-section, construct with
+<cite>profile.make_data_dict</cite>, by default is Bedmap2 layers.</p></li>
+<li><p><strong>data_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – nested dictionary of data to include in option graph, construct with
+<cite>profile.make_data_dict</cite>, by default is gravity and magnetic anomalies.</p></li>
 <li><p><strong>add_map</strong> (<em>bool = False</em>) – Choose whether to add a location map, by default is False.</p></li>
 </ul>
 </dd>
@@ -580,8 +588,10 @@ path.</p>
 <li><p><strong>clip</strong> (<em>bool</em>) – Choose whether to clip the profile based on distance.</p></li>
 <li><p><strong>max_dist</strong> (<em>int</em>) – Clip all distances greater than.</p></li>
 <li><p><strong>min_dist</strong> (<em>int</em>) – Clip all distances less than.</p></li>
-<li><p><strong>map_background</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – Change the map background by passing a filename string or grid, by default is imagery.</p></li>
-<li><p><strong>map_cmap</strong> (<em>str</em>) – Change the map colorscale by passing a valid GMT cmap string, by default is ‘earth’.</p></li>
+<li><p><strong>map_background</strong> (<em>str</em><em> or </em><em>xarray.DataArray</em>) – Change the map background by passing a filename string or grid, by default is
+imagery.</p></li>
+<li><p><strong>map_cmap</strong> (<em>str</em>) – Change the map colorscale by passing a valid GMT cmap string, by default is
+‘earth’.</p></li>
 <li><p><strong>map_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change map zoom as relative percentage of profile length, by default is 0.3.</p></li>
 <li><p><strong>layer_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change vertical white space within cross-section, by default is 0.1.</p></li>
 <li><p><strong>data_buffer</strong> (<em>float</em><em> (</em><em>0-1</em><em>)</em>) – Change vertical white space within data graph, by default is 0.1.</p></li>
@@ -670,14 +680,15 @@ offshore data from Lindeque et al. 2016: <a class="reference external" href="htt
 <a class="reference external" href="https://doi.org/10.1038/s41561-019-0510-8">https://doi.org/10.1038/s41561-019-0510-8</a></p>
 <p>orignally from <a class="reference external" href="https://nsidc.org/data/nsidc-0756/versions/1">https://nsidc.org/data/nsidc-0756/versions/1</a>.
 Added to Google Bucket as described in the following notebook:
-<a class="reference external" href="https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb">https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb</a></p>
+<a class="reference external" href="https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb">https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb</a> # noqa</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layer</strong> (<em>str</em>) – choose which layer to fetch:
-‘surface’, ‘thickness’, ‘bed’, ‘firn’, ‘geoid’, ‘mapping’, ‘mask’, ‘errbed’, ‘source’
-‘icebase’ will give results of surface-thickness</p></li>
-<li><p><strong>reference</strong> (<em>str</em>) – choose whether heights are referenced to ‘geoid’ (EIGEN-6C4) or ‘ellipsoid’ (WGS84), by default is ‘geoid’</p></li>
+‘surface’, ‘thickness’, ‘bed’, ‘firn’, ‘geoid’, ‘mapping’, ‘mask’, ‘errbed’,
+‘source’; ‘icebase’ will give results of surface-thickness</p></li>
+<li><p><strong>reference</strong> (<em>str</em>) – choose whether heights are referenced to ‘geoid’ (EIGEN-6C4) or ‘ellipsoid’
+(WGS84), by default is ‘geoid’</p></li>
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
 <li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT-format region to clip the loaded grid to, by default doesn’t clip</p></li>
@@ -685,7 +696,7 @@ Added to Google Bucket as described in the following notebook:
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of DeepBedMap.</p>
+<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of Bedmachine.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xr.DataArray</p>
@@ -695,19 +706,27 @@ Added to Google Bucket as described in the following notebook:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.bedmap2">
-<span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
-<dd><p>Load bedmap2 data. Note, nan’s in surface grid are set to 0.
+<span class="sig-name descname"><span class="pre">bedmap2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'geoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#bedmap2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.bedmap2" title="Permalink to this definition">#</a></dt>
+<dd><p>Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
+‘reference’ parameter to convert to the ellipsoid.
+Note, nan’s in surface grid are set to 0.
 from <a class="reference external" href="https://doi.org/10.5194/tc-7-375-2013">https://doi.org/10.5194/tc-7-375-2013</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>layer</strong> (<em>str</em>) – choose which layer to fetch, ‘thickness’, ‘bed’, ‘surface’, or ‘geiod_to_WGS84’</p></li>
+<li><p><strong>layer</strong> (<em>str</em>) – choose which layer to fetch:
+‘surface’, ‘thickness’, ‘bed’, ‘gl04c_geiod_to_WGS84’, ‘icebase’ will give
+results of surface-thickness</p></li>
+<li><p><strong>reference</strong> (<em>str</em>) – choose whether heights are referenced to ‘geoid’ (g104c) or ‘ellipsoid’
+(WGS84), by default is ‘geoid’</p></li>
 <li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
 <li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
+<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT-format region to clip the loaded grid to, by default doesn’t clip</p></li>
+<li><p><strong>spacing</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – grid spacing to resample the loaded grid to, by default 10e3</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Returns a bedmap2 grid</p>
+<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of Bedmap2.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xr.DataArray</p>
@@ -732,6 +751,47 @@ Accessed from <a class="reference external" href="https://zenodo.org/record/4054
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of DeepBedMap.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>xr.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="antarctic_plots.fetch.geothermal">
+<span class="sig-name descname"><span class="pre">geothermal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#geothermal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.geothermal" title="Permalink to this definition">#</a></dt>
+<dd><p>Load 1 of 3 ‘versions’ of Antarctic geothermal heat flux grids.
+version=’burton-johnson-2020’
+From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
+current and future directions, <a class="reference external" href="https://doi.org/10.5194/tc-14-3843-2020">https://doi.org/10.5194/tc-14-3843-2020</a>
+Accessed from supplementary material
+version=’losing-ebbing-2021’
+From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
+Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6),
+<a class="reference external" href="https://doi.org/10.1029/2020JB021499">https://doi.org/10.1029/2020JB021499</a>
+Accessed from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.930237">https://doi.pangaea.de/10.1594/PANGAEA.930237</a>
+version=’aq1’
+From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
+<a class="reference external" href="https://doi.org/10.1029/2020GC009428">https://doi.org/10.1029/2020GC009428</a>
+Accessed from <a class="reference external" href="https://doi.pangaea.de/10.1594/PANGAEA.924857">https://doi.pangaea.de/10.1594/PANGAEA.924857</a>
+verion=’shen-2020’:
+From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
+Constrained by Seismic Structure. <a class="reference external" href="https://doi.org/">https://doi.org/</a> 10.1029/2020GL086955
+Accessed from <a class="reference external" href="https://sites.google.com/view/weisen/research-products?authuser=0">https://sites.google.com/view/weisen/research-products?authuser=0</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>version</strong> (<em>str</em>) – Either ‘burton-johnson-2020’, ‘losing-ebbing-2021’, ‘aq1’,</p></li>
+<li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to plot grid, by default False</p></li>
+<li><p><strong>info</strong> (<em>bool</em><em>, </em><em>optional</em>) – choose to print info on grid, by default False</p></li>
+<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – GMT-format region to clip the loaded grid to, by default doesn’t clip</p></li>
+<li><p><strong>spacing</strong> (<em>int</em><em>, </em><em>optional</em>) – grid spacing to resample the loaded grid to, by default spacing is read from
+downloaded files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a loaded, and optional clip/resampled grid of GHF data.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xr.DataArray</p>
@@ -785,7 +845,7 @@ Supplement to Depoorter et al. 2013: <a class="reference external" href="https:/
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.fetch.imagery">
-<span class="sig-name descname"><span class="pre">imagery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#imagery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.imagery" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">imagery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="_modules/antarctic_plots/fetch.html#imagery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.fetch.imagery" title="Permalink to this definition">#</a></dt>
 <dd><p>Load the file path of Antarctic imagery geotiff from LIMA:
 <a class="reference external" href="https://lima.usgs.gov/fullcontinent.php">https://lima.usgs.gov/fullcontinent.php</a>
 will replace with below once figured out login issue with pooch
@@ -876,7 +936,27 @@ Geosoft-specific .gdb abridged files. Accessed from
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.alter_region">
 <span class="sig-name descname"><span class="pre">alter_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#alter_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.alter_region" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Change a region string by shifting the box east/west or north/south, zooming in or
+out, or adding a seperate buffer region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>starting_region</strong> (<em>np.ndarray</em>) – Initial GMT formatted region in meters, [e,w,n,s]</p></li>
+<li><p><strong>zoom</strong> (<em>float</em><em>, </em><em>optional</em>) – zoom in or out, in meters, by default 0</p></li>
+<li><p><strong>n_shift</strong> (<em>float</em><em>, </em><em>optional</em>) – shift north, or south if negative, in meters, by default 0</p></li>
+<li><p><strong>w_shift</strong> (<em>float</em><em>, </em><em>optional</em>) – shift west, or eash if negative, in meters, by default 0</p></li>
+<li><p><strong>buffer</strong> (<em>float</em><em>, </em><em>optional</em>) – create new region which is zoomed out in all direction, in meters, by default 0</p></li>
+<li><p><strong>print_reg</strong> (<em>bool</em><em>, </em><em>optional</em>) – print out the dimensions of the altered region, by default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns of list of the following variables (region, buffer_region, proj)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.coherency">
@@ -920,10 +1000,8 @@ grid format can be str (filename), xr.DataArray, or pd.DataFrame.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.epsg3031_to_latlon">
 <span class="sig-name descname"><span class="pre">epsg3031_to_latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['x',</span> <span class="pre">'y']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['lon',</span> <span class="pre">'lat']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#epsg3031_to_latlon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.epsg3031_to_latlon" title="Permalink to this definition">#</a></dt>
-<dd><blockquote>
-<div><p>Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+<dd><p>Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
 EPSG:4326 WGS84 in decimal degrees.</p>
-</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1040,15 +1118,21 @@ Polar Stereographic in meters.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="antarctic_plots.utils.make_grid">
 <span class="sig-name descname"><span class="pre">make_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/antarctic_plots/utils.html#make_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#antarctic_plots.utils.make_grid" title="Permalink to this definition">#</a></dt>
-<dd><p>Return a xr.Dataset with variable ‘name’ of constant value.</p>
+<dd><p>Create a grid with 1 variable by defining a region, spacing, name and constant value</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>region</strong> (<em>str</em><em> or </em><em>np.ndarray</em>) – GMT format region for the inverion, by default is extent of gravity data,</p></li>
+<li><p><strong>region</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – GMT format region for the inverion, by default is extent of gravity data,</p></li>
 <li><p><strong>spacing</strong> (<em>float</em>) – spacing for grid</p></li>
 <li><p><strong>value</strong> (<em>float</em>) – constant value to use for variable</p></li>
 <li><p><strong>name</strong> (<em>str</em>) – name for variable</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a xr.DataArray with 1 variable of constant value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>xr.DataArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1095,9 +1179,11 @@ an epsg code, by default “epsg:3031”</p></li>
 <li><p><strong>data</strong> (<em>Union</em><em>[</em><em>pd.DataFrame</em><em>, </em><em>str</em><em>, </em><em>list</em><em>, </em><em>xr.Dataset</em><em>, </em><em>xr.Dataarray</em><em>]</em>) – if dataframe: need with columns ‘x’, ‘y’, and other columns to calc RAPS for.
 if str: should be a .nc or .tif file.
 if list: list of grids or filenames.</p></li>
-<li><p><strong>names</strong> (<em>np.ndarray</em>) – names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or files to calculate and plot RAPS for.</p></li>
+<li><p><strong>names</strong> (<em>np.ndarray</em>) – names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or
+files to calculate and plot RAPS for.</p></li>
 <li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – choose whether to plot with PyGMT or matplotlib, by default ‘mpl’</p></li>
-<li><p><strong>filter</strong> (<em>str</em>) – GMT string to use for pre-filtering data, ex. “c100e3+h” is a 100km low-pass cosine filter, by default is None.</p></li>
+<li><p><strong>filter</strong> (<em>str</em>) – GMT string to use for pre-filtering data, ex. “c100e3+h” is a 100km low-pass
+cosine filter, by default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
@@ -1144,10 +1230,11 @@ Inspired from <a class="reference external" href="https://github.com/mrsiegfried
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>returns a list of the following variables: (proj, proj_latlon, fig_width,
+fig_height)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>

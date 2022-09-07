@@ -6,15 +6,13 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import Union
-
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
 
-from antarctic_plots import fetch, maps, utils
+from antarctic_plots import fetch, utils
 
 
 def create_profile(
@@ -289,10 +287,10 @@ def plot_profile(
     method : str
         Choose the sample method, either 'points', or 'shapefile'.
     layers_dict : dict, optional
-        nested dictionary of layers to include in cross-section, construct with 
+        nested dictionary of layers to include in cross-section, construct with
         `profile.make_data_dict`, by default is Bedmap2 layers.
     data_dict : dict, optional
-        nested dictionary of data to include in option graph, construct with 
+        nested dictionary of data to include in option graph, construct with
         `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
@@ -308,10 +306,10 @@ def plot_profile(
     min_dist: int
         Clip all distances less than.
     map_background: str or xarray.DataArray
-        Change the map background by passing a filename string or grid, by default is 
+        Change the map background by passing a filename string or grid, by default is
         imagery.
     map_cmap: str
-        Change the map colorscale by passing a valid GMT cmap string, by default is 
+        Change the map colorscale by passing a valid GMT cmap string, by default is
         'earth'.
     map_buffer: float (0-1)
         Change map zoom as relative percentage of profile length, by default is 0.3.
@@ -538,12 +536,12 @@ def plot_profile(
     # plot colored df_layers
     for i, (k, v) in enumerate(layers_dict.items()):
         fig.plot(
-                x=df_layers.dist,
-                y=df_layers[k],
-                close="+yb",
-                color=v["color"],
-                frame=["nSew", "a"],
-            )
+            x=df_layers.dist,
+            y=df_layers[k],
+            close="+yb",
+            color=v["color"],
+            frame=["nSew", "a"],
+        )
         # if i == len(layers_dict)-1:
         #     fig.plot(
         #         x=df_layers.dist,
@@ -567,7 +565,7 @@ def plot_profile(
         #         color=v["color"],
         #         frame=["nSew", "a"],
         #     )
-        
+
     # plot lines between df_layers
     for k, v in layers_dict.items():
         fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
