@@ -1,5 +1,59 @@
 # Changelog
 
+## Release v0.0.4 
+
+### 💫 Highlights
+* New mapping function `antarctic_plots.maps`
+* Pre-set regions for commonly plotted areas
+* Added Gallery examples
+* Created a Binder environment
+* More datasets included in `fetch`
+
+### 🚀 Features
+
+#### New module `Maps`
+
+* plot_grd
+
+#### New datasets in `Fetch`
+
+* bedmachine
+* geothermal
+
+#### New functions in `Utils`
+
+* alter_region
+* coherency
+* grd_compare
+* grd_trend
+* make_grid
+* raps
+* set_proj
+
+### 📖 Documentation
+
+* Added `Tutorials` and `Gallery examples` to the docs
+* Added tutorial for modules `fetch` and `region`
+
+### ⛔ Maintenance
+
+* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9): Code formating
+* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13): Specify dependency version
+* Closed [Issue #15](https://github.com/mdtanker/antarctic_plots/issues/15): Add inset map of Antarctica
+* Closed [Issue #16](https://github.com/mdtanker/antarctic_plots/issues/16): Add Welcome Bot message to first time contributors
+* Closed [Issue #20](https://github.com/mdtanker/antarctic_plots/issues/20): Add options to use the package online
+* Closed [Issue #25](https://github.com/mdtanker/antarctic_plots/issues/25): Add GHF data to fetch module
+* Closed [Issue #26](https://github.com/mdtanker/antarctic_plots/issues/26): Add BedMachine Data to fetch
+* Closed [Issue #27](https://github.com/mdtanker/antarctic_plots/issues/27): fetch.bedmap2 issue with xarray
+* Closed [Issue #28](https://github.com/mdtanker/antarctic_plots/issues/28): Set region strings for commonly plotted areas
+* Closed [Issue #22](https://github.com/mdtanker/antarctic_plots/issues/22): Create Zenodo DOI
+
+### 🧑‍🤝‍🧑 Contributors
+
+[@mdtanker](https://github.com/mdtanker)
+
+---
+
 ## Release v0.0.3 
 
 ### 💫 Highlights
