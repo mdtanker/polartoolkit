@@ -11,7 +11,7 @@ import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
-# import rioxarray
+import rioxarray
 from pyproj import Transformer
 import os
 
@@ -199,7 +199,7 @@ def bedmachine(
     layer : str
         choose which layer to fetch:
         'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed', 
-        'source', 'icebase' will give results of surface-thickness
+        'source'; 'icebase' will give results of surface-thickness
     reference : str
         choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid' 
         (WGS84), by default is 'geoid'
@@ -215,7 +215,7 @@ def bedmachine(
     Returns
     -------
     xr.DataArray
-        Returns a loaded, and optional clip/resampled grid of DeepBedMap.
+        Returns a loaded, and optional clip/resampled grid of Bedmachine.
     """
 
     if region is None:
@@ -279,38 +279,104 @@ def bedmachine(
 
 def bedmap2(
     layer: str,
+    reference: str = "geoid",
     plot: bool = False,
     info: bool = False,
+    region=None,
+    spacing=10e3,
 ) -> xr.DataArray:
     """
-    Load bedmap2 data. Note, nan's in surface grid are set to 0.
+    Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the 'reference' parameter to convert to the ellipsoid.
+    Note, nan's in surface grid are set to 0.
     from https://doi.org/10.5194/tc-7-375-2013.
 
     Parameters
     ----------
     layer : str
-        choose which layer to fetch, 'thickness', 'bed', 'surface', or 'geiod_to_WGS84'
+        choose which layer to fetch:
+        'surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84', 'icebase' will give results of 
+        surface-thickness
+    reference : str
+        choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid' 
+        (WGS84), by default is 'geoid'
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
         choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
 
     Returns
     -------
     xr.DataArray
-        Returns a bedmap2 grid
+        Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
+    if region is None:
+        region = (-2800e3, 2800e3, -2800e3, 2800e3)
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
         known_hash=None,
         processor=pooch.Unzip(),
         progressbar=True,
     )
-    file = [p for p in path if p.endswith(f"{layer}.tif")][0]
-    grd = xr.load_dataarray(file)
-    grd = grd.squeeze()
-    if layer == "surface":
+
+    if layer == "icebase":
+        surface_file = [p for p in path if p.endswith(f"surface.tif")][0]
+        # fill nans with 0 for surface
+        surface = pygmt.grdfilter(
+            grid=surface_file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        thickness_file = [p for p in path if p.endswith(f"thickness.tif")][0]
+        thickness = pygmt.grdfilter(
+            grid=thickness_file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        grd = surface - thickness
+
+    else:
+        file = [p for p in path if p.endswith(f"{layer}.tif")][0]
+        # grd = xr.load_dataarray(file)
+        # grd = rioxarray.open_rasterio(file)
+        # grd = grd.squeeze()
+        grd = pygmt.grdfilter(
+            grid=file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+
+    if reference == "ellipsoid" and layer != 'thickness':
+        geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
+        geoid = pygmt.grdfilter(
+            grid=geoid_file,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+        grd = grd + geoid
+
+    if layer == "surface" or "thickness":
         grd = grd.fillna(0)
+
     if plot is True:
         grd.plot(robust=True)
     if info is True:

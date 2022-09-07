@@ -1,10 +1,12 @@
-# Online usage (Binder)
+# Installation
+
+## Online usage (Binder)
 
 See below for the full installation instructions. If instead you'd like to use this package online, without needing to install anything, check out our [Binder link](https://mybinder.org/v2/gh/mdtanker/antarctic_plots/c88a23c9dfe92c36f0bfdbbc277d926c2de763de), which gives full access the the package in an online environment. 
 
 This Binder environment can also be accessed by clicking the Binder icon in any of the {doc}`gallery/gallery` examples. 
 
-# Installation
+## Install package 
 
 This package and most of it's dependencies can be installed with a simple call to `pip`, but since `PyGMT` requires `GMT` and `GeoPandas` require `GDAL`, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:
 
@@ -39,7 +41,7 @@ Test the install by running the first few cells of `docs/walkthrough.ipynb`.
 If you get errors related to GDAL and GMT, try reinstall Geopandas and PyGMT with the following command:
 
     mamba install geopandas pygmt --force-reinstall
-    
+
 If you get an error related to traitlets run the following command as discussed [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
 
     mamba install ipykernel --update-deps --force-reinstall
