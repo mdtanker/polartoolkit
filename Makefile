@@ -52,6 +52,7 @@ flake8:
 
 run_doc_files:
 	jupyter nbconvert --execute --inplace docs/*.ipynb
+	jupyter nbconvert --execute --inplace docs/*/*.ipynb
 
 build_docs:
 	@echo
@@ -63,6 +64,9 @@ build_docs:
 
 # html-noplot:
 #         $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+
+test_publish:
+	poetry publish --build -r test-pypi
 
 publish:
 	poetry publish --build
