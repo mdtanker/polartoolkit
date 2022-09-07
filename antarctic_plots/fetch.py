@@ -11,7 +11,6 @@ import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
-import rioxarray
 from pyproj import Transformer
 import os
 
