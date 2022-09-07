@@ -1813,6 +1813,27 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "rioxarray"
+version = "0.12.0"
+description = "geospatial xarray extension powered by rasterio"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+packaging = "*"
+pyproj = ">=2.2"
+rasterio = ">=1.1.1"
+xarray = ">=0.17"
+
+[package.extras]
+all = ["dask", "mypy", "nbsphinx", "netcdf4", "pre-commit", "pylint", "pytest (>=3.6)", "pytest-cov", "pytest-timeout", "scipy", "sphinx-click", "sphinx-rtd-theme"]
+dev = ["dask", "mypy", "nbsphinx", "netcdf4", "pre-commit", "pylint", "pytest (>=3.6)", "pytest-cov", "pytest-timeout", "scipy", "sphinx-click", "sphinx-rtd-theme"]
+doc = ["nbsphinx", "sphinx-click", "sphinx-rtd-theme"]
+interp = ["scipy"]
+test = ["dask", "netcdf4", "pytest (>=3.6)", "pytest-cov", "pytest-timeout"]
+
+[[package]]
 name = "scikit-learn"
 version = "1.1.2"
 description = "A set of python modules for machine learning and data mining"
@@ -2545,7 +2566,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "3159f15336fdbfa496312338a2103a2537b8cfaba00e560394ac2cbad5a6d89a"
+content-hash = "a5a3b3cf774b34ffdf775b0a8f71ec16420ea09c3bed8c346696f53df1fbf5dd"
 
 [metadata.files]
 affine = [
@@ -3840,6 +3861,10 @@ rasterio = [
 requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
     {file = "requests-2.28.1.tar.gz", hash = "sha256:7c5599b102feddaa661c826c56ab4fee28bfd17f5abca1ebbe3e7f19d7c97983"},
+]
+rioxarray = [
+    {file = "rioxarray-0.12.0-py3-none-any.whl", hash = "sha256:18037079744d5a237168f6c77f37aa556bacaf72b41dc214cd8e031dce90d8cb"},
+    {file = "rioxarray-0.12.0.tar.gz", hash = "sha256:2aa4169ccdf48c24391819493e852d2b6bf3eb6f88508040ecaa2b3a9ee76f21"},
 ]
 scikit-learn = [
     {file = "scikit-learn-1.1.2.tar.gz", hash = "sha256:7c22d1305b16f08d57751a4ea36071e2215efb4c09cb79183faa4e8e82a3dbf8"},
