@@ -36,7 +36,7 @@
 * Added tutorial for modules `fetch` and `region`
 
 ### ⛔ Maintenance
-
+* Closed [Issue #6](https://github.com/mdtanker/antarctic_plots/issues/6): Create gallery examples
 * Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9): Code formating
 * Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13): Specify dependency version
 * Closed [Issue #15](https://github.com/mdtanker/antarctic_plots/issues/15): Add inset map of Antarctica
