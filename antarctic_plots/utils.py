@@ -6,7 +6,7 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +16,10 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
+import rioxarray
 
+if TYPE_CHECKING:
+    import geopandas as gpd
 # import seaborn as sns
 
 
@@ -204,7 +207,7 @@ def GMT_reg_xy_to_ll(input):
 
 
 def mask_from_shp(
-    shapefile: str,
+    shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
     invert: bool = True,
     xr_grid=None,
     grid_file: str = None,
@@ -218,9 +221,10 @@ def mask_from_shp(
 
     Parameters
     ----------
-    shapefile : str
-        path to .shp filename, must by in same directory as accompanying files : .shx,
-        .prj, .dbf, should be a closed polygon file.
+    shapefile : Union[str or gpd.geodataframe.GeoDataFrame]
+        either path to .shp filename, must by in same directory as accompanying files : 
+        .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
+         been loaded into a geodataframe.
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
@@ -246,8 +250,12 @@ def mask_from_shp(
     xarray.DataArray
         Returns either a masked grid, or the mask grid itself.
     """
-    # shp = gpd.read_file(shapefile).geometry
-    shp = pyogrio.read_dataframe(shapefile)
+    
+    if isinstance(shapefile, str):
+        # shp = gpd.read_file(shapefile).geometry
+        shp = pyogrio.read_dataframe(shapefile)
+    else:
+        shp = shapefile
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
