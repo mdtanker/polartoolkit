@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### 💫 Highlights
+* Added rioxarray as dependency
+* Added `utils.mask_from_shp` gallery example
+
+### 🚀 Features
+
+#### New module `Maps`
+
+#### New datasets in `Fetch`
+
+#### New functions in `Utils`
+
+### 📖 Documentation
+
+### ⛔ Maintenance
+
+### 🧑‍🤝‍🧑 Contributors
+
+[@mdtanker](https://github.com/mdtanker)
+
+---
+
 ## Release v0.0.4 
 
 ### 💫 Highlights
