@@ -65,19 +65,24 @@ build_docs:
 # html-noplot:
 #         $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
 
+poetry_env: 
+	poetry env remove --all
+	poetry install --sync --without dev
+
+poetry_env_dev: 
+	poetry env remove --all
+	poetry install --sync 
+	poetry export -f requirements.txt --output requirements.txt --with dev
+
+package:
+	poetry build
+
 test_publish:
 	poetry publish --build -r test-pypi
 
 publish:
 	poetry publish --build
 
-package:
-	poetry build
-
-poetry_env: 
-	poetry install --sync
-	poetry export -f requirements.txt --output requirements.txt --with dev
-	
 delete_env:
 	mamba remove --name antarctic_plots_dev --all --yes
 
