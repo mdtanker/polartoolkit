@@ -42,16 +42,19 @@ def get_grid_info(grid):
         grid registration)
     """
 
-    spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
-    region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
-    zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
-    zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
-
     if isinstance(grid, str):
         try:
             grid = pygmt.load_dataarray(grid)
         except ValueError:
             grid = xr.open_rasterio(grid)
+    
+    if int(len(grid.dims)) > 2:
+        grid=grid.squeeze()
+
+    spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
+    region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
+    zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+    zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
 
     reg = grid.gmt.registration
 
@@ -312,10 +315,37 @@ def alter_region(
     list
         Returns of list of the following variables (region, buffer_region, proj)
     """
-    e = starting_region[0] + zoom + w_shift
-    w = starting_region[1] - zoom + w_shift
-    n = starting_region[2] + zoom - n_shift
-    s = starting_region[3] - zoom - n_shift
+    E, W = starting_region[0], starting_region[1]
+    N, S = starting_region[2], starting_region[3]
+
+    e = E + zoom + w_shift
+    w = W - zoom + w_shift
+
+    n = N + zoom - n_shift
+    s = S - zoom - n_shift
+
+    # if (e < 0) and (w < 0):
+    #     e_new = e + zoom + w_shift
+    #     w_new = w - zoom + w_shift
+    # elif (e > 0) and (w > 0): 
+    #     e_new = e + zoom + w_shift
+    #     w_new = w - zoom + w_shift
+
+    # if starting_region[1] < 0:    
+    #     w = starting_region[1] + zoom + w_shift
+    # else:
+    #     w = starting_region[1] - zoom + w_shift
+
+    # if starting_region[2] < 0:    
+    #     n = starting_region[2] + zoom - n_shift
+    # else:
+    #     n = starting_region[2] - zoom - n_shift
+
+    # if starting_region[3] < 0:     
+    #     s = starting_region[3] + zoom - n_shift
+    # else:
+    #     s = starting_region[3] - zoom - n_shift
+        
     region = [e, w, n, s]
 
     e_buff, w_buff, n_buff, s_buff = (
@@ -327,16 +357,9 @@ def alter_region(
 
     buffer_region = [e_buff, w_buff, n_buff, s_buff]
 
-    fig_height = 80
-    # fig_width = fig_height * (w - e) / (s - n)
-
-    ratio = (s - n) / (fig_height / 1000)
-
-    proj = f"x1:{ratio}"
-
     if print_reg is True:
         print(f"inner region is {int((w-e)/1e3)} x {int((s-n)/1e3)} km")
-    return region, buffer_region, proj
+    return region, buffer_region
 
 
 def set_proj(

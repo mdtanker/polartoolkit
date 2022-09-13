@@ -6,15 +6,57 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 import os
-
+from getpass import getpass
+from pathlib import Path
+import requests
 import pandas as pd
 import pooch
 import pygmt
 import xarray as xr
 from pyproj import Transformer
+import rioxarray
 
-from antarctic_plots import utils
+from antarctic_plots import utils, regions
 
+class EarthDataDownloader:
+    """
+    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py # noqa
+    Either pulls login details from pre-set environment variables, or prompts user to 
+    input username and password.
+    """
+    def __init__(self):
+        self._username = None
+        self._password = None
+
+    def _get_credentials(self):
+        if self._username is None:
+            username_env = os.environ.get("EARTHDATA_USERNAME")
+            if username_env is None:
+                self._username = input("EarthData username: ")
+            else:
+                self._username = username_env
+
+        if self._password is None:
+            password_env = os.environ.get("EARTHDATA_PASSWORD")
+            if password_env is None:
+                self._password = getpass("EarthData password: ")
+            else:
+                self._password = password_env
+
+        return self._username, self._password
+
+    def __call__(self, url, output_file, dataset):
+        auth = self._get_credentials()
+        downloader = pooch.HTTPDownloader(auth=auth, progressbar=True)
+        try:
+            login = requests.get(url)
+            downloader(login.url, output_file, dataset)
+        except requests.exceptions.HTTPError as error:
+            if "Unauthorized" in str(error):
+                pooch.get_logger().error("Wrong username/password!")
+                self._username = None
+                self._password = None
+            raise error
 
 def sample_shp(name: str) -> str:
     """
@@ -39,11 +81,135 @@ def sample_shp(name: str) -> str:
     file = [p for p in path if p.endswith(".shp")][0]
     return file
 
-
-def imagery(
-    # plot: bool = False,
-    # region= None,
+def ice_vel(
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=10e3,
 ) -> xr.DataArray:
+    """
+    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1: 
+    https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
+    Data part of https://doi.org/10.1029/2019GL083826
+    
+    Parameters
+    ----------
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3, original spacing 
+        is 450m
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a calculated grid of ice velocity in meters/year. 
+    """
+    def velocity_calculation(fname, action, pooch):
+        "Load the .nc file, calculate velocity magnitude, save it back"
+        fname = Path(fname)
+        # Rename to the file to ***_magnitude.nc
+        fname_processed = fname.with_stem(fname.stem + "_magnitude")
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            grid = xr.load_dataset(fname)
+            processed = (grid.VX**2 + grid.VY**2)**0.5
+            # Save to disk
+            processed.to_netcdf(fname_processed)
+        return fname_processed.__str__()
+
+    # This is the path to the processed (magnitude) grid
+    path = pooch.retrieve(
+        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc", # noqa
+        downloader=EarthDataDownloader(),
+        known_hash=None,
+        progressbar=True,
+        processor=velocity_calculation)
+
+    grd = xr.load_dataarray(path)
+
+    # if region not set, use original, determined from utils.get_grid_info(path)
+    if region is None:
+        region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
+
+    if (spacing==450) and (region==[-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
+        # print('spacing and region same as original, no processing')
+        pass
+
+    elif (spacing==450) and (region!=[-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
+        # print('spacing same as original, extracting new region ')
+        grd = pygmt.grdcut(
+            grid=grd,
+            region=region,
+            verbose='q'
+            )
+
+    elif spacing < 450:
+        # print('spacing smaller than original, resampling')
+        grd =pygmt.grdsample(
+            grid=grd,
+            spacing=spacing,
+            region=region,
+            verbose='q'
+        )
+
+    elif spacing > 450:
+        # print('spacing larger than original, filtering and resampling')
+        grd = pygmt.grdfilter(
+            grid=grd,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            region=region,
+            distance="0",
+            nans="r",
+            verbose="q",
+        )
+
+    if plot is True:
+        grd.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(grd))
+
+    return grd
+
+def modis_moa(
+    version: int = 750,
+) -> str:
+    """
+    Load the MODIS MoA imagery in either 750m or 125m resolutions.
+
+    Parameters
+    ----------
+    version : int, optional
+        choose between 750m or 125m resolutions, by default 750m
+
+    Returns
+    -------
+    str
+       filepath for either 750m or 125m MODIS MoA Imagery
+    """
+    if version == 125:
+        path = pooch.retrieve(
+            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz", # noqa
+            downloader=EarthDataDownloader(),
+            processor=pooch.Decompress(method='gzip', name='moa125_2009_hp1_v02.0.tif'),
+            known_hash=None,
+            progressbar=True,)
+    elif version == 750:
+        path = pooch.retrieve(
+            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz", # noqa
+            downloader=EarthDataDownloader(),
+            processor=pooch.Decompress(method='gzip', name='moa750_2009_hp1_v02.0.tif'),
+            known_hash=None,
+            progressbar=True,)
+
+    return path
+
+def imagery() -> xr.DataArray:
     """
     Load the file path of Antarctic imagery geotiff from LIMA:
     https://lima.usgs.gov/fullcontinent.php
@@ -57,68 +223,12 @@ def imagery(
         file path
     """
     path = pooch.retrieve(
-        # url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/moa750_2014_hp1_v01.tif", # noqa
         url="https://lima.usgs.gov/tiff_90pct.zip",
         processor=pooch.Unzip(),
         known_hash=None,
         progressbar=True,
     )
     image = [p for p in path if p.endswith(".tif")][0]
-
-    # if region is not None:
-    #     grd = pygmt.grdcut(
-    #         grid=image,
-    #         region=region,
-    #         verbose='q')
-
-    # grd = rioxarray.open_rasterio(image)
-
-    # if region is not None:
-    #     grd = grd.rio.clip_box(
-    #         minx=region[0],
-    #         maxx=region[1],
-    #         miny=region[2],
-    #         maxy=region[3],
-    #         )
-
-    # spacing = kwargs.get('spacing', None)
-
-    # region = utils.get_grid_info(image)[1]
-    # spacing = utils.get_grid_info(image)[0]
-
-    # if region is not None and spacing is None:
-    #     print('using input region with grdcut')
-    #     grd = pygmt.grdcut(
-    #         grid=image,
-    #         region=region,
-    #         verbose='q')
-    # elif spacing is not None and region is None:
-    #     print('using input spacing')
-    #     grd = pygmt.grdfilter(
-    #         grid=image,
-    #         filter=f"g{spacing}",
-    #         spacing=spacing,
-    #         region=utils.get_grid_info(image)[1],
-    #         distance="0",
-    #         nans="r",
-    #         verbose="q",
-    #     )
-    # elif region and spacing is not None:
-    #     print('using input region and spacing')
-    #     grd = pygmt.grdfilter(
-    #         grid=image,
-    #         filter=f"g{spacing}",
-    #         spacing=spacing,
-    #         region=region,
-    #         distance="0",
-    #         nans="r",
-    #         verbose="q",
-    #     )
-    # else:
-    #     grd = image
-
-    # if plot is True:
-    #     grd.plot.imshow()
 
     return image
 
@@ -220,11 +330,17 @@ def bedmachine(
 
     if region is None:
         region = (-2800e3, 2800e3, -2800e3, 2800e3)
+    
     path = pooch.retrieve(
-        url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",  # noqa
+        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc", # noqa
+        downloader=EarthDataDownloader(),
         known_hash=None,
-        progressbar=True,
-    )
+        progressbar=True,)
+    # path = pooch.retrieve(
+    #     url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",  # noqa
+    #     known_hash=None,
+    #     progressbar=True,
+    # )
 
     if layer == "icebase":
         surface = pygmt.grdfilter(
