@@ -106,7 +106,7 @@ def plot_grd(
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
     inset_pos = kwargs.get("inset_pos", "TL")
-    title = kwargs.get("title", " ")
+    title = kwargs.get("title", None)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region)
@@ -125,7 +125,7 @@ def plot_grd(
     if image is True:
         pygmt.makecpt(
             cmap=cmap,
-            series=(0, 1),
+            series="15000/17000/1",
         )
     elif grd2cpt is True:
         pygmt.grd2cpt(
@@ -158,9 +158,7 @@ def plot_grd(
         projection=proj,
         region=plot_region,
         nan_transparent=True,
-        frame=[
-            f'+gwhite+t"{title}"',
-        ],
+        frame=[f'+gwhite'],
         verbose="q",
     )
 
@@ -268,6 +266,9 @@ def plot_grd(
             )
 
     # reset region and projection
-    fig.basemap(region=plot_region, projection=proj, frame=["f"])
+    if title is None:
+        fig.basemap(region=plot_region, projection=proj, frame="wesn")
+    else:
+        fig.basemap(region=plot_region, projection=proj, frame=f'wesn+t{title}')
 
     return fig
