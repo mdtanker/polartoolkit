@@ -111,6 +111,8 @@ def plot_grd(
     inset_pos = kwargs.get("inset_pos", "TL")
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
+    x_annots = kwargs.get("x_annots", 30)
+    y_annots = kwargs.get("y_annots", 4)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
@@ -123,7 +125,7 @@ def plot_grd(
         fig.shift_origin(xshift=(fig_width + 0.4))
     elif origin_shift == "yshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(fig_height + 2))
+        fig.shift_origin(yshift=(fig_height + 3))
 
     # set cmap
     if image is True:
@@ -200,36 +202,7 @@ def plot_grd(
 
     # add lat long grid lines
     if grid_lines is True:
-        x_annots = kwargs.get("x_annots", 30)
-        y_annots = kwargs.get("y_annots", 4)
-        with pygmt.config(
-            MAP_ANNOT_OFFSET_PRIMARY="-2p",
-            MAP_FRAME_TYPE="inside",
-            MAP_ANNOT_OBLIQUE=0,
-            FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
-            MAP_GRID_PEN_PRIMARY="gray",
-            MAP_TICK_LENGTH_PRIMARY="-5p",
-            MAP_TICK_PEN_PRIMARY="thinnest,gray",
-            FORMAT_GEO_MAP="dddF",
-            MAP_POLAR_CAP="90/90",
-        ):
-            fig.basemap(
-                projection=proj_latlon,
-                region=plot_region,
-                frame=[
-                    "NSWE",
-                    f"xa{x_annots}g{x_annots/2}",
-                    f"ya{y_annots}g{y_annots/2}",
-                ],
-                verbose="q",
-            )
-            with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
-                fig.basemap(
-                    projection=proj_latlon,
-                    region=plot_region,
-                    frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
-                    verbose="q",
-                )
+        add_gridlines(fig, plot_region, proj_latlon, x_annots, y_annots)
 
     # add inset map to show figure location
     if inset is True:
@@ -243,12 +216,76 @@ def plot_grd(
 
     return fig
 
-def add_inset(
-    fig,
-    plot_region,
-    fig_width, 
-    inset_pos='TL', 
+def add_gridlines(
+    fig: pygmt.figure,
+    plot_region: Union[str or np.ndarray],
+    proj_latlon: str,
+    x_annots: int =30,
+    y_annots: int =4,
 ):
+    """
+    add lat lon grid lines and annotations to a figure.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    plot_region : np.ndarray
+        region for the figure
+    proj_latlon : str
+        GMT projection string in lat lon
+    x_annots : int, optional
+        interval for longitude lines in degrees, by default 30
+    y_annots : int, optional
+        interval for latitude lines in degrees, by default 4
+    """
+    with pygmt.config(
+        MAP_ANNOT_OFFSET_PRIMARY="-2p",
+        MAP_FRAME_TYPE="inside",
+        MAP_ANNOT_OBLIQUE=0,
+        FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
+        MAP_GRID_PEN_PRIMARY="gray",
+        MAP_TICK_LENGTH_PRIMARY="-5p",
+        MAP_TICK_PEN_PRIMARY="thinnest,gray",
+        FORMAT_GEO_MAP="dddF",
+        MAP_POLAR_CAP="90/90",
+    ):
+        fig.basemap(
+            projection=proj_latlon,
+            region=plot_region,
+            frame=[
+                "NSWE",
+                f"xa{x_annots}g{x_annots/2}",
+                f"ya{y_annots}g{y_annots/2}",
+            ],
+            verbose="q",
+        )
+        with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
+            fig.basemap(
+                projection=proj_latlon,
+                region=plot_region,
+                frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
+                verbose="q",
+            )
+
+def add_inset(
+    fig: pygmt.figure,
+    plot_region: Union[str or np.ndarray],
+    fig_width: Union[int, float], 
+    inset_pos: str ='TL', 
+):
+    """
+    add an inset map showing the figure region relative to the Antarctic continent.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    plot_region : np.ndarray
+        region for the figure
+    fig_width : float or int
+        width of figure in cm
+    inset_pos : str, optional
+        GMT location string for inset map, by default 'TL' (top left)
+    """
     inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
     inset_map = f"X{fig_width*.25}c"
 
