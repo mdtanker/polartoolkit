@@ -8,6 +8,7 @@
 
 import warnings
 from typing import TYPE_CHECKING, Union
+from math import log10, floor
 
 import pygmt
 import pyogrio
@@ -108,11 +109,9 @@ def plot_grd(
     grid_lines = kwargs.get("grid_lines", False)
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
-    inset_pos = kwargs.get("inset_pos", "TL")
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
-    x_annots = kwargs.get("x_annots", 30)
-    y_annots = kwargs.get("y_annots", 4)
+    scalebar = kwargs.get('scalebar', False)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
@@ -208,12 +207,23 @@ def plot_grd(
 
     # add lat long grid lines
     if grid_lines is True:
-        add_gridlines(fig, plot_region, proj_latlon, x_annots, y_annots)
+        add_gridlines(fig, plot_region, proj_latlon, 
+            x_annots = kwargs.get("x_annots", 30),
+            y_annots = kwargs.get("y_annots", 4),
+        )
 
     # add inset map to show figure location
     if inset is True:
-        add_inset(fig, plot_region, fig_width, inset_pos)
+        add_inset(fig, plot_region, fig_width, kwargs.get("inset_pos", "TL"))
 
+    # add scalebar
+    if scalebar is True:
+        add_scalebar(fig, plot_region, proj_latlon, 
+            font_color=kwargs.get('font_color', 'black'), 
+            scale_length=kwargs.get('scale_length'),
+            length_perc=kwargs.get('length_perc', .25),
+            position=kwargs.get('position', "n.5/.05"),
+            )
     # reset region and projection
     if title is None:
         fig.basemap(region=plot_region, projection=proj, frame="wesn")
@@ -362,3 +372,45 @@ def add_inset(
             ],
             pen="1p,black",
         )
+
+def add_scalebar(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    projection: str,
+    **kwargs
+):
+    """
+    add lat lon grid lines and annotations to a figure.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    region : np.ndarray
+        region for the figure
+    projection : str
+        GMT projection string in lat lon
+
+    """
+    font_color = kwargs.get('font_color', 'black')
+    scale_length = kwargs.get('scale_length')
+    length_perc = kwargs.get('length_perc', .25)
+    position = kwargs.get('postion', "n.5/.05")
+
+    def round_to_1(x):
+        return round(x, -int(floor(log10(abs(x)))))
+
+    if scale_length is None:
+        scale_length = round_to_1((abs(region[1])-abs(region[0]))/1000*length_perc)
+
+    with pygmt.config(
+        FONT_ANNOT_PRIMARY = f'10p,{font_color}', 
+        FONT_LABEL = f'10p,{font_color}', 
+        MAP_SCALE_HEIGHT='6p', 
+        MAP_TICK_PEN_PRIMARY = f'0.5p,{font_color}'
+    ):
+        fig.basemap(
+            region=region,
+            projection = projection, 
+            map_scale=f'{position}+w{scale_length}k+f+l"km"+ar', 
+            verbose='e'
+            )
