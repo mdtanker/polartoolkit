@@ -71,6 +71,9 @@ def plot_grd(
         choose to plot inset map showing figure location, by default is False
     inset_pos : str
         position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    fig_height : int or float
+        height in cm for figures, by default is 15cm.
+
     Returns
     -------
     PyGMT.Figure()
@@ -107,9 +110,10 @@ def plot_grd(
     inset = kwargs.get("inset", False)
     inset_pos = kwargs.get("inset_pos", "TL")
     title = kwargs.get("title", None)
+    fig_height = kwargs.get("fig_height", 15)
 
     # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region)
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -202,10 +206,10 @@ def plot_grd(
             MAP_ANNOT_OFFSET_PRIMARY="-2p",
             MAP_FRAME_TYPE="inside",
             MAP_ANNOT_OBLIQUE=0,
-            FONT_ANNOT_PRIMARY="6p,black,-=2p,white",
-            MAP_GRID_PEN_PRIMARY="grey",
-            MAP_TICK_LENGTH_PRIMARY="-10p",
-            MAP_TICK_PEN_PRIMARY="thinnest,grey",
+            FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
+            MAP_GRID_PEN_PRIMARY="gray",
+            MAP_TICK_LENGTH_PRIMARY="-5p",
+            MAP_TICK_PEN_PRIMARY="thinnest,gray",
             FORMAT_GEO_MAP="dddF",
             MAP_POLAR_CAP="90/90",
         ):
@@ -219,7 +223,7 @@ def plot_grd(
                 ],
                 verbose="q",
             )
-            with pygmt.config(FONT_ANNOT_PRIMARY="6p,black"):
+            with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
                 fig.basemap(
                     projection=proj_latlon,
                     region=plot_region,
@@ -229,41 +233,7 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
-        inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
-        inset_map = f"X{fig_width*.25}c"
-
-        with fig.inset(
-            position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
-            verbose="q",
-        ):
-            # gdf = gpd.read_file(fetch.groundingline())
-            gdf = pyogrio.read_dataframe(fetch.groundingline())
-            fig.plot(
-                projection=inset_map,
-                region=inset_reg,
-                data=gdf[gdf.Id_text == "Ice shelf"],
-                color="skyblue",
-            )
-            fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-            fig.plot(data=fetch.groundingline(), pen="0.2p,black")
-
-            fig.plot(
-                x=[
-                    plot_region[0],
-                    plot_region[0],
-                    plot_region[1],
-                    plot_region[1],
-                    plot_region[0],
-                ],
-                y=[
-                    plot_region[2],
-                    plot_region[3],
-                    plot_region[3],
-                    plot_region[2],
-                    plot_region[2],
-                ],
-                pen="1p,black",
-            )
+        add_inset(fig, plot_region, fig_width, inset_pos)
 
     # reset region and projection
     if title is None:
@@ -272,3 +242,45 @@ def plot_grd(
         fig.basemap(region=plot_region, projection=proj, frame=f'wesn+t{title}')
 
     return fig
+
+def add_inset(
+    fig,
+    plot_region,
+    fig_width, 
+    inset_pos='TL', 
+):
+    inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
+    inset_map = f"X{fig_width*.25}c"
+
+    with fig.inset(
+        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
+        verbose="q",
+    ):
+        # gdf = gpd.read_file(fetch.groundingline())
+        gdf = pyogrio.read_dataframe(fetch.groundingline())
+        fig.plot(
+            projection=inset_map,
+            region=inset_reg,
+            data=gdf[gdf.Id_text == "Ice shelf"],
+            color="skyblue",
+        )
+        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
+        fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+
+        fig.plot(
+            x=[
+                plot_region[0],
+                plot_region[0],
+                plot_region[1],
+                plot_region[1],
+                plot_region[0],
+            ],
+            y=[
+                plot_region[2],
+                plot_region[3],
+                plot_region[3],
+                plot_region[2],
+                plot_region[2],
+            ],
+            pen="1p,black",
+        )
