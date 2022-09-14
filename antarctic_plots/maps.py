@@ -178,10 +178,16 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
-        fig.plot(
-            data=fetch.groundingline(),
-            pen=".6p,black",
-        )
+        add_coast(
+            fig, 
+            plot_region,
+            proj, 
+            no_coast = kwargs.get('no_coast', False)
+            )
+        # fig.plot(
+        #     data=fetch.groundingline(),
+        #     pen=".6p,black",
+        # )
 
     # add datapoints
     if points is not None:
@@ -216,10 +222,46 @@ def plot_grd(
 
     return fig
 
+def add_coast(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    projection: str,
+    no_coast: bool = False,
+    pen: str = "0.6p,black",
+):
+    """
+    add coastline and groundingline to figure.
+
+    Parameters
+    ----------
+    fig : pygmt.figure
+    region : Union[str or np.ndarray]
+        region for the figure
+    projection : str
+        GMT projection string
+    no_coast : bool
+        If True, only plot groundingline, not coastline, by default is False
+    pen : str, optional
+        GMT pen string, by default "0.6p,black"
+    """
+    gdf = pyogrio.read_dataframe(fetch.groundingline())
+
+    if no_coast is False:
+        data = gdf
+    elif no_coast is True:
+        data = gdf[gdf.Id_text == "Grounded ice or land"]
+
+    fig.plot(
+        data,
+        projection=projection,
+        region=region,
+        pen=pen,
+    )
+
 def add_gridlines(
     fig: pygmt.figure,
-    plot_region: Union[str or np.ndarray],
-    proj_latlon: str,
+    region: Union[str or np.ndarray],
+    projection: str,
     x_annots: int =30,
     y_annots: int =4,
 ):
@@ -229,9 +271,9 @@ def add_gridlines(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    plot_region : np.ndarray
+    region : np.ndarray
         region for the figure
-    proj_latlon : str
+    projection : str
         GMT projection string in lat lon
     x_annots : int, optional
         interval for longitude lines in degrees, by default 30
@@ -250,8 +292,8 @@ def add_gridlines(
         MAP_POLAR_CAP="90/90",
     ):
         fig.basemap(
-            projection=proj_latlon,
-            region=plot_region,
+            projection=projection,
+            region=region,
             frame=[
                 "NSWE",
                 f"xa{x_annots}g{x_annots/2}",
@@ -261,15 +303,15 @@ def add_gridlines(
         )
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
             fig.basemap(
-                projection=proj_latlon,
-                region=plot_region,
+                projection=projection,
+                region=region,
                 frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
                 verbose="q",
             )
 
 def add_inset(
     fig: pygmt.figure,
-    plot_region: Union[str or np.ndarray],
+    region: Union[str or np.ndarray],
     fig_width: Union[int, float], 
     inset_pos: str ='TL', 
 ):
@@ -279,7 +321,7 @@ def add_inset(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    plot_region : np.ndarray
+    region : np.ndarray
         region for the figure
     fig_width : float or int
         width of figure in cm
@@ -293,7 +335,6 @@ def add_inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
         verbose="q",
     ):
-        # gdf = gpd.read_file(fetch.groundingline())
         gdf = pyogrio.read_dataframe(fetch.groundingline())
         fig.plot(
             projection=inset_map,
@@ -306,18 +347,18 @@ def add_inset(
 
         fig.plot(
             x=[
-                plot_region[0],
-                plot_region[0],
-                plot_region[1],
-                plot_region[1],
-                plot_region[0],
+                region[0],
+                region[0],
+                region[1],
+                region[1],
+                region[0],
             ],
             y=[
-                plot_region[2],
-                plot_region[3],
-                plot_region[3],
-                plot_region[2],
-                plot_region[2],
+                region[2],
+                region[3],
+                region[3],
+                region[2],
+                region[2],
             ],
             pen="1p,black",
         )
