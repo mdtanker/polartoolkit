@@ -20,7 +20,7 @@ from antarctic_plots import utils, regions
 
 class EarthDataDownloader:
     """
-    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py # noqa
+    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py
     Either pulls login details from pre-set environment variables, or prompts user to 
     input username and password.
     """
