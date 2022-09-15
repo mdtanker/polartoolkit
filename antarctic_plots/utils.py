@@ -151,7 +151,7 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     """
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
     df[output[1]], df[output[0]] = transformer.transform(
-        df[input[1]].tolist(), df[input[0]].tolist()
+        df[input[0]].tolist(), df[input[1]].tolist()
     )
     if reg is True:
         df = [
@@ -163,35 +163,94 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     return df
 
 
-def reg_str_to_df(input, names=["x", "y"]):
+def reg_str_to_df(input, names=["x", "y"], reverse=False):
     """
     Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of
     region corners
 
     Parameters
     ----------
-    input : np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s]
+    input : np.ndarray or pd.DataFrame
+        Array of 4 strings in GMT format; [e, w, n, s], or, if `reverse` is True, a 
+        DataFrame with easting and northing columns with names set by `names`
     names : list, optional
-        Names of names to use for easting and northing, by default ["x", "y"]
-
+        List of names to use for easting and northing, by default ["x", "y"]
+    reverse : bool, False
+        If True, convert from df to region string.
     Returns
     -------
-    pd.DataFrame
+    pd.DataFrame or np.ndarray
         Dataframe with easting and northing columns, and a row for each corner of the
-        region.
+        region, or, if `reverse` is True, a array in the format [e,w,n,s].
     """
-    bl = (input[0], input[2])
-    br = (input[1], input[2])
-    tl = (input[0], input[3])
-    tr = (input[1], input[3])
-    df = pd.DataFrame(data=[bl, br, tl, tr], columns=(names[0], names[1]))
+    if reverse is False:
+        bl = (input[0], input[2])
+        br = (input[1], input[2])
+        tl = (input[0], input[3])
+        tr = (input[1], input[3])
+        df = pd.DataFrame(data=[bl, br, tl, tr], columns=(names[0], names[1]))
+
+    elif reverse is True:
+        df = [
+            input[names[0]][0],
+            input[names[0]][1],
+            input[names[1]][0],
+            input[names[1]][2],
+            ]
+
     return df
 
 
-def GMT_reg_xy_to_ll(input):
+def GMT_reg_xy_to_ll(input, decimal_degree=False):
     """
     Convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
+
+    Parameters
+    ----------
+    input : np.ndarray
+        Array of 4 strings in GMT format; [e, w, n, s] in meters
+    decimal_degrees: bool, False
+        if True, will return results as decimal degrees instead of deg:min:sec
+
+    Returns
+    -------
+    np.ndarray
+        Array of 4 strings in GMT format; [e, w, n, s] in lat, lon
+    """
+    df = reg_str_to_df(input)
+    df_proj = epsg3031_to_latlon(df, reg=True)
+
+    if decimal_degree is False:
+        output = [dd2dms(x) for x in df_proj]
+    elif decimal_degree is True:
+        output = df_proj
+    return output
+
+def GMT_reg_to_bounding_box(input):
+    """
+    Convert GMT region string [e, w, n, s] to bounding box format used for icepyx: 
+    [ lower left long,
+      lower left lat,
+      upper right long,
+      uper right lat
+    ]
+
+    Parameters
+    ----------
+    input : np.ndarray
+        Array of 4 strings in GMT format; [e, w, n, s] in meters or degrees.
+    
+    Returns
+    -------
+    np.ndarray
+        Array of 4 strings in bounding box format.
+    """
+    return [input[0], input[2], input[1], input[3]]
+
+def region_to_bounding_box(input):
+    """
+    Convert regions in format [e,w,n,s] in EPSG:3031 meters to format 
+    [ll lon, ll lat, ur lon, ur lat] to be used as a bounding box in icepyx.
 
     Parameters
     ----------
@@ -201,13 +260,11 @@ def GMT_reg_xy_to_ll(input):
     Returns
     -------
     np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s] in lat, lon
+        Array of 4 strings in bounding box format.
     """
-    df = reg_str_to_df(input)
-    df_proj = epsg3031_to_latlon(df, reg=True)
-    output = [dd2dms(x) for x in df_proj]
-    return output
-
+    reg_ll = GMT_reg_xy_to_ll(input, decimal_degree=True)
+    box = GMT_reg_to_bounding_box(reg_ll)
+    return box
 
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
@@ -323,28 +380,6 @@ def alter_region(
 
     n = N + zoom - n_shift
     s = S - zoom - n_shift
-
-    # if (e < 0) and (w < 0):
-    #     e_new = e + zoom + w_shift
-    #     w_new = w - zoom + w_shift
-    # elif (e > 0) and (w > 0): 
-    #     e_new = e + zoom + w_shift
-    #     w_new = w - zoom + w_shift
-
-    # if starting_region[1] < 0:    
-    #     w = starting_region[1] + zoom + w_shift
-    # else:
-    #     w = starting_region[1] - zoom + w_shift
-
-    # if starting_region[2] < 0:    
-    #     n = starting_region[2] + zoom - n_shift
-    # else:
-    #     n = starting_region[2] - zoom - n_shift
-
-    # if starting_region[3] < 0:     
-    #     s = starting_region[3] + zoom - n_shift
-    # else:
-    #     s = starting_region[3] - zoom - n_shift
         
     region = [e, w, n, s]
 
@@ -364,7 +399,7 @@ def alter_region(
 
 def set_proj(
     region: Union[str or np.ndarray],
-    fig_height: float = 10,
+    fig_height: float = 15,
 ) -> str:
     """
     Gives GMT format projection string from region and figure height.
@@ -872,3 +907,59 @@ def coherency(grids: list, label: str, **kwargs):
             label='3'
             )
     """
+
+def square_subplots(n):
+    """
+    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py
+    Return an arrangement of rows containing ``n`` axes that is as close to
+    square as looks good.
+    :param n:
+        The number of plots in the subplot
+    :return:
+        Returns a  :class:`tuple` of length ``nrows``, where each element
+        represents the number of plots in that row, so for example a 3 x 2
+        grid would be represented as ``(3, 3)``, because there are 2 rows
+        of length 3.
+    Example:
+    --------
+    .. code::
+        >>> GridStrategy.get_grid(7)
+        (2, 3, 2)
+        >>> GridStrategy.get_grid(6)
+        (3, 3)
+    """
+    SPECIAL_CASES = {3: (2, 1), 5: (2, 3)}
+    if n in SPECIAL_CASES:
+        return SPECIAL_CASES[n]
+
+    # May not work for very large n
+    n_sqrtf = np.sqrt(n)
+    n_sqrt = int(np.ceil(n_sqrtf))
+
+    if n_sqrtf == n_sqrt:
+        # Perfect square, we're done
+        x, y = n_sqrt, n_sqrt
+    elif n <= n_sqrt * (n_sqrt - 1):
+        # An n_sqrt x n_sqrt - 1 grid is close enough to look pretty
+        # square, so if n is less than that value, will use that rather
+        # than jumping all the way to a square grid.
+        x, y = n_sqrt, n_sqrt - 1
+    elif not (n_sqrt % 2) and n % 2:
+        # If the square root is even and the number of axes is odd, in
+        # order to keep the arrangement horizontally symmetrical, using a
+        # grid of size (n_sqrt + 1 x n_sqrt - 1) looks best and guarantees
+        # symmetry.
+        x, y = (n_sqrt + 1, n_sqrt - 1)
+    else:
+        # It's not a perfect square, but a square grid is best
+        x, y = n_sqrt, n_sqrt
+
+    if n == x * y:
+        # There are no deficient rows, so we can just return from here
+        return tuple(x for i in range(y))
+
+    # If exactly one of these is odd, make it the rows
+    if (x % 2) != (y % 2) and (x % 2):
+        x, y = y, x
+
+    return x, y

@@ -11,3 +11,7 @@
 [Pre-defined regions](regions_plots.ipynb)
 -----------------------------------
 ![](outputs/regions_plot.png)
+
+[Useful functions](utils_walkthrough.ipynb)
+-----------------------------------
+![](outputs/crs_plot.png)

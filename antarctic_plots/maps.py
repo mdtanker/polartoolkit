@@ -8,6 +8,7 @@
 
 import warnings
 from typing import TYPE_CHECKING, Union
+from math import log10, floor
 
 import pygmt
 import pyogrio
@@ -71,6 +72,9 @@ def plot_grd(
         choose to plot inset map showing figure location, by default is False
     inset_pos : str
         position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    fig_height : int or float
+        height in cm for figures, by default is 15cm.
+
     Returns
     -------
     PyGMT.Figure()
@@ -105,11 +109,12 @@ def plot_grd(
     grid_lines = kwargs.get("grid_lines", False)
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
-    inset_pos = kwargs.get("inset_pos", "TL")
     title = kwargs.get("title", None)
+    fig_height = kwargs.get("fig_height", 15)
+    scalebar = kwargs.get('scalebar', False)
 
     # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region)
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -119,7 +124,7 @@ def plot_grd(
         fig.shift_origin(xshift=(fig_width + 0.4))
     elif origin_shift == "yshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(fig_height + 2))
+        fig.shift_origin(yshift=(fig_height + 3))
 
     # set cmap
     if image is True:
@@ -172,10 +177,16 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
-        fig.plot(
-            data=fetch.groundingline(),
-            pen=".6p,black",
-        )
+        add_coast(
+            fig, 
+            plot_region,
+            proj, 
+            no_coast = kwargs.get('no_coast', False)
+            )
+        # fig.plot(
+        #     data=fetch.groundingline(),
+        #     pen=".6p,black",
+        # )
 
     # add datapoints
     if points is not None:
@@ -196,75 +207,23 @@ def plot_grd(
 
     # add lat long grid lines
     if grid_lines is True:
-        x_annots = kwargs.get("x_annots", 30)
-        y_annots = kwargs.get("y_annots", 4)
-        with pygmt.config(
-            MAP_ANNOT_OFFSET_PRIMARY="-2p",
-            MAP_FRAME_TYPE="inside",
-            MAP_ANNOT_OBLIQUE=0,
-            FONT_ANNOT_PRIMARY="6p,black,-=2p,white",
-            MAP_GRID_PEN_PRIMARY="grey",
-            MAP_TICK_LENGTH_PRIMARY="-10p",
-            MAP_TICK_PEN_PRIMARY="thinnest,grey",
-            FORMAT_GEO_MAP="dddF",
-            MAP_POLAR_CAP="90/90",
-        ):
-            fig.basemap(
-                projection=proj_latlon,
-                region=plot_region,
-                frame=[
-                    "NSWE",
-                    f"xa{x_annots}g{x_annots/2}",
-                    f"ya{y_annots}g{y_annots/2}",
-                ],
-                verbose="q",
-            )
-            with pygmt.config(FONT_ANNOT_PRIMARY="6p,black"):
-                fig.basemap(
-                    projection=proj_latlon,
-                    region=plot_region,
-                    frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
-                    verbose="q",
-                )
+        add_gridlines(fig, plot_region, proj_latlon, 
+            x_annots = kwargs.get("x_annots", 30),
+            y_annots = kwargs.get("y_annots", 4),
+        )
 
     # add inset map to show figure location
     if inset is True:
-        inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
-        inset_map = f"X{fig_width*.25}c"
+        add_inset(fig, plot_region, fig_width, kwargs.get("inset_pos", "TL"))
 
-        with fig.inset(
-            position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
-            verbose="q",
-        ):
-            # gdf = gpd.read_file(fetch.groundingline())
-            gdf = pyogrio.read_dataframe(fetch.groundingline())
-            fig.plot(
-                projection=inset_map,
-                region=inset_reg,
-                data=gdf[gdf.Id_text == "Ice shelf"],
-                color="skyblue",
+    # add scalebar
+    if scalebar is True:
+        add_scalebar(fig, plot_region, proj_latlon, 
+            font_color=kwargs.get('font_color', 'black'), 
+            scale_length=kwargs.get('scale_length'),
+            length_perc=kwargs.get('length_perc', .25),
+            position=kwargs.get('position', "n.5/.05"),
             )
-            fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-            fig.plot(data=fetch.groundingline(), pen="0.2p,black")
-
-            fig.plot(
-                x=[
-                    plot_region[0],
-                    plot_region[0],
-                    plot_region[1],
-                    plot_region[1],
-                    plot_region[0],
-                ],
-                y=[
-                    plot_region[2],
-                    plot_region[3],
-                    plot_region[3],
-                    plot_region[2],
-                    plot_region[2],
-                ],
-                pen="1p,black",
-            )
-
     # reset region and projection
     if title is None:
         fig.basemap(region=plot_region, projection=proj, frame="wesn")
@@ -272,3 +231,186 @@ def plot_grd(
         fig.basemap(region=plot_region, projection=proj, frame=f'wesn+t{title}')
 
     return fig
+
+def add_coast(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    projection: str,
+    no_coast: bool = False,
+    pen: str = "0.6p,black",
+):
+    """
+    add coastline and groundingline to figure.
+
+    Parameters
+    ----------
+    fig : pygmt.figure
+    region : Union[str or np.ndarray]
+        region for the figure
+    projection : str
+        GMT projection string
+    no_coast : bool
+        If True, only plot groundingline, not coastline, by default is False
+    pen : str, optional
+        GMT pen string, by default "0.6p,black"
+    """
+    gdf = pyogrio.read_dataframe(fetch.groundingline())
+
+    if no_coast is False:
+        data = gdf
+    elif no_coast is True:
+        data = gdf[gdf.Id_text == "Grounded ice or land"]
+
+    fig.plot(
+        data,
+        projection=projection,
+        region=region,
+        pen=pen,
+    )
+
+def add_gridlines(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    projection: str,
+    x_annots: int =30,
+    y_annots: int =4,
+):
+    """
+    add lat lon grid lines and annotations to a figure.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    region : np.ndarray
+        region for the figure
+    projection : str
+        GMT projection string in lat lon
+    x_annots : int, optional
+        interval for longitude lines in degrees, by default 30
+    y_annots : int, optional
+        interval for latitude lines in degrees, by default 4
+    """
+    with pygmt.config(
+        MAP_ANNOT_OFFSET_PRIMARY="-2p",
+        MAP_FRAME_TYPE="inside",
+        MAP_ANNOT_OBLIQUE=0,
+        FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
+        MAP_GRID_PEN_PRIMARY="gray",
+        MAP_TICK_LENGTH_PRIMARY="-5p",
+        MAP_TICK_PEN_PRIMARY="thinnest,gray",
+        FORMAT_GEO_MAP="dddF",
+        MAP_POLAR_CAP="90/90",
+    ):
+        fig.basemap(
+            projection=projection,
+            region=region,
+            frame=[
+                "NSWE",
+                f"xa{x_annots}g{x_annots/2}",
+                f"ya{y_annots}g{y_annots/2}",
+            ],
+            verbose="q",
+        )
+        with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
+            fig.basemap(
+                projection=projection,
+                region=region,
+                frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
+                verbose="q",
+            )
+
+def add_inset(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    fig_width: Union[int, float], 
+    inset_pos: str ='TL', 
+):
+    """
+    add an inset map showing the figure region relative to the Antarctic continent.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    region : np.ndarray
+        region for the figure
+    fig_width : float or int
+        width of figure in cm
+    inset_pos : str, optional
+        GMT location string for inset map, by default 'TL' (top left)
+    """
+    inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
+    inset_map = f"X{fig_width*.25}c"
+
+    with fig.inset(
+        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
+        verbose="q",
+    ):
+        gdf = pyogrio.read_dataframe(fetch.groundingline())
+        fig.plot(
+            projection=inset_map,
+            region=inset_reg,
+            data=gdf[gdf.Id_text == "Ice shelf"],
+            color="skyblue",
+        )
+        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
+        fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+
+        fig.plot(
+            x=[
+                region[0],
+                region[0],
+                region[1],
+                region[1],
+                region[0],
+            ],
+            y=[
+                region[2],
+                region[3],
+                region[3],
+                region[2],
+                region[2],
+            ],
+            pen="1p,black",
+        )
+
+def add_scalebar(
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray],
+    projection: str,
+    **kwargs
+):
+    """
+    add lat lon grid lines and annotations to a figure.
+
+    Parameters
+    ----------
+    fig : PyGMT.figure instance
+    region : np.ndarray
+        region for the figure
+    projection : str
+        GMT projection string in lat lon
+
+    """
+    font_color = kwargs.get('font_color', 'black')
+    scale_length = kwargs.get('scale_length')
+    length_perc = kwargs.get('length_perc', .25)
+    position = kwargs.get('position', "n.5/.05")
+
+    def round_to_1(x):
+        return round(x, -int(floor(log10(abs(x)))))
+
+    if scale_length is None:
+        scale_length = round_to_1((abs(region[1])-abs(region[0]))/1000*length_perc)
+
+    with pygmt.config(
+        FONT_ANNOT_PRIMARY = f'10p,{font_color}', 
+        FONT_LABEL = f'10p,{font_color}', 
+        MAP_SCALE_HEIGHT='6p', 
+        MAP_TICK_PEN_PRIMARY = f'0.5p,{font_color}'
+    ):
+        fig.basemap(
+            region=region,
+            projection = projection, 
+            map_scale=f'{position}+w{scale_length}k+f+l"km"+ar', 
+            verbose='e'
+            )
