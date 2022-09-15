@@ -907,3 +907,59 @@ def coherency(grids: list, label: str, **kwargs):
             label='3'
             )
     """
+
+def square_subplots(n):
+    """
+    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py
+    Return an arrangement of rows containing ``n`` axes that is as close to
+    square as looks good.
+    :param n:
+        The number of plots in the subplot
+    :return:
+        Returns a  :class:`tuple` of length ``nrows``, where each element
+        represents the number of plots in that row, so for example a 3 x 2
+        grid would be represented as ``(3, 3)``, because there are 2 rows
+        of length 3.
+    Example:
+    --------
+    .. code::
+        >>> GridStrategy.get_grid(7)
+        (2, 3, 2)
+        >>> GridStrategy.get_grid(6)
+        (3, 3)
+    """
+    SPECIAL_CASES = {3: (2, 1), 5: (2, 3)}
+    if n in SPECIAL_CASES:
+        return SPECIAL_CASES[n]
+
+    # May not work for very large n
+    n_sqrtf = np.sqrt(n)
+    n_sqrt = int(np.ceil(n_sqrtf))
+
+    if n_sqrtf == n_sqrt:
+        # Perfect square, we're done
+        x, y = n_sqrt, n_sqrt
+    elif n <= n_sqrt * (n_sqrt - 1):
+        # An n_sqrt x n_sqrt - 1 grid is close enough to look pretty
+        # square, so if n is less than that value, will use that rather
+        # than jumping all the way to a square grid.
+        x, y = n_sqrt, n_sqrt - 1
+    elif not (n_sqrt % 2) and n % 2:
+        # If the square root is even and the number of axes is odd, in
+        # order to keep the arrangement horizontally symmetrical, using a
+        # grid of size (n_sqrt + 1 x n_sqrt - 1) looks best and guarantees
+        # symmetry.
+        x, y = (n_sqrt + 1, n_sqrt - 1)
+    else:
+        # It's not a perfect square, but a square grid is best
+        x, y = n_sqrt, n_sqrt
+
+    if n == x * y:
+        # There are no deficient rows, so we can just return from here
+        return tuple(x for i in range(y))
+
+    # If exactly one of these is odd, make it the rows
+    if (x % 2) != (y % 2) and (x % 2):
+        x, y = y, x
+
+    return x, y

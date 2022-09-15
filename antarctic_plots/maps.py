@@ -394,7 +394,7 @@ def add_scalebar(
     font_color = kwargs.get('font_color', 'black')
     scale_length = kwargs.get('scale_length')
     length_perc = kwargs.get('length_perc', .25)
-    position = kwargs.get('postion', "n.5/.05")
+    position = kwargs.get('position', "n.5/.05")
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))
