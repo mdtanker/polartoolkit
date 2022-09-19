@@ -59,8 +59,8 @@ def plot_grd(
         label to add to colorbar.
     points : pd.DataFrame
         points to plot on map, must contain columns 'x' and 'y'.
-    square : np.ndarray
-        GMT-format region to use to plot a square.
+    box : np.ndarray
+        GMT-format region to use to plot a box.
     cpt_lims : Union[str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
     fig : pygmt.Figure()
@@ -108,7 +108,7 @@ def plot_grd(
             plot_region = regions.antarctica
 
     cmap_region = kwargs.get("cmap_region", plot_region)
-    square = kwargs.get("square", None)
+    box = kwargs.get("box", None)
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
@@ -203,13 +203,9 @@ def plot_grd(
             color="black",
         )
 
-    # add square
-    if square is not None:
-        fig.plot(
-            x=[square[0], square[0], square[1], square[1], square[0]],
-            y=[square[2], square[3], square[3], square[2], square[2]],
-            pen="2p,black",
-        )
+    # add box
+    if box is not None:
+        add_box(fig, box)
 
     # add lat long grid lines
     if grid_lines is True:
@@ -406,7 +402,7 @@ def add_scalebar(
         return round(x, -int(floor(log10(abs(x)))))
 
     if scale_length is None:
-        scale_length = round_to_1((abs(abs(region[1])-abs(region[0])))/1000*length_perc)
+        scale_length = round_to_1((abs(region[1]-region[0]))/1000*length_perc)
 
     with pygmt.config(
         FONT_ANNOT_PRIMARY = f'10p,{font_color}', 
@@ -420,3 +416,14 @@ def add_scalebar(
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar', 
             verbose='e'
             )
+
+def add_box(
+    fig: pygmt.figure,
+    box: Union[list or np.ndarray],
+    pen = '2p,black',
+):
+    fig.plot(
+            x=[box[0], box[0], box[1], box[1], box[0]],
+            y=[box[2], box[3], box[3], box[2], box[2]],
+            pen=pen,
+        )
