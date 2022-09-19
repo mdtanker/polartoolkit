@@ -9,6 +9,9 @@
 Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic
 Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 """
+import verde as vd 
+import pandas as pd
+from antarctic_plots import utils
 
 # regions
 antarctica = [-2800e3, 2800e3, -2800e3, 2800e3]
@@ -60,3 +63,14 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 # weddell_sea
 
 # ice catchements
+
+def combine_regions(
+    region1, 
+    region2,
+):
+    coords1 = utils.reg_str_to_df(region1)
+    coords2 = utils.reg_str_to_df(region2)
+    coords_combined = pd.concat((coords1, coords2))
+    region = vd.get_region((coords_combined.x, coords_combined.y))
+
+    return region
