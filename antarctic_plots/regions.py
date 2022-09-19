@@ -49,8 +49,8 @@ amery_ice_shelf = [1530e3, 2460e3, 430e3, 1000e3]
 # glaciers
 # byrd_glacier
 # nimrod_glacier
-pine_island_glacier = [-1730e3, -1520e3, -450e3, -200e3]
-thwaites_glacier = [-1770e3, -990e3, -730e3, -30e3]
+pine_island_glacier = [-1720e3, -1480e3, -380e3, -70e3]
+thwaites_glacier = [-1650e3, -1200e3, -600e3, -300e3]
 kamb_ice_stream = [-620e3, -220e3, -800e3, -400e3]
 # whillans_ice_stream = []
 
