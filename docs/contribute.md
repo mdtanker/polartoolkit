@@ -13,7 +13,6 @@ Set up the poetry virtual environment:
 This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
 
 Next we need to create a conda/mamba env:
-    make delete_env
     make new_env
 
 This will create a new conda env `antarctic_plots_dev` and install `PyGMT`.

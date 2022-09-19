@@ -48,7 +48,7 @@ license-check:
 	python tools/license_notice.py --check
 
 flake8:
-	flake8p $(STYLE_CHECK_FILES)
+	flake8p $(STYLE_CHECK_FILES) --exclude=*/_build/*
 
 run_doc_files:
 	jupyter nbconvert --execute --inplace docs/*.ipynb
@@ -86,8 +86,9 @@ publish:
 delete_env:
 	mamba remove --name antarctic_plots_dev --all --yes
 
-new_env:
+new_env: delete_env
 	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
+# conda env create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 --file requirements.txt
 
 install_reqs:
 	pip install --no-deps --requirement requirements.txt

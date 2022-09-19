@@ -16,7 +16,7 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-import rioxarray
+
 from antarctic_plots import maps
 
 if TYPE_CHECKING:
@@ -48,16 +48,18 @@ def get_grid_info(grid):
             grid = pygmt.load_dataarray(grid)
         except ValueError:
             grid = xr.open_rasterio(grid)
-    
+
     if int(len(grid.dims)) > 2:
-        grid=grid.squeeze()
+        grid = grid.squeeze()
 
     try:
         spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
-        region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
+        region = [
+            float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
+        ]
         zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
-    except:
+    except Exception:
         print("grid info can't be extracted, check number of dimensions, should be 2.")
         spacing = None
         region = None
@@ -125,7 +127,7 @@ def latlon_to_epsg3031(
 
     if isinstance(df, list):
         ll = df.copy()
-        df = list(transformer.transform(ll[0],ll[1]))
+        df = list(transformer.transform(ll[0], ll[1]))
     else:
         df[output[0]], df[output[1]] = transformer.transform(
             df[input[1]].tolist(), df[input[0]].tolist()
@@ -164,10 +166,10 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     """
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
-    
+
     if isinstance(df, list):
         xy = df.copy()
-        df = list(transformer.transform(xy[0],xy[1]))
+        df = list(transformer.transform(xy[0], xy[1]))
     else:
         df[output[1]], df[output[0]] = transformer.transform(
             df[input[0]].tolist(), df[input[1]].tolist()
@@ -190,7 +192,7 @@ def reg_str_to_df(input, names=["x", "y"], reverse=False):
     Parameters
     ----------
     input : np.ndarray or pd.DataFrame
-        Array of 4 strings in GMT format; [e, w, n, s], or, if `reverse` is True, a 
+        Array of 4 strings in GMT format; [e, w, n, s], or, if `reverse` is True, a
         DataFrame with easting and northing columns with names set by `names`
     names : list, optional
         List of names to use for easting and northing, by default ["x", "y"]
@@ -215,7 +217,7 @@ def reg_str_to_df(input, names=["x", "y"], reverse=False):
             input[names[0]][1],
             input[names[1]][0],
             input[names[1]][2],
-            ]
+        ]
 
     return df
 
@@ -245,9 +247,10 @@ def GMT_reg_xy_to_ll(input, decimal_degree=False):
         output = df_proj
     return output
 
+
 def GMT_reg_to_bounding_box(input):
     """
-    Convert GMT region string [e, w, n, s] to bounding box format used for icepyx: 
+    Convert GMT region string [e, w, n, s] to bounding box format used for icepyx:
     [ lower left long,
       lower left lat,
       upper right long,
@@ -258,7 +261,7 @@ def GMT_reg_to_bounding_box(input):
     ----------
     input : np.ndarray
         Array of 4 strings in GMT format; [e, w, n, s] in meters or degrees.
-    
+
     Returns
     -------
     np.ndarray
@@ -266,9 +269,10 @@ def GMT_reg_to_bounding_box(input):
     """
     return [input[0], input[2], input[1], input[3]]
 
+
 def region_to_bounding_box(input):
     """
-    Convert regions in format [e,w,n,s] in EPSG:3031 meters to format 
+    Convert regions in format [e,w,n,s] in EPSG:3031 meters to format
     [ll lon, ll lat, ur lon, ur lat] to be used as a bounding box in icepyx.
 
     Parameters
@@ -284,6 +288,7 @@ def region_to_bounding_box(input):
     reg_ll = GMT_reg_xy_to_ll(input, decimal_degree=True)
     box = GMT_reg_to_bounding_box(reg_ll)
     return box
+
 
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
@@ -301,7 +306,7 @@ def mask_from_shp(
     Parameters
     ----------
     shapefile : Union[str or gpd.geodataframe.GeoDataFrame]
-        either path to .shp filename, must by in same directory as accompanying files : 
+        either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
          been loaded into a geodataframe.
     invert : bool, optional
@@ -329,7 +334,7 @@ def mask_from_shp(
     xarray.DataArray
         Returns either a masked grid, or the mask grid itself.
     """
-    
+
     if isinstance(shapefile, str):
         # shp = gpd.read_file(shapefile).geometry
         shp = pyogrio.read_dataframe(shapefile)
@@ -399,7 +404,7 @@ def alter_region(
 
     n = N + zoom - n_shift
     s = S - zoom - n_shift
-        
+
     region = [e, w, n, s]
 
     e_buff, w_buff, n_buff, s_buff = (
@@ -538,7 +543,7 @@ def grd_compare(
     da1: Union[xr.DataArray, str],
     da2: Union[xr.DataArray, str],
     plot: bool = False,
-    plot_type: str = 'pygmt',
+    plot_type: str = "pygmt",
     **kwargs,
 ):
     """
@@ -554,7 +559,7 @@ def grd_compare(
     plot : bool, optional
         plot the results, by default False
     plot_type : str, optional
-        choose the style of plot, by default is pygmt, can choose xarray for faster, 
+        choose the style of plot, by default is pygmt, can choose xarray for faster,
         simplier plots.
     Keyword Args
     ------------
@@ -596,41 +601,41 @@ def grd_compare(
             f"({spacing}m) and inner region.",
         )
         grid1 = pygmt.grdsample(
-            da1, 
-            spacing=spacing, 
-            region=region, 
-            registration="p", 
-            verbose='e',
-            )
+            da1,
+            spacing=spacing,
+            region=region,
+            registration="p",
+            verbose="e",
+        )
         grid2 = pygmt.grdsample(
-            da2, 
-            spacing=spacing, 
-            region=region, 
-            registration="p", 
-            verbose='e',
-            )
+            da2,
+            spacing=spacing,
+            region=region,
+            registration="p",
+            verbose="e",
+        )
     elif da1_spacing != da2_spacing:
         print("grid spacings dont match, using smaller spacing of supplied grids")
         grid1 = pygmt.grdsample(
-            da1, 
-            spacing=spacing, 
-            registration="p", 
-            verbose='e',
-            )
+            da1,
+            spacing=spacing,
+            registration="p",
+            verbose="e",
+        )
         grid2 = pygmt.grdsample(
-            da2, 
-            spacing=spacing, 
-            registration="p", 
-            verbose='e',
-            )
+            da2,
+            spacing=spacing,
+            registration="p",
+            verbose="e",
+        )
     elif da1_reg != da2_reg:
         print("grid regions dont match, using inner region of supplied grids")
         grid1 = pygmt.grdcut(
-            da1, 
-            region=region, 
-            verbose='e',
-            )
-        grid2 = pygmt.grdcut(da2, region=region, verbose='e')
+            da1,
+            region=region,
+            verbose="e",
+        )
+        grid2 = pygmt.grdcut(da2, region=region, verbose="e")
     else:
         print("grid regions and spacing match")
         grid1 = da1
@@ -648,38 +653,38 @@ def grd_compare(
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
     if plot is True:
-        if plot_type == 'pygmt':
+        if plot_type == "pygmt":
             fig = maps.plot_grd(
                 grid1,
-                cmap = 'viridis',
-                plot_regin = region,
-                coast = True,
-                cbar_label = kwargs.get('grid1_name', 'grid 1'),
-                cpt_lims = (vmin, vmax),
+                cmap="viridis",
+                plot_regin=region,
+                coast=True,
+                cbar_label=kwargs.get("grid1_name", "grid 1"),
+                cpt_lims=(vmin, vmax),
             )
             fig = maps.plot_grd(
                 grid2,
-                cmap = 'viridis',
-                plot_regin = region,
-                coast = True,
-                cbar_label = kwargs.get('grid2_name', 'grid 2'),
-                cpt_lims =  (vmin, vmax),
-                origin_shift = 'xshift',
-                fig = fig, 
+                cmap="viridis",
+                plot_regin=region,
+                coast=True,
+                cbar_label=kwargs.get("grid2_name", "grid 2"),
+                cpt_lims=(vmin, vmax),
+                origin_shift="xshift",
+                fig=fig,
             )
             fig = maps.plot_grd(
                 dif,
-                cmap = 'polar',
-                plot_regin = region,
-                coast = True,
-                cbar_label = 'difference',
-                cpt_lims = diff_cpt_lims,
-                origin_shift = 'xshift',
-                fig = fig, 
+                cmap="polar",
+                plot_regin=region,
+                coast=True,
+                cbar_label="difference",
+                cpt_lims=diff_cpt_lims,
+                origin_shift="xshift",
+                fig=fig,
             )
             fig.show()
 
-        elif plot_type == 'xarray':
+        elif plot_type == "xarray":
             if kwargs.get("robust", False) is True:
                 vmin, vmax = None, None
 
@@ -705,7 +710,7 @@ def grd_compare(
                 vmin=diff_cpt_lims[0],
                 vmax=diff_cpt_lims[1],
                 robust=True,
-                cmap='RdBu_r',
+                cmap="RdBu_r",
                 cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
             )
             for a in ax:
@@ -997,9 +1002,10 @@ def coherency(grids: list, label: str, **kwargs):
             )
     """
 
+
 def square_subplots(n):
     """
-    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py
+    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py # noqa
     Return an arrangement of rows containing ``n`` axes that is as close to
     square as looks good.
     :param n:
@@ -1053,10 +1059,19 @@ def square_subplots(n):
 
     return x, y
 
-def random_color():
-    return f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
 
-def get_min_max(grid, shapefile=None,):
+def random_color():
+    color = (
+        f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
+        f"/{int(np.random.random() * 256)}"
+    )
+    return color
+
+
+def get_min_max(
+    grid,
+    shapefile=None,
+):
 
     if shapefile is None:
         v_min, v_max = np.nanmin(grid), np.nanmax(grid)
