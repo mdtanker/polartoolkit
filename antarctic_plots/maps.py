@@ -77,6 +77,8 @@ def plot_grd(
     scalebar: bool
         choose to add a scalebar to the plot, by default is False. See 
         `maps.add_scalebar` for additional kwargs.
+    colorbar: bool
+        choose to add a colorbar to the plot, by default is True
     Returns
     -------
     PyGMT.Figure()
@@ -118,6 +120,7 @@ def plot_grd(
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get('scalebar', False)
+    colorbar = kwargs.get('colorbar', True)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
@@ -175,6 +178,8 @@ def plot_grd(
 
     # display colorbar
     if image is not True:
+        colorbar = False
+    if colorbar is True:
         fig.colorbar(
             cmap=True,
             position=f"jBC+w{fig_width*.8}c+jTC+h+o0c/.2c+e",
