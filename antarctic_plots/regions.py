@@ -14,10 +14,9 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 antarctica = [-2800e3, 2800e3, -2800e3, 2800e3]
 west_antarctica = [-2740e3, 570e3, -2150e3, 1670e3]
 east_antarctica = [-840e3, 2880e3, -2400e3, 2600e3]
-ross_embayment = [-760e3, 600e3, -2200e3, -350e3]
 antarctic_peninsula = [-2600e3, -1200e3, 170e3, 1800e3]
-marie_byrd_land = [-1400e3, -400e3, -1460e3, -200e3]
-victoria_land = [160e3, 1350e3, -2240e3, -990e3]
+marie_byrd_land = [-1500e3, -500e3, -1350e3, -800e3]
+victoria_land = [100e3, 1000e3, -2200e3, -1000e3]
 # wilkes_land
 # queen_maud_land
 
@@ -38,7 +37,7 @@ ross_ice_shelf = [-680e3, 470e3, -1420e3, -310e3]
 # george_vi_ice_shelf = []
 # wilkins_ice_shelf = []
 larsen_ice_shelf = [-2430e3, -1920e3, 900e3, 1400e3]
-ronne_filchner_ice_shelf = [-1660e3, -370e3, 80e3, 1330e3]
+ronne_filchner_ice_shelf = [-1550e3, -500e3, 80e3, 1200e3]
 # riiser_larsen_ice_shelf = []
 # fimbul_ice_shelf = []
 amery_ice_shelf = [1530e3, 2460e3, 430e3, 1000e3]
@@ -55,7 +54,7 @@ kamb_ice_stream = [-620e3, -220e3, -800e3, -400e3]
 # whillans_ice_stream = []
 
 # seas
-ross_sea = [-660e3, 590e3, -2110e3, -1100e3]
+ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 # amundsen_sea
 # bellinghausen_sea
 # weddell_sea
