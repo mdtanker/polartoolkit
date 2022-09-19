@@ -74,7 +74,9 @@ def plot_grd(
         position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
     fig_height : int or float
         height in cm for figures, by default is 15cm.
-
+    scalebar: bool
+        choose to add a scalebar to the plot, by default is False. See 
+        `maps.add_scalebar` for additional kwargs.
     Returns
     -------
     PyGMT.Figure()
@@ -99,7 +101,11 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
     if plot_region is None:
-        plot_region = utils.get_grid_info(grid)[1]
+        try:
+            plot_region = utils.get_grid_info(grid)[1]
+        except :
+            print("grid region can't be extracted, using antarctic region.")
+            plot_region = regions.antarctica
 
     cmap_region = kwargs.get("cmap_region", plot_region)
     square = kwargs.get("square", None)
@@ -400,7 +406,7 @@ def add_scalebar(
         return round(x, -int(floor(log10(abs(x)))))
 
     if scale_length is None:
-        scale_length = round_to_1((abs(region[1])-abs(region[0]))/1000*length_perc)
+        scale_length = round_to_1((abs(abs(region[1])-abs(region[0])))/1000*length_perc)
 
     with pygmt.config(
         FONT_ANNOT_PRIMARY = f'10p,{font_color}', 

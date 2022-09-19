@@ -120,7 +120,7 @@ def ice_vel(
             processed = (grid.VX**2 + grid.VY**2)**0.5
             # Save to disk
             processed.to_netcdf(fname_processed)
-        return fname_processed.__str__()
+        return str(fname_processed)
 
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
@@ -350,6 +350,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         thickness = pygmt.grdfilter(
@@ -359,6 +360,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         grd = surface - thickness
@@ -371,6 +373,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
 
@@ -382,6 +385,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         grd = grd + geoid
@@ -449,6 +453,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         thickness_file = [p for p in path if p.endswith("thickness.tif")][0]
@@ -459,6 +464,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         grd = surface - thickness
@@ -475,6 +481,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
 
@@ -487,6 +494,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration='p',
             verbose="q",
         )
         grd = grd + geoid

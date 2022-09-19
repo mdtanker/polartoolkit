@@ -17,6 +17,7 @@ import verde as vd
 import xarray as xr
 from pyproj import Transformer
 import rioxarray
+from antarctic_plots import maps
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -51,10 +52,17 @@ def get_grid_info(grid):
     if int(len(grid.dims)) > 2:
         grid=grid.squeeze()
 
-    spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
-    region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
-    zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
-    zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+    try:
+        spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
+        region = [float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)]
+        zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+        zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+    except:
+        print("grid info can't be extracted, check number of dimensions, should be 2.")
+        spacing = None
+        region = None
+        zmin = None
+        zmax = None
 
     reg = grid.gmt.registration
 
@@ -114,16 +122,21 @@ def latlon_to_epsg3031(
         [e, w, n, s]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-    df[output[0]], df[output[1]] = transformer.transform(
-        df[input[1]].tolist(), df[input[0]].tolist()
-    )
-    if reg is True:
-        df = [
-            df[output[0]].min(),
-            df[output[0]].max(),
-            df[output[1]].max(),
-            df[output[1]].min(),
-        ]
+
+    if isinstance(df, list):
+        ll = df.copy()
+        df = list(transformer.transform(ll[0],ll[1]))
+    else:
+        df[output[0]], df[output[1]] = transformer.transform(
+            df[input[1]].tolist(), df[input[0]].tolist()
+        )
+        if reg is True:
+            df = [
+                df[output[0]].min(),
+                df[output[0]].max(),
+                df[output[1]].max(),
+                df[output[1]].min(),
+            ]
     return df
 
 
@@ -134,8 +147,8 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
 
     Parameters
     ----------
-    df : pd.DataFrame
-        input dataframe with easting and northing columns
+    df : pd.DataFrame or list
+        input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
     input : list, optional
@@ -146,20 +159,26 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     Returns
     -------
     pd.DataFrame or np.ndarray
-        Updated dataframe with new latitude and longitude columns or np.ndarray in
-        format [e, w, n, s]
+        Updated dataframe with new latitude and longitude columns, np.ndarray in
+        format [e, w, n, s], or list in format [lat, lon]
     """
+
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
-    df[output[1]], df[output[0]] = transformer.transform(
-        df[input[0]].tolist(), df[input[1]].tolist()
-    )
-    if reg is True:
-        df = [
-            df[output[0]].min(),
-            df[output[0]].max(),
-            df[output[1]].min(),
-            df[output[1]].max(),
-        ]
+    
+    if isinstance(df, list):
+        xy = df.copy()
+        df = list(transformer.transform(xy[0],xy[1]))
+    else:
+        df[output[1]], df[output[0]] = transformer.transform(
+            df[input[0]].tolist(), df[input[1]].tolist()
+        )
+        if reg is True:
+            df = [
+                df[output[0]].min(),
+                df[output[0]].max(),
+                df[output[1]].min(),
+                df[output[1]].max(),
+            ]
     return df
 
 
@@ -442,7 +461,7 @@ def grd_trend(
     da : xr.DataArray
         input grid
     coords : list, optional
-        coordinate names of grid, by default ['x', 'y', 'z']
+        coordinate names of the supplied grid, by default ['x', 'y', 'z']
     deg : int, optional
         trend order to use, by default 1
     plot_all : bool, optional
@@ -455,6 +474,7 @@ def grd_trend(
     """
 
     df = vd.grid_to_table(da).astype("float64")
+    df.dropna(inplace=True)
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
     df["fit"] = trend.predict((df[coords[0]], df[coords[1]]))
     df["detrend"] = df[coords[2]] - df.fit
@@ -517,6 +537,8 @@ def grd_trend(
 def grd_compare(
     da1: Union[xr.DataArray, str],
     da2: Union[xr.DataArray, str],
+    plot: bool = False,
+    plot_type: str = 'pygmt',
     **kwargs,
 ):
     """
@@ -529,7 +551,11 @@ def grd_compare(
         first grid, loaded grid of filename
     da2 : xr.DataArray or str
         second grid, loaded grid of filename
-
+    plot : bool, optional
+        plot the results, by default False
+    plot_type : str, optional
+        choose the style of plot, by default is pygmt, can choose xarray for faster, 
+        simplier plots.
     Keyword Args
     ------------
     shp_mask : str
@@ -569,16 +595,42 @@ def grd_compare(
             "grid spacings and regions dont match, using smaller spacing",
             f"({spacing}m) and inner region.",
         )
-        grid1 = pygmt.grdsample(da1, spacing=spacing, region=region, registration="p")
-        grid2 = pygmt.grdsample(da2, spacing=spacing, region=region, registration="p")
+        grid1 = pygmt.grdsample(
+            da1, 
+            spacing=spacing, 
+            region=region, 
+            registration="p", 
+            verbose='e',
+            )
+        grid2 = pygmt.grdsample(
+            da2, 
+            spacing=spacing, 
+            region=region, 
+            registration="p", 
+            verbose='e',
+            )
     elif da1_spacing != da2_spacing:
         print("grid spacings dont match, using smaller spacing of supplied grids")
-        grid1 = pygmt.grdsample(da1, spacing=spacing, registration="p")
-        grid2 = pygmt.grdsample(da2, spacing=spacing, registration="p")
+        grid1 = pygmt.grdsample(
+            da1, 
+            spacing=spacing, 
+            registration="p", 
+            verbose='e',
+            )
+        grid2 = pygmt.grdsample(
+            da2, 
+            spacing=spacing, 
+            registration="p", 
+            verbose='e',
+            )
     elif da1_reg != da2_reg:
         print("grid regions dont match, using inner region of supplied grids")
-        grid1 = pygmt.grdcut(da1, region=region, registration="p")
-        grid2 = pygmt.grdcut(da2, region=region, registration="p")
+        grid1 = pygmt.grdcut(
+            da1, 
+            region=region, 
+            verbose='e',
+            )
+        grid2 = pygmt.grdcut(da2, region=region, verbose='e')
     else:
         print("grid regions and spacing match")
         grid1 = da1
@@ -586,47 +638,84 @@ def grd_compare(
 
     dif = grid1 - grid2
 
-    vmin = min((np.nanmin(da1), np.nanmin(da2)))
-    vmax = max((np.nanmax(da1), np.nanmax(da2)))
+    # get individual grid min/max values (and masked values if shapefile is provided)
+    grid1_cpt_lims = get_min_max(grid1, shp_mask)
+    grid2_cpt_lims = get_min_max(grid2, shp_mask)
+    diff_cpt_lims = get_min_max(dif, shp_mask)
 
-    if kwargs.get("robust", False) is True:
-        vmin, vmax = None, None
-    if shp_mask is not None:
-        masked1 = mask_from_shp(shp_mask, xr_grid=grid1, masked=True, invert=False)
-        masked2 = mask_from_shp(shp_mask, xr_grid=grid2, masked=True, invert=False)
-        vmin = min((np.nanmin(masked1), np.nanmin(masked2)))
-        vmax = max((np.nanmax(masked1), np.nanmax(masked2)))
+    # get min and max of both grids together
+    vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
+    vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
-    fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
-    grid1.plot(
-        ax=ax[0],
-        cmap="viridis",
-        vmin=vmin,
-        vmax=vmax,
-        robust=True,
-        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-    )
-    grid2.plot(
-        ax=ax[1],
-        cmap="viridis",
-        vmin=vmin,
-        vmax=vmax,
-        robust=True,
-        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-    )
-    dif.plot(
-        ax=ax[2],
-        robust=True,
-        cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-    )
-    for a in ax:
-        a.set_xticklabels([])
-        a.set_yticklabels([])
-        a.set_xlabel("")
-        a.set_ylabel("")
-        a.set_aspect("equal")
+    if plot is True:
+        if plot_type == 'pygmt':
+            fig = maps.plot_grd(
+                grid1,
+                cmap = 'viridis',
+                plot_regin = region,
+                coast = True,
+                cbar_label = kwargs.get('grid1_name', 'grid 1'),
+                cpt_lims = (vmin, vmax),
+            )
+            fig = maps.plot_grd(
+                grid2,
+                cmap = 'viridis',
+                plot_regin = region,
+                coast = True,
+                cbar_label = kwargs.get('grid2_name', 'grid 2'),
+                cpt_lims =  (vmin, vmax),
+                origin_shift = 'xshift',
+                fig = fig, 
+            )
+            fig = maps.plot_grd(
+                dif,
+                cmap = 'polar',
+                plot_regin = region,
+                coast = True,
+                cbar_label = 'difference',
+                cpt_lims = diff_cpt_lims,
+                origin_shift = 'xshift',
+                fig = fig, 
+            )
+            fig.show()
 
-    return dif
+        elif plot_type == 'xarray':
+            if kwargs.get("robust", False) is True:
+                vmin, vmax = None, None
+
+            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+            grid1.plot(
+                ax=ax[0],
+                cmap="viridis",
+                vmin=vmin,
+                vmax=vmax,
+                robust=True,
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            grid2.plot(
+                ax=ax[1],
+                cmap="viridis",
+                vmin=vmin,
+                vmax=vmax,
+                robust=True,
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            dif.plot(
+                ax=ax[2],
+                vmin=diff_cpt_lims[0],
+                vmax=diff_cpt_lims[1],
+                robust=True,
+                cmap='RdBu_r',
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            for a in ax:
+                a.set_xticklabels([])
+                a.set_yticklabels([])
+                a.set_xlabel("")
+                a.set_ylabel("")
+                a.set_aspect("equal")
+
+    return dif, grid1, grid2
 
 
 def make_grid(
@@ -963,3 +1052,17 @@ def square_subplots(n):
         x, y = y, x
 
     return x, y
+
+def random_color():
+    return f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
+
+def get_min_max(grid, shapefile=None,):
+
+    if shapefile is None:
+        v_min, v_max = np.nanmin(grid), np.nanmax(grid)
+
+    elif shapefile is not None:
+        masked = mask_from_shp(shapefile, xr_grid=grid, masked=True, invert=False)
+        v_min, v_max = np.nanmin(masked), np.nanmax(masked)
+
+    return (v_min, v_max)
