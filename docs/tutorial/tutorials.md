@@ -8,7 +8,7 @@
 -----------------------------------
 ![](outputs/profile_walkthrough.png)
 
-[Pre-defined regions](regions_plots.ipynb)
+[Pre-defined regions](regions_walkthrough.ipynb)
 -----------------------------------
 ![](outputs/regions_plot.png)
 

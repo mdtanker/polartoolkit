@@ -60,7 +60,6 @@ def create_profile(
     elif method == "shapefile":
         if shapefile is None:
             raise ValueError(f"If method = {method}, need to provide a valid shapefile")
-        # shp = gpd.read_file(shapefile)
         shp = pyogrio.read_dataframe(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]

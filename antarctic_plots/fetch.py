@@ -8,22 +8,24 @@
 import os
 from getpass import getpass
 from pathlib import Path
-import requests
+
 import pandas as pd
 import pooch
 import pygmt
+import requests
 import xarray as xr
 from pyproj import Transformer
-import rioxarray
 
-from antarctic_plots import utils, regions
+from antarctic_plots import utils
+
 
 class EarthDataDownloader:
     """
-    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py
-    Either pulls login details from pre-set environment variables, or prompts user to 
+    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py  # noqa
+    Either pulls login details from pre-set environment variables, or prompts user to
     input username and password.
     """
+
     def __init__(self):
         self._username = None
         self._password = None
@@ -58,6 +60,7 @@ class EarthDataDownloader:
                 self._password = None
             raise error
 
+
 def sample_shp(name: str) -> str:
     """
     Load the file path of sample shapefiles
@@ -81,6 +84,7 @@ def sample_shp(name: str) -> str:
     file = [p for p in path if p.endswith(".shp")][0]
     return file
 
+
 def ice_vel(
     plot: bool = False,
     info: bool = False,
@@ -88,10 +92,10 @@ def ice_vel(
     spacing=10e3,
 ) -> xr.DataArray:
     """
-    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1: 
+    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1:
     https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
     Data part of https://doi.org/10.1029/2019GL083826
-    
+
     Parameters
     ----------
     plot : bool, optional
@@ -101,14 +105,15 @@ def ice_vel(
     region : str or np.ndarray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3, original spacing 
+        grid spacing to resample the loaded grid to, by default 10e3, original spacing
         is 450m
 
     Returns
     -------
     xr.DataArray
-        Returns a calculated grid of ice velocity in meters/year. 
+        Returns a calculated grid of ice velocity in meters/year.
     """
+
     def velocity_calculation(fname, action, pooch):
         "Load the .nc file, calculate velocity magnitude, save it back"
         fname = Path(fname)
@@ -117,18 +122,19 @@ def ice_vel(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
-            processed = (grid.VX**2 + grid.VY**2)**0.5
+            processed = (grid.VX**2 + grid.VY**2) ** 0.5
             # Save to disk
             processed.to_netcdf(fname_processed)
-        return fname_processed.__str__()
+        return str(fname_processed)
 
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
-        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc", # noqa
+        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",  # noqa
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
-        processor=velocity_calculation)
+        processor=velocity_calculation,
+    )
 
     grd = xr.load_dataarray(path)
 
@@ -136,26 +142,19 @@ def ice_vel(
     if region is None:
         region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
 
-    if (spacing==450) and (region==[-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
+    if (spacing == 450) and (region == [-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
         # print('spacing and region same as original, no processing')
         pass
 
-    elif (spacing==450) and (region!=[-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
+    elif (spacing == 450) and (
+        region != [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
+    ):
         # print('spacing same as original, extracting new region ')
-        grd = pygmt.grdcut(
-            grid=grd,
-            region=region,
-            verbose='q'
-            )
+        grd = pygmt.grdcut(grid=grd, region=region, verbose="q")
 
     elif spacing < 450:
         # print('spacing smaller than original, resampling')
-        grd =pygmt.grdsample(
-            grid=grd,
-            spacing=spacing,
-            region=region,
-            verbose='q'
-        )
+        grd = pygmt.grdsample(grid=grd, spacing=spacing, region=region, verbose="q")
 
     elif spacing > 450:
         # print('spacing larger than original, filtering and resampling')
@@ -176,6 +175,7 @@ def ice_vel(
 
     return grd
 
+
 def modis_moa(
     version: int = 750,
 ) -> str:
@@ -194,20 +194,23 @@ def modis_moa(
     """
     if version == 125:
         path = pooch.retrieve(
-            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz", # noqa
+            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz",  # noqa
             downloader=EarthDataDownloader(),
-            processor=pooch.Decompress(method='gzip', name='moa125_2009_hp1_v02.0.tif'),
+            processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
             known_hash=None,
-            progressbar=True,)
+            progressbar=True,
+        )
     elif version == 750:
         path = pooch.retrieve(
-            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz", # noqa
+            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz",  # noqa
             downloader=EarthDataDownloader(),
-            processor=pooch.Decompress(method='gzip', name='moa750_2009_hp1_v02.0.tif'),
+            processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
             known_hash=None,
-            progressbar=True,)
+            progressbar=True,
+        )
 
     return path
+
 
 def imagery() -> xr.DataArray:
     """
@@ -330,12 +333,13 @@ def bedmachine(
 
     if region is None:
         region = (-2800e3, 2800e3, -2800e3, 2800e3)
-    
+
     path = pooch.retrieve(
-        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc", # noqa
+        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc",  # noqa
         downloader=EarthDataDownloader(),
         known_hash=None,
-        progressbar=True,)
+        progressbar=True,
+    )
     # path = pooch.retrieve(
     #     url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",  # noqa
     #     known_hash=None,
@@ -350,6 +354,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         thickness = pygmt.grdfilter(
@@ -359,6 +364,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         grd = surface - thickness
@@ -371,6 +377,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
 
@@ -382,6 +389,7 @@ def bedmachine(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         grd = grd + geoid
@@ -449,6 +457,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         thickness_file = [p for p in path if p.endswith("thickness.tif")][0]
@@ -459,6 +468,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         grd = surface - thickness
@@ -475,6 +485,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
 
@@ -487,6 +498,7 @@ def bedmap2(
             region=region,
             distance="0",
             nans="r",
+            registration="p",
             verbose="q",
         )
         grd = grd + geoid

@@ -7,13 +7,13 @@
 #
 
 import warnings
+from math import floor, log10
 from typing import TYPE_CHECKING, Union
-from math import log10, floor
 
 import pygmt
 import pyogrio
 
-from antarctic_plots import fetch, utils
+from antarctic_plots import fetch, regions, utils
 
 if TYPE_CHECKING:
     import numpy as np
@@ -59,8 +59,8 @@ def plot_grd(
         label to add to colorbar.
     points : pd.DataFrame
         points to plot on map, must contain columns 'x' and 'y'.
-    square : np.ndarray
-        GMT-format region to use to plot a square.
+    show_region : np.ndarray
+        GMT-format region to use to plot a bounding regions.
     cpt_lims : Union[str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
     fig : pygmt.Figure()
@@ -74,7 +74,11 @@ def plot_grd(
         position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
     fig_height : int or float
         height in cm for figures, by default is 15cm.
-
+    scalebar: bool
+        choose to add a scalebar to the plot, by default is False. See
+        `maps.add_scalebar` for additional kwargs.
+    colorbar: bool
+        choose to add a colorbar to the plot, by default is True
     Returns
     -------
     PyGMT.Figure()
@@ -99,10 +103,14 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
     if plot_region is None:
-        plot_region = utils.get_grid_info(grid)[1]
+        try:
+            plot_region = utils.get_grid_info(grid)[1]
+        except Exception:
+            print("grid region can't be extracted, using antarctic region.")
+            plot_region = regions.antarctica
 
     cmap_region = kwargs.get("cmap_region", plot_region)
-    square = kwargs.get("square", None)
+    show_region = kwargs.get("show_region", None)
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
@@ -111,7 +119,8 @@ def plot_grd(
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
-    scalebar = kwargs.get('scalebar', False)
+    scalebar = kwargs.get("scalebar", False)
+    colorbar = kwargs.get("colorbar", True)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
@@ -131,7 +140,9 @@ def plot_grd(
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
+            verbose='e',
         )
+        colorbar = False
     elif grd2cpt is True:
         pygmt.grd2cpt(
             cmap=cmap,
@@ -139,6 +150,7 @@ def plot_grd(
             region=cmap_region,
             background=True,
             continuous=True,
+            verbose='e',
         )
     elif cpt_lims is not None:
         pygmt.makecpt(
@@ -146,6 +158,7 @@ def plot_grd(
             background=True,
             # continuous=True,
             series=cpt_lims,
+            verbose='e',
         )
     else:
         zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
@@ -154,6 +167,7 @@ def plot_grd(
             background=True,
             continuous=True,
             series=(zmin, zmax),
+            verbose='e',
         )
 
     # display grid
@@ -163,12 +177,12 @@ def plot_grd(
         projection=proj,
         region=plot_region,
         nan_transparent=True,
-        frame=[f'+gwhite'],
+        frame=["+gwhite"],
         verbose="q",
     )
 
     # display colorbar
-    if image is not True:
+    if colorbar is True:
         fig.colorbar(
             cmap=True,
             position=f"jBC+w{fig_width*.8}c+jTC+h+o0c/.2c+e",
@@ -177,12 +191,7 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
-        add_coast(
-            fig, 
-            plot_region,
-            proj, 
-            no_coast = kwargs.get('no_coast', False)
-            )
+        add_coast(fig, plot_region, proj, no_coast=kwargs.get("no_coast", False))
         # fig.plot(
         #     data=fetch.groundingline(),
         #     pen=".6p,black",
@@ -197,19 +206,18 @@ def plot_grd(
             color="black",
         )
 
-    # add square
-    if square is not None:
-        fig.plot(
-            x=[square[0], square[0], square[1], square[1], square[0]],
-            y=[square[2], square[3], square[3], square[2], square[2]],
-            pen="2p,black",
-        )
+    # add box showing region
+    if show_region is not None:
+        add_box(fig, show_region)
 
     # add lat long grid lines
     if grid_lines is True:
-        add_gridlines(fig, plot_region, proj_latlon, 
-            x_annots = kwargs.get("x_annots", 30),
-            y_annots = kwargs.get("y_annots", 4),
+        add_gridlines(
+            fig,
+            plot_region,
+            proj_latlon,
+            x_annots=kwargs.get("x_annots", 30),
+            y_annots=kwargs.get("y_annots", 4),
         )
 
     # add inset map to show figure location
@@ -218,19 +226,23 @@ def plot_grd(
 
     # add scalebar
     if scalebar is True:
-        add_scalebar(fig, plot_region, proj_latlon, 
-            font_color=kwargs.get('font_color', 'black'), 
-            scale_length=kwargs.get('scale_length'),
-            length_perc=kwargs.get('length_perc', .25),
-            position=kwargs.get('position', "n.5/.05"),
-            )
+        add_scalebar(
+            fig,
+            plot_region,
+            proj_latlon,
+            font_color=kwargs.get("font_color", "black"),
+            scale_length=kwargs.get("scale_length"),
+            length_perc=kwargs.get("length_perc", 0.25),
+            position=kwargs.get("position", "n.5/.05"),
+        )
     # reset region and projection
     if title is None:
         fig.basemap(region=plot_region, projection=proj, frame="wesn")
     else:
-        fig.basemap(region=plot_region, projection=proj, frame=f'wesn+t{title}')
+        fig.basemap(region=plot_region, projection=proj, frame=f"wesn+t{title}")
 
     return fig
+
 
 def add_coast(
     fig: pygmt.figure,
@@ -268,12 +280,13 @@ def add_coast(
         pen=pen,
     )
 
+
 def add_gridlines(
     fig: pygmt.figure,
     region: Union[str or np.ndarray],
     projection: str,
-    x_annots: int =30,
-    y_annots: int =4,
+    x_annots: int = 30,
+    y_annots: int = 4,
 ):
     """
     add lat lon grid lines and annotations to a figure.
@@ -319,11 +332,12 @@ def add_gridlines(
                 verbose="q",
             )
 
+
 def add_inset(
     fig: pygmt.figure,
     region: Union[str or np.ndarray],
-    fig_width: Union[int, float], 
-    inset_pos: str ='TL', 
+    fig_width: Union[int, float],
+    inset_pos: str = "TL",
 ):
     """
     add an inset map showing the figure region relative to the Antarctic continent.
@@ -373,11 +387,9 @@ def add_inset(
             pen="1p,black",
         )
 
+
 def add_scalebar(
-    fig: pygmt.figure,
-    region: Union[str or np.ndarray],
-    projection: str,
-    **kwargs
+    fig: pygmt.figure, region: Union[str or np.ndarray], projection: str, **kwargs
 ):
     """
     add lat lon grid lines and annotations to a figure.
@@ -391,26 +403,38 @@ def add_scalebar(
         GMT projection string in lat lon
 
     """
-    font_color = kwargs.get('font_color', 'black')
-    scale_length = kwargs.get('scale_length')
-    length_perc = kwargs.get('length_perc', .25)
-    position = kwargs.get('position', "n.5/.05")
+    font_color = kwargs.get("font_color", "black")
+    scale_length = kwargs.get("scale_length")
+    length_perc = kwargs.get("length_perc", 0.25)
+    position = kwargs.get("position", "n.5/.05")
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))
 
     if scale_length is None:
-        scale_length = round_to_1((abs(region[1])-abs(region[0]))/1000*length_perc)
+        scale_length = round_to_1((abs(region[1] - region[0])) / 1000 * length_perc)
 
     with pygmt.config(
-        FONT_ANNOT_PRIMARY = f'10p,{font_color}', 
-        FONT_LABEL = f'10p,{font_color}', 
-        MAP_SCALE_HEIGHT='6p', 
-        MAP_TICK_PEN_PRIMARY = f'0.5p,{font_color}'
+        FONT_ANNOT_PRIMARY=f"10p,{font_color}",
+        FONT_LABEL=f"10p,{font_color}",
+        MAP_SCALE_HEIGHT="6p",
+        MAP_TICK_PEN_PRIMARY=f"0.5p,{font_color}",
     ):
         fig.basemap(
             region=region,
-            projection = projection, 
-            map_scale=f'{position}+w{scale_length}k+f+l"km"+ar', 
-            verbose='e'
-            )
+            projection=projection,
+            map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
+            verbose="e",
+        )
+
+
+def add_box(
+    fig: pygmt.figure,
+    box: Union[list or np.ndarray],
+    pen="2p,black",
+):
+    fig.plot(
+        x=[box[0], box[0], box[1], box[1], box[0]],
+        y=[box[2], box[3], box[3], box[2], box[2]],
+        pen=pen,
+    )
