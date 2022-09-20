@@ -6,21 +6,21 @@ Additionally we use `Poetry` as a package manager, which also can't include `PyG
 
 ### Set up a virtual environment
 
-Set up the poetry virtual environment:
+The main branch of the GitHub repo contains a requirements.txt which defines the packages need to use and develop the package.
 
-    make poetry_env_dev
+Run the following to create a conda env "antarctic_plots_dev":
 
-This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
-
-Next we need to create a conda/mamba env:
     make new_env
 
-This will create a new conda env `antarctic_plots_dev` and install `PyGMT`.
+Activate it with:
 
-Activate it and install the package requirements and local antarctic_plots package in editable mode:
+    conda activate antarctic_plots_dev
 
-    mamba activate antarctic_plots_dev
+Install the necessary packages:
+
     make install_reqs
+
+This package contains your local, editable version of Antarctic-Plots, meaning if you alter the package, it will automatically include those changes in your environement. 
 
 ### Run all .ipynb's to update them
 
@@ -76,17 +76,30 @@ Run a few gallery examples to make sure this env works, then its read to publish
  Now push the changes to Github and make a release with the matching version number. 
 
 ## Update the dependencies
-The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relygin on `GDAL`. To update any other dependencies, use the below commands:
+The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`. 
 
-    poetry add <PACKAGE>
+To update or add dependencies, use the below commands:
+
+    poetry add <PACKAGE> --lock
 
 or if the package is only for development/documentation
 
-    poetry add <PACKAGE> -D
+    poetry add <PACKAGE> --group dev --lock
 
-Then run through the commands at the top of this page again to update the environement.
+Replace <PACKAGE> with package name, and optionally set the version with the following formats, as defined [here](https://python-poetry.org/docs/dependency-specification/):
 
-If you add a dependency, make sure to include it in the Binder config file. See below.
+    PACKAGE==2.1 (exactly 2.1)
+    PACKAGE@^2.1 (>=2.1.0 <3.0.0)
+
+To completely reset Poetry, and reinstall based on the updated .toml file:
+
+    make poetry_env_dev
+
+This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
+
+Then run through the commands at the top of this page again to update the conda environement which is based on the requirements.txt file.
+
+If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
 
 ## Set up the binder configuration
 To run examples online, Read the Docs will automatically create a Binder instance for this package. The configuration file is `/binder/environment.yml`. To create this or update it do the following:
