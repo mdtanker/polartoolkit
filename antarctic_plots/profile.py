@@ -19,9 +19,9 @@ def create_profile(
     method: str,
     start: np.ndarray = None,
     stop: np.ndarray = None,
-    num=100,
-    shp_num_points: int = None,
+    num : int = None,
     shapefile: str = None,
+    polyline: pd.DataFrame = None,
     **kwargs,
 ):
     """
@@ -30,17 +30,18 @@ def create_profile(
     Parameters
     ----------
     method : str
-        Choose sampling method, either "points" or "shapefile"
+        Choose sampling method, either "points", "shapefile", or "polyline"
     start :np.ndarray, optional
         Coordinates for starting point of profile, by default None
     stop : np.ndarray, optional
         Coordinates for eding point of profile, by default None
     num : int, optional
-        Number of points between start and stop, by default 100
-    shp_num_points : int, optional
-        Number of points to resample shapefile to, by default None
+        Number of points to sample at, for "points" by default is 100, for other methods
+         num by default is determined by shapefile or dataframe
     shapefile : str, optional
         shapefile file name to create points along, by default None
+    polyline : pd.DataFrame, optional
+        pandas dataframe with columns x and y as vertices of a polyline, by default None
 
     Returns
     -------
@@ -48,15 +49,21 @@ def create_profile(
         Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile
         path.
     """
-    methods = ["points", "shapefile"]
+    methods = ["points", "shapefile", "polyline"]
     if method not in methods:
         raise ValueError(f"Invalid method type. Expected one of {methods}")
     if method == "points":
+        if num is None:
+            num = 100
         if any(a is None for a in [start, stop]):
             raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
-            data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
-        )
+            data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"])
+        # for points, dist is from first point
+        coordinates["dist"] = np.sqrt(
+            (coordinates.x - coordinates.x.iloc[0]) ** 2
+            + (coordinates.y - coordinates.y.iloc[0]) ** 2)
+
     elif method == "shapefile":
         if shapefile is None:
             raise ValueError(f"If method = {method}, need to provide a valid shapefile")
@@ -64,19 +71,24 @@ def create_profile(
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates = df.coords.apply(pd.Series, index=["x", "y"])
-    coordinates["dist"] = np.sqrt(
-        (coordinates.x - coordinates.x.iloc[0]) ** 2
-        + (coordinates.y - coordinates.y.iloc[0]) ** 2
-    )
+        # for shapefiles, dist is cumulative from previous points
+        coordinates = cum_dist(coordinates)
+
+    elif method == "polyline":
+        if polyline is None:
+            raise ValueError(f"If method = {method}, need to provide a valid dataframe")
+        # for shapefiles, dist is cumulative from previous points
+        coordinates = cum_dist(polyline)
+    
     coordinates.sort_values(by=["dist"], inplace=True)
 
-    if method == "shapefile":
-        if shp_num_points is not None:
+    if method in ["shapefile", "polyline"]:
+        if num is not None:
             df = coordinates.set_index("dist")
             dist_resampled = np.linspace(
                 coordinates.dist.min(),
                 coordinates.dist.max(),
-                shp_num_points,
+                num,
                 dtype=float,
             )
             df1 = (
@@ -91,8 +103,6 @@ def create_profile(
         df2 = coordinates
 
     df_out = df2[["x", "y", "dist"]].reset_index(drop=True)
-
-    # region=vd.get_region((df_out.x, df_out.y))
 
     return df_out
 
@@ -595,3 +605,21 @@ def plot_profile(
         if kwargs.get("path") is None:
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
+
+def rel_dist(df):
+    df1 = df.copy()
+    df1['rel_dist'] = 0
+    for i in range(1, len(df1)):
+        if i == 0:
+            pass
+        else:
+            df1.loc[i, 'rel_dist'] = np.sqrt(
+                (df1.loc[i,'x'] - df1.loc[i-1, 'x']) ** 2
+                + (df1.loc[i,'y'] - df1.loc[i-1, 'y']) ** 2
+            )
+    return df1
+
+def cum_dist(df):
+    df = rel_dist(df)
+    df['dist'] = df.rel_dist.cumsum()
+    return df
