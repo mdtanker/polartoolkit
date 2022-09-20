@@ -107,11 +107,11 @@ To run examples online, Read the Docs will automatically create a Binder instanc
     make binder_yaml
 
 This will create an environment with the core dependencies, and export it to a .yml. Open this file and add the following at the bottom of the list of dependencies:
-
+```
   - pip
   - pip:
-    --ignore-installed --no-deps git+https://github.com/mdtanker/antarctic_plots.git@main
-
+    - -e ..
+```
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement. 
 
 <!-- This uses the doc_requirements.txt included in the repository, which was create with the below code:
