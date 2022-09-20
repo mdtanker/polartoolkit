@@ -210,7 +210,7 @@ def plot_grd(
         fig.plot(
             x=points.x,
             y=points.y,
-            style="c1.2p",
+            style="c.2c",
             color="black",
         )
 
