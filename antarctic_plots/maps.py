@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING, Union
 
 import pygmt
 import pyogrio
+import verde as vd
+import pandas as pd
 
 from antarctic_plots import fetch, regions, utils
 
@@ -19,6 +21,12 @@ if TYPE_CHECKING:
     import numpy as np
     import xarray as xr
 
+try:
+    import ipyleaflet, ipywidgets
+except ImportError:
+    _has_ipyleaflet = False
+else:
+    _has_ipyleaflet = True
 
 def plot_grd(
     grid: Union[str or xr.DataArray],
@@ -438,3 +446,146 @@ def add_box(
         y=[box[2], box[3], box[3], box[2], box[2]],
         pen=pen,
     )
+
+def interactive_map(
+    center_xy=[0,0], 
+    zoom=0,
+    display_xy=True,
+    show=True,
+):
+    """
+    Plot an interactive map with satellite imagery. Clicking gives the cursor location 
+    in EPSG:3031 [x,y]. Requires ipyleaflet
+
+    Parameters
+    ----------
+    center_xy : list, optional
+        choose center coordinates in EPSG3031 [x,y], by default [0,0]
+    zoom : int, optional
+        choose zoom level, by default 0
+    display_xy : bool, optional
+        choose if you want clicks to show the xy location, by default True
+    show : bool, optional
+        choose whether to displat the map, by default True
+    """
+
+    if not _has_ipyleaflet:
+        raise ImportError("ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`.")
+    layout=ipywidgets.Layout(width='800px', height='800px')
+
+    center_ll = utils.epsg3031_to_latlon(center_xy)
+
+    m = ipyleaflet.Map(center=center_ll,
+            zoom=zoom,
+            layout=layout,
+            basemap=ipyleaflet.basemaps.NASAGIBS.BlueMarble3031,
+            crs=ipyleaflet.projections.EPSG3031,
+            dragging=True,
+            )
+    m.default_style = {'cursor': 'crosshair'}
+    if display_xy is True:
+        label_xy = ipywidgets.Label()
+        display(label_xy)
+        def handle_click(**kwargs):
+                if kwargs.get('type') == 'click':
+                        latlon = kwargs.get('coordinates')
+                        label_xy.value = str(utils.latlon_to_epsg3031(latlon))
+    m.on_interaction(handle_click)
+
+    if show is True:
+        display(m)
+
+    return m
+
+def draw_lines(**kwargs):
+    """
+    Plot an interactive map, and use the "Draw a Polyline" button to create vertices of 
+    a line. Verticles will be returned as the output of the function.
+
+    Returns
+    -------
+    tuple
+        Returns a tuple of list of vertices for each polyline in lat long.
+    """
+    
+    m = interactive_map(**kwargs, show=False)
+    
+    def clear_m():
+        global lines
+        lines = list()
+
+    clear_m()
+
+    myDrawControl = ipyleaflet.DrawControl(
+        polyline={"shapeOptions": {
+            "fillColor": "#fca45d",
+            "color": "#fca45d",
+            "fillOpacity": 1.0
+        }},
+        rectangle={},
+        circlemarker={},
+        polygon={},
+        )
+
+    def handle_line_draw(self, action, geo_json):
+        global lines
+        shapes=[]
+        for coords in geo_json['geometry']['coordinates']:
+            shapes.append(list(coords))
+        shapes = list(shapes)
+        if action == 'created':
+            lines.append(shapes)
+
+    myDrawControl.on_draw(handle_line_draw)
+    m.add_control(myDrawControl)
+
+    clear_m()
+    display(m)
+
+    return lines
+
+def draw_region(**kwargs):
+    """
+    Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle and get the bounding region. Verticles will be returned as the output of the function.
+
+    Returns
+    -------
+    tuple
+        Returns a tuple of list of vertices for each polyline.
+    """
+    
+    m = interactive_map(**kwargs, show=False)
+    
+    def clear_m():
+        global poly
+        poly = list()
+
+    clear_m()
+
+    myDrawControl = ipyleaflet.DrawControl(
+        polygon={"shapeOptions": {
+            "fillColor": "#fca45d",
+            "color": "#fca45d",
+            "fillOpacity": .5
+        }},
+        polyline={},
+        circlemarker={},
+        rectangle={},
+        )
+
+    def handle_rect_draw(self, action, geo_json):
+        global poly
+        shapes=[]
+        for coords in geo_json['geometry']['coordinates'][0][:-1][:]:
+            shapes.append(list(coords))
+        shapes = list(shapes)
+        if action == 'created':
+            poly.append(shapes)
+        
+    myDrawControl.on_draw(handle_rect_draw)
+    m.add_control(myDrawControl)
+
+    clear_m()
+    display(m)
+
+    return poly

@@ -1081,3 +1081,28 @@ def get_min_max(
         v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 
     return (v_min, v_max)
+
+def shapes_to_df(shapes):
+
+    df = pd.DataFrame()
+    for i,j in enumerate(shapes):
+        lon = [coord[0] for coord in j]
+        lat = [coord[1] for coord in j]
+        shape = pd.DataFrame({'lon':lon,'lat':lat, 'shape_num':i})
+        df = pd.concat((df, shape))
+
+    df_xy = latlon_to_epsg3031(df)
+
+    return df_xy
+
+def polygon_to_region(polygon):
+
+    df = shapes_to_df(polygon)
+
+    if df.shape_num.max() > 0:
+        print('supplied dataframe has multiple polygons, only using the first one.')
+        df = df[df.shape_num==0]
+
+    region = vd.get_region((df.x, df.y))
+
+    return region
