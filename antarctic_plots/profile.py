@@ -606,7 +606,20 @@ def plot_profile(
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
-def rel_dist(df):
+def rel_dist(df: pd.DataFrame):
+    """
+    calculate distance between x,y points in a dataframe, relative to the previous row. 
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns x and y in meters.
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns original dataframe with additional column rel_dist
+    """
     df1 = df.copy()
     df1['rel_dist'] = 0
     for i in range(1, len(df1)):
@@ -619,7 +632,20 @@ def rel_dist(df):
             )
     return df1
 
-def cum_dist(df):
+def cum_dist(df: pd.DataFrame):
+    """
+    calculate cumulatine distance of points along a line.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns x, y, and rel_dist
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns orignal dataframe with additional column dist
+    """
     df = rel_dist(df)
     df['dist'] = df.rel_dist.cumsum()
     return df

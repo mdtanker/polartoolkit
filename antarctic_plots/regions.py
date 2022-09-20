@@ -67,9 +67,24 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 
 
 def combine_regions(
-    region1,
-    region2,
+    region1: Union[list, np.ndarray],
+    region2: Union[list, np.ndarray],
 ):
+    """
+    Get the bounding region of 2 regions.
+
+    Parameters
+    ----------
+    region1 : Union[list, np.ndarray]
+        first region
+    region2 : Union[list, np.ndarray]
+        second region
+
+    Returns
+    -------
+    list
+        Bounding region of the 2 supplied regions.
+    """
     coords1 = utils.reg_str_to_df(region1)
     coords2 = utils.reg_str_to_df(region2)
     coords_combined = pd.concat((coords1, coords2))

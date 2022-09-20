@@ -1061,6 +1061,14 @@ def square_subplots(n):
 
 
 def random_color():
+    """
+    generate a random color in format R/G/B
+
+    Returns
+    -------
+    str
+        returns a random color string
+    """
     color = (
         f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
         f"/{int(np.random.random() * 256)}"
@@ -1069,9 +1077,24 @@ def random_color():
 
 
 def get_min_max(
-    grid,
-    shapefile=None,
+    grid: xr.DataArray,
+    shapefile: Union[str or gpd.geodataframe.GeoDataFrame] = None,
 ):
+    """
+    Get a grids max and min values, optionally just for the region within a shapefile.
+
+    Parameters
+    ----------
+    grid : xr.DataArray
+        grid to get values for
+    shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
+        path or loaded shapefile to use for a mask, by default None
+
+    Returns
+    -------
+    tuple
+        returns the min and max values.
+    """
 
     if shapefile is None:
         v_min, v_max = np.nanmin(grid), np.nanmax(grid)
@@ -1082,7 +1105,21 @@ def get_min_max(
 
     return (v_min, v_max)
 
-def shapes_to_df(shapes):
+def shapes_to_df(shapes : list):
+    """
+    convert the output of `maps.draw_region` and `maps.draw_lines` to a dataframe of x 
+    and y points
+
+    Parameters
+    ----------
+    shapes : list
+        list of vertices
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with x, y, and shape_num.
+    """
 
     df = pd.DataFrame()
     for i,j in enumerate(shapes):
@@ -1095,7 +1132,20 @@ def shapes_to_df(shapes):
 
     return df_xy
 
-def polygon_to_region(polygon):
+def polygon_to_region(polygon: list):
+    """
+    convert the output of `maps.draw_region` to bounding region in EPSG:3031 
+
+    Parameters
+    ----------
+    polyon : list
+        list of polygon vertices
+
+    Returns
+    -------
+    list
+        list in format [e,w,n,s]
+    """
 
     df = shapes_to_df(polygon)
 

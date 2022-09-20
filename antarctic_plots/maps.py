@@ -441,6 +441,18 @@ def add_box(
     box: Union[list or np.ndarray],
     pen="2p,black",
 ):
+    """
+    Plot a GMT region as a box.
+
+    Parameters
+    ----------
+    fig : pygmt.figure
+        Figure to plot on
+    box : Union[list or np.ndarray]
+        region in EPSG3031 in format [e,w,n,s] in meters
+    pen : str, optional
+        GMT pen string used for the box, by default "2p,black"
+    """
     fig.plot(
         x=[box[0], box[0], box[1], box[1], box[0]],
         y=[box[2], box[3], box[3], box[2], box[2]],
