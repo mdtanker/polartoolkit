@@ -50,9 +50,15 @@ license-check:
 flake8:
 	flake8p $(STYLE_CHECK_FILES) --exclude=*/_build/*
 
+run_gallery:
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
+
+run_tutorials:
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/tutorial/*.ipynb
+
 run_doc_files:
-	jupyter nbconvert --execute --inplace docs/*.ipynb
-	jupyter nbconvert --execute --inplace docs/*/*.ipynb
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*/*.ipynb
 
 build_docs:
 	@echo
@@ -62,15 +68,13 @@ build_docs:
 	@echo
 	@echo "Build finished. The HTML pages are in docs/build/html."
 
-# html-noplot:
-#         $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
-
-poetry_env: 
+remove_poetry:
 	poetry env remove --all
+
+poetry_env: remove_poetry
 	poetry install --sync --without dev
 
-poetry_env_dev: 
-	poetry env remove --all
+poetry_env_dev: remove_poetry
 	poetry install --sync 
 	poetry export -f requirements.txt --output requirements.txt --with dev
 
@@ -87,8 +91,7 @@ delete_env:
 	mamba remove --name antarctic_plots_dev --all --yes
 
 new_env: delete_env
-	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
-# conda env create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 --file requirements.txt
+	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 
 
 install_reqs:
 	pip install --no-deps --requirement requirements.txt
