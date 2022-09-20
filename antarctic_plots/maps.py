@@ -59,8 +59,8 @@ def plot_grd(
         label to add to colorbar.
     points : pd.DataFrame
         points to plot on map, must contain columns 'x' and 'y'.
-    box : np.ndarray
-        GMT-format region to use to plot a box.
+    show_region : np.ndarray
+        GMT-format region to use to plot a bounding regions.
     cpt_lims : Union[str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
     fig : pygmt.Figure()
@@ -110,7 +110,7 @@ def plot_grd(
             plot_region = regions.antarctica
 
     cmap_region = kwargs.get("cmap_region", plot_region)
-    box = kwargs.get("box", None)
+    show_region = kwargs.get("show_region", None)
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
@@ -140,7 +140,9 @@ def plot_grd(
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
+            verbose='e',
         )
+        colorbar = False
     elif grd2cpt is True:
         pygmt.grd2cpt(
             cmap=cmap,
@@ -148,6 +150,7 @@ def plot_grd(
             region=cmap_region,
             background=True,
             continuous=True,
+            verbose='e',
         )
     elif cpt_lims is not None:
         pygmt.makecpt(
@@ -155,6 +158,7 @@ def plot_grd(
             background=True,
             # continuous=True,
             series=cpt_lims,
+            verbose='e',
         )
     else:
         zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
@@ -163,6 +167,7 @@ def plot_grd(
             background=True,
             continuous=True,
             series=(zmin, zmax),
+            verbose='e',
         )
 
     # display grid
@@ -177,8 +182,6 @@ def plot_grd(
     )
 
     # display colorbar
-    if image is not True:
-        colorbar = False
     if colorbar is True:
         fig.colorbar(
             cmap=True,
@@ -203,9 +206,9 @@ def plot_grd(
             color="black",
         )
 
-    # add box
-    if box is not None:
-        add_box(fig, box)
+    # add box showing region
+    if show_region is not None:
+        add_box(fig, show_region)
 
     # add lat long grid lines
     if grid_lines is True:
