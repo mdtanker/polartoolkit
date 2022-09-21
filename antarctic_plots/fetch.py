@@ -33,11 +33,11 @@ def resample_grid(
         region = initial_region
 
     if (spacing == initial_spacing) and (region == initial_region):
-        print('spacing and region same as original, no processing')
+        # print('spacing and region same as original, no processing')
         resampled=grid
 
     elif (spacing == initial_spacing) and (region != initial_region):
-        print('spacing same as original, extracting new region')
+        # print('spacing same as original, extracting new region')
         resampled = pygmt.grdcut(
             grid=grid, 
             region=region, 
@@ -46,7 +46,7 @@ def resample_grid(
             )
 
     elif spacing < initial_spacing:
-        print('spacing smaller than original, resampling')
+        # print('spacing smaller than original, resampling')
         resampled = pygmt.grdsample(
             grid=grid, 
             spacing=spacing, 
@@ -55,7 +55,7 @@ def resample_grid(
             )
 
     elif spacing > initial_spacing:
-        print('spacing larger than original, filtering and resampling')
+        # print('spacing larger than original, filtering and resampling')
         filtered = pygmt.grdfilter(
             grid=grid,
             filter=f"g{spacing}",

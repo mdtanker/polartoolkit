@@ -1112,7 +1112,7 @@ def get_min_max(
 
 def shapes_to_df(shapes : list):
     """
-    convert the output of `maps.draw_region` and `maps.draw_lines` to a dataframe of x 
+    convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe of x 
     and y points
 
     Parameters
@@ -1139,7 +1139,7 @@ def shapes_to_df(shapes : list):
 
 def polygon_to_region(polygon: list):
     """
-    convert the output of `maps.draw_region` to bounding region in EPSG:3031 
+    convert the output of `regions.draw_region` to bounding region in EPSG:3031 
 
     Parameters
     ----------
