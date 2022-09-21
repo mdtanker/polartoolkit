@@ -83,21 +83,25 @@ def create_profile(
     coordinates.sort_values(by=["dist"], inplace=True)
 
     if method in ["shapefile", "polyline"]:
-        if num is not None:
-            df = coordinates.set_index("dist")
-            dist_resampled = np.linspace(
-                coordinates.dist.min(),
-                coordinates.dist.max(),
-                num,
-                dtype=float,
-            )
-            df1 = (
-                df.reindex(df.index.union(dist_resampled))
-                .interpolate("cubic")
-                .reset_index()
-            )
-            df2 = df1[df1.dist.isin(dist_resampled)]
-        else:
+        try:
+            if num is not None:
+                df = coordinates.set_index("dist")
+                dist_resampled = np.linspace(
+                    coordinates.dist.min(),
+                    coordinates.dist.max(),
+                    num,
+                    dtype=float,
+                )
+                df1 = (
+                    df.reindex(df.index.union(dist_resampled))
+                    .interpolate("cubic") # cubic needs at least 4 points
+                    .reset_index()
+                )
+                df2 = df1[df1.dist.isin(dist_resampled)]
+            else:
+                df2 = coordinates
+        except ValueError:
+            print('If resampling, you must provide at least 4 points. Return unsampled points')
             df2 = coordinates
     else:
         df2 = coordinates
