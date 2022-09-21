@@ -11,7 +11,7 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 """
 import pandas as pd
 import verde as vd
-
+from typing import TYPE_CHECKING, Union
 from antarctic_plots import utils
 
 # regions
@@ -67,17 +67,17 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 
 
 def combine_regions(
-    region1: Union[list, np.ndarray],
-    region2: Union[list, np.ndarray],
+    region1: list,
+    region2: list,
 ):
     """
     Get the bounding region of 2 regions.
 
     Parameters
     ----------
-    region1 : Union[list, np.ndarray]
+    region1 : list
         first region
-    region2 : Union[list, np.ndarray]
+    region2 : list
         second region
 
     Returns
