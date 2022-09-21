@@ -15,9 +15,64 @@ import pygmt
 import requests
 import xarray as xr
 from pyproj import Transformer
+import glob
 
-from antarctic_plots import utils
+from antarctic_plots import utils, regions
 
+def resample_grid(
+    grid, 
+    initial_spacing, 
+    initial_region, 
+    spacing=None, 
+    region=None,
+    ):
+    
+    if spacing is None:
+        spacing = initial_spacing
+    if region is None:
+        region = initial_region
+
+    if (spacing == initial_spacing) and (region == initial_region):
+        print('spacing and region same as original, no processing')
+        resampled=grid
+
+    elif (spacing == initial_spacing) and (region != initial_region):
+        print('spacing same as original, extracting new region')
+        resampled = pygmt.grdcut(
+            grid=grid, 
+            region=region, 
+            # extend=True,
+            # verbose="q",
+            )
+
+    elif spacing < initial_spacing:
+        print('spacing smaller than original, resampling')
+        resampled = pygmt.grdsample(
+            grid=grid, 
+            spacing=spacing, 
+            region=region, 
+            verbose="q"
+            )
+
+    elif spacing > initial_spacing:
+        print('spacing larger than original, filtering and resampling')
+        filtered = pygmt.grdfilter(
+            grid=grid,
+            filter=f"g{spacing}",
+            spacing=spacing,
+            # region=region,
+            distance="0",
+            nans="r",
+            # verbose="q",
+            )
+        resampled = pygmt.grdcut(
+            grid=filtered,#sampled,
+            region=region, 
+            extend=True
+            # verbose="q",
+            )
+
+    return resampled
 
 class EarthDataDownloader:
     """
@@ -745,7 +800,7 @@ def geothermal(
     version: str,
     plot: bool = False,
     info: bool = False,
-    region=None,
+    region = None,
     spacing: int = None,
 ) -> xr.DataArray:
     """
@@ -787,8 +842,7 @@ def geothermal(
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of GHF data.
     """
-    # if region is None:
-    #     region = (-3330000, 3330000, -3330000, 3330000)
+    
     if version == "burton-johnson-2020":
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
@@ -798,29 +852,25 @@ def geothermal(
             ),
             progressbar=True,
         )
+        file = [p for p in path if p.endswith("Mean.tif")][0]
         try:
             os.rename(
-                "C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical GHF Summary Statistics Maps",  # noqa
-                "C:\\Users\\matthewt\\AppData\\Local\\pooch\\pooch\\Cache\\Burton_Johnson_2020\\Geophysical_GHF_Summary_Statistics_Maps",  # noqa
+                file[:-9], 
+                file[:-9].replace(" ","_"),
             )
         except FileNotFoundError:
             pass
 
-        file = [p for p in path if p.endswith("Mean.tif")][0]
-        if region is None:
-            region = utils.get_grid_info(file)[1]
-        if spacing is None:
-            spacing = utils.get_grid_info(file)[0]
+        file = glob.glob(f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0] # noqa
 
-        grd = pygmt.grdfilter(
-            grid=file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            verbose="q",
-        )
+        grid = xr.load_dataarray(file)
+        grid = grid.squeeze()
+
+        # found from utils.get_grid_info(grid)
+        initial_spacing = 17000
+        initial_region = [-2543500.0, 2624500.0, -2121500.0, 2213500.0]
+
+        resampled = resample_grid(grid, initial_spacing, initial_region, spacing, region)
 
     elif version == "losing-ebbing-2021":
         path = pooch.retrieve(
@@ -833,19 +883,22 @@ def geothermal(
         df["x"], df["y"] = transformer.transform(df.Lat.tolist(), df.Lon.tolist())
 
         if region is None:
-            region = (-2800e3, 2800e3, -2800e3, 2800e3)
+            region = regions.antarctica
         if spacing is None:
             spacing = 20e3
 
         df = pygmt.blockmedian(
-            df[["x", "y", "HF [mW/m2]"]], spacing=spacing, region=region, verbose="q"
+            df[["x", "y", "HF [mW/m2]"]], 
+            spacing=spacing, 
+            region=region,
+            #  verbose="q",
         )
-        grd = pygmt.surface(
+        resampled = pygmt.surface(
             data=df[["x", "y", "HF [mW/m2]"]],
             spacing=spacing,
             region=region,
-            M="2c",
-            verbose="q",
+            # M="1c",
+            # verbose="q",
         )
     elif version == "aq1":
         path = pooch.retrieve(
@@ -854,21 +907,14 @@ def geothermal(
             progressbar=True,
         )
         file = xr.load_dataset(path)["Q"]
-        if region is None:
-            region = utils.get_grid_info(file)[1]
-        if spacing is None:
-            spacing = utils.get_grid_info(file)[0]
 
-        grd = pygmt.grdfilter(
-            grid=file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            verbose="q",
-        )
-        grd = grd * 1000
+        # found from utils.get_grid_info(file)
+        initial_spacing = 20071.6845878
+        initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+
+        grid = resample_grid(file, initial_spacing, initial_region, spacing, region)
+
+        resampled = grid * 1000
 
     else:
         print("invalid version string")
@@ -876,4 +922,4 @@ def geothermal(
         grd.plot(robust=True)
     if info is True:
         print(pygmt.grdinfo(grd))
-    return grd
+    return resampled
