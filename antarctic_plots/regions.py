@@ -11,8 +11,15 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 """
 import pandas as pd
 import verde as vd
+from typing import TYPE_CHECKING, Union
+from antarctic_plots import utils, maps
 
-from antarctic_plots import utils
+try:
+    import ipyleaflet, ipywidgets
+except ImportError:
+    _has_ipyleaflet = False
+else:
+    _has_ipyleaflet = True
 
 # regions
 antarctica = [-2800e3, 2800e3, -2800e3, 2800e3]
@@ -67,12 +74,73 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 
 
 def combine_regions(
-    region1,
-    region2,
+    region1: list,
+    region2: list,
 ):
+    """
+    Get the bounding region of 2 regions.
+
+    Parameters
+    ----------
+    region1 : list
+        first region
+    region2 : list
+        second region
+
+    Returns
+    -------
+    list
+        Bounding region of the 2 supplied regions.
+    """
     coords1 = utils.reg_str_to_df(region1)
     coords2 = utils.reg_str_to_df(region2)
     coords_combined = pd.concat((coords1, coords2))
     region = vd.get_region((coords_combined.x, coords_combined.y))
 
     return region
+
+def draw_region(**kwargs):
+    """
+    Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle and get the bounding region. Verticles will be returned as the output of the function.
+
+    Returns
+    -------
+    tuple
+        Returns a tuple of list of vertices for each polyline.
+    """
+    
+    m = maps.interactive_map(**kwargs, show=False)
+    
+    def clear_m():
+        global poly
+        poly = list()
+
+    clear_m()
+
+    myDrawControl = ipyleaflet.DrawControl(
+        polygon={"shapeOptions": {
+            "fillColor": "#fca45d",
+            "color": "#fca45d",
+            "fillOpacity": .5
+        }},
+        polyline={},
+        circlemarker={},
+        rectangle={},
+        )
+
+    def handle_rect_draw(self, action, geo_json):
+        global poly
+        shapes=[]
+        for coords in geo_json['geometry']['coordinates'][0][:-1][:]:
+            shapes.append(list(coords))
+        shapes = list(shapes)
+        if action == 'created':
+            poly.append(shapes)
+        
+    myDrawControl.on_draw(handle_rect_draw)
+    m.add_control(myDrawControl)
+
+    clear_m()
+    display(m)
+
+    return poly

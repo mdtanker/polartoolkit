@@ -16,6 +16,7 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
+import rioxarray
 
 from antarctic_plots import maps
 
@@ -44,10 +45,15 @@ def get_grid_info(grid):
     """
 
     if isinstance(grid, str):
+        # grid = xr.load_dataarray(grid)
         try:
-            grid = pygmt.load_dataarray(grid)
+            # grid = pygmt.load_dataarray(grid)
+            grid = xr.load_dataarray(grid)
         except ValueError:
-            grid = xr.open_rasterio(grid)
+            print('getting grid info didnt work')
+            pass
+            # grid = xr.open_rasterio(grid)
+            # grid = rioxarray.open_rasterio(grid)
 
     if int(len(grid.dims)) > 2:
         grid = grid.squeeze()
@@ -59,16 +65,15 @@ def get_grid_info(grid):
         ]
         zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+        reg = grid.gmt.registration
+        registration = "g" if reg == 0 else "p"
     except Exception:
         print("grid info can't be extracted, check number of dimensions, should be 2.")
         spacing = None
         region = None
         zmin = None
         zmax = None
-
-    reg = grid.gmt.registration
-
-    registration = "g" if reg == 0 else "p"
+        registration = None
 
     return spacing, region, zmin, zmax, registration
 
@@ -1061,6 +1066,14 @@ def square_subplots(n):
 
 
 def random_color():
+    """
+    generate a random color in format R/G/B
+
+    Returns
+    -------
+    str
+        returns a random color string
+    """
     color = (
         f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
         f"/{int(np.random.random() * 256)}"
@@ -1069,9 +1082,24 @@ def random_color():
 
 
 def get_min_max(
-    grid,
-    shapefile=None,
+    grid: xr.DataArray,
+    shapefile: Union[str or gpd.geodataframe.GeoDataFrame] = None,
 ):
+    """
+    Get a grids max and min values, optionally just for the region within a shapefile.
+
+    Parameters
+    ----------
+    grid : xr.DataArray
+        grid to get values for
+    shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
+        path or loaded shapefile to use for a mask, by default None
+
+    Returns
+    -------
+    tuple
+        returns the min and max values.
+    """
 
     if shapefile is None:
         v_min, v_max = np.nanmin(grid), np.nanmax(grid)
@@ -1082,7 +1110,21 @@ def get_min_max(
 
     return (v_min, v_max)
 
-def shapes_to_df(shapes):
+def shapes_to_df(shapes : list):
+    """
+    convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe of x 
+    and y points
+
+    Parameters
+    ----------
+    shapes : list
+        list of vertices
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with x, y, and shape_num.
+    """
 
     df = pd.DataFrame()
     for i,j in enumerate(shapes):
@@ -1095,7 +1137,20 @@ def shapes_to_df(shapes):
 
     return df_xy
 
-def polygon_to_region(polygon):
+def polygon_to_region(polygon: list):
+    """
+    convert the output of `regions.draw_region` to bounding region in EPSG:3031 
+
+    Parameters
+    ----------
+    polyon : list
+        list of polygon vertices
+
+    Returns
+    -------
+    list
+        list in format [e,w,n,s]
+    """
 
     df = shapes_to_df(polygon)
 

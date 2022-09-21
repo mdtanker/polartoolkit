@@ -41,10 +41,11 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 ## Project goals
 
 Below is a list of some feature I hope to eventually include. Feel free to make a feature request through [Github Issues](https://github.com/mdtanker/antarctic_plots/issues/new/choose).
-* Interactively choose profile locations by clicking on a map (See [Issue #1](https://github.com/mdtanker/antarctic_plots/issues/1))  
 * Create 3D interactive models to help visualize data.
-* Plot data in 3D
+* Plot data in 3D.
+* Plot grids and data in interactive windows using `ipyleaflet`.
 * Include more Antarctic datasets to aid in download and storage.
+* If there's interest, extend to the Arctic or possibly anywhere.
 
 ```{tableofcontents}
 ```

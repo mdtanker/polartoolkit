@@ -12,8 +12,14 @@ import pygmt
 import pyogrio
 import verde as vd
 
-from antarctic_plots import fetch, utils
+from antarctic_plots import fetch, utils, maps
 
+try:
+    import ipyleaflet, ipywidgets
+except ImportError:
+    _has_ipyleaflet = False
+else:
+    _has_ipyleaflet = True
 
 def create_profile(
     method: str,
@@ -83,21 +89,25 @@ def create_profile(
     coordinates.sort_values(by=["dist"], inplace=True)
 
     if method in ["shapefile", "polyline"]:
-        if num is not None:
-            df = coordinates.set_index("dist")
-            dist_resampled = np.linspace(
-                coordinates.dist.min(),
-                coordinates.dist.max(),
-                num,
-                dtype=float,
-            )
-            df1 = (
-                df.reindex(df.index.union(dist_resampled))
-                .interpolate("cubic")
-                .reset_index()
-            )
-            df2 = df1[df1.dist.isin(dist_resampled)]
-        else:
+        try:
+            if num is not None:
+                df = coordinates.set_index("dist")
+                dist_resampled = np.linspace(
+                    coordinates.dist.min(),
+                    coordinates.dist.max(),
+                    num,
+                    dtype=float,
+                )
+                df1 = (
+                    df.reindex(df.index.union(dist_resampled))
+                    .interpolate("cubic") # cubic needs at least 4 points
+                    .reset_index()
+                )
+                df2 = df1[df1.dist.isin(dist_resampled)]
+            else:
+                df2 = coordinates
+        except ValueError:
+            print('If resampling, you must provide at least 4 points. Return unsampled points')
             df2 = coordinates
     else:
         df2 = coordinates
@@ -606,7 +616,20 @@ def plot_profile(
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
-def rel_dist(df):
+def rel_dist(df: pd.DataFrame):
+    """
+    calculate distance between x,y points in a dataframe, relative to the previous row. 
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns x and y in meters.
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns original dataframe with additional column rel_dist
+    """
     df1 = df.copy()
     df1['rel_dist'] = 0
     for i in range(1, len(df1)):
@@ -619,7 +642,67 @@ def rel_dist(df):
             )
     return df1
 
-def cum_dist(df):
+def cum_dist(df: pd.DataFrame):
+    """
+    calculate cumulatine distance of points along a line.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing columns x, y, and rel_dist
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns orignal dataframe with additional column dist
+    """
     df = rel_dist(df)
     df['dist'] = df.rel_dist.cumsum()
     return df
+
+def draw_lines(**kwargs):
+    """
+    Plot an interactive map, and use the "Draw a Polyline" button to create vertices of 
+    a line. Verticles will be returned as the output of the function.
+
+    Returns
+    -------
+    tuple
+        Returns a tuple of list of vertices for each polyline in lat long.
+    """
+    
+    m = maps.interactive_map(**kwargs, show=False)
+    
+    def clear_m():
+        global lines
+        lines = list()
+
+    clear_m()
+
+    myDrawControl = ipyleaflet.DrawControl(
+        polyline={"shapeOptions": {
+            "fillColor": "#fca45d",
+            "color": "#fca45d",
+            "fillOpacity": 1.0
+        }},
+        rectangle={},
+        circlemarker={},
+        polygon={},
+        )
+
+    def handle_line_draw(self, action, geo_json):
+        global lines
+        shapes=[]
+        for coords in geo_json['geometry']['coordinates']:
+            shapes.append(list(coords))
+        shapes = list(shapes)
+        if action == 'created':
+            lines.append(shapes)
+
+    myDrawControl.on_draw(handle_line_draw)
+    m.add_control(myDrawControl)
+
+    clear_m()
+    display(m)
+
+    return lines

@@ -113,9 +113,11 @@ def plot_grd(
     if plot_region is None:
         try:
             plot_region = utils.get_grid_info(grid)[1]
-        except Exception:
+        except:
             print("grid region can't be extracted, using antarctic region.")
             plot_region = regions.antarctica
+
+    print(f"plot region is: {plot_region}")
 
     cmap_region = kwargs.get("cmap_region", plot_region)
     show_region = kwargs.get("show_region", None)
@@ -130,6 +132,7 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
 
+    
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
 
@@ -169,14 +172,23 @@ def plot_grd(
             verbose='e',
         )
     else:
-        zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
-        pygmt.makecpt(
-            cmap=cmap,
-            background=True,
-            continuous=True,
-            series=(zmin, zmax),
-            verbose='e',
-        )
+        try:
+            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                continuous=True,
+                series=(zmin, zmax),
+                verbose='e',
+                )
+        except:
+            print("grid region can't be extracted.")
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                continuous=True,
+                verbose='e',
+            )
 
     # display grid
     fig.grdimage(
@@ -330,6 +342,7 @@ def add_gridlines(
                 f"xa{x_annots}g{x_annots/2}",
                 f"ya{y_annots}g{y_annots/2}",
             ],
+            transparency=50,
             verbose="q",
         )
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
@@ -441,6 +454,18 @@ def add_box(
     box: Union[list or np.ndarray],
     pen="2p,black",
 ):
+    """
+    Plot a GMT region as a box.
+
+    Parameters
+    ----------
+    fig : pygmt.figure
+        Figure to plot on
+    box : Union[list or np.ndarray]
+        region in EPSG3031 in format [e,w,n,s] in meters
+    pen : str, optional
+        GMT pen string used for the box, by default "2p,black"
+    """
     fig.plot(
         x=[box[0], box[0], box[1], box[1], box[0]],
         y=[box[2], box[3], box[3], box[2], box[2]],
@@ -496,96 +521,3 @@ def interactive_map(
         display(m)
 
     return m
-
-def draw_lines(**kwargs):
-    """
-    Plot an interactive map, and use the "Draw a Polyline" button to create vertices of 
-    a line. Verticles will be returned as the output of the function.
-
-    Returns
-    -------
-    tuple
-        Returns a tuple of list of vertices for each polyline in lat long.
-    """
-    
-    m = interactive_map(**kwargs, show=False)
-    
-    def clear_m():
-        global lines
-        lines = list()
-
-    clear_m()
-
-    myDrawControl = ipyleaflet.DrawControl(
-        polyline={"shapeOptions": {
-            "fillColor": "#fca45d",
-            "color": "#fca45d",
-            "fillOpacity": 1.0
-        }},
-        rectangle={},
-        circlemarker={},
-        polygon={},
-        )
-
-    def handle_line_draw(self, action, geo_json):
-        global lines
-        shapes=[]
-        for coords in geo_json['geometry']['coordinates']:
-            shapes.append(list(coords))
-        shapes = list(shapes)
-        if action == 'created':
-            lines.append(shapes)
-
-    myDrawControl.on_draw(handle_line_draw)
-    m.add_control(myDrawControl)
-
-    clear_m()
-    display(m)
-
-    return lines
-
-def draw_region(**kwargs):
-    """
-    Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle and get the bounding region. Verticles will be returned as the output of the function.
-
-    Returns
-    -------
-    tuple
-        Returns a tuple of list of vertices for each polyline.
-    """
-    
-    m = interactive_map(**kwargs, show=False)
-    
-    def clear_m():
-        global poly
-        poly = list()
-
-    clear_m()
-
-    myDrawControl = ipyleaflet.DrawControl(
-        polygon={"shapeOptions": {
-            "fillColor": "#fca45d",
-            "color": "#fca45d",
-            "fillOpacity": .5
-        }},
-        polyline={},
-        circlemarker={},
-        rectangle={},
-        )
-
-    def handle_rect_draw(self, action, geo_json):
-        global poly
-        shapes=[]
-        for coords in geo_json['geometry']['coordinates'][0][:-1][:]:
-            shapes.append(list(coords))
-        shapes = list(shapes)
-        if action == 'created':
-            poly.append(shapes)
-        
-    myDrawControl.on_draw(handle_rect_draw)
-    m.add_control(myDrawControl)
-
-    clear_m()
-    display(m)
-
-    return poly
