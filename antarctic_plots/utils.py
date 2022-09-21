@@ -16,6 +16,7 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
+import rioxarray
 
 from antarctic_plots import maps
 
@@ -44,10 +45,15 @@ def get_grid_info(grid):
     """
 
     if isinstance(grid, str):
+        # grid = xr.load_dataarray(grid)
         try:
-            grid = pygmt.load_dataarray(grid)
+            # grid = pygmt.load_dataarray(grid)
+            grid = xr.load_dataarray(grid)
         except ValueError:
-            grid = xr.open_rasterio(grid)
+            print('getting grid info didnt work')
+            pass
+            # grid = xr.open_rasterio(grid)
+            # grid = rioxarray.open_rasterio(grid)
 
     if int(len(grid.dims)) > 2:
         grid = grid.squeeze()
@@ -59,16 +65,15 @@ def get_grid_info(grid):
         ]
         zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+        reg = grid.gmt.registration
+        registration = "g" if reg == 0 else "p"
     except Exception:
         print("grid info can't be extracted, check number of dimensions, should be 2.")
         spacing = None
         region = None
         zmin = None
         zmax = None
-
-    reg = grid.gmt.registration
-
-    registration = "g" if reg == 0 else "p"
+        registration = None
 
     return spacing, region, zmin, zmax, registration
 

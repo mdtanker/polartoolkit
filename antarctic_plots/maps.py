@@ -113,9 +113,11 @@ def plot_grd(
     if plot_region is None:
         try:
             plot_region = utils.get_grid_info(grid)[1]
-        except Exception:
+        except:
             print("grid region can't be extracted, using antarctic region.")
             plot_region = regions.antarctica
+
+    print(f"plot region is: {plot_region}")
 
     cmap_region = kwargs.get("cmap_region", plot_region)
     show_region = kwargs.get("show_region", None)
@@ -130,6 +132,7 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
 
+    
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
 
@@ -169,14 +172,23 @@ def plot_grd(
             verbose='e',
         )
     else:
-        zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
-        pygmt.makecpt(
-            cmap=cmap,
-            background=True,
-            continuous=True,
-            series=(zmin, zmax),
-            verbose='e',
-        )
+        try:
+            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                continuous=True,
+                series=(zmin, zmax),
+                verbose='e',
+                )
+        except:
+            print("grid region can't be extracted.")
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                continuous=True,
+                verbose='e',
+            )
 
     # display grid
     fig.grdimage(
