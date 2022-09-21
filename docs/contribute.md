@@ -61,8 +61,7 @@ This will both build the dist files, and upload to TestPyPI.
 
 Make a new environment, activate it:
 
-    mamba remove --name antarctic_plots_test --all --yes
-    mamba create --name antarctic_plots_test python=3.9 pygmt=0.7.0 geopandas=0.11.0
+    make test_env
     mamba activate antarctic_plots_test
 
  and run the following, replacing the asterisks with the version number:
