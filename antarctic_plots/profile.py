@@ -12,20 +12,21 @@ import pygmt
 import pyogrio
 import verde as vd
 
-from antarctic_plots import fetch, utils, maps
+from antarctic_plots import fetch, maps, utils
 
 try:
-    import ipyleaflet, ipywidgets
+    import ipyleaflet
 except ImportError:
     _has_ipyleaflet = False
 else:
     _has_ipyleaflet = True
 
+
 def create_profile(
     method: str,
     start: np.ndarray = None,
     stop: np.ndarray = None,
-    num : int = None,
+    num: int = None,
     shapefile: str = None,
     polyline: pd.DataFrame = None,
     **kwargs,
@@ -64,11 +65,13 @@ def create_profile(
         if any(a is None for a in [start, stop]):
             raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
-            data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"])
+            data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
+        )
         # for points, dist is from first point
         coordinates["dist"] = np.sqrt(
             (coordinates.x - coordinates.x.iloc[0]) ** 2
-            + (coordinates.y - coordinates.y.iloc[0]) ** 2)
+            + (coordinates.y - coordinates.y.iloc[0]) ** 2
+        )
 
     elif method == "shapefile":
         if shapefile is None:
@@ -85,7 +88,7 @@ def create_profile(
             raise ValueError(f"If method = {method}, need to provide a valid dataframe")
         # for shapefiles, dist is cumulative from previous points
         coordinates = cum_dist(polyline)
-    
+
     coordinates.sort_values(by=["dist"], inplace=True)
 
     if method in ["shapefile", "polyline"]:
@@ -100,14 +103,16 @@ def create_profile(
                 )
                 df1 = (
                     df.reindex(df.index.union(dist_resampled))
-                    .interpolate("cubic") # cubic needs at least 4 points
+                    .interpolate("cubic")  # cubic needs at least 4 points
                     .reset_index()
                 )
                 df2 = df1[df1.dist.isin(dist_resampled)]
             else:
                 df2 = coordinates
         except ValueError:
-            print('If resampling, you must provide at least 4 points. Return unsampled points')
+            print(
+                "If resampling, you must provide at least 4 points. Return unsampled points"  # noqa
+            )
             df2 = coordinates
     else:
         df2 = coordinates
@@ -616,9 +621,10 @@ def plot_profile(
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
+
 def rel_dist(df: pd.DataFrame):
     """
-    calculate distance between x,y points in a dataframe, relative to the previous row. 
+    calculate distance between x,y points in a dataframe, relative to the previous row.
 
     Parameters
     ----------
@@ -631,16 +637,17 @@ def rel_dist(df: pd.DataFrame):
         Returns original dataframe with additional column rel_dist
     """
     df1 = df.copy()
-    df1['rel_dist'] = 0
+    df1["rel_dist"] = 0
     for i in range(1, len(df1)):
         if i == 0:
             pass
         else:
-            df1.loc[i, 'rel_dist'] = np.sqrt(
-                (df1.loc[i,'x'] - df1.loc[i-1, 'x']) ** 2
-                + (df1.loc[i,'y'] - df1.loc[i-1, 'y']) ** 2
+            df1.loc[i, "rel_dist"] = np.sqrt(
+                (df1.loc[i, "x"] - df1.loc[i - 1, "x"]) ** 2
+                + (df1.loc[i, "y"] - df1.loc[i - 1, "y"]) ** 2
             )
     return df1
+
 
 def cum_dist(df: pd.DataFrame):
     """
@@ -657,12 +664,13 @@ def cum_dist(df: pd.DataFrame):
         Returns orignal dataframe with additional column dist
     """
     df = rel_dist(df)
-    df['dist'] = df.rel_dist.cumsum()
+    df["dist"] = df.rel_dist.cumsum()
     return df
+
 
 def draw_lines(**kwargs):
     """
-    Plot an interactive map, and use the "Draw a Polyline" button to create vertices of 
+    Plot an interactive map, and use the "Draw a Polyline" button to create vertices of
     a line. Verticles will be returned as the output of the function.
 
     Returns
@@ -670,9 +678,9 @@ def draw_lines(**kwargs):
     tuple
         Returns a tuple of list of vertices for each polyline in lat long.
     """
-    
+
     m = maps.interactive_map(**kwargs, show=False)
-    
+
     def clear_m():
         global lines
         lines = list()
@@ -680,23 +688,25 @@ def draw_lines(**kwargs):
     clear_m()
 
     myDrawControl = ipyleaflet.DrawControl(
-        polyline={"shapeOptions": {
-            "fillColor": "#fca45d",
-            "color": "#fca45d",
-            "fillOpacity": 1.0
-        }},
+        polyline={
+            "shapeOptions": {
+                "fillColor": "#fca45d",
+                "color": "#fca45d",
+                "fillOpacity": 1.0,
+            }
+        },
         rectangle={},
         circlemarker={},
         polygon={},
-        )
+    )
 
     def handle_line_draw(self, action, geo_json):
         global lines
-        shapes=[]
-        for coords in geo_json['geometry']['coordinates']:
+        shapes = []
+        for coords in geo_json["geometry"]["coordinates"]:
             shapes.append(list(coords))
         shapes = list(shapes)
-        if action == 'created':
+        if action == "created":
             lines.append(shapes)
 
     myDrawControl.on_draw(handle_line_draw)

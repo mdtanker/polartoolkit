@@ -11,11 +11,11 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 """
 import pandas as pd
 import verde as vd
-from typing import TYPE_CHECKING, Union
-from antarctic_plots import utils, maps
+
+from antarctic_plots import maps, utils
 
 try:
-    import ipyleaflet, ipywidgets
+    import ipyleaflet
 except ImportError:
     _has_ipyleaflet = False
 else:
@@ -99,18 +99,21 @@ def combine_regions(
 
     return region
 
+
 def draw_region(**kwargs):
     """
-    Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle and get the bounding region. Verticles will be returned as the output of the function.
+    Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle
+    and get the bounding region. Verticles will be returned as the output of the
+    function.
 
     Returns
     -------
     tuple
         Returns a tuple of list of vertices for each polyline.
     """
-    
+
     m = maps.interactive_map(**kwargs, show=False)
-    
+
     def clear_m():
         global poly
         poly = list()
@@ -118,25 +121,27 @@ def draw_region(**kwargs):
     clear_m()
 
     myDrawControl = ipyleaflet.DrawControl(
-        polygon={"shapeOptions": {
-            "fillColor": "#fca45d",
-            "color": "#fca45d",
-            "fillOpacity": .5
-        }},
+        polygon={
+            "shapeOptions": {
+                "fillColor": "#fca45d",
+                "color": "#fca45d",
+                "fillOpacity": 0.5,
+            }
+        },
         polyline={},
         circlemarker={},
         rectangle={},
-        )
+    )
 
     def handle_rect_draw(self, action, geo_json):
         global poly
-        shapes=[]
-        for coords in geo_json['geometry']['coordinates'][0][:-1][:]:
+        shapes = []
+        for coords in geo_json["geometry"]["coordinates"][0][:-1][:]:
             shapes.append(list(coords))
         shapes = list(shapes)
-        if action == 'created':
+        if action == "created":
             poly.append(shapes)
-        
+
     myDrawControl.on_draw(handle_rect_draw)
     m.add_control(myDrawControl)
 
