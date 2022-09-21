@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING, Union
 
 import pygmt
 import pyogrio
-import verde as vd
-import pandas as pd
 
 from antarctic_plots import fetch, regions, utils
 
@@ -22,11 +20,13 @@ if TYPE_CHECKING:
     import xarray as xr
 
 try:
-    import ipyleaflet, ipywidgets
+    import ipyleaflet
+    import ipywidgets
 except ImportError:
     _has_ipyleaflet = False
 else:
     _has_ipyleaflet = True
+
 
 def plot_grd(
     grid: Union[str or xr.DataArray],
@@ -132,7 +132,6 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
 
-    
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
 
@@ -151,7 +150,7 @@ def plot_grd(
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
-            verbose='e',
+            verbose="e",
         )
         colorbar = False
     elif grd2cpt is True:
@@ -161,7 +160,7 @@ def plot_grd(
             region=cmap_region,
             background=True,
             continuous=True,
-            verbose='e',
+            verbose="e",
         )
     elif cpt_lims is not None:
         pygmt.makecpt(
@@ -169,7 +168,7 @@ def plot_grd(
             background=True,
             # continuous=True,
             series=cpt_lims,
-            verbose='e',
+            verbose="e",
         )
     else:
         try:
@@ -179,15 +178,15 @@ def plot_grd(
                 background=True,
                 continuous=True,
                 series=(zmin, zmax),
-                verbose='e',
-                )
+                verbose="e",
+            )
         except:
             print("grid region can't be extracted.")
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
                 continuous=True,
-                verbose='e',
+                verbose="e",
             )
 
     # display grid
@@ -472,14 +471,15 @@ def add_box(
         pen=pen,
     )
 
+
 def interactive_map(
-    center_xy=[0,0], 
+    center_xy=[0, 0],
     zoom=0,
     display_xy=True,
     show=True,
 ):
     """
-    Plot an interactive map with satellite imagery. Clicking gives the cursor location 
+    Plot an interactive map with satellite imagery. Clicking gives the cursor location
     in EPSG:3031 [x,y]. Requires ipyleaflet
 
     Parameters
@@ -495,26 +495,31 @@ def interactive_map(
     """
 
     if not _has_ipyleaflet:
-        raise ImportError("ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`.")
-    layout=ipywidgets.Layout(width='800px', height='800px')
+        raise ImportError(
+            "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
+        )
+    layout = ipywidgets.Layout(width="800px", height="800px")
 
     center_ll = utils.epsg3031_to_latlon(center_xy)
 
-    m = ipyleaflet.Map(center=center_ll,
-            zoom=zoom,
-            layout=layout,
-            basemap=ipyleaflet.basemaps.NASAGIBS.BlueMarble3031,
-            crs=ipyleaflet.projections.EPSG3031,
-            dragging=True,
-            )
-    m.default_style = {'cursor': 'crosshair'}
+    m = ipyleaflet.Map(
+        center=center_ll,
+        zoom=zoom,
+        layout=layout,
+        basemap=ipyleaflet.basemaps.NASAGIBS.BlueMarble3031,
+        crs=ipyleaflet.projections.EPSG3031,
+        dragging=True,
+    )
+    m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
         display(label_xy)
+
         def handle_click(**kwargs):
-                if kwargs.get('type') == 'click':
-                        latlon = kwargs.get('coordinates')
-                        label_xy.value = str(utils.latlon_to_epsg3031(latlon))
+            if kwargs.get("type") == "click":
+                latlon = kwargs.get("coordinates")
+                label_xy.value = str(utils.latlon_to_epsg3031(latlon))
+
     m.on_interaction(handle_click)
 
     if show is True:

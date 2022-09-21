@@ -5,6 +5,7 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+import glob
 import os
 from getpass import getpass
 from pathlib import Path
@@ -15,18 +16,18 @@ import pygmt
 import requests
 import xarray as xr
 from pyproj import Transformer
-import glob
 
-from antarctic_plots import utils, regions
+from antarctic_plots import regions
+
 
 def resample_grid(
-    grid, 
-    initial_spacing, 
-    initial_region, 
-    spacing=None, 
+    grid,
+    initial_spacing,
+    initial_region,
+    spacing=None,
     region=None,
-    ):
-    
+):
+
     if spacing is None:
         spacing = initial_spacing
     if region is None:
@@ -34,25 +35,22 @@ def resample_grid(
 
     if (spacing == initial_spacing) and (region == initial_region):
         # print('spacing and region same as original, no processing')
-        resampled=grid
+        resampled = grid
 
     elif (spacing == initial_spacing) and (region != initial_region):
         # print('spacing same as original, extracting new region')
         resampled = pygmt.grdcut(
-            grid=grid, 
-            region=region, 
+            grid=grid,
+            region=region,
             # extend=True,
             # verbose="q",
-            )
+        )
 
     elif spacing < initial_spacing:
         # print('spacing smaller than original, resampling')
         resampled = pygmt.grdsample(
-            grid=grid, 
-            spacing=spacing, 
-            region=region, 
-            verbose="q"
-            )
+            grid=grid, spacing=spacing, region=region, verbose="q"
+        )
 
     elif spacing > initial_spacing:
         # print('spacing larger than original, filtering and resampling')
@@ -64,15 +62,16 @@ def resample_grid(
             distance="0",
             nans="r",
             # verbose="q",
-            )
+        )
         resampled = pygmt.grdcut(
-            grid=filtered,#sampled,
-            region=region, 
+            grid=filtered,  # sampled,
+            region=region,
             extend=True
             # verbose="q",
-            )
+        )
 
     return resampled
+
 
 class EarthDataDownloader:
     """
@@ -800,7 +799,7 @@ def geothermal(
     version: str,
     plot: bool = False,
     info: bool = False,
-    region = None,
+    region=None,
     spacing: int = None,
 ) -> xr.DataArray:
     """
@@ -842,7 +841,7 @@ def geothermal(
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of GHF data.
     """
-    
+
     if version == "burton-johnson-2020":
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
@@ -855,13 +854,15 @@ def geothermal(
         file = [p for p in path if p.endswith("Mean.tif")][0]
         try:
             os.rename(
-                file[:-9], 
-                file[:-9].replace(" ","_"),
+                file[:-9],
+                file[:-9].replace(" ", "_"),
             )
         except FileNotFoundError:
             pass
 
-        file = glob.glob(f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0] # noqa
+        file = glob.glob(f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[
+            0
+        ]  # noqa
 
         grid = xr.load_dataarray(file)
         grid = grid.squeeze()
@@ -870,7 +871,9 @@ def geothermal(
         initial_spacing = 17000
         initial_region = [-2543500.0, 2624500.0, -2121500.0, 2213500.0]
 
-        resampled = resample_grid(grid, initial_spacing, initial_region, spacing, region)
+        resampled = resample_grid(
+            grid, initial_spacing, initial_region, spacing, region
+        )
 
     elif version == "losing-ebbing-2021":
         path = pooch.retrieve(
@@ -888,8 +891,8 @@ def geothermal(
             spacing = 20e3
 
         df = pygmt.blockmedian(
-            df[["x", "y", "HF [mW/m2]"]], 
-            spacing=spacing, 
+            df[["x", "y", "HF [mW/m2]"]],
+            spacing=spacing,
             region=region,
             #  verbose="q",
         )
@@ -919,7 +922,7 @@ def geothermal(
     else:
         print("invalid version string")
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
+        print(pygmt.grdinfo(resampled))
     return resampled

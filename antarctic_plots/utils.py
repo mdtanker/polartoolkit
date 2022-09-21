@@ -16,7 +16,6 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-import rioxarray
 
 from antarctic_plots import maps
 
@@ -50,7 +49,7 @@ def get_grid_info(grid):
             # grid = pygmt.load_dataarray(grid)
             grid = xr.load_dataarray(grid)
         except ValueError:
-            print('getting grid info didnt work')
+            print("getting grid info didnt work")
             pass
             # grid = xr.open_rasterio(grid)
             # grid = rioxarray.open_rasterio(grid)
@@ -1110,10 +1109,11 @@ def get_min_max(
 
     return (v_min, v_max)
 
-def shapes_to_df(shapes : list):
+
+def shapes_to_df(shapes: list):
     """
-    convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe of x 
-    and y points
+    convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe
+    of x and y points
 
     Parameters
     ----------
@@ -1127,19 +1127,20 @@ def shapes_to_df(shapes : list):
     """
 
     df = pd.DataFrame()
-    for i,j in enumerate(shapes):
+    for i, j in enumerate(shapes):
         lon = [coord[0] for coord in j]
         lat = [coord[1] for coord in j]
-        shape = pd.DataFrame({'lon':lon,'lat':lat, 'shape_num':i})
+        shape = pd.DataFrame({"lon": lon, "lat": lat, "shape_num": i})
         df = pd.concat((df, shape))
 
     df_xy = latlon_to_epsg3031(df)
 
     return df_xy
 
+
 def polygon_to_region(polygon: list):
     """
-    convert the output of `regions.draw_region` to bounding region in EPSG:3031 
+    convert the output of `regions.draw_region` to bounding region in EPSG:3031
 
     Parameters
     ----------
@@ -1155,8 +1156,8 @@ def polygon_to_region(polygon: list):
     df = shapes_to_df(polygon)
 
     if df.shape_num.max() > 0:
-        print('supplied dataframe has multiple polygons, only using the first one.')
-        df = df[df.shape_num==0]
+        print("supplied dataframe has multiple polygons, only using the first one.")
+        df = df[df.shape_num == 0]
 
     region = vd.get_region((df.x, df.y))
 
