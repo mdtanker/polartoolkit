@@ -341,6 +341,10 @@ def plot_profile(
         Change vertical white space within cross-section, by default is 0.1.
     data_buffer: float (0-1)
         Change vertical white space within data graph, by default is 0.1.
+    legend_loc: str
+        Change the legend location with a GMT position string, by default is 
+        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
+        Right corner of the plot, with 0 offset. 
     inset : bool
         choose to plot inset map showing figure location, by default is True
     inset_pos : str
@@ -549,7 +553,7 @@ def plot_profile(
                     pen=f"2p,{v['color']}",
                     label=v["name"],
                 )
-            fig.legend(position="JBR+jBL+o0c", box=True)
+            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
             fig.shift_origin(yshift="h+.5c")
             fig.basemap(region=fig_reg, projection="X9c/6c", frame=True)
         except Exception:

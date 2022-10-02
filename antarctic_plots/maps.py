@@ -117,7 +117,7 @@ def plot_grd(
             print("grid region can't be extracted, using antarctic region.")
             plot_region = regions.antarctica
 
-    print(f"plot region is: {plot_region}")
+    # print(f"plot region is: {plot_region}")
 
     cmap_region = kwargs.get("cmap_region", plot_region)
     show_region = kwargs.get("show_region", None)
