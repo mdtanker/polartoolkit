@@ -461,6 +461,8 @@ def grd_trend(
     coords: list = ["x", "y", "z"],
     deg: int = 1,
     plot_all: bool = False,
+    plot_type = 'pygmt',
+    **kwargs
 ):
     """
     Fit an arbitrary order trend to a grid and use it to detrend.
@@ -475,7 +477,8 @@ def grd_trend(
         trend order to use, by default 1
     plot_all : bool, optional
         plot the results, by default False
-
+    plot_type : str, by default "pygmt"
+        choose to plot results with pygmt or xarray
     Returns
     -------
     tuple
@@ -508,38 +511,84 @@ def grd_trend(
     )
 
     if plot_all is True:
-        fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
-        da.plot(
-            ax=ax[0],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={
-                "orientation": "horizontal",
-                "anchor": (1, 1.8),
-                "label": "test",
-            },
-        )
-        ax[0].set_title("Input grid")
-        fit.plot(
-            ax=ax[1],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-        )
-        ax[1].set_title(f"Trend order {deg}")
-        detrend.plot(
-            ax=ax[2],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-        )
-        ax[2].set_title("Detrended")
-        for a in ax:
-            a.set_xticklabels([])
-            a.set_yticklabels([])
-            a.set_xlabel("")
-            a.set_ylabel("")
-            a.set_aspect("equal")
+        if plot_type == 'xarray':
+            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+            da.plot(
+                ax=ax[0],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1.8),
+                    "label": "test",
+                },
+            )
+            ax[0].set_title("Input grid")
+            fit.plot(
+                ax=ax[1],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            ax[1].set_title(f"Trend order {deg}")
+            detrend.plot(
+                ax=ax[2],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            ax[2].set_title("Detrended")
+            for a in ax:
+                a.set_xticklabels([])
+                a.set_yticklabels([])
+                a.set_xlabel("")
+                a.set_ylabel("")
+                a.set_aspect("equal")
+
+        elif plot_type == 'pygmt':
+            fig_height = kwargs.get('fig_height', 10)
+            cmap = kwargs.get('cmap','plasma')
+            coast= kwargs.get('coast', True)
+            inset_pos = kwargs.get('inset_pos', 'BL')
+            origin_shift = kwargs.get('origin_shift', 'yshift')
+            fit_label = kwargs.get('fit_label', f"fitted trend (order {deg})")
+            input_label = kwargs.get('input_label', 'input grid')
+            title = kwargs.get('title', "Detrending a grid")
+            detrended_label = kwargs.get('detrended_label', 'detrended')
+
+            fig = maps.plot_grd(
+                detrend,
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=detrended_label)
+
+            fig = maps.plot_grd(
+                fit, 
+                fig=fig,  
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=fit_label,  
+                inset=True, 
+                inset_pos=inset_pos,
+                origin_shift=origin_shift)
+
+            fig = maps.plot_grd(
+                da, 
+                fig=fig, 
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=input_label,
+                title=title,
+                origin_shift=origin_shift)
+                
+            fig.show()
+
     return fit, detrend
 
 
