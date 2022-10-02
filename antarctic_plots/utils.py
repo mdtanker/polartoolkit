@@ -546,9 +546,10 @@ def grd_trend(
                 a.set_aspect("equal")
 
         elif plot_type == 'pygmt':
-            fig_height = kwargs.get('fig_height', 10)
+            fig_height = kwargs.get('fig_height', None)
             cmap = kwargs.get('cmap','plasma')
             coast= kwargs.get('coast', True)
+            inset = kwargs.get('inset', True)
             inset_pos = kwargs.get('inset_pos', 'BL')
             origin_shift = kwargs.get('origin_shift', 'yshift')
             fit_label = kwargs.get('fit_label', f"fitted trend (order {deg})")
@@ -572,7 +573,7 @@ def grd_trend(
                 grd2cpt=True, 
                 coast=coast,
                 cbar_label=fit_label,  
-                inset=True, 
+                inset=inset, 
                 inset_pos=inset_pos,
                 origin_shift=origin_shift)
 
@@ -586,7 +587,7 @@ def grd_trend(
                 cbar_label=input_label,
                 title=title,
                 origin_shift=origin_shift)
-                
+
             fig.show()
 
     return fit, detrend
@@ -699,7 +700,7 @@ def grd_compare(
     # get individual grid min/max values (and masked values if shapefile is provided)
     grid1_cpt_lims = get_min_max(grid1, shp_mask)
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
-    diff_maxabs = vd.maxabs(dif) #get_min_max(dif, shp_mask)
+    diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -707,34 +708,49 @@ def grd_compare(
 
     if plot is True:
         if plot_type == "pygmt":
+            cmap = kwargs.get('cmap','viridis')
+            fig_height = kwargs.get('fig_height', 10)
+            coast = kwargs.get('coast', True)
+            origin_shift = kwargs.get('origin_shift', 'xshift')
+
             fig = maps.plot_grd(
                 grid1,
-                cmap="viridis",
+                cmap=cmap,
                 plot_region=region,
                 coast=True,
                 cbar_label=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
-            )
-            fig = maps.plot_grd(
-                grid2,
-                cmap="viridis",
-                plot_region=region,
-                coast=True,
-                cbar_label=kwargs.get("grid2_name", "grid 2"),
-                cpt_lims=(vmin, vmax),
-                origin_shift="xshift",
-                fig=fig,
+                fig_height=fig_height,
+                # **kwargs,
             )
             fig = maps.plot_grd(
                 dif,
                 cmap="polar",
                 plot_region=region,
-                coast=True,
+                coast=coast,
+                origin_shift=origin_shift,
                 cbar_label="difference",
                 cpt_lims=(-diff_maxabs, diff_maxabs),
-                origin_shift="xshift",
                 fig=fig,
+                title=kwargs.get('title', "Comparing Grids"),
+                inset=kwargs.get('inset', True),
+                inset_pos = kwargs.get('inset_pos', 'TL'),
+                fig_height=fig_height,
+                # **kwargs,
             )
+            fig = maps.plot_grd(
+                grid2, 
+                cmap=cmap,
+                plot_region=region,
+                coast=coast,
+                origin_shift=origin_shift,
+                fig=fig,
+                cbar_label=kwargs.get("grid2_name", "grid 2"),
+                cpt_lims=(vmin, vmax),
+                fig_height=fig_height,
+                # **kwargs,
+            )
+            
             fig.show()
 
         elif plot_type == "xarray":
