@@ -227,19 +227,30 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
     return data_dict
 
 
-def default_layers() -> dict:
+def default_layers(version) -> dict:
     """
     Fetch default Bedmachine layers.
+
+    Parameters
+    ----------
+    version : str
+        choose between 'bedmap2' and 'bedmachine' layers
 
     Returns
     -------
     dict[dict]
         Nested dictionary of Bedmachine layers and attributes
     """
-    surface = fetch.bedmachine("surface")
-    # icebase = fetch.bedmachine("surface") - fetch.bedmachine("thickness")
-    icebase = fetch.bedmachine("icebase")
-    bed = fetch.bedmachine("bed")
+    if version == 'bedmap2':
+        surface = fetch.bedmap2("surface")
+        icebase = fetch.bedmap2("icebase")
+        bed = fetch.bedmap2("bed")
+
+    elif version == 'bedmachine':
+        surface = fetch.bedmachine("surface")
+        icebase = fetch.bedmachine("icebase")
+        bed = fetch.bedmachine("bed")
+
     layer_names = [
         "surface",
         "icebase",
@@ -301,6 +312,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
+    layers_version='bedmap2',
     **kwargs,
 ):
     """
@@ -318,6 +330,8 @@ def plot_profile(
         `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
+    layers_version : str, optional
+        choose between using 'bedmap2' or 'bedmachine' layers, by default is 'bedmap2'
 
     Keyword Args
     ------------
@@ -362,7 +376,7 @@ def plot_profile(
     data_region = vd.get_region((points.x, points.y))
 
     if layers_dict is None:
-        layers_dict = default_layers()
+        layers_dict = default_layers(layers_version)
 
     if data_dict == "default":
         data_dict = default_data(data_region)

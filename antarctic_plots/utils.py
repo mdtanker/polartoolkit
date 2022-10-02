@@ -479,6 +479,7 @@ def grd_trend(
         plot the results, by default False
     plot_type : str, by default "pygmt"
         choose to plot results with pygmt or xarray
+    
     Returns
     -------
     tuple
