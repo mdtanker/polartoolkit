@@ -514,8 +514,11 @@ def plot_profile(
                     ],
                     pen="1p,black",
                 )
-        # shift figure to the right to make space for x-section and profiles
-        fig.shift_origin(xshift=(fig_width) + 1)
+        # shift figure to make space for x-section and profiles
+        if kwargs.get("subplot_orientation", None) == 'vertical':
+            fig.shift_origin(yshift=(fig_height) + 1)
+        else:
+            fig.shift_origin(xshift=(fig_width) + 1)
 
     # PLOT CROSS SECTION AND PROFILES
     # add space above and below top and bottom of cross-section
