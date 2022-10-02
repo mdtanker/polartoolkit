@@ -650,7 +650,7 @@ def grd_compare(
     # get individual grid min/max values (and masked values if shapefile is provided)
     grid1_cpt_lims = get_min_max(grid1, shp_mask)
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
-    diff_cpt_lims = get_min_max(dif, shp_mask)
+    diff_maxabs = vd.maxabs(dif) #get_min_max(dif, shp_mask)
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -661,7 +661,7 @@ def grd_compare(
             fig = maps.plot_grd(
                 grid1,
                 cmap="viridis",
-                plot_regin=region,
+                plot_region=region,
                 coast=True,
                 cbar_label=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
@@ -669,7 +669,7 @@ def grd_compare(
             fig = maps.plot_grd(
                 grid2,
                 cmap="viridis",
-                plot_regin=region,
+                plot_region=region,
                 coast=True,
                 cbar_label=kwargs.get("grid2_name", "grid 2"),
                 cpt_lims=(vmin, vmax),
@@ -679,10 +679,10 @@ def grd_compare(
             fig = maps.plot_grd(
                 dif,
                 cmap="polar",
-                plot_regin=region,
+                plot_region=region,
                 coast=True,
                 cbar_label="difference",
-                cpt_lims=diff_cpt_lims,
+                cpt_lims=(-diff_maxabs, diff_maxabs),
                 origin_shift="xshift",
                 fig=fig,
             )
@@ -711,8 +711,8 @@ def grd_compare(
             )
             dif.plot(
                 ax=ax[2],
-                vmin=diff_cpt_lims[0],
-                vmax=diff_cpt_lims[1],
+                vmin=-diff_maxabs,
+                vmax=diff_maxabs,
                 robust=True,
                 cmap="RdBu_r",
                 cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
