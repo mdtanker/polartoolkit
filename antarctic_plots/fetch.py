@@ -821,7 +821,9 @@ def geothermal(
     From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
     Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-
+    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
+    generate a direct download link from google drive page.
+    https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
     Parameters
     ----------
     version : str
@@ -919,8 +921,43 @@ def geothermal(
 
         resampled = grid * 1000
 
+    elif version == "shen-2020":
+        path = pooch.retrieve(
+            url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",  # noqa
+            known_hash=None,
+            progressbar=True,
+        )
+        df = pd.read_csv(
+            path, 
+            delim_whitespace=True, 
+            header=None, 
+            names=["lon", "lat", "GHF"],
+        )
+        
+        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+
+        resampled = df
+        if region is None:
+            region = regions.antarctica
+        if spacing is None:
+            spacing = 10e3
+
+        df = pygmt.blockmedian(
+            df[["x", "y", "GHF"]],
+            spacing=spacing,
+            region=region,
+        )
+        resampled = pygmt.surface(
+            data=df[["x", "y", "GHF"]],
+            spacing=spacing,
+            region=region,
+            M='0c'
+        )
+    
     else:
-        print("invalid version string")
+        print("invalid GHF version string")
+
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
