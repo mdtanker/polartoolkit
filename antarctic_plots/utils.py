@@ -622,18 +622,33 @@ def grd_compare(
         shapefile filename to use to mask the grids for setting the color range.
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
+    region : Union[str, np.ndarray]
+        choose a specific region to compare.
     Returns
     -------
     xr.DataArray
         the result of da1 - da2
     """
     shp_mask = kwargs.get("shp_mask", None)
+    region = kwargs.get("region", None)
 
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
     if isinstance(da2, str):
         da2 = xr.load_dataarray(da2)
+
+    if region is not None:
+        da1 = pygmt.grdcut(
+            da1,
+            region=region,
+            verbose="e",
+        )
+        da2 = pygmt.grdcut(
+            da2,
+            region=region,
+            verbose="e",
+        )
 
     da1_spacing = get_grid_info(da1)[0]
     da2_spacing = get_grid_info(da2)[0]
