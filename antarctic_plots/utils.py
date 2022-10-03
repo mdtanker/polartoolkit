@@ -460,7 +460,7 @@ def grd_trend(
     da: xr.DataArray,
     coords: list = ["x", "y", "z"],
     deg: int = 1,
-    plot_all: bool = False,
+    plot: bool = False,
     plot_type = 'pygmt',
     **kwargs
 ):
@@ -475,7 +475,7 @@ def grd_trend(
         coordinate names of the supplied grid, by default ['x', 'y', 'z']
     deg : int, optional
         trend order to use, by default 1
-    plot_all : bool, optional
+    plot : bool, optional
         plot the results, by default False
     plot_type : str, by default "pygmt"
         choose to plot results with pygmt or xarray
@@ -511,7 +511,7 @@ def grd_trend(
         registration=registration,
     )
 
-    if plot_all is True:
+    if plot is True:
         if plot_type == 'xarray':
             fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
             da.plot(
