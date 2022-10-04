@@ -971,6 +971,33 @@ def gia(
     region=None,
     spacing: int = None,
 ) -> xr.DataArray:
+    """
+    Load 1 of x 'versions' of Antarctic glacial isostatic adjustment grids.
+    version='stal-et-al-2020'
+    From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a 
+    flexible 3D model and framework for interdisciplinary research, 
+    https://doi.org/10.5194/tc-14-3843-2020
+    Accessed from https://doi.org/10.5281/zenodo.4003423
+    
+    Parameters
+    ----------
+    version : str
+        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : int, optional
+       grid spacing to resample the loaded grid to, by default spacing is read from
+       downloaded files
+
+    Returns
+    -------
+    xr.DataArray
+         Returns a loaded, and optional clip/resampled grid of GIA data.
+    """
 
     if version == "stal-et-al-2020":
             path = pooch.retrieve(
