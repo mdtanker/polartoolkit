@@ -963,3 +963,32 @@ def geothermal(
     if info is True:
         print(pygmt.grdinfo(resampled))
     return resampled
+
+def gia(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing: int = None,
+) -> xr.DataArray:
+
+    if version == "stal-et-al-2020":
+            path = pooch.retrieve(
+                url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
+                known_hash=None,
+                progressbar=True,
+            )
+            file = xr.load_dataarray(path).squeeze()
+
+            # found from utils.get_grid_info(file)
+            initial_spacing = 10e3
+            initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+
+            resampled = resample_grid(file, initial_spacing, initial_region, spacing, region)
+    
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
