@@ -876,6 +876,7 @@ def magnetics(
         )
         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
         df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+        
         df = pygmt.blockmedian(
             df[["x", "y", "eq_source"]], spacing=spacing, region=region, verbose="q"
         )
@@ -1118,7 +1119,8 @@ def gia(
     spacing: int = None,
 ) -> xr.DataArray:
     """
-    Load 1 of x 'versions' of Antarctic glacial isostatic adjustment grids.
+    Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
+    
     version='stal-et-al-2020'
     From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a 
     flexible 3D model and framework for interdisciplinary research, 
@@ -1128,7 +1130,7 @@ def gia(
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
+        For now the only option is 'stal-et-al-2020',
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1158,6 +1160,117 @@ def gia(
         initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
 
         resampled = resample_grid(file, initial_spacing, initial_region, spacing, region)
+    
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+def crustal_thickness(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing: int = None,
+) -> xr.DataArray:
+    """
+    Load 1 of x 'versions' of Antarctic crustal thickness grids.
+    
+    version='shen-2018'
+    Crustal thickness (excluding ice layer) from Shen et al. 2018: The crust and upper 
+    mantle structure of central and West Antarctica from Bayesian inversion of Rayleigh 
+    wave and receiver functions. https://doi.org/10.1029/2017JB015346
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+
+    http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw
+    
+    Parameters
+    ----------
+    version : str
+        Either 'lamb-2020', 'shen-2018', 'an-2015', 'baranov', 'chaput', 'crust1', 
+        'szwillus', 'llubes', 'pappa', 'stal'
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : int, optional
+       grid spacing to resample the loaded grid to, by default spacing is read from
+       downloaded files
+
+    Returns
+    -------
+    xr.DataArray
+         Returns a loaded, and optional clip/resampled grid of crustal thickness.
+    """
+
+    if version == 'shen-2018':
+        def preprocessing(fname, action, pooch):
+                "Load the .nc file, preprocess, and save it back"
+                fname = Path(fname)
+                # Rename to the file to ***_preprocessed.nc
+                fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+                fname_processed = fname_pre.with_suffix('.nc')
+
+                # Only recalculate if new download or the processed file doesn't exist yet
+                if action in ("download", "update") or not fname_processed.exists():
+                    # load data
+                    df = pd.read_csv(
+                        fname, 
+                        delim_whitespace=True, 
+                        header=None, 
+                        names=["lon", "lat", "thickness"],
+                    )
+                    # convert to meters
+                    df.thickness = df.thickness*1000
+
+                    # reproject to polar stereographic
+                    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                    df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+
+                    # block-median and grid the data
+                    df = pygmt.blockmedian(
+                        df[["x", "y", "thickness"]], 
+                        spacing=20e3, 
+                        region=regions.antarctica, 
+                    )
+                    processed = pygmt.surface(
+                        data=df[["x", "y", "thickness"]],
+                        spacing=20e3,
+                        region=regions.antarctica,
+                        M="1c",
+                        # verbose="q",
+                    )
+                    # Save to disk
+                    processed.to_netcdf(fname_processed)
+                return str(fname_processed)
+
+        # assigning region and spacing values if not set
+        if region is None:
+            region = regions.antarctica
+        if spacing is None:
+            spacing = 20e3
+
+        path = pooch.retrieve(
+                url="https://weisen.wustl.edu/For_Comrades/for_self/moho.WCANT.dat",
+                known_hash=None,
+                progressbar=True,
+                processor=preprocessing,
+            )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid, 
+            initial_spacing=20e3, 
+            initial_region=regions.antarctica, 
+            spacing=spacing, 
+            region=region,
+            )
+    
     
     if plot is True:
         resampled.plot(robust=True)
