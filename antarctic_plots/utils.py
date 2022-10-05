@@ -365,6 +365,7 @@ def mask_from_shp(
         output = masked_grd
     elif masked is False:
         output = mask_grd
+
     return output
 
 
@@ -398,7 +399,7 @@ def alter_region(
     Returns
     -------
     list
-        Returns of list of the following variables (region, buffer_region, proj)
+        Returns of list of the following variables: region, buffer_region
     """
     E, W = starting_region[0], starting_region[1]
     N, S = starting_region[2], starting_region[3]
@@ -805,7 +806,7 @@ def grd_compare(
                 a.set_ylabel("")
                 a.set_aspect("equal")
 
-    return dif, grid1, grid2
+    return (dif, grid1, grid2)
 
 
 def make_grid(
@@ -937,7 +938,7 @@ def raps(
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
-            ax = sns.lineplot(raps.wavelength, raps.power, label=j, palette="viridis")
+            ax = sns.lineplot((raps.wavelength, raps.power), label=j, palette="viridis")
             ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
