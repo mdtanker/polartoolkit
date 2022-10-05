@@ -17,57 +17,90 @@ import requests
 import xarray as xr
 from pyproj import Transformer
 
-from antarctic_plots import regions
+from antarctic_plots import regions, utils
 
 
 def resample_grid(
     grid,
-    initial_spacing,
-    initial_region,
+    initial_spacing=None,
+    initial_region=None,
+    initial_registration=None,
     spacing=None,
     region=None,
+    registration=None,
+    **kwargs,
 ):
+    # if initial values not given, extract from supplied grid
+    if initial_spacing is None:
+        initial_spacing = float(utils.get_grid_info(grid)[0])
+    if initial_region is None:
+        initial_region = utils.get_grid_info(grid)[1]
+    if initial_registration is None:
+        initial_registration = utils.get_grid_info(grid)[4]
 
+    # if new values not gived, set equal to initial values
     if spacing is None:
         spacing = initial_spacing
     if region is None:
         region = initial_region
+    if registration is None:
+        registration = initial_registration
 
-    if (spacing == initial_spacing) and (region == initial_region):
-        # print('spacing and region same as original, no processing')
+    # don't allow regions bigger than original region
+    # if region > initial_region:
+    #     print("requested region is larger than the original, returning the original ",
+    #         f" region:{initial_region}.")
+    #     region=initial_region
+
+    # if all specs are same as orginal, return orginal
+    rules = [   spacing == initial_spacing,
+                region == initial_region, 
+                registration == initial_registration]
+    if all(rules):
+        print('returning original grid')
         resampled = grid
 
-    elif (spacing == initial_spacing) and (region != initial_region):
-        # print('spacing same as original, extracting new region')
-        resampled = pygmt.grdcut(
-            grid=grid,
-            region=region,
-            # extend=True,
-            # verbose="q",
-        )
-
+    # if spacing is smaller, return resampled 
     elif spacing < initial_spacing:
-        # print('spacing smaller than original, resampling')
+        print(f"Warning, requested spacing ({spacing}) is smaller than the original ",
+            f"({initial_spacing}).")
         resampled = pygmt.grdsample(
-            grid=grid, spacing=spacing, region=region, verbose="q"
+            grid=grid, 
+            region=region,
+            spacing=f"{spacing}+e", 
+            registration=registration,
         )
 
+    # if spacing is larger, return filtered / resampled 
     elif spacing > initial_spacing:
-        # print('spacing larger than original, filtering and resampling')
+        print('spacing larger than original, filtering and resampling')
         filtered = pygmt.grdfilter(
             grid=grid,
             filter=f"g{spacing}",
-            spacing=spacing,
-            # region=region,
-            distance="0",
-            nans="r",
-            # verbose="q",
+            distance=kwargs.get('distance',"0"),
+            # nans=kwargs.get('nans',"r"),
         )
+        resampled = pygmt.grdsample(
+            grid=filtered,
+            region=pygmt.grdinfo(filtered, spacing=f"{spacing}r")[2:-1],
+            spacing=spacing,
+            registration=registration,
+        )
+
+    # if only region is different, return subregion
+    elif (spacing == initial_spacing) and (region != initial_region) and (registration == initial_registration): # noqa
+        print('returning subregion')
         resampled = pygmt.grdcut(
-            grid=filtered,  # sampled,
+            grid=grid,
             region=region,
-            extend=True
-            # verbose="q",
+        )
+
+    else:
+        print('returning grid with new region and registration')
+        resampled = pygmt.grdsample(
+            grid=grid,
+            region=region,
+            registration=registration,
         )
 
     return resampled
@@ -394,11 +427,6 @@ def bedmachine(
         known_hash=None,
         progressbar=True,
     )
-    # path = pooch.retrieve(
-    #     url="https://storage.googleapis.com/ldeo-glaciology/bedmachine/BedMachineAntarctica_2019-11-05_v01.nc",  # noqa
-    #     known_hash=None,
-    #     progressbar=True,
-    # )
 
     if layer == "icebase":
         surface = pygmt.grdfilter(
@@ -461,7 +489,8 @@ def bedmap2(
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing=10e3,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
@@ -492,8 +521,18 @@ def bedmap2(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
+    # found with utils.get_grid_info()
+    initial_region=[-3333500, 3333500, -3332500, 3332500]
+    initial_spacing=1e3
+    initial_registration='p'
+
     if region is None:
-        region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
         known_hash=None,
@@ -502,69 +541,48 @@ def bedmap2(
     )
 
     if layer == "icebase":
-        surface_file = [p for p in path if p.endswith("surface.tif")][0]
-        # fill nans with 0 for surface
-        surface = pygmt.grdfilter(
-            grid=surface_file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        thickness_file = [p for p in path if p.endswith("thickness.tif")][0]
-        thickness = pygmt.grdfilter(
-            grid=thickness_file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        grd = surface - thickness
+        fname = [p for p in path if p.endswith("surface.tif")][0]
+        grid = xr.load_dataarray(fname)
+        surface = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+
+        fname = [p for p in path if p.endswith("thickness.tif")][0]
+        grid = xr.load_dataarray(fname)
+        thickness = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+
+        resampled = surface - thickness
 
     else:
-        file = [p for p in path if p.endswith(f"{layer}.tif")][0]
-        # grd = xr.load_dataarray(file)
-        # grd = rioxarray.open_rasterio(file)
-        # grd = grd.squeeze()
-        grd = pygmt.grdfilter(
-            grid=file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
+        fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
+        grid = xr.load_dataarray(fname).squeeze()
+        resampled = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
     if reference == "ellipsoid" and layer != "thickness":
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-        geoid = pygmt.grdfilter(
-            grid=geoid_file,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        grd = grd + geoid
+        geoid = xr.load_dataarray(geoid_file)
+        resampled_geoid = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
-    if layer == "surface" or "thickness":
-        grd = grd.fillna(0)
+        final_grid = resampled + resampled_geoid
+    else:
+        final_grid = resampled
+
+    # replace nans with 0 for surface of thickness
+    if layer == "surface" or layer =="thickness":
+        final_grid = final_grid.fillna(0)
 
     if plot is True:
-        grd.plot(robust=True)
+        final_grid.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
-    return grd
+        print(pygmt.grdinfo(final_grid))
+
+    return final_grid
 
 
 def deepbedmap(
@@ -677,9 +695,9 @@ def gravity(
             progressbar=True,
         )
 
-        if anomaly_type is 'FA':
+        if anomaly_type == 'FA':
             anomaly_type = 'free_air_anomaly'
-        elif anomaly_type is 'BA':
+        elif anomaly_type == 'BA':
             anomaly_type = 'bouguer_anomaly'
         else:
             print("invalid anomaly type")
@@ -1184,8 +1202,6 @@ def crustal_thickness(
     wave and receiver functions. https://doi.org/10.1029/2017JB015346
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
 
-    http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw
-    
     Parameters
     ----------
     version : str
