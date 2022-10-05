@@ -624,7 +624,14 @@ def gravity(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Loads 1 of x 'versions' of Antarctic gravity grids.
+    Loads 1 of 3 'versions' of Antarctic gravity grids.
+
+    version='antgg'
+    Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne 
+    data, from Scheinert et al. 2016: New Antarctic gravity anomaly grid for enhanced 
+    geodetic and geophysical studies in Antarctica. 
+    DOI: https://doi.org/10.1002/2015GL067439
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.848168
 
     version='antgg-update'
     Preliminary compilation of Antarctica gravity and gravity gradient data.
@@ -634,7 +641,7 @@ def gravity(
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric height.
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
-    accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa
 
     Parameters
     ----------
@@ -663,7 +670,36 @@ def gravity(
     """
     anomaly_type = kwargs.get('anomaly_type', None)
 
-    if version == 'antgg-update':
+    if version == 'antgg':
+        path = pooch.retrieve(
+            url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        if anomaly_type is 'FA':
+            anomaly_type = 'free_air_anomaly'
+        elif anomaly_type is 'BA':
+            anomaly_type = 'bouguer_anomaly'
+        else:
+            print("invalid anomaly type")
+
+        file = xr.load_dataset(path)[anomaly_type]
+        
+        # convert coordinates from km to m
+        file_meters = file.copy()
+        file_meters['x']=file.x*1000
+        file_meters['y']=file.y*1000
+
+        resampled = resample_grid(
+            file_meters, 
+            initial_spacing=10e3, 
+            initial_region=[-3330e3, 3330e3, -3330e3, 3330e3], 
+            spacing=spacing, 
+            region=region,
+            )
+
+    elif version == 'antgg-update':
         # download and unzip the file
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
@@ -875,19 +911,23 @@ def geothermal(
 ) -> xr.DataArray:
     """
     Load 1 of 3 'versions' of Antarctic geothermal heat flux grids.
+    
     version='burton-johnson-2020'
     From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
     current and future directions, https://doi.org/10.5194/tc-14-3843-2020
     Accessed from supplementary material
+    
     version='losing-ebbing-2021'
     From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
     Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6),
     https://doi.org/10.1029/2020JB021499
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
+    
     version='aq1'
     From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
     https://doi.org/10.1029/2020GC009428
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
+    
     verion='shen-2020':
     From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
     Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
@@ -895,6 +935,7 @@ def geothermal(
     Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
     generate a direct download link from google drive page.
     https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
+    
     Parameters
     ----------
     version : str
