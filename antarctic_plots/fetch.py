@@ -621,9 +621,11 @@ def gravity(
     info: bool = False,
     region=None,
     spacing=None,
+    **kwargs,
 ) -> xr.DataArray:
     """
     Loads 1 of x 'versions' of Antarctic gravity grids.
+
     version='antgg-update'
     Preliminary compilation of Antarctica gravity and gravity gradient data.
     Updates on 2016 AntGG compilation.
@@ -636,8 +638,9 @@ def gravity(
 
     Parameters
     ----------
-    type : str
-        either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+    version : str
+        choose which version of gravity data to fetch.
+    
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -647,43 +650,59 @@ def gravity(
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
 
+    Keyword Args
+    ------------
+    anomaly_type : str
+            either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of either free-air or
         Bouguer gravity anomalies.
     """
+    anomaly_type = kwargs.get('anomaly_type', None)
 
     if version == 'antgg-update':
-        if region is None:
-            region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        # download and unzip the file
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True,
         )
+        # get the .dat file from the unzipped folder
         file = [p for p in path if p.endswith(".dat")][0]
+
         df = pd.read_csv(
             file,
             delim_whitespace=True,
             skiprows=3,
             names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
         )
+
+        # re-project to polar stereographic
         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
         df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+        
+        # assing region and spacing values if not set
+        if region is None:
+            region = regions.antarctica
+        if spacing is None:
+            spacing = 10e3
+
         df = pygmt.blockmedian(
-            df[["x", "y", type]], spacing=spacing, region=region, verbose="q"
+            df[["x", "y", anomaly_type]], spacing=spacing, region=region, verbose="q"
         )
-        grd = pygmt.surface(
-            data=df[["x", "y", type]], spacing=spacing, region=region, M="2c", verbose="q"
+        resampled = pygmt.surface(
+            data=df[["x", "y", anomaly_type]], spacing=spacing, region=region, M="2c", verbose="q"
         )
 
     elif version == 'eigen':
         def preprocessing(fname, action, pooch):
-            "Load the .nc file, preprocessing, and save it back"
+            "Load the .nc file, preprocess, and save it back"
             fname = Path(fname)
-            # Rename to the file to ***_magnitude.nc
+            # Rename to the file to ***_preprocessed.nc
             fname_processed = fname.with_stem(fname.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
