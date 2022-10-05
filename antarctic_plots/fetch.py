@@ -616,17 +616,23 @@ def deepbedmap(
 
 
 def gravity(
-    type: str,
+    version: str,
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing=10e3,
+    spacing=None,
 ) -> xr.DataArray:
     """
-    Loads an Antarctic gravity grid
+    Loads 1 of x 'versions' of Antarctic gravity grids.
+    version='antgg-update'
     Preliminary compilation of Antarctica gravity and gravity gradient data.
     Updates on 2016 AntGG compilation.
     Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
+
+    version='eigen'
+    Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric height.
+    orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
+    accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa
 
     Parameters
     ----------
@@ -648,34 +654,80 @@ def gravity(
         Bouguer gravity anomalies.
     """
 
-    if region is None:
-        region = (-2800e3, 2800e3, -2800e3, 2800e3)
-    path = pooch.retrieve(
-        url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
-        known_hash=None,
-        processor=pooch.Unzip(),
-        progressbar=True,
-    )
-    file = [p for p in path if p.endswith(".dat")][0]
-    df = pd.read_csv(
-        file,
-        delim_whitespace=True,
-        skiprows=3,
-        names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
-    )
-    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-    df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-    df = pygmt.blockmedian(
-        df[["x", "y", type]], spacing=spacing, region=region, verbose="q"
-    )
-    grd = pygmt.surface(
-        data=df[["x", "y", type]], spacing=spacing, region=region, M="2c", verbose="q"
-    )
+    if version == 'antgg-update':
+        if region is None:
+            region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        path = pooch.retrieve(
+            url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
+            known_hash=None,
+            processor=pooch.Unzip(),
+            progressbar=True,
+        )
+        file = [p for p in path if p.endswith(".dat")][0]
+        df = pd.read_csv(
+            file,
+            delim_whitespace=True,
+            skiprows=3,
+            names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
+        )
+        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+        df = pygmt.blockmedian(
+            df[["x", "y", type]], spacing=spacing, region=region, verbose="q"
+        )
+        grd = pygmt.surface(
+            data=df[["x", "y", type]], spacing=spacing, region=region, M="2c", verbose="q"
+        )
+
+    elif version == 'eigen':
+        def preprocessing(fname, action, pooch):
+            "Load the .nc file, preprocessing, and save it back"
+            fname = Path(fname)
+            # Rename to the file to ***_magnitude.nc
+            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load grid
+                grid = xr.load_dataset(fname).gravity
+                
+                # reproject to polar stereographic
+                grid2 = pygmt.grdproject(
+                    grid,
+                    projection='EPSG:3031',
+                    spacing=5e3,
+                )   
+                # get just antarctica region
+                processed = pygmt.grdsample(
+                    grid2,
+                    region=regions.antarctica,
+                    spacing="5000+e",
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+        
+        path = pooch.retrieve(
+            url="doi:10.5281/zenodo.5882207/earth-gravity-10arcmin.nc",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        file = xr.load_dataarray(path)
+        
+        resampled = resample_grid(
+            file, 
+            initial_spacing=5e3, 
+            initial_region=regions.antarctica, 
+            spacing=spacing, 
+            region=region,
+            )
+    
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
-    return grd
+        print(pygmt.grdinfo(resampled))
+    return resampled
 
 
 def magnetics(
@@ -1000,18 +1052,18 @@ def gia(
     """
 
     if version == "stal-et-al-2020":
-            path = pooch.retrieve(
-                url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
-                known_hash=None,
-                progressbar=True,
-            )
-            file = xr.load_dataarray(path).squeeze()
+        path = pooch.retrieve(
+            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
+            known_hash=None,
+            progressbar=True,
+        )
+        file = xr.load_dataarray(path).squeeze()
 
-            # found from utils.get_grid_info(file)
-            initial_spacing = 10e3
-            initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+        # found from utils.get_grid_info(file)
+        initial_spacing = 10e3
+        initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
 
-            resampled = resample_grid(file, initial_spacing, initial_region, spacing, region)
+        resampled = resample_grid(file, initial_spacing, initial_region, spacing, region)
     
     if plot is True:
         resampled.plot(robust=True)
