@@ -910,7 +910,7 @@ def geothermal(
     spacing: int = None,
 ) -> xr.DataArray:
     """
-    Load 1 of 3 'versions' of Antarctic geothermal heat flux grids.
+    Load 1 of 5 'versions' of Antarctic geothermal heat flux grids.
     
     version='burton-johnson-2020'
     From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
@@ -936,6 +936,12 @@ def geothermal(
     generate a direct download link from google drive page.
     https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
     
+    version='an-2015'
+    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
+    beneath the Antarctic Plate inferred from seismic velocities
+    http://dx.doi.org/doi:10.1002/2015JB011917
+    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
+
     Parameters
     ----------
     version : str
@@ -956,7 +962,35 @@ def geothermal(
          Returns a loaded, and optional clip/resampled grid of GHF data.
     """
 
-    if version == "burton-johnson-2020":
+    if version == 'an-2015':
+        path = pooch.retrieve(
+            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
+            processor=pooch.Untar(),
+            known_hash=None,
+            progressbar=True,
+        )[0]
+
+        grid = pygmt.grdproject(
+            path,
+            projection='EPSG:3031',
+            spacing=5e3
+        )
+
+        grid = pygmt.grdsample(
+            grid,
+            region=regions.antarctica,
+            spacing="5000+e",
+        )
+
+        initial_spacing = 5e3
+        initial_region = regions.antarctica
+
+        resampled = resample_grid(
+            grid, initial_spacing, initial_region, spacing, region
+        )
+
+
+    elif version == "burton-johnson-2020":
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
             known_hash=None,
