@@ -408,8 +408,8 @@ def bedmachine(
     Load BedMachine data,  from Morlighem et al. 2020:
     https://doi.org/10.1038/s41561-019-0510-8
 
-    orignally from https://nsidc.org/data/nsidc-0756/versions/1.
-    Added to Google Bucket as described in the following notebook:
+    Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/1.
+    Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
     Parameters
@@ -769,6 +769,7 @@ def gravity(
             path = pooch.Unzip()(fname, action, pooch2)
             fname = [p for p in path if p.endswith(".dat")][0]
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1543,6 +1544,126 @@ def crustal_thickness(
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+    
+    else:
+        raise ValueError('invalid version string')
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+def moho(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+) -> xr.DataArray:
+    """
+    Load 1 of x 'versions' of Antarctic Moho depth grids.
+    
+    version='shen-2018'
+    Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)  
+    from Shen et al. 2018: The crust and upper mantle structure of central and West 
+    Antarctica from Bayesian inversion of Rayleigh wave and receiver functions. 
+    https://doi.org/10.1029/2017JB015346
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+
+    Parameters
+    ----------
+    version : str
+        Either 'shen-2018', 
+        will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1', 
+        'szwillus', 'llubes', 'pappa', 'stal'
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : int, optional
+       grid spacing to resample the loaded grid to, by default spacing is read from
+       downloaded files
+
+    Returns
+    -------
+    xr.DataArray
+         Returns a loaded, and optional clip/resampled grid of crustal thickness.
+    """
+
+    if version == 'shen-2018':
+        # was in lat long, so just using standard values here
+        initial_region=regions.antarctica
+        initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Load the .dat file, grid it, and save it back as a .nc"
+            path = pooch.Untar()(fname, action, pooch2)
+            fname = [p for p in path if p.endswith("moho.final.dat")][0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname, 
+                    delim_whitespace=True, 
+                    header=None, 
+                    names=["lon", "lat", "depth"],
+                )
+                # convert to meters
+                df.depth = df.depth*-1000
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
         )
 
         grid = xr.load_dataarray(path)
