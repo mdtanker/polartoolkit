@@ -1465,7 +1465,8 @@ def crustal_thickness(
     Parameters
     ----------
     version : str
-        Either 'lamb-2020', 'shen-2018', 'an-2015', 'baranov', 'chaput', 'crust1', 
+        Either 'shen-2018', 
+        will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1', 
         'szwillus', 'llubes', 'pappa', 'stal'
     plot : bool, optional
         choose to plot grid, by default False
