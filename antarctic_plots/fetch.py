@@ -803,6 +803,7 @@ def gravity(
                     data=df[["x", "y", anomaly_type]], 
                     spacing=initial_spacing, 
                     region=initial_region, 
+                    registration=initial_registration,
                     M="1c", 
                 )
                 # Save to disk
@@ -1343,6 +1344,7 @@ def geothermal(
                     data=df[["x", "y", "GHF"]],
                     spacing=initial_spacing, 
                     region=initial_region, 
+                    registration=initial_registration,
                     M="1c", 
                 )
                 # Save to disk
@@ -1448,7 +1450,8 @@ def crustal_thickness(
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing: int = None,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     Load 1 of x 'versions' of Antarctic crustal thickness grids.
@@ -1479,73 +1482,76 @@ def crustal_thickness(
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
     """
-
     if version == 'shen-2018':
-        def preprocessing(fname, action, pooch):
-                "Load the .dat file, grid it, and save it back as a .nc"
-                fname = Path(fname)
-                # Rename to the file to ***_preprocessed.nc
-                fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-                fname_processed = fname_pre.with_suffix('.nc')
+        # was in lat long, so just using standard values here
+        initial_region=regions.antarctica
+        initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration='g'
 
-                # Only recalculate if new download or the processed file doesn't exist yet
-                if action in ("download", "update") or not fname_processed.exists():
-                    # load data
-                    df = pd.read_csv(
-                        fname, 
-                        delim_whitespace=True, 
-                        header=None, 
-                        names=["lon", "lat", "thickness"],
-                    )
-                    # convert to meters
-                    df.thickness = df.thickness*1000
-
-                    # reproject to polar stereographic
-                    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                    df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-
-                    # block-median and grid the data
-                    df = pygmt.blockmedian(
-                        df[["x", "y", "thickness"]], 
-                        spacing=20e3, 
-                        region=regions.antarctica, 
-                        registration=initial_registration,
-                    )
-                    processed = pygmt.surface(
-                        data=df[["x", "y", "thickness"]],
-                        spacing=20e3,
-                        region=regions.antarctica,
-                        registration=initial_registration,
-                        M="1c",
-                    )
-                    # Save to disk
-                    processed.to_netcdf(fname_processed)
-                return str(fname_processed)
-
-        # assigning region and spacing values if not set
         if region is None:
-            region = regions.antarctica
+            region = initial_region
         if spacing is None:
-            spacing = 20e3
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Load the .dat file, grid it, and save it back as a .nc"
+            fname = Path(fname)
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname, 
+                    delim_whitespace=True, 
+                    header=None, 
+                    names=["lon", "lat", "thickness"],
+                )
+                # convert to meters
+                df.thickness = df.thickness*1000
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "thickness"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "thickness"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
 
         path = pooch.retrieve(
-                url="https://weisen.wustl.edu/For_Comrades/for_self/moho.WCANT.dat",
-                known_hash=None,
-                progressbar=True,
-                processor=preprocessing,
-            )
+            url="https://weisen.wustl.edu/For_Comrades/for_self/moho.WCANT.dat",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(
-            grid, 
-            initial_spacing=20e3, 
-            initial_region=regions.antarctica, 
-            spacing=spacing, 
-            region=region,
-            )
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
     
-    
+    else:
+        raise ValueError('invalid version string')
+
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
