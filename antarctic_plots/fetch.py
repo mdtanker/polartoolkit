@@ -248,6 +248,9 @@ def ice_vel(
         preprocessing=preprocessing_highres
     elif resolution == 'lowres':
         preprocessing=preprocessing_lowres
+    else:
+        raise ValueError('invalid resolution string')
+
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",  # noqa
@@ -303,6 +306,8 @@ def modis_moa(
             known_hash=None,
             progressbar=True,
         )
+    else:
+        raise ValueError('invalid version string')
 
     return path
 
@@ -381,10 +386,12 @@ def basement(
         progressbar=True,
     )
     grd = xr.load_dataarray(path)
+
     if plot is True:
         grd.plot(robust=True)
     if info is True:
         print(pygmt.grdinfo(grd))
+
     return grd
 
 
@@ -640,15 +647,6 @@ def deepbedmap(
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
-    # grd = pygmt.grdfilter(
-    #     grid=path,
-    #     filter=f"g{spacing}",
-    #     spacing=spacing,
-    #     region=region,
-    #     distance="0",
-    #     nans="r",
-    #     verbose="q",
-    # )
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
@@ -663,6 +661,7 @@ def gravity(
     info: bool = False,
     region=None,
     spacing=None,
+    registration=None,
     **kwargs,
 ) -> xr.DataArray:
     """
@@ -678,7 +677,7 @@ def gravity(
     version='antgg-update'
     Preliminary compilation of Antarctica gravity and gravity gradient data.
     Updates on 2016 AntGG compilation.
-    Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/.
+    Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/
 
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric height.
@@ -713,6 +712,18 @@ def gravity(
     anomaly_type = kwargs.get('anomaly_type', None)
 
     if version == 'antgg':
+        # found with utils.get_grid_info()
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=10e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
         path = pooch.retrieve(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
             known_hash=None,
@@ -724,7 +735,7 @@ def gravity(
         elif anomaly_type == 'BA':
             anomaly_type = 'bouguer_anomaly'
         else:
-            print("invalid anomaly type")
+            raise ValueError('invalid anomaly type')
 
         file = xr.load_dataset(path)[anomaly_type]
         
@@ -733,50 +744,96 @@ def gravity(
         file_meters['x']=file.x*1000
         file_meters['y']=file.y*1000
 
-        resampled = resample_grid(
-            file_meters, 
-            initial_spacing=10e3, 
-            initial_region=[-3330e3, 3330e3, -3330e3, 3330e3], 
-            spacing=spacing, 
-            region=region,
-            )
+        resampled = resample_grid(file_meters,
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
     elif version == 'antgg-update':
-        # download and unzip the file
+        # found in documentation
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=10e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        if anomaly_type not in ('FA', 'BA'):
+            raise ValueError("anomaly_type must be eith 'FA' or 'BA'")
+
+        def preprocessing(fname, action, pooch2):
+            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            path = pooch.retrieve(
+                url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
+                known_hash=None,
+                processor=pooch.Unzip(),
+                progressbar=True,
+            )
+            fname = [p for p in path if p.endswith(".dat")][0]
+
+            fname = Path(fname)
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname,
+                    delim_whitespace=True,
+                    skiprows=3,
+                    names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
+                )
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+                
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", anomaly_type]], 
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", anomaly_type]], 
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
             known_hash=None,
-            processor=pooch.Unzip(),
+            processor=preprocessing,
             progressbar=True,
         )
-        # get the .dat file from the unzipped folder
-        file = [p for p in path if p.endswith(".dat")][0]
 
-        df = pd.read_csv(
-            file,
-            delim_whitespace=True,
-            skiprows=3,
-            names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
-        )
+        grid = xr.load_dataarray(path)
 
-        # re-project to polar stereographic
-        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-        
-        # assing region and spacing values if not set
-        if region is None:
-            region = regions.antarctica
-        if spacing is None:
-            spacing = 10e3
-
-        df = pygmt.blockmedian(
-            df[["x", "y", anomaly_type]], spacing=spacing, region=region, verbose="q"
-        )
-        resampled = pygmt.surface(
-            data=df[["x", "y", anomaly_type]], spacing=spacing, region=region, M="2c", verbose="q"
-        )
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
 
     elif version == 'eigen':
+        
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=5e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
         def preprocessing(fname, action, pooch):
             "Load the .nc file, preprocess, and save it back"
             fname = Path(fname)
@@ -791,13 +848,14 @@ def gravity(
                 grid2 = pygmt.grdproject(
                     grid,
                     projection='EPSG:3031',
-                    spacing=5e3,
+                    spacing=initial_spacing,
                 )   
                 # get just antarctica region
                 processed = pygmt.grdsample(
                     grid2,
-                    region=regions.antarctica,
-                    spacing="5000+e",
+                    region=initial_region,
+                    spacing=initial_spacing,
+                    registration=initial_registration,
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -810,20 +868,20 @@ def gravity(
             processor=preprocessing,
         )
 
-        file = xr.load_dataarray(path)
+        grid= xr.load_dataarray(path)
         
-        resampled = resample_grid(
-            file, 
-            initial_spacing=5e3, 
-            initial_region=regions.antarctica, 
-            spacing=spacing, 
-            region=region,
-            )
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
     
+    else:
+        raise ValueError('invalid version string')
+
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
         print(pygmt.grdinfo(resampled))
+
     return resampled
 
 
@@ -1249,7 +1307,7 @@ def crustal_thickness(
 
     if version == 'shen-2018':
         def preprocessing(fname, action, pooch):
-                "Load the .nc file, preprocess, and save it back"
+                "Load the .dat file, grid it, and save it back as a .nc"
                 fname = Path(fname)
                 # Rename to the file to ***_preprocessed.nc
                 fname_pre = fname.with_stem(fname.stem + "_preprocessed")
