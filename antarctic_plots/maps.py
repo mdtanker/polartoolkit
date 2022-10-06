@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Union
 
 import pygmt
 import pyogrio
-
+import xarray as xr
 from antarctic_plots import fetch, regions, utils
 
 if TYPE_CHECKING:
@@ -526,3 +526,156 @@ def interactive_map(
         display(m)
 
     return m
+
+def plot_3d(
+    grids: list,
+    cmaps: list,
+    exaggeration: list,
+    view: list = [170, 30],
+    vlims: list = [-10000, 1000],
+    plot_region: Union[str or np.ndarray] = None,
+    mask: Union[str or xr.DataArray] = None,
+    colorbar=True,
+    grd2cpt=True,
+    **kwargs,
+):
+    """
+    _summary_
+
+    Parameters
+    ----------
+    grids : list
+        _description_
+    cmaps : list
+        _description_
+    exaggeration : list
+        _description_
+    view : list, optional
+        _description_, by default [170, 30]
+    vlims : list, optional
+        _description_, by default [-10000, 1000]
+    plot_region : Union[str or np.ndarray], optional
+        _description_, by default None
+    mask : Union[str or xr.DataArray], optional
+        _description_, by default None
+    cpt_lims : list, optional
+        _description_, by default None
+    colorbar : bool, optional
+        _description_, by default True
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    fig_height = kwargs.get("fig_height", 15)
+    
+
+    # if plot region not specified, try to pull from grid info
+    if plot_region is None:
+        try:
+            plot_region = utils.get_grid_info(grids[0])[1]
+        except:
+            print("first grids region can't be extracted, using antarctic region.")
+            plot_region = regions.antarctica
+
+    # set figure projection and size from input region
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
+
+    # set vertical limits
+    region = plot_region + vlims
+
+    # initialize the figure
+    fig = pygmt.Figure()
+
+    # iterate through grids and plot them
+    for i, j in enumerate(grids):
+        grid = j
+        # if provided, mask grid with shapefile
+        if mask is not None:
+            grid = utils.mask_from_shp(mask, xr_grid=grid, masked=True, invert=kwargs.get('invert', True))
+            grid.to_netcdf('tmp.nc')
+            grid = xr.load_dataset('tmp.nc')['z']
+        
+        # create colorscales
+        if grd2cpt is True:
+            pygmt.grd2cpt(
+                cmap=cmaps[i],
+                grid=grid,
+                background=True,
+                continuous=True,
+                verbose="e",
+            )
+        else:
+            try:
+                zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+                pygmt.makecpt(
+                    cmap=cmaps[i],
+                    background=True,
+                    continuous=True,
+                    series=(zmin, zmax),
+                )
+            except:
+                print("grid region can't be extracted.")
+                pygmt.makecpt(
+                    cmap=cmaps[i],
+                    background=True,
+                    continuous=True,
+                )
+        
+        # set transparency values
+        transparencies = kwargs.get('transparencies', None)
+        if transparencies is None:
+            transparency = 0
+        else:
+            transparency = transparencies[i]
+    
+        # plot as perspective view
+        fig.grdview(
+            grid=grid,
+            cmap=True,#cmaps[i],
+            projection=proj,
+            region=region,
+            frame=None,
+            perspective=view,
+            zsize=f"{exaggeration[i]}c",
+            surftype="c",
+            transparency=transparency,
+            # plane='-9000+ggrey',
+            # shading=True, #'grdgradient+a45+ne.5+m-.2'
+        )
+
+        # display colorbar
+        if colorbar is True:
+            cbar_xshift=kwargs.get('cbar_xshift', None)
+            cbar_yshift=kwargs.get('cbar_yshift', None)
+
+            if cbar_xshift is None:
+                xshift = 0
+            else: 
+                xshift = cbar_xshift[i]
+
+            if cbar_yshift is None:
+                yshift = fig_height/2
+            else:
+                yshift = cbar_yshift[i]
+
+            fig.shift_origin(yshift=f'{yshift}c', xshift=f'{xshift}c')
+            fig.colorbar(
+                cmap=True,
+                position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
+                frame=f"xaf+l{kwargs.get('cbar_labels',' ')[i]}",
+                perspective=True,
+                box='+gwhite+c3p',
+            )
+            fig.shift_origin(yshift=f'{-yshift}c', xshift=f'{-xshift}c')
+
+        # shift up for next grid   
+        if kwargs.get('zshifts', None) is None:
+            fig.shift_origin(yshift=f"{fig_height/2}c")
+        else: 
+            fig.shift_origin(yshift=f"{kwargs.get('zshifts')[i]}c")
+        
+    return fig
+    
+
