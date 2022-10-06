@@ -1377,12 +1377,13 @@ def gia(
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing: int = None,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
     
-    version='stal-et-al-2020'
+    version='stal-2020'
     From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a 
     flexible 3D model and framework for interdisciplinary research, 
     https://doi.org/10.5194/tc-14-3843-2020
@@ -1391,7 +1392,7 @@ def gia(
     Parameters
     ----------
     version : str
-        For now the only option is 'stal-et-al-2020',
+        For now the only option is 'stal-2020',
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1408,20 +1409,33 @@ def gia(
          Returns a loaded, and optional clip/resampled grid of GIA data.
     """
 
-    if version == "stal-et-al-2020":
+    if version == "stal-2020":
+        # found from utils.get_grid_info(grid)
+        initial_region= [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+        initial_spacing=10e3
+        initial_registration='p'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
             known_hash=None,
             progressbar=True,
         )
-        file = xr.load_dataarray(path).squeeze()
+        grid = xr.load_dataarray(path).squeeze()
 
-        # found from utils.get_grid_info(file)
-        initial_spacing = 10e3
-        initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
-
-        resampled = resample_grid(file, initial_spacing, initial_region, spacing, region)
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
     
+    else:
+        raise ValueError('invalid version string')
+
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
