@@ -1030,14 +1030,30 @@ def geothermal(
     region=None,
     spacing=None,
     registration=None,
+    **kwargs
 ) -> xr.DataArray:
     """
-    Load 1 of 5 'versions' of Antarctic geothermal heat flux grids.
+    Load 1 of 5 'versions' of Antarctic geothermal heat flux data.
     
+    version='an-2015'
+    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
+    beneath the Antarctic Plate inferred from seismic velocities
+    http://dx.doi.org/doi:10.1002/2015JB011917
+    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
+
+    verion='shen-2020':
+    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
+    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
+    generate a direct download link from google drive page.
+    https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
+
     version='burton-johnson-2020'
     From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
     current and future directions, https://doi.org/10.5194/tc-14-3843-2020
     Accessed from supplementary material
+    Choose for either of grid, or the point measurements
     
     version='losing-ebbing-2021'
     From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
@@ -1049,20 +1065,6 @@ def geothermal(
     From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
     https://doi.org/10.1029/2020GC009428
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
-    
-    verion='shen-2020':
-    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
-    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
-    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
-    generate a direct download link from google drive page.
-    https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
-    
-    version='an-2015'
-    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
-    beneath the Antarctic Plate inferred from seismic velocities
-    http://dx.doi.org/doi:10.1002/2015JB011917
-    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
 
     Parameters
     ----------
@@ -1169,14 +1171,32 @@ def geothermal(
         except FileNotFoundError:
             pass
 
-        path = glob.glob(
-            f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+        if kwargs.get('points', False) is True:
+            info = False
+            plot = False
+            # find path to the point data
+            path = glob.glob(
+                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*V003.xlsx")[0]
+            GHF_points = pd.read_excel(path)
 
-        grid = xr.load_dataarray(path).squeeze()
+            # re-project the coordinates to Polar Stereographic
+            transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+            GHF_points['x'], GHF_points['y'] = transformer.transform(GHF_points['(1) Latitude'].tolist(),GHF_points['(2) Longitude'].tolist()) # noqa
+        
+            # rename 
+            GHF_points['GHF'] = GHF_points['(8) GHF (mW/m²)']
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+            resampled = GHF_points
+        
+        elif kwargs.get('points', False) is False:
+            path = glob.glob(
+                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+
+            grid = xr.load_dataarray(path).squeeze()
+
+            resampled = resample_grid(grid, 
+                    initial_spacing, initial_region, initial_registration, 
+                    spacing, region, registration)
 
     elif version == "losing-ebbing-2021":
         # was in lat long, so just using standard values here
@@ -1479,7 +1499,7 @@ def crustal_thickness(
         def preprocessing(fname, action, pooch2):
             "Load the .dat file, grid it, and save it back as a .nc"
             fname = Path(fname)
-            
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
