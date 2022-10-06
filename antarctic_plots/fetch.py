@@ -790,7 +790,7 @@ def gravity(
                 )
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
                 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
@@ -890,18 +890,19 @@ def magnetics(
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing=10e3,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
-    Load 1 of 4 'versions' of Antarctic magnetic anomaly grid.
-    version='admap2'
-    ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
-    provide from Sasha Golynsky.
+    Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
     version='admap1'
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
     https://admap.kongju.ac.kr/databases.html
-    version='admap2_eq_src'
-    ADMAP2 eqivalent sources, from https://admap.kongju.ac.kr/admapdata/
+
+    version='admap2'
+    ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
+    provide from Sasha Golynsky.
+
     version='admap2_gdb'
     Geosoft-specific .gdb abridged files. Accessed from
     https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
@@ -909,7 +910,7 @@ def magnetics(
     Parameters
     ----------
     version : str
-        Either 'admap1', 'admap2_eq_src', or 'admap2_gdb'
+        Either 'admap1', 'admap2', or 'admap2_gdb'
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -924,9 +925,78 @@ def magnetics(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of magnetic anomalies.
     """
-    if region is None:
-        region = (-2800e3, 2800e3, -2800e3, 2800e3)
-    # if version == "admap2":
+
+    if version == "admap1":
+        # was in lat long, so just using standard values here
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=5e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            fname = pooch.retrieve(
+                url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+                known_hash=None,
+                processor=pooch.Unzip(),
+                progressbar=True,
+            )[0]
+            
+            fname = Path(fname)
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname,
+                    delim_whitespace=True,
+                    header=None,
+                    names=["lat", "lon", "nT"],
+                )
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+                
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "nT"]], 
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "nT"]], 
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+  
+    # elif version == "admap2":
     #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
     #     grd = xr.load_dataarray(path)
     #     grd = grd.squeeze()
@@ -939,54 +1009,7 @@ def magnetics(
     #         nans="r",
     #         verbose="q",
     #     )
-    if version == "admap1":
-        path = pooch.retrieve(
-            url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
-            known_hash=None,
-            processor=pooch.Unzip(),
-            progressbar=True,
-        )[0]
-        df = pd.read_csv(
-            path, delim_whitespace=True, header=None, names=["lat", "lon", "nT"]
-        )
-        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-        df = pygmt.blockmedian(
-            df[["x", "y", "nT"]], spacing=spacing, region=region, verbose="q"
-        )
-        grd = pygmt.surface(
-            data=df[["x", "y", "nT"]],
-            spacing=spacing,
-            region=region,
-            M="2c",
-            verbose="q",
-        )
-    elif version == "admap2_eq_src":
-        path = pooch.retrieve(
-            url="https://admap.kongju.ac.kr/admapdata/ADMAP_2S_EPS_20km.zip",
-            known_hash=None,
-            processor=pooch.Unzip(),
-            progressbar=True,
-        )[0]
-        df = pd.read_csv(
-            path,
-            delim_whitespace=True,
-            header=None,
-            names=["lat", "lon", "z", "eq_source"],
-        )
-        transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist())
-        
-        df = pygmt.blockmedian(
-            df[["x", "y", "eq_source"]], spacing=spacing, region=region, verbose="q"
-        )
-        grd = pygmt.surface(
-            data=df[["x", "y", "eq_source"]],
-            spacing=spacing,
-            region=region,
-            M="2c",
-            verbose="q",
-        )
+
     elif version == "admap2_gdb":
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
@@ -994,13 +1017,17 @@ def magnetics(
             processor=pooch.Unzip(),
             progressbar=True,
         )
+    
     else:
-        print("invalid version string")
+        raise ValueError('invalid version string')
+    
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
-    return grd
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
 
 
 def geothermal(
