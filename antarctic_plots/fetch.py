@@ -87,7 +87,6 @@ def resample_grid(
             spacing=spacing,
             registration=registration,
         )
-
     # if only region is different, return subregion
     elif (spacing == initial_spacing) and (region != initial_region) and (registration == initial_registration): # noqa
         print('returning subregion')
@@ -354,7 +353,9 @@ def groundingline() -> str:
     return file
 
 
-def basement(plot: bool = False, info: bool = False) -> xr.DataArray:
+def basement(
+    plot: bool = False, 
+    info: bool = False) -> xr.DataArray:
     """
     Load a grid of basement topography.
     Offshore and sub-Ross Ice Shelf basement topography.
@@ -393,7 +394,8 @@ def bedmachine(
     plot: bool = False,
     info: bool = False,
     region=None,
-    spacing=10e3,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     Load BedMachine data,  from Morlighem et al. 2020:
@@ -427,8 +429,17 @@ def bedmachine(
         Returns a loaded, and optional clip/resampled grid of Bedmachine.
     """
 
+    # found with utils.get_grid_info()
+    initial_region= [-3333000.0, 3333000.0, -3333000.0, 3333000.0]
+    initial_spacing=500
+    initial_registration='g'
+
     if region is None:
-        region = (-2800e3, 2800e3, -2800e3, 2800e3)
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
 
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc",  # noqa
@@ -438,58 +449,40 @@ def bedmachine(
     )
 
     if layer == "icebase":
-        surface = pygmt.grdfilter(
-            grid=f"{path}?surface",
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        thickness = pygmt.grdfilter(
-            grid=f"{path}?thickness",
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        grd = surface - thickness
+        grid = xr.load_dataset(path)['surface']
+        surface = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+
+        grid = xr.load_dataset(path)['thickness']
+        thickness = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+
+        resampled = surface - thickness
 
     else:
-        grd = pygmt.grdfilter(
-            grid=f"{path}?{layer}",
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
+        grid = xr.load_dataset(path)[layer]
+        resampled = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
-    if reference == "ellipsoid":
-        geoid = pygmt.grdfilter(
-            grid=f"{path}?geoid",
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            registration="p",
-            verbose="q",
-        )
-        grd = grd + geoid
+    if reference == "ellipsoid" and layer != "thickness":
+        geoid = xr.load_dataset(path)['geoid']
+        resampled_geoid = resample_grid(geoid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+        
+        final_grid = resampled + resampled_geoid
+    else:
+        final_grid = resampled
 
     if plot is True:
-        grd.plot(robust=True)
+        final_grid.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
-    return grd
+        print(pygmt.grdinfo(final_grid))
+
+    return final_grid
 
 
 def bedmap2(
@@ -595,7 +588,11 @@ def bedmap2(
 
 
 def deepbedmap(
-    plot: bool = False, info: bool = False, region=None, spacing=10e3
+    plot: bool = False, 
+    info: bool = False, 
+    region=None,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     Load DeepBedMap data,  from Leong and Horgan, 2020:
@@ -619,27 +616,45 @@ def deepbedmap(
         Returns a loaded, and optional clip/resampled grid of DeepBedMap.
     """
 
+    # found with utils.get_grid_info()
+    initial_region=[-2700000.0, 2800000.0, -2199750.0, 2299750.0]
+    initial_spacing=250
+    initial_registration='p'
+
     if region is None:
-        region = (-2700e3, 2800e3, -2200e3, 2300e3)
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         known_hash=None,
         progressbar=True,
     )
-    grd = pygmt.grdfilter(
-        grid=path,
-        filter=f"g{spacing}",
-        spacing=spacing,
-        region=region,
-        distance="0",
-        nans="r",
-        verbose="q",
-    )
+
+    grid = xr.load_dataarray(path).squeeze()
+
+    resampled = resample_grid(grid,
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
+
+    # grd = pygmt.grdfilter(
+    #     grid=path,
+    #     filter=f"g{spacing}",
+    #     spacing=spacing,
+    #     region=region,
+    #     distance="0",
+    #     nans="r",
+    #     verbose="q",
+    # )
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
-    return grd
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
 
 
 def gravity(
