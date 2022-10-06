@@ -15,3 +15,5 @@ dist/
 data/ADMAP_2B_2017_R9_BAS_.tif
 
 testing.ipynb
+
+tmp*
