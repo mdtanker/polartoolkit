@@ -77,6 +77,7 @@ def resample_grid(
         filtered = pygmt.grdfilter(
             grid=grid,
             filter=f"g{spacing}",
+            region=region,
             distance=kwargs.get('distance',"0"),
             # nans=kwargs.get('nans',"r"),
         )
@@ -175,8 +176,10 @@ def sample_shp(name: str) -> str:
 def ice_vel(
     plot: bool = False,
     info: bool = False,
+    resolution='highres',
     region=None,
-    spacing=10e3,
+    spacing=None,
+    registration=None,
 ) -> xr.DataArray:
     """
     MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1:
@@ -201,11 +204,24 @@ def ice_vel(
         Returns a calculated grid of ice velocity in meters/year.
     """
 
-    def velocity_calculation(fname, action, pooch):
+    # found with utils.get_grid_info()
+    initial_region= [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
+    initial_spacing=450
+    initial_registration='g'
+    
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
+    # preprocessing for full, 450m resolution
+    def preprocessing_highres(fname, action, pooch):
         "Load the .nc file, calculate velocity magnitude, save it back"
         fname = Path(fname)
-        # Rename to the file to ***_magnitude.nc
-        fname_processed = fname.with_stem(fname.stem + "_magnitude")
+        # Rename to the file to ***_preprocessed.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_highres")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
@@ -214,53 +230,46 @@ def ice_vel(
             processed.to_netcdf(fname_processed)
         return str(fname_processed)
 
+    # preprocessing for filtered 5k resolution
+    def preprocessing_lowres(fname, action, pooch):
+        "Load the .nc file, calculate velocity magnitude, save it back"
+        fname = Path(fname)
+        # Rename to the file to ***_preprocessed.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_lowres")
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            grid = xr.load_dataset(fname)
+            processed = (grid.VX**2 + grid.VY**2) ** 0.5
+            processed_lowres = resample_grid(processed, spacing=5e3)
+            # Save to disk
+            processed_lowres.to_netcdf(fname_processed)
+        return str(fname_processed)
+
+    if resolution == 'highres':
+        preprocessing=preprocessing_highres
+    elif resolution == 'lowres':
+        preprocessing=preprocessing_lowres
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",  # noqa
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
-        processor=velocity_calculation,
+        processor=preprocessing,
     )
 
-    grd = xr.load_dataarray(path)
+    grid = xr.load_dataarray(path)
 
-    # if region not set, use original, determined from utils.get_grid_info(path)
-    if region is None:
-        region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
-
-    if (spacing == 450) and (region == [-2800000.0, 2799800.0, -2799800.0, 2800000.0]):
-        # print('spacing and region same as original, no processing')
-        pass
-
-    elif (spacing == 450) and (
-        region != [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
-    ):
-        # print('spacing same as original, extracting new region ')
-        grd = pygmt.grdcut(grid=grd, region=region, verbose="q")
-
-    elif spacing < 450:
-        # print('spacing smaller than original, resampling')
-        grd = pygmt.grdsample(grid=grd, spacing=spacing, region=region, verbose="q")
-
-    elif spacing > 450:
-        # print('spacing larger than original, filtering and resampling')
-        grd = pygmt.grdfilter(
-            grid=grd,
-            filter=f"g{spacing}",
-            spacing=spacing,
-            region=region,
-            distance="0",
-            nans="r",
-            verbose="q",
-        )
+    resampled = resample_grid(grid, 
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
+        print(pygmt.grdinfo(resampled))
 
-    return grd
+    return resampled
 
 
 def modis_moa(
