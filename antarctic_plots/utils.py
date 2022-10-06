@@ -365,6 +365,7 @@ def mask_from_shp(
         output = masked_grd
     elif masked is False:
         output = mask_grd
+
     return output
 
 
@@ -398,7 +399,7 @@ def alter_region(
     Returns
     -------
     list
-        Returns of list of the following variables (region, buffer_region, proj)
+        Returns of list of the following variables: region, buffer_region
     """
     E, W = starting_region[0], starting_region[1]
     N, S = starting_region[2], starting_region[3]
@@ -460,7 +461,9 @@ def grd_trend(
     da: xr.DataArray,
     coords: list = ["x", "y", "z"],
     deg: int = 1,
-    plot_all: bool = False,
+    plot: bool = False,
+    plot_type = 'pygmt',
+    **kwargs
 ):
     """
     Fit an arbitrary order trend to a grid and use it to detrend.
@@ -473,9 +476,11 @@ def grd_trend(
         coordinate names of the supplied grid, by default ['x', 'y', 'z']
     deg : int, optional
         trend order to use, by default 1
-    plot_all : bool, optional
+    plot : bool, optional
         plot the results, by default False
-
+    plot_type : str, by default "pygmt"
+        choose to plot results with pygmt or xarray
+    
     Returns
     -------
     tuple
@@ -507,39 +512,86 @@ def grd_trend(
         registration=registration,
     )
 
-    if plot_all is True:
-        fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
-        da.plot(
-            ax=ax[0],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={
-                "orientation": "horizontal",
-                "anchor": (1, 1.8),
-                "label": "test",
-            },
-        )
-        ax[0].set_title("Input grid")
-        fit.plot(
-            ax=ax[1],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-        )
-        ax[1].set_title(f"Trend order {deg}")
-        detrend.plot(
-            ax=ax[2],
-            robust=True,
-            cmap="viridis",
-            cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-        )
-        ax[2].set_title("Detrended")
-        for a in ax:
-            a.set_xticklabels([])
-            a.set_yticklabels([])
-            a.set_xlabel("")
-            a.set_ylabel("")
-            a.set_aspect("equal")
+    if plot is True:
+        if plot_type == 'xarray':
+            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+            da.plot(
+                ax=ax[0],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1.8),
+                    "label": "test",
+                },
+            )
+            ax[0].set_title("Input grid")
+            fit.plot(
+                ax=ax[1],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            ax[1].set_title(f"Trend order {deg}")
+            detrend.plot(
+                ax=ax[2],
+                robust=True,
+                cmap="viridis",
+                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+            )
+            ax[2].set_title("Detrended")
+            for a in ax:
+                a.set_xticklabels([])
+                a.set_yticklabels([])
+                a.set_xlabel("")
+                a.set_ylabel("")
+                a.set_aspect("equal")
+
+        elif plot_type == 'pygmt':
+            fig_height = kwargs.get('fig_height', None)
+            cmap = kwargs.get('cmap','plasma')
+            coast= kwargs.get('coast', True)
+            inset = kwargs.get('inset', True)
+            inset_pos = kwargs.get('inset_pos', 'BL')
+            origin_shift = kwargs.get('origin_shift', 'yshift')
+            fit_label = kwargs.get('fit_label', f"fitted trend (order {deg})")
+            input_label = kwargs.get('input_label', 'input grid')
+            title = kwargs.get('title', "Detrending a grid")
+            detrended_label = kwargs.get('detrended_label', 'detrended')
+
+            fig = maps.plot_grd(
+                detrend,
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=detrended_label)
+
+            fig = maps.plot_grd(
+                fit, 
+                fig=fig,  
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=fit_label,  
+                inset=inset, 
+                inset_pos=inset_pos,
+                origin_shift=origin_shift)
+
+            fig = maps.plot_grd(
+                da, 
+                fig=fig, 
+                fig_height=fig_height, 
+                cmap=cmap,
+                grd2cpt=True, 
+                coast=coast,
+                cbar_label=input_label,
+                title=title,
+                origin_shift=origin_shift)
+
+            fig.show()
+
     return fit, detrend
 
 
@@ -571,18 +623,33 @@ def grd_compare(
         shapefile filename to use to mask the grids for setting the color range.
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
+    region : Union[str, np.ndarray]
+        choose a specific region to compare.
     Returns
     -------
     xr.DataArray
         the result of da1 - da2
     """
     shp_mask = kwargs.get("shp_mask", None)
+    region = kwargs.get("region", None)
 
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
     if isinstance(da2, str):
         da2 = xr.load_dataarray(da2)
+
+    if region is not None:
+        da1 = pygmt.grdcut(
+            da1,
+            region=region,
+            verbose="e",
+        )
+        da2 = pygmt.grdcut(
+            da2,
+            region=region,
+            verbose="e",
+        )
 
     da1_spacing = get_grid_info(da1)[0]
     da2_spacing = get_grid_info(da2)[0]
@@ -650,7 +717,7 @@ def grd_compare(
     # get individual grid min/max values (and masked values if shapefile is provided)
     grid1_cpt_lims = get_min_max(grid1, shp_mask)
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
-    diff_cpt_lims = get_min_max(dif, shp_mask)
+    diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -658,34 +725,49 @@ def grd_compare(
 
     if plot is True:
         if plot_type == "pygmt":
+            cmap = kwargs.get('cmap','viridis')
+            fig_height = kwargs.get('fig_height', 10)
+            coast = kwargs.get('coast', True)
+            origin_shift = kwargs.get('origin_shift', 'xshift')
+
             fig = maps.plot_grd(
                 grid1,
-                cmap="viridis",
-                plot_regin=region,
+                cmap=cmap,
+                plot_region=region,
                 coast=True,
                 cbar_label=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
-            )
-            fig = maps.plot_grd(
-                grid2,
-                cmap="viridis",
-                plot_regin=region,
-                coast=True,
-                cbar_label=kwargs.get("grid2_name", "grid 2"),
-                cpt_lims=(vmin, vmax),
-                origin_shift="xshift",
-                fig=fig,
+                fig_height=fig_height,
+                # **kwargs,
             )
             fig = maps.plot_grd(
                 dif,
                 cmap="polar",
-                plot_regin=region,
-                coast=True,
+                plot_region=region,
+                coast=coast,
+                origin_shift=origin_shift,
                 cbar_label="difference",
-                cpt_lims=diff_cpt_lims,
-                origin_shift="xshift",
+                cpt_lims=(-diff_maxabs, diff_maxabs),
                 fig=fig,
+                title=kwargs.get('title', "Comparing Grids"),
+                inset=kwargs.get('inset', True),
+                inset_pos = kwargs.get('inset_pos', 'TL'),
+                fig_height=fig_height,
+                # **kwargs,
             )
+            fig = maps.plot_grd(
+                grid2, 
+                cmap=cmap,
+                plot_region=region,
+                coast=coast,
+                origin_shift=origin_shift,
+                fig=fig,
+                cbar_label=kwargs.get("grid2_name", "grid 2"),
+                cpt_lims=(vmin, vmax),
+                fig_height=fig_height,
+                # **kwargs,
+            )
+            
             fig.show()
 
         elif plot_type == "xarray":
@@ -711,8 +793,8 @@ def grd_compare(
             )
             dif.plot(
                 ax=ax[2],
-                vmin=diff_cpt_lims[0],
-                vmax=diff_cpt_lims[1],
+                vmin=-diff_maxabs,
+                vmax=diff_maxabs,
                 robust=True,
                 cmap="RdBu_r",
                 cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
@@ -724,7 +806,7 @@ def grd_compare(
                 a.set_ylabel("")
                 a.set_aspect("equal")
 
-    return dif, grid1, grid2
+    return (dif, grid1, grid2)
 
 
 def make_grid(
@@ -856,7 +938,7 @@ def raps(
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
-            ax = sns.lineplot(raps.wavelength, raps.power, label=j, palette="viridis")
+            ax = sns.lineplot((raps.wavelength, raps.power), label=j, palette="viridis")
             ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")

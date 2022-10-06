@@ -227,19 +227,30 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
     return data_dict
 
 
-def default_layers() -> dict:
+def default_layers(version) -> dict:
     """
     Fetch default Bedmachine layers.
+
+    Parameters
+    ----------
+    version : str
+        choose between 'bedmap2' and 'bedmachine' layers
 
     Returns
     -------
     dict[dict]
         Nested dictionary of Bedmachine layers and attributes
     """
-    surface = fetch.bedmachine("surface")
-    # icebase = fetch.bedmachine("surface") - fetch.bedmachine("thickness")
-    icebase = fetch.bedmachine("icebase")
-    bed = fetch.bedmachine("bed")
+    if version == 'bedmap2':
+        surface = fetch.bedmap2("surface")
+        icebase = fetch.bedmap2("icebase")
+        bed = fetch.bedmap2("bed")
+
+    elif version == 'bedmachine':
+        surface = fetch.bedmachine("surface")
+        icebase = fetch.bedmachine("icebase")
+        bed = fetch.bedmachine("bed")
+
     layer_names = [
         "surface",
         "icebase",
@@ -301,6 +312,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
+    layers_version='bedmap2',
     **kwargs,
 ):
     """
@@ -318,6 +330,8 @@ def plot_profile(
         `profile.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool = False
         Choose whether to add a location map, by default is False.
+    layers_version : str, optional
+        choose between using 'bedmap2' or 'bedmachine' layers, by default is 'bedmap2'
 
     Keyword Args
     ------------
@@ -341,6 +355,10 @@ def plot_profile(
         Change vertical white space within cross-section, by default is 0.1.
     data_buffer: float (0-1)
         Change vertical white space within data graph, by default is 0.1.
+    legend_loc: str
+        Change the legend location with a GMT position string, by default is 
+        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
+        Right corner of the plot, with 0 offset. 
     inset : bool
         choose to plot inset map showing figure location, by default is True
     inset_pos : str
@@ -358,7 +376,7 @@ def plot_profile(
     data_region = vd.get_region((points.x, points.y))
 
     if layers_dict is None:
-        layers_dict = default_layers()
+        layers_dict = default_layers(layers_version)
 
     if data_dict == "default":
         data_dict = default_data(data_region)
@@ -510,8 +528,11 @@ def plot_profile(
                     ],
                     pen="1p,black",
                 )
-        # shift figure to the right to make space for x-section and profiles
-        fig.shift_origin(xshift=(fig_width) + 1)
+        # shift figure to make space for x-section and profiles
+        if kwargs.get("subplot_orientation", None) == 'vertical':
+            fig.shift_origin(yshift=(fig_height) + 1)
+        else:
+            fig.shift_origin(xshift=(fig_width) + 1)
 
     # PLOT CROSS SECTION AND PROFILES
     # add space above and below top and bottom of cross-section
@@ -549,7 +570,7 @@ def plot_profile(
                     pen=f"2p,{v['color']}",
                     label=v["name"],
                 )
-            fig.legend(position="JBR+jBL+o0c", box=True)
+            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
             fig.shift_origin(yshift="h+.5c")
             fig.basemap(region=fig_reg, projection="X9c/6c", frame=True)
         except Exception:
