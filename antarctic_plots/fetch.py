@@ -766,14 +766,8 @@ def gravity(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            path = pooch.retrieve(
-                url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
-                known_hash=None,
-                processor=pooch.Unzip(),
-                progressbar=True,
-            )
+            path = pooch.Unzip()(fname, action, pooch2)
             fname = [p for p in path if p.endswith(".dat")][0]
-
             fname = Path(fname)
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
@@ -943,14 +937,9 @@ def magnetics(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            fname = pooch.retrieve(
-                url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
-                known_hash=None,
-                processor=pooch.Unzip(),
-                progressbar=True,
-            )[0]
-            
+            fname = pooch.Unzip()(fname, action, pooch2)[0]
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1110,14 +1099,9 @@ def geothermal(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, reproject the .nc file, and save it back"
-            fname = pooch.retrieve(
-                url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-                known_hash=None,
-                progressbar=True,
-                processor=pooch.Untar(),
-            )[0]
-
+            fname = pooch.Untar()(fname, action, pooch2)[0]
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname.with_stem(fname.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
@@ -1210,6 +1194,7 @@ def geothermal(
         def preprocessing(fname, action, pooch):
             "Load the .csv file, grid it, and save it back as a .nc"
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1309,13 +1294,8 @@ def geothermal(
 
         def preprocessing(fname, action, pooch2):
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname = pooch.retrieve(
-                url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",  # noqa
-                known_hash=None,
-                progressbar=True,
-            )
-
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1499,6 +1479,7 @@ def crustal_thickness(
         def preprocessing(fname, action, pooch2):
             "Load the .dat file, grid it, and save it back as a .nc"
             fname = Path(fname)
+            
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
