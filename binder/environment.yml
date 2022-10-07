@@ -23,6 +23,7 @@ dependencies:
   - matplotlib=3.6
   - pyogrio=0.4.1
   - ipyleaflet=0.17.1
+  - openpyxl=3.0.10
   - pip
   - pip:
     - -e ..
