@@ -534,7 +534,8 @@ def plot_3d(
     view: list = [170, 30],
     vlims: list = [-10000, 1000],
     plot_region: Union[str or np.ndarray] = None,
-    mask: Union[str or xr.DataArray] = None,
+    shp_mask: Union[str or gpd.GeoDataFrame] = None,
+    polygon_mask: list = None,
     colorbar=True,
     grd2cpt=True,
     **kwargs,
@@ -556,7 +557,7 @@ def plot_3d(
         _description_, by default [-10000, 1000]
     plot_region : Union[str or np.ndarray], optional
         _description_, by default None
-    mask : Union[str or xr.DataArray], optional
+    shp_mask : Union[str or gpd.GeoDataFrame], optional
         _description_, by default None
     cpt_lims : list, optional
         _description_, by default None
@@ -592,11 +593,21 @@ def plot_3d(
     for i, j in enumerate(grids):
         grid = j
         # if provided, mask grid with shapefile
-        if mask is not None:
-            grid = utils.mask_from_shp(mask, xr_grid=grid, masked=True, invert=kwargs.get('invert', True))
+        if shp_mask is not None:
+            grid = utils.mask_from_shp(
+                shp_mask, 
+                xr_grid=grid, 
+                masked=True, 
+                invert=kwargs.get('invert', False),
+            ) 
             grid.to_netcdf('tmp.nc')
             grid = xr.load_dataset('tmp.nc')['z']
-        
+        # if provided, mask grid with polygon from interactive map via regions.draw_region
+        elif polygon_mask is not None:
+            grid = utils.mask_from_polygon(
+                polygon_mask, 
+                grid=grid,
+                )
         # create colorscales
         if grd2cpt is True:
             pygmt.grd2cpt(
