@@ -733,7 +733,7 @@ def grd_compare(
             fig = maps.plot_grd(
                 grid1,
                 cmap=cmap,
-                plot_region=region,
+                region=region,
                 coast=True,
                 cbar_label=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
@@ -743,7 +743,7 @@ def grd_compare(
             fig = maps.plot_grd(
                 dif,
                 cmap="polar",
-                plot_region=region,
+                region=region,
                 coast=coast,
                 origin_shift=origin_shift,
                 cbar_label="difference",
@@ -758,7 +758,7 @@ def grd_compare(
             fig = maps.plot_grd(
                 grid2, 
                 cmap=cmap,
-                plot_region=region,
+                region=region,
                 coast=coast,
                 origin_shift=origin_shift,
                 fig=fig,
