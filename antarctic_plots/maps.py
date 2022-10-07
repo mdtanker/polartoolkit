@@ -31,7 +31,7 @@ else:
 def plot_grd(
     grid: Union[str or xr.DataArray],
     cmap: str = "viridis",
-    plot_region: Union[str or np.ndarray] = None,
+    region: Union[str or np.ndarray] = None,
     coast: bool = False,
     origin_shift: str = "initialize",
     **kwargs,
@@ -45,7 +45,7 @@ def plot_grd(
         grid file to plot, either loaded xr.DataArray or string of a filename
     cmap : str, optional
         GMT color scale to use, by default 'viridis'
-    plot_region : Union[str or np.ndarray], optional
+    region : Union[str or np.ndarray], optional
         region to plot, by default is extent of input grid
     coast : bool, optional
         choose whether to plot Antarctic coastline and grounding line, by default False
@@ -62,7 +62,7 @@ def plot_grd(
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : Union[str or np.ndarray]
         region to use to define color scale if grd2cpt is True, by default is
-        plot_region
+        region
     cbar_label : str
         label to add to colorbar.
     points : pd.DataFrame
@@ -110,16 +110,16 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Int64Index")
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
-    if plot_region is None:
+    if region is None:
         try:
-            plot_region = utils.get_grid_info(grid)[1]
+            region = utils.get_grid_info(grid)[1]
         except:
             print("grid region can't be extracted, using antarctic region.")
-            plot_region = regions.antarctica
+            region = regions.antarctica
 
-    # print(f"plot region is: {plot_region}")
+    # print(f"plot region is: {region}")
 
-    cmap_region = kwargs.get("cmap_region", plot_region)
+    cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
@@ -133,7 +133,7 @@ def plot_grd(
     colorbar = kwargs.get("colorbar", True)
 
     # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -194,7 +194,7 @@ def plot_grd(
         grid=grid,
         cmap=True,
         projection=proj,
-        region=plot_region,
+        region=region,
         nan_transparent=True,
         frame=["+gwhite"],
         verbose="q",
@@ -210,7 +210,7 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
-        add_coast(fig, plot_region, proj, no_coast=kwargs.get("no_coast", False))
+        add_coast(fig, region, proj, no_coast=kwargs.get("no_coast", False))
         # fig.plot(
         #     data=fetch.groundingline(),
         #     pen=".6p,black",
@@ -233,7 +233,7 @@ def plot_grd(
     if grid_lines is True:
         add_gridlines(
             fig,
-            plot_region,
+            region,
             proj_latlon,
             x_annots=kwargs.get("x_annots", 30),
             y_annots=kwargs.get("y_annots", 4),
@@ -241,13 +241,13 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
-        add_inset(fig, plot_region, fig_width, kwargs.get("inset_pos", "TL"))
+        add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
 
     # add scalebar
     if scalebar is True:
         add_scalebar(
             fig,
-            plot_region,
+            region,
             proj_latlon,
             font_color=kwargs.get("font_color", "black"),
             scale_length=kwargs.get("scale_length"),
@@ -256,9 +256,9 @@ def plot_grd(
         )
     # reset region and projection
     if title is None:
-        fig.basemap(region=plot_region, projection=proj, frame="wesn")
+        fig.basemap(region=region, projection=proj, frame="wesn")
     else:
-        fig.basemap(region=plot_region, projection=proj, frame=f"wesn+t{title}")
+        fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
 
     return fig
 
@@ -533,7 +533,7 @@ def plot_3d(
     exaggeration: list,
     view: list = [170, 30],
     vlims: list = [-10000, 1000],
-    plot_region: Union[str or np.ndarray] = None,
+    region: Union[str or np.ndarray] = None,
     shp_mask: Union[str or gpd.GeoDataFrame] = None,
     polygon_mask: list = None,
     colorbar=True,
@@ -555,7 +555,7 @@ def plot_3d(
         _description_, by default [170, 30]
     vlims : list, optional
         _description_, by default [-10000, 1000]
-    plot_region : Union[str or np.ndarray], optional
+    region : Union[str or np.ndarray], optional
         _description_, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
         _description_, by default None
@@ -573,18 +573,18 @@ def plot_3d(
     
 
     # if plot region not specified, try to pull from grid info
-    if plot_region is None:
+    if region is None:
         try:
-            plot_region = utils.get_grid_info(grids[0])[1]
+            region = utils.get_grid_info(grids[0])[1]
         except:
             print("first grids region can't be extracted, using antarctic region.")
-            plot_region = regions.antarctica
+            region = regions.antarctica
 
     # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(plot_region, fig_height)
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
 
     # set vertical limits
-    region = plot_region + vlims
+    region = region + vlims
 
     # initialize the figure
     fig = pygmt.Figure()
