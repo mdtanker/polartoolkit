@@ -32,7 +32,7 @@
 🚨 **This package is in early stages of design and implementation.** 🚨
  </p>
  
-I welcome any feedback, ideas, or contributions! Please submit an [issue on Github](https://github.com/mdtanker/antarctic_plots/issues) for problems or feature ideas. 
+I welcome any feedback, ideas, or contributions! Please contact us on the [Github discussions page](https://github.com/mdtanker/antarctic_plots/discussions) or submit an [issue on Github](https://github.com/mdtanker/antarctic_plots/issues) for problems or feature ideas.
 
 ## About
 
@@ -43,8 +43,6 @@ Feel free to use, share, modify, and contribute to this project. I've mostly mad
 ## Project goals
 
 Below is a list of some features I hope to eventually include. Feel free to make a feature request through [Github Issues](https://github.com/mdtanker/antarctic_plots/issues/new/choose).
-* Interactively choose profile locations by clicking on a map (See [Issue #1](https://github.com/mdtanker/antarctic_plots/issues/1))  
+
 * Create 3D interactive models to help visualize data.
-* Plot data in 3D
 * Include more Antarctic datasets to aid in download and storage.
-* Setup and online environment to run the package with needing Python on your computer (See [Issue #20](https://github.com/mdtanker/antarctic_plots/issues/20)) 
