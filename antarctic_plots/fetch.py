@@ -360,7 +360,11 @@ def groundingline() -> str:
 
 def basement(
     plot: bool = False, 
-    info: bool = False) -> xr.DataArray:
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+    ) -> xr.DataArray:
     """
     Load a grid of basement topography.
     Offshore and sub-Ross Ice Shelf basement topography.
@@ -380,20 +384,37 @@ def basement(
     xr.DataArray
         dataarray of basement depths
     """
+
+    # found with utils.get_grid_info()
+    initial_region= [-3330000.0, 1900000.0, -3330000.0, 1850000.0]
+    initial_spacing=5e3
+    initial_registration='p'
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",  # noqa
         known_hash=None,
         progressbar=True,
     )
-    grd = xr.load_dataarray(path)
+
+    grid = xr.load_dataarray(path)
+
+    resampled = resample_grid(grid,
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
+        print(pygmt.grdinfo(resampled))
 
-    return grd
-
+    return resampled
 
 def bedmachine(
     layer: str,
@@ -408,8 +429,8 @@ def bedmachine(
     Load BedMachine data,  from Morlighem et al. 2020:
     https://doi.org/10.1038/s41561-019-0510-8
 
-    orignally from https://nsidc.org/data/nsidc-0756/versions/1.
-    Added to Google Bucket as described in the following notebook:
+    Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/1.
+    Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
     Parameters
@@ -766,15 +787,10 @@ def gravity(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            path = pooch.retrieve(
-                url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
-                known_hash=None,
-                processor=pooch.Unzip(),
-                progressbar=True,
-            )
+            path = pooch.Unzip()(fname, action, pooch2)
             fname = [p for p in path if p.endswith(".dat")][0]
-
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -943,14 +959,9 @@ def magnetics(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            fname = pooch.retrieve(
-                url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
-                known_hash=None,
-                processor=pooch.Unzip(),
-                progressbar=True,
-            )[0]
-            
+            fname = pooch.Unzip()(fname, action, pooch2)[0]
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1041,14 +1052,35 @@ def geothermal(
     region=None,
     spacing=None,
     registration=None,
+    **kwargs
 ) -> xr.DataArray:
     """
-    Load 1 of 5 'versions' of Antarctic geothermal heat flux grids.
+    Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
     
+    version='an-2015'
+    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
+    beneath the Antarctic Plate inferred from seismic velocities
+    http://dx.doi.org/doi:10.1002/2015JB011917
+    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
+
+    version='martos-2017'
+    From Martos et al. 2017: Heat flux distribution of Antarctica unveiled. Geophysical 
+    Research Letters, 44(22), 11417-11426, https://doi.org/10.1002/2017GL075609
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.882503
+
+    verion='shen-2020':
+    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
+    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
+    generate a direct download link from google drive page.
+    https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
+
     version='burton-johnson-2020'
     From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
     current and future directions, https://doi.org/10.5194/tc-14-3843-2020
     Accessed from supplementary material
+    Choose for either of grid, or the point measurements
     
     version='losing-ebbing-2021'
     From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
@@ -1060,20 +1092,6 @@ def geothermal(
     From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
     https://doi.org/10.1029/2020GC009428
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
-    
-    verion='shen-2020':
-    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
-    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
-    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
-    generate a direct download link from google drive page.
-    https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
-    
-    version='an-2015'
-    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
-    beneath the Antarctic Plate inferred from seismic velocities
-    http://dx.doi.org/doi:10.1002/2015JB011917
-    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
 
     Parameters
     ----------
@@ -1110,14 +1128,9 @@ def geothermal(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, reproject the .nc file, and save it back"
-            fname = pooch.retrieve(
-                url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-                known_hash=None,
-                progressbar=True,
-                processor=pooch.Untar(),
-            )[0]
-
+            fname = pooch.Untar()(fname, action, pooch2)[0]
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname.with_stem(fname.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
@@ -1155,6 +1168,61 @@ def geothermal(
                 initial_spacing, initial_region, initial_registration, 
                 spacing, region, registration)
 
+    elif version == 'martos-2017':
+        # found from df.describe()
+        initial_region=[-2535e3, 2715e3, -2130e3, 2220e3]
+        initial_spacing=15e3
+        initial_registration='g' 
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+        
+        def preprocessing(fname, action, pooch2):
+            "Load the .xyz file, grid it, and save it back as a .nc"
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load the data
+                df = pd.read_csv(
+                    fname, 
+                    header=None,
+                    delim_whitespace=True,
+                    names=['x', 'y', 'GHF']
+                )
+                
+                # grid the data
+                processed = pygmt.xyz2grd(
+                    df, 
+                    region = initial_region, 
+                    registration = initial_registration, 
+                    spacing = initial_spacing,
+                )
+
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+        
+        path = pooch.retrieve(
+            url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz", # noqa
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid= xr.load_dataarray(path)
+        
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+
+    
     elif version == "burton-johnson-2020":
         # found from utils.get_grid_info(grid)
         initial_region=[-2543500.0, 2624500.0, -2121500.0, 2213500.0]
@@ -1185,14 +1253,32 @@ def geothermal(
         except FileNotFoundError:
             pass
 
-        path = glob.glob(
-            f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+        if kwargs.get('points', False) is True:
+            info = False
+            plot = False
+            # find path to the point data
+            path = glob.glob(
+                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*V003.xlsx")[0]
+            GHF_points = pd.read_excel(path)
 
-        grid = xr.load_dataarray(path).squeeze()
+            # re-project the coordinates to Polar Stereographic
+            transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+            GHF_points['x'], GHF_points['y'] = transformer.transform(GHF_points['(1) Latitude'].tolist(),GHF_points['(2) Longitude'].tolist()) # noqa
+        
+            # rename 
+            GHF_points['GHF'] = GHF_points['(8) GHF (mW/m²)']
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+            resampled = GHF_points
+        
+        elif kwargs.get('points', False) is False:
+            path = glob.glob(
+                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+
+            grid = xr.load_dataarray(path).squeeze()
+
+            resampled = resample_grid(grid, 
+                    initial_spacing, initial_region, initial_registration, 
+                    spacing, region, registration)
 
     elif version == "losing-ebbing-2021":
         # was in lat long, so just using standard values here
@@ -1210,6 +1296,7 @@ def geothermal(
         def preprocessing(fname, action, pooch):
             "Load the .csv file, grid it, and save it back as a .nc"
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1309,13 +1396,8 @@ def geothermal(
 
         def preprocessing(fname, action, pooch2):
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname = pooch.retrieve(
-                url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",  # noqa
-                known_hash=None,
-                progressbar=True,
-            )
-
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1462,6 +1544,18 @@ def crustal_thickness(
     wave and receiver functions. https://doi.org/10.1029/2017JB015346
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
 
+    version='an-2015'
+    Crustal thickness (distance from solid (ice and rock) top to Moho discontinuity)
+    from An et al. 2015:  S-velocity Model and Inferred Moho Topography beneath the 
+    Antarctic Plate from Rayleigh Waves. J. Geophys. Res., 120(1),359–383, 
+    doi:10.1002/2014JB011332
+    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
+    File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses 
+    referred to below are the distance from the solid surface to the Moho. We note that 
+    this definition of Moho depth is different from that in the compilation of AN-MOHO".
+    Unclear, but seems moho depth is just negative of crustal thickness. Not sure if its 
+    to the ice surface or ice base. 
+
     Parameters
     ----------
     version : str
@@ -1499,6 +1593,7 @@ def crustal_thickness(
         def preprocessing(fname, action, pooch2):
             "Load the .dat file, grid it, and save it back as a .nc"
             fname = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix('.nc')
@@ -1549,6 +1644,278 @@ def crustal_thickness(
         resampled = resample_grid(grid, 
                 initial_spacing, initial_region, initial_registration, 
                 spacing, region, registration)
+    
+    elif version == 'an-2015':
+        # was in lat long, so just using standard values here
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=5e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Unzip the folder, reproject the .nc file, and save it back"
+            fname = pooch.Untar()(fname, action, pooch2)[0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load grid
+                grid = xr.load_dataarray(fname)
+                
+                # convert to meters 
+                grid = grid * 1000
+
+                # reproject to polar stereographic
+                grid2 = pygmt.grdproject(
+                    grid,
+                    projection='EPSG:3031',
+                    spacing=initial_spacing,
+                )   
+                # get just antarctica region
+                processed = pygmt.grdsample(
+                    grid2,
+                    region=initial_region,
+                    spacing=initial_spacing,
+                    registration=initial_registration,
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+        
+        path = pooch.retrieve(
+            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid= xr.load_dataarray(path)
+        
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+
+    else:
+        raise ValueError('invalid version string')
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+def moho(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+) -> xr.DataArray:
+    """
+    Load 1 of x 'versions' of Antarctic Moho depth grids.
+    
+    version='shen-2018'
+    Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)  
+    from Shen et al. 2018: The crust and upper mantle structure of central and West 
+    Antarctica from Bayesian inversion of Rayleigh wave and receiver functions. 
+    https://doi.org/10.1029/2017JB015346
+    Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
+    Appears to be almost identical to crustal thickness from Shen et al. 2018
+
+
+    Parameters
+    ----------
+    version : str
+        Either 'shen-2018', 'an-2015', 'pappa-2019',
+        will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1', 
+        'szwillus', 'llubes',
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : int, optional
+       grid spacing to resample the loaded grid to, by default spacing is read from
+       downloaded files
+
+    Returns
+    -------
+    xr.DataArray
+         Returns a loaded, and optional clip/resampled grid of crustal thickness.
+    """
+
+    if version == 'shen-2018':
+        # was in lat long, so just using standard values here
+        initial_region=regions.antarctica
+        initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Load the .dat file, grid it, and save it back as a .nc"
+            path = pooch.Untar()(fname, action, pooch2)
+            fname = [p for p in path if p.endswith("moho.final.dat")][0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname, 
+                    delim_whitespace=True, 
+                    header=None, 
+                    names=["lon", "lat", "depth"],
+                )
+                # convert to meters
+                df.depth = df.depth*-1000
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+    
+    elif version=='an-2015':
+        # was in lat long, so just using standard values here
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing=5e3
+        initial_registration='g'
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        grid = crustal_thickness(version='an-2015') * -1
+
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+
+    if version == 'pappa-2019':
+        # was in lat long, so just using standard values here
+        # initial_region=regions.antarctica
+        # initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
+        # initial_registration='g'
+
+        # if region is None:
+        #     region = initial_region
+        # if spacing is None:
+        #     spacing = initial_spacing
+        # if registration is None:
+        #     registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Load the .dat file, grid it, and save it back as a .nc"
+            path = pooch.Unzip()(fname, action, pooch2)
+            fname = [p for p in path if p.endswith("moho.final.dat")][0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname, 
+                    delim_whitespace=True, 
+                    header=None, 
+                    names=["lon", "lat", "depth"],
+                )
+                # convert to meters
+                df.depth = df.depth*-1000
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "depth"]],
+                    spacing=initial_spacing, 
+                    region=initial_region, 
+                    registration=initial_registration,
+                    M="1c", 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(grid, 
+                initial_spacing, initial_region, initial_registration, 
+                spacing, region, registration)
+
+
+# "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
     
     else:
         raise ValueError('invalid version string')

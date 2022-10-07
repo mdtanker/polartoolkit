@@ -101,9 +101,9 @@ Then run through the commands at the top of this page again to update the conda 
 If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
 
 ## Set up the binder configuration
-To run examples online, Read the Docs will automatically create a Binder instance for this package. The configuration file is `/binder/environment.yml`. To create this or update it do the following:
+To run this pacakge online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
 
-    make binder_yaml
+    make binder_yml
 
 This will create an environment with the core dependencies, and export it to a .yml. Open this file and add the following at the bottom of the list of dependencies:
 ```
