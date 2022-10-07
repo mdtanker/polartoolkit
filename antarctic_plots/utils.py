@@ -1244,3 +1244,75 @@ def polygon_to_region(polygon: list):
     region = vd.get_region((df.x, df.y))
 
     return region
+
+def mask_from_polygon(
+    polygon: list,
+    invert: bool = False,
+    grid: Union[str, xr.DataArray] = None,
+    region: list = None,
+    spacing: int = None,
+    **kwargs,
+    ):
+    """
+    convert the output of `regions.draw_region` to a mask or use it to mask a grid
+
+    Parameters
+    ----------
+    polygon : list
+       list of polygon vertices
+    invert : bool, optional
+        _description_, by default False
+    grid : Union[str, xr.DataArray], optional
+        _description_, by default None
+    region : list, optional
+        _description_, by default None
+    spacing : int, optional
+        _description_, by default None
+
+    Returns
+    -------
+    xr.Dataarray
+        masked grid or mask grid with 1's inside the mask.
+    """
+   
+    # convert drawn polygon into dataframe
+    df = shapes_to_df(polygon)
+    data_coords = (df.x, df.y)
+    
+    # remove additional polygons
+    if df.shape_num.max() > 0:
+        print("supplied dataframe has multiple polygons, only using the first one.")
+        df = df[df.shape_num == 0]
+
+    # if grid given as filename, load it
+    if isinstance(grid, str):
+        grid = xr.load_dataarray(grid)
+        ds = grid.to_dataset()
+    elif isinstance(grid, xr.DataArray):
+        ds = grid.to_dataset()
+    
+    # if no grid given, make a dummy one with supplied region and spacing
+    if grid is None:
+        coords = vd.grid_coordinates(
+            region=region, 
+            spacing=spacing, 
+            pixel_register=kwargs.get('pixel_register', False),
+        )
+        ds = vd.make_xarray_grid(
+            coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
+        )
+
+    masked = vd.convexhull_mask(
+        data_coords, 
+        grid=ds,
+        ).z
+    
+    # reverse the mask
+    if invert is True:
+        inverse = masked.isnull()
+        inverse = inverse.where(inverse!=0)
+        masked = inverse*ds.z
+
+    masked = masked.where(masked.notnull()==True, drop=True)
+
+    return masked
