@@ -360,7 +360,11 @@ def groundingline() -> str:
 
 def basement(
     plot: bool = False, 
-    info: bool = False) -> xr.DataArray:
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+    ) -> xr.DataArray:
     """
     Load a grid of basement topography.
     Offshore and sub-Ross Ice Shelf basement topography.
@@ -380,20 +384,37 @@ def basement(
     xr.DataArray
         dataarray of basement depths
     """
+
+    # found with utils.get_grid_info()
+    initial_region= [-3330000.0, 1900000.0, -3330000.0, 1850000.0]
+    initial_spacing=5e3
+    initial_registration='p'
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",  # noqa
         known_hash=None,
         progressbar=True,
     )
-    grd = xr.load_dataarray(path)
+
+    grid = xr.load_dataarray(path)
+
+    resampled = resample_grid(grid,
+            initial_spacing, initial_region, initial_registration, 
+            spacing, region, registration)
 
     if plot is True:
-        grd.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(grd))
+        print(pygmt.grdinfo(resampled))
 
-    return grd
-
+    return resampled
 
 def bedmachine(
     layer: str,
