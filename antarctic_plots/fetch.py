@@ -92,7 +92,7 @@ def resample_grid(
         print('returning subregion')
         resampled = pygmt.grdcut(
             grid=grid,
-            region=region,
+            region=pygmt.grdinfo(grid, spacing=f"{spacing}r")[2:-1],
         )
 
     else:
@@ -271,7 +271,7 @@ def ice_vel(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 
 def modis_moa(
@@ -414,7 +414,7 @@ def basement(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 def bedmachine(
     layer: str,
@@ -489,11 +489,14 @@ def bedmachine(
 
         resampled = surface - thickness
 
-    else:
+    elif layer in ['surface','thickness','bed','firn','geoid','mapping','mask','errbed','source']: # noqa
         grid = xr.load_dataset(path)[layer]
         resampled = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
+
+    else:
+        raise ValueError('invalid layer string')
 
     if reference == "ellipsoid" and layer != "thickness":
         geoid = xr.load_dataset(path)['geoid']
@@ -510,7 +513,7 @@ def bedmachine(
     if info is True:
         print(pygmt.grdinfo(final_grid))
 
-    return final_grid
+    return final_grid.squeeze()
 
 
 def bedmap2(
@@ -572,29 +575,32 @@ def bedmap2(
 
     if layer == "icebase":
         fname = [p for p in path if p.endswith("surface.tif")][0]
-        grid = xr.load_dataarray(fname)
+        grid = xr.load_dataarray(fname).squeeze()
         surface = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
-        grid = xr.load_dataarray(fname)
+        grid = xr.load_dataarray(fname).squeeze()
         thickness = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
         resampled = surface - thickness
 
-    else:
+    elif layer in ['surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84']:
         fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         resampled = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
+    else:
+       raise ValueError('invalid layer string')
+
     if reference == "ellipsoid" and layer != "thickness":
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-        geoid = xr.load_dataarray(geoid_file)
+        geoid = xr.load_dataarray(geoid_file).squeeze()
         resampled_geoid = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
@@ -612,7 +618,7 @@ def bedmap2(
     if info is True:
         print(pygmt.grdinfo(final_grid))
 
-    return final_grid
+    return final_grid.squeeze()
 
 
 def deepbedmap(
@@ -673,7 +679,7 @@ def deepbedmap(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 
 def gravity(
@@ -900,7 +906,7 @@ def gravity(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 
 def magnetics(
@@ -1041,7 +1047,7 @@ def magnetics(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 
 
@@ -1454,7 +1460,7 @@ def geothermal(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 def gia(
     version: str,
@@ -1525,7 +1531,7 @@ def gia(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 def crustal_thickness(
     version: str,
@@ -1711,7 +1717,7 @@ def crustal_thickness(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
 
 def moho(
     version: str,
@@ -1925,4 +1931,4 @@ def moho(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled
+    return resampled.squeeze()
