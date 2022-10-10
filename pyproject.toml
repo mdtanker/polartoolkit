@@ -43,11 +43,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.flake8]
 max-line-length = 88
-
-[tool.coverage.run]
-branch = true
-include = ["antarctic_plots/*"]
-omit = [
-    "*/tests/*",
-    "**/__init__.py"
-    ]
