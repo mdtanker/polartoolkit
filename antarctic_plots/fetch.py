@@ -92,7 +92,7 @@ def resample_grid(
         print('returning subregion')
         resampled = pygmt.grdcut(
             grid=grid,
-            region=pygmt.grdinfo(grid, spacing=f"{spacing}r")[2:-1],
+            region=pygmt.grdinfo(grid, spacing=f"r", verbose='q')[2:-1],
         )
 
     else:
@@ -104,7 +104,6 @@ def resample_grid(
         )
 
     return resampled
-
 
 class EarthDataDownloader:
     """
@@ -271,7 +270,7 @@ def ice_vel(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
 
 
 def modis_moa(
@@ -414,7 +413,8 @@ def basement(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
+
 
 def bedmachine(
     layer: str,
@@ -505,6 +505,10 @@ def bedmachine(
             spacing, region, registration)
         
         final_grid = resampled + resampled_geoid
+
+    elif reference not in ['ellipsoid', 'geoid']:
+        raise ValueError('invalid reference string')
+
     else:
         final_grid = resampled
 
@@ -513,7 +517,7 @@ def bedmachine(
     if info is True:
         print(pygmt.grdinfo(final_grid))
 
-    return final_grid.squeeze()
+    return final_grid
 
 
 def bedmap2(
@@ -606,6 +610,10 @@ def bedmap2(
             spacing, region, registration)
 
         final_grid = resampled + resampled_geoid
+    
+    elif reference not in ['ellipsoid', 'geoid']:
+        raise ValueError('invalid reference string')
+
     else:
         final_grid = resampled
 
@@ -618,7 +626,7 @@ def bedmap2(
     if info is True:
         print(pygmt.grdinfo(final_grid))
 
-    return final_grid.squeeze()
+    return final_grid
 
 
 def deepbedmap(
@@ -679,7 +687,7 @@ def deepbedmap(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
 
 
 def gravity(
@@ -906,7 +914,7 @@ def gravity(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
 
 
 def magnetics(
@@ -1047,7 +1055,7 @@ def magnetics(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
 
 
 
@@ -1460,7 +1468,7 @@ def geothermal(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
 
 def gia(
     version: str,
@@ -1531,7 +1539,8 @@ def gia(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
+
 
 def crustal_thickness(
     version: str,
@@ -1717,7 +1726,8 @@ def crustal_thickness(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled
+
 
 def moho(
     version: str,
@@ -1850,7 +1860,7 @@ def moho(
                 initial_spacing, initial_region, initial_registration, 
                 spacing, region, registration)
 
-    if version == 'pappa-2019':
+    elif version == 'pappa-2019':
         # was in lat long, so just using standard values here
         # initial_region=regions.antarctica
         # initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
@@ -1921,7 +1931,7 @@ def moho(
                 spacing, region, registration)
 
 
-# "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
+    # "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
     
     else:
         raise ValueError('invalid version string')
@@ -1931,4 +1941,4 @@ def moho(
     if info is True:
         print(pygmt.grdinfo(resampled))
 
-    return resampled.squeeze()
+    return resampled

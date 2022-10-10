@@ -338,17 +338,6 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
-name = "coverage_enable_subprocess"
-version = "1.0"
-description = "enable python coverage for subprocesses"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-coverage = "*"
-
-[[package]]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
@@ -2665,7 +2654,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "30f67d07b5e64940b4becf87494c6a6c89f49e53acae419c58b55e53abf26624"
+content-hash = "d417cd907656309b6d5b996568af52530bdffa4b8787376c1c1000b14081c05b"
 
 [metadata.files]
 affine = [
@@ -3007,10 +2996,6 @@ coverage = [
     {file = "coverage-6.5.0-cp39-cp39-win_amd64.whl", hash = "sha256:fc2af30ed0d5ae0b1abdb4ebdce598eafd5b35397d4d75deb341a614d333d987"},
     {file = "coverage-6.5.0-pp36.pp37.pp38-none-any.whl", hash = "sha256:1431986dac3923c5945271f169f59c45b8802a114c8f548d611f2015133df77a"},
     {file = "coverage-6.5.0.tar.gz", hash = "sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84"},
-]
-coverage_enable_subprocess = [
-    {file = "coverage_enable_subprocess-1.0-py2.py3-none-any.whl", hash = "sha256:27982522339ec77662965e0d859da5662162962c874d54d2250426506818cbdc"},
-    {file = "coverage_enable_subprocess-1.0.tar.gz", hash = "sha256:fdbd3dc9532007cd87ef84f38e16024c5b0ccb4ab2d1755225a7edf937acc011"},
 ]
 cycler = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
