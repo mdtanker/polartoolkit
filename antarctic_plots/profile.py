@@ -21,6 +21,8 @@ except ImportError:
 else:
     _has_ipyleaflet = True
 
+import os
+import contextlib
 
 def create_profile(
     method: str,
@@ -44,7 +46,7 @@ def create_profile(
         Coordinates for eding point of profile, by default None
     num : int, optional
         Number of points to sample at, for "points" by default is 100, for other methods
-         num by default is determined by shapefile or dataframe
+        num by default is determined by shapefile or dataframe
     shapefile : str, optional
         shapefile file name to create points along, by default None
     polyline : pd.DataFrame, optional
@@ -79,15 +81,15 @@ def create_profile(
         shp = pyogrio.read_dataframe(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
-        coordinates = df.coords.apply(pd.Series, index=["x", "y"])
+        coordinates_rel = df.coords.apply(pd.Series, index=["x", "y"])
         # for shapefiles, dist is cumulative from previous points
-        coordinates = cum_dist(coordinates)
+        coordinates = cum_dist(coordinates_rel, **kwargs)
 
     elif method == "polyline":
         if polyline is None:
             raise ValueError(f"If method = {method}, need to provide a valid dataframe")
         # for shapefiles, dist is cumulative from previous points
-        coordinates = cum_dist(polyline)
+        coordinates = cum_dist(polyline, **kwargs)
 
     coordinates.sort_values(by=["dist"], inplace=True)
 
@@ -95,23 +97,27 @@ def create_profile(
         try:
             if num is not None:
                 df = coordinates.set_index("dist")
+                # print(df.describe())
                 dist_resampled = np.linspace(
                     coordinates.dist.min(),
                     coordinates.dist.max(),
                     num,
                     dtype=float,
                 )
+                # print(dist_resampled)
                 df1 = (
                     df.reindex(df.index.union(dist_resampled))
                     .interpolate("cubic")  # cubic needs at least 4 points
                     .reset_index()
                 )
+                # print(df1.describe())
                 df2 = df1[df1.dist.isin(dist_resampled)]
+                # print(df2.describe())
             else:
                 df2 = coordinates
         except ValueError:
             print(
-                "If resampling, you must provide at least 4 points. Return unsampled points"  # noqa
+                "Issue with resampling, possibly due to number of points, you must provide at least 4 points. Returning unsampled points"  # noqa
             )
             df2 = coordinates
     else:
@@ -227,7 +233,7 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
     return data_dict
 
 
-def default_layers(version) -> dict:
+def default_layers(version, region=None) -> dict:
     """
     Fetch default Bedmachine layers.
 
@@ -241,15 +247,18 @@ def default_layers(version) -> dict:
     dict[dict]
         Nested dictionary of Bedmachine layers and attributes
     """
+    if region is None:
+        region = regions.antarctica
+
     if version == 'bedmap2':
-        surface = fetch.bedmap2("surface")
-        icebase = fetch.bedmap2("icebase")
-        bed = fetch.bedmap2("bed")
+        surface = fetch.bedmap2("surface", region=region)
+        icebase = fetch.bedmap2("icebase", region=region)
+        bed = fetch.bedmap2("bed", region=region)
 
     elif version == 'bedmachine':
-        surface = fetch.bedmachine("surface")
-        icebase = fetch.bedmachine("icebase")
-        bed = fetch.bedmachine("bed")
+        surface = fetch.bedmachine("surface", region=region)
+        icebase = fetch.bedmachine("icebase", region=region)
+        bed = fetch.bedmachine("bed", region=region)
 
     layer_names = [
         "surface",
@@ -285,9 +294,19 @@ def default_data(region=None) -> dict:
         Nested dictionary of data and attributes
     """
     if region is None:
-        region = (-3330000, 3330000, -3330000, 3330000)
-    mag = fetch.magnetics(version="admap1", region=region, spacing=10e3)
-    FA_grav = fetch.gravity("FA", region=region, spacing=10e3)
+        region = regions.antarctica
+
+    mag = fetch.magnetics(
+        version="admap1", 
+        region=region, 
+        spacing=10e3,
+        )
+    FA_grav = fetch.gravity(
+        version="antgg-update", 
+        anomaly_type="FA", 
+        region=region, 
+        spacing=10e3,
+        )
     data_names = [
         "ADMAP-1 magnetics",
         "ANT-4d Free-air grav",
@@ -339,6 +358,8 @@ def plot_profile(
         Choose whether to fill nans in layers, defaults to True.
     clip: bool
         Choose whether to clip the profile based on distance.
+    num: int
+        Number of points to sample at along a line.
     max_dist: int
         Clip all distances greater than.
     min_dist: int
@@ -376,10 +397,12 @@ def plot_profile(
     data_region = vd.get_region((points.x, points.y))
 
     if layers_dict is None:
-        layers_dict = default_layers(layers_version)
+        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+            layers_dict = default_layers(layers_version, region=data_region)
 
     if data_dict == "default":
-        data_dict = default_data(data_region)
+        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+            data_dict = default_data(data_region)
 
     # sample cross-section layers from grids
     for k, v in layers_dict.items():
@@ -643,7 +666,10 @@ def plot_profile(
         fig.savefig(kwargs.get("path"), dpi=300)
 
 
-def rel_dist(df: pd.DataFrame):
+def rel_dist(
+    df: pd.DataFrame,
+    reverse: bool = False,
+    ):
     """
     calculate distance between x,y points in a dataframe, relative to the previous row.
 
@@ -651,14 +677,21 @@ def rel_dist(df: pd.DataFrame):
     ----------
     df : pd.DataFrame
         Dataframe containing columns x and y in meters.
+    reverse : bool, optional,
+        choose whether to reverse the profile, by default is False
 
     Returns
     -------
     pd.DataFrame
         Returns original dataframe with additional column rel_dist
     """
-    df1 = df.copy()
+    if reverse is True:
+        df1 = df[::-1].reset_index(drop=True)
+    elif reverse is False:
+        df1 = df.copy()
+
     df1["rel_dist"] = 0
+
     for i in range(1, len(df1)):
         if i == 0:
             pass
@@ -670,9 +703,9 @@ def rel_dist(df: pd.DataFrame):
     return df1
 
 
-def cum_dist(df: pd.DataFrame):
+def cum_dist(df: pd.DataFrame, **kwargs):
     """
-    calculate cumulatine distance of points along a line.
+    calculate cumulative distance of points along a line.
 
     Parameters
     ----------
@@ -684,7 +717,8 @@ def cum_dist(df: pd.DataFrame):
     pd.DataFrame
         Returns orignal dataframe with additional column dist
     """
-    df = rel_dist(df)
+    reverse = kwargs.get('reverse', False)
+    df = rel_dist(df, reverse=reverse)
     df["dist"] = df.rel_dist.cumsum()
     return df
 

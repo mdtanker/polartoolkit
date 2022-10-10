@@ -1,7 +1,7 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
-# TESTDIR=tmp-test-dir-with-unique-name
-# PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
+TESTDIR=tmp-test-dir-with-unique-name
+PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
 # NUMBATEST_ARGS=--doctest-modules -v --pyargs -m use_numba
 STYLE_CHECK_FILES= $(PROJECT) docs tools
 
@@ -19,11 +19,7 @@ install:
 	pip install -e .
 
 test:
-	# Run a tmp folder to make sure the tests are run on the installed version
-	mkdir -p $(TESTDIR)
-	cd $(TESTDIR); NUMBA_DISABLE_JIT=1 MPLBACKEND='agg' pytest $(PYTEST_ARGS) $(PROJECT)
-	cp $(TESTDIR)/.coverage* .
-	rm -rvf $(TESTDIR)
+	coverage run -m pytest -n 0
 
 format: isort black license-add
 

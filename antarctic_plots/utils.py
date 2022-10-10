@@ -47,7 +47,7 @@ def get_grid_info(grid):
         # grid = xr.load_dataarray(grid)
         try:
             # grid = pygmt.load_dataarray(grid)
-            grid = xr.load_dataarray(grid)
+            grid = xr.load_dataarray(grid).squeeze()
         except ValueError:
             print("getting grid info didnt work")
             pass

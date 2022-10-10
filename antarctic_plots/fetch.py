@@ -92,7 +92,7 @@ def resample_grid(
         print('returning subregion')
         resampled = pygmt.grdcut(
             grid=grid,
-            region=region,
+            region=pygmt.grdinfo(grid, spacing=f"r", verbose='q')[2:-1],
         )
 
     else:
@@ -104,7 +104,6 @@ def resample_grid(
         )
 
     return resampled
-
 
 class EarthDataDownloader:
     """
@@ -416,6 +415,7 @@ def basement(
 
     return resampled
 
+
 def bedmachine(
     layer: str,
     reference: str = "geoid",
@@ -489,11 +489,14 @@ def bedmachine(
 
         resampled = surface - thickness
 
-    else:
+    elif layer in ['surface','thickness','bed','firn','geoid','mapping','mask','errbed','source']: # noqa
         grid = xr.load_dataset(path)[layer]
         resampled = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
+
+    else:
+        raise ValueError('invalid layer string')
 
     if reference == "ellipsoid" and layer != "thickness":
         geoid = xr.load_dataset(path)['geoid']
@@ -502,6 +505,10 @@ def bedmachine(
             spacing, region, registration)
         
         final_grid = resampled + resampled_geoid
+
+    elif reference not in ['ellipsoid', 'geoid']:
+        raise ValueError('invalid reference string')
+
     else:
         final_grid = resampled
 
@@ -572,34 +579,41 @@ def bedmap2(
 
     if layer == "icebase":
         fname = [p for p in path if p.endswith("surface.tif")][0]
-        grid = xr.load_dataarray(fname)
+        grid = xr.load_dataarray(fname).squeeze()
         surface = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
-        grid = xr.load_dataarray(fname)
+        grid = xr.load_dataarray(fname).squeeze()
         thickness = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
         resampled = surface - thickness
 
-    else:
+    elif layer in ['surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84']:
         fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         resampled = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
+    else:
+       raise ValueError('invalid layer string')
+
     if reference == "ellipsoid" and layer != "thickness":
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-        geoid = xr.load_dataarray(geoid_file)
+        geoid = xr.load_dataarray(geoid_file).squeeze()
         resampled_geoid = resample_grid(grid, 
             initial_spacing, initial_region, initial_registration, 
             spacing, region, registration)
 
         final_grid = resampled + resampled_geoid
+    
+    elif reference not in ['ellipsoid', 'geoid']:
+        raise ValueError('invalid reference string')
+
     else:
         final_grid = resampled
 
@@ -1527,6 +1541,7 @@ def gia(
 
     return resampled
 
+
 def crustal_thickness(
     version: str,
     plot: bool = False,
@@ -1713,6 +1728,7 @@ def crustal_thickness(
 
     return resampled
 
+
 def moho(
     version: str,
     plot: bool = False,
@@ -1844,7 +1860,7 @@ def moho(
                 initial_spacing, initial_region, initial_registration, 
                 spacing, region, registration)
 
-    if version == 'pappa-2019':
+    elif version == 'pappa-2019':
         # was in lat long, so just using standard values here
         # initial_region=regions.antarctica
         # initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
@@ -1915,7 +1931,7 @@ def moho(
                 spacing, region, registration)
 
 
-# "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
+    # "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
     
     else:
         raise ValueError('invalid version string')
