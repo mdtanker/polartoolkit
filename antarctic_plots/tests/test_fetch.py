@@ -71,32 +71,32 @@ def test_basement():
 # bedmachine
 # test for all layers, but only test reference models with 1 layer
 
-test = [
-    ('icebase', 
-        ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -3856.74609375, 4818.15527344, 'g')
-    ),
-    ('surface', 
-        ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4818.15527344, 'g')
-    ),
-    ('thickness', 
-        ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4726.54638672, 'g')
-    ),
-    ('bed', 
-        ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -8151.48730469, 4818.15527344, 'g')
-    ),
-    ('geoid', 
-        ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 52.0, 'g')
-    )
-]
-@pytest.mark.parametrize("test_input,expected", test)
-def test_bedmachine(test_input, expected):
-    grid = fetch.bedmachine(test_input)
-    assert utils.get_grid_info(grid) == expected
+# test = [
+#     ('icebase', 
+#         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -3856.74609375, 4818.15527344, 'g')
+#     ),
+#     ('surface', 
+#         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4818.15527344, 'g')
+#     ),
+#     ('thickness', 
+#         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4726.54638672, 'g')
+#     ),
+#     ('bed', 
+#         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -8151.48730469, 4818.15527344, 'g')
+#     ),
+#     ('geoid', 
+#         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 52.0, 'g')
+#     )
+# ]
+# @pytest.mark.parametrize("test_input,expected", test)
+# def test_bedmachine(test_input, expected):
+#     grid = fetch.bedmachine(test_input)
+#     assert utils.get_grid_info(grid) == expected
 
-def test_bedmachine_reference():
-    grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
-    expected = ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 4797.15527344, 'g')
-    assert utils.get_grid_info(grid) == expected
+# def test_bedmachine_reference():
+#     grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
+#     expected = ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 4797.15527344, 'g')
+#     assert utils.get_grid_info(grid) == expected
 
 # grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
 # utils.get_grid_info(grid)

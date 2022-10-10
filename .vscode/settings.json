@@ -1,7 +1,0 @@
-{
-    "python.testing.pytestArgs": [
-        "antarctic_plots"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
