@@ -41,7 +41,7 @@ jobs:
       - name: Run tests with pytest
         run: |
           conda install pytest-cov
-          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml
+          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
