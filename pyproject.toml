@@ -45,7 +45,6 @@ max-line-length = 88
 
 [tool.coverage.run]
 branch = true
-include = ["antarctic_plots/"]
 omit = [
     "*/tests/*",
     "**/__init__.py"
