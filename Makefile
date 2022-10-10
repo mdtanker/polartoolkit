@@ -19,7 +19,7 @@ install:
 	pip install -e .
 
 test:
-	coverage run -m pytest -n 0
+	pytest 
 
 format: isort black license-add
 

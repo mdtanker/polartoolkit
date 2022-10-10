@@ -1,0 +1,47 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.13"]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout current git repository
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+
+      # Install Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Install package dependencies
+      - name: Install dependencies
+        run: |
+          $CONDA/bin/conda env update --file binder/environment.yml --name base
+          # python -m pip install --upgrade pip
+          # pip install --requirement requirements.txt
+          # pip install -e .
+
+      # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
+      - name: Run tests with pytest
+        run: |
+          conda install pytest-cov
+          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml
+      # Upload coverage report to codecov
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
