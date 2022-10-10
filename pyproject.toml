@@ -34,6 +34,9 @@ nbsphinx = "^0.8.9"
 sphinx-gallery = "^0.11.1"
 jupyter-book = "^0.13.1"
 nbconvert = "6.5.3"
+coverage = {extras = ["toml"], version = "^6.5.0"}
+pytest-xdist = {extras = ["psutil"], version = "^2.5.0"}
+coverage_enable_subprocess = "^1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -41,3 +44,13 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.flake8]
 max-line-length = 88
+
+[tool.coverage.run]
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+branch = true
+include = ["antarctic_plots/*"]
+omit = [
+    "*/tests/*",
+    "**/__init__.py"
+    ]
