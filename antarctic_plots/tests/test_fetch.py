@@ -16,17 +16,28 @@ def test_():
 """
 #%%
 from antarctic_plots import utils, fetch
-import pytest
+import pytest, os
+
+earthdata_login = [
+    os.environ.get("EARTHDATA_USERNAME", None), 
+    os.environ.get("EARTHDATA_PASSWORD", None)]
+
+# creat skipif decorate for fetch calls which use NSIDC Earthdata logins
+skip_earthdata = pytest.mark.skipif(
+    earthdata_login == [None, None], 
+    reason='requires earthdata login credentials set as environment variables')
 
 #%%
 # ice_vel
-
+@skip_earthdata
 def test_ice_vel_lowres():
     resolution='lowres'
     grid = fetch.ice_vel(resolution=resolution)
     expected = ('5000', [-2800000.0, 2795000.0, -2795000.0, 2800000.0], -15.5856771469, 4201.70605469, 'g')
     assert utils.get_grid_info(grid) == expected
 
+@pytest.mark.slow
+@skip_earthdata
 def test_ice_vel_highres():
     resolution='highres'
     grid = fetch.ice_vel(resolution=resolution)
@@ -38,7 +49,8 @@ def test_ice_vel_highres():
 
 #%%
 # modis_moa
-
+@pytest.mark.slow
+@skip_earthdata
 def test_modis_moa():
     version=750
     grid = fetch.modis_moa(version=version)
@@ -88,11 +100,14 @@ test = [
         ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 52.0, 'g')
     )
 ]
+@pytest.mark.slow
+@skip_earthdata
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == expected
 
+@skip_earthdata
 def test_bedmachine_reference():
     grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
     expected = ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 4797.15527344, 'g')
@@ -122,6 +137,7 @@ test = [
         ('1000', [-3333500.0, 3333500.0, -3332500.0, 3332500.0], -65.8680496216, 36.6361198425, 'p')
     )
 ]
+@pytest.mark.slow
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
@@ -137,7 +153,7 @@ def test_bedmap2_reference():
 
 #%%
 # deepbedmap
-
+@pytest.mark.slow
 def test_deepbedmap():
     grid = fetch.deepbedmap()
     expected = ('250', [-2700000.0, 2800000.0, -2199750.0, 2299750.0], -6156.0, 4215.0, 'p')

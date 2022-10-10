@@ -19,7 +19,10 @@ install:
 	pip install -e .
 
 test:
-	pytest 
+	pytest --cov=.
+
+test_fast:
+	pytest --cov=. -m "not slow"
 
 format: isort black license-add
 
