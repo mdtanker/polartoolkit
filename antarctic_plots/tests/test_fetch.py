@@ -18,14 +18,18 @@ def test_():
 from antarctic_plots import utils, fetch
 import pytest, os
 
-earthdata_login = [
-    os.environ.get("EARTHDATA_USERNAME", None), 
-    os.environ.get("EARTHDATA_PASSWORD", None)]
+try:
+    earthdata_login = [
+        os.environ.get("EARTHDATA_USERNAME", None), 
+        os.environ.get("EARTHDATA_PASSWORD", None)]
+except:
+    earthdata_login = [None, None]
 
 # creat skipif decorate for fetch calls which use NSIDC Earthdata logins
-skip_earthdata = pytest.mark.skipif(
-    earthdata_login == [None, None], 
-    reason='requires earthdata login credentials set as environment variables')
+skip_earthdata = pytest.mark.slow
+# skip_earthdata = pytest.mark.skipif(
+#     earthdata_login == [None, None], 
+#     reason='requires earthdata login credentials set as environment variables')
 
 #%%
 # ice_vel
