@@ -40,7 +40,7 @@ jobs:
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Run tests with pytest
         run: |
-          conda install pytest
+          conda install pytest-cov
           $CONDA/bin/pytest --cov
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
