@@ -31,7 +31,7 @@ jobs:
         run: pip install --no-deps --requirement requirements.txt
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Test with pytest
-        run: pytest --cov
+        run: pytest --cov=antarctic_plots antarctic_plots/tests/
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
