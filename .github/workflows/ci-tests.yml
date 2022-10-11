@@ -5,6 +5,11 @@ name: Tests
 
 on: [push, pull_request]
 
+# cancel any currently running workflows in this same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     strategy:
@@ -38,10 +43,10 @@ jobs:
           # pip install -e .
 
       # Set EARTHDATA login as environment variables
-      - name: Environment Variables from Dotenv
-        uses: c-py/action-dotenv-to-setenv@v4
-        with:
-          env-file: .env
+      # - name: Environment Variables from Dotenv
+      #   uses: c-py/action-dotenv-to-setenv@v4
+      #   with:
+      #     env-file: .env
 
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Run tests with pytest
