@@ -37,11 +37,19 @@ jobs:
           # pip install --requirement requirements.txt
           # pip install -e .
 
+      # Set EARTHDATA login as environment variables
+      - name: Environment Variables from Dotenv
+        uses: c-py/action-dotenv-to-setenv@v4
+        with:
+          env-file: .env
+
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Run tests with pytest
         run: |
-          conda install "pytest-cov>=4.0.0"
-          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          pip install pytest-cov>=4.0.0
+          pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          # conda install "pytest-cov>=4.0.0"
+          # $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
