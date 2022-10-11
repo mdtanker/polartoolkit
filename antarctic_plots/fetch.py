@@ -9,6 +9,7 @@ import glob
 import os
 from getpass import getpass
 from pathlib import Path
+import shutil
 
 import pandas as pd
 import pooch
@@ -1249,7 +1250,7 @@ def geothermal(
             spacing = initial_spacing
         if registration is None:
             registration = initial_registration
-
+    
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
             known_hash=None,
@@ -1258,22 +1259,26 @@ def geothermal(
             ),
             progressbar=True,
         )
-        file = [p for p in path if p.endswith("Mean.tif")][0]
-        try:
-            os.rename(
-                file[:-9],
-                file[:-9].replace(" ", "_"),
-            )
-        except FileNotFoundError:
-            pass
+        
+        # if (' ' in file) == True:
+        #     try:
+        #         os.rename(
+        #             file[:-9],
+        #             file[:-9].replace(" ", "_"),
+        #         )
+        #     except FileNotFoundError:
+        #         pass
 
         if kwargs.get('points', False) is True:
+            file = [p for p in path if p.endswith("V003.xlsx")][0]
             info = False
             plot = False
             # find path to the point data
-            path = glob.glob(
-                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*V003.xlsx")[0]
-            GHF_points = pd.read_excel(path)
+            # path = glob.glob(
+            #     f"{pooch.os_cache('pooch')}/**/*V003.xlsx")[0]
+            
+            # read the excel file with pandas
+            GHF_points = pd.read_excel(file)
 
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
@@ -1285,10 +1290,20 @@ def geothermal(
             resampled = GHF_points
         
         elif kwargs.get('points', False) is False:
-            path = glob.glob(
-                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+            file = [p for p in path if p.endswith("Mean.tif")][0]
+            # file = glob.glob(
+                # f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*Mean.tif")[0]
+            try:
+                new_file = shutil.copyfile(file, f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/Mean.tif")
+            except shutil.SameFileError:
+                # print('file already copied to new location')
+                new_file = file
 
-            grid = xr.load_dataarray(path).squeeze()
+            # find path to .tif file
+            # path = glob.glob(
+            #     f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
+
+            grid = xr.load_dataarray(new_file).squeeze()
 
             resampled = resample_grid(grid, 
                     initial_spacing, initial_region, initial_registration, 
@@ -1860,79 +1875,6 @@ def moho(
                 initial_spacing, initial_region, initial_registration, 
                 spacing, region, registration)
 
-    elif version == 'pappa-2019':
-        # was in lat long, so just using standard values here
-        # initial_region=regions.antarctica
-        # initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
-        # initial_registration='g'
-
-        # if region is None:
-        #     region = initial_region
-        # if spacing is None:
-        #     spacing = initial_spacing
-        # if registration is None:
-        #     registration = initial_registration
-
-        def preprocessing(fname, action, pooch2):
-            "Load the .dat file, grid it, and save it back as a .nc"
-            path = pooch.Unzip()(fname, action, pooch2)
-            fname = [p for p in path if p.endswith("moho.final.dat")][0]
-            fname = Path(fname)
-
-            # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
-
-            # Only recalculate if new download or the processed file doesn't exist yet
-            if action in ("download", "update") or not fname_processed.exists():
-                # load data
-                df = pd.read_csv(
-                    fname, 
-                    delim_whitespace=True, 
-                    header=None, 
-                    names=["lon", "lat", "depth"],
-                )
-                # convert to meters
-                df.depth = df.depth*-1000
-
-                # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
-
-                # block-median and grid the data
-                df = pygmt.blockmedian(
-                    df[["x", "y", "depth"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
-                    registration=initial_registration,
-                )
-                processed = pygmt.surface(
-                    data=df[["x", "y", "depth"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
-                    registration=initial_registration,
-                    M="1c", 
-                )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
-            return str(fname_processed)
-
-        path = pooch.retrieve(
-            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
-            known_hash=None,
-            progressbar=True,
-            processor=preprocessing,
-        )
-
-        grid = xr.load_dataarray(path)
-
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-
-
-    # "https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
-    
     else:
         raise ValueError('invalid version string')
 
