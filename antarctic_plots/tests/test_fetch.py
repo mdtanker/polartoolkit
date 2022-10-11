@@ -38,7 +38,7 @@ def test_ice_vel_lowres():
     resolution='lowres'
     grid = fetch.ice_vel(resolution=resolution)
     expected = ('5000', [-2800000.0, 2795000.0, -2795000.0, 2800000.0], -15.5856771469, 4201.70605469, 'g')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 @pytest.mark.slow
 @skip_earthdata
@@ -46,7 +46,7 @@ def test_ice_vel_highres():
     resolution='highres'
     grid = fetch.ice_vel(resolution=resolution)
     expected = ('450', [-2800000.0, 2799800.0, -2799800.0, 2800000.0], 2.34232032881e-07, 4218.26513672, 'g')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.ice_vel(resolution='lowres')
 # utils.get_grid_info(grid)
@@ -59,7 +59,7 @@ def test_modis_moa():
     version=750
     grid = fetch.modis_moa(version=version)
     expected = ('750', [-3174450.0, 2867550.0, -2815925.0, 2405575.0], 0.0, 42374.0, 'p')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # version=125 not testing since too large
 
@@ -78,7 +78,7 @@ def test_modis_moa():
 def test_basement():
     grid = fetch.basement()
     expected = ('5000', [-3330000.0, 1900000.0, -3330000.0, 1850000.0], -8503.13378906, 78.269317627, 'p')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.basement()
 # utils.get_grid_info(grid)
@@ -109,13 +109,13 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 @skip_earthdata
 def test_bedmachine_reference():
     grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
     expected = ('500', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 4797.15527344, 'g')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
 # utils.get_grid_info(grid)
@@ -145,12 +145,12 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer='surface', reference="ellipsoid")
     expected = ('1000', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 8164.0, 'g')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.bedmap2(layer='gl04c_geiod_to_WGS84')
 # utils.get_grid_info(grid)
@@ -161,7 +161,7 @@ def test_bedmap2_reference():
 def test_deepbedmap():
     grid = fetch.deepbedmap()
     expected = ('250', [-2700000.0, 2800000.0, -2199750.0, 2299750.0], -6156.0, 4215.0, 'p')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.deepbedmap()
 # utils.get_grid_info(grid)
@@ -185,7 +185,7 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type='FA')
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.gravity(version='eigen')
 # utils.get_grid_info(grid)
@@ -202,7 +202,7 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_magnetics(test_input, expected):
     grid = fetch.magnetics(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.magnetics(version='admap1')
 # utils.get_grid_info(grid)
@@ -225,7 +225,17 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_geothermal(test_input, expected):
     grid = fetch.geothermal(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+def test_geothermal_points():
+    df = fetch.geothermal(version='burton-johnson-2020', points=True)
+    expected = [-56.5667, 34.1833, 'C11-44', 0.0, 11, 300, 0.77, 229.0, -5372.0,
+        'Anderson1977', 'https://doi.org/10.1594/PANGAEA.796541', 'S3', 
+        'Unconsolidated sediments', 2098568.3517061966, 3089886.43259545,229.002]
+    assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)
+
+# df = fetch.geothermal(version='burton-johnson-2020', points=True)
+# df.iloc[0].dropna().tolist()
 
 # grid = fetch.geothermal(version='burton-johnson-2020')
 # utils.get_grid_info(grid)
@@ -242,7 +252,7 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.gia(version='stal-2020')
 # utils.get_grid_info(grid)
@@ -262,7 +272,7 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.crustal_thickness(version='an-2015')
 # utils.get_grid_info(grid)
@@ -282,7 +292,7 @@ test = [
 @pytest.mark.parametrize("test_input,expected", test)
 def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
-    assert utils.get_grid_info(grid) == expected
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 # grid = fetch.moho(version='shen-2018')
 # utils.get_grid_info(grid)
