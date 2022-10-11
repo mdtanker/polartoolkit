@@ -41,7 +41,7 @@ jobs:
           $CONDA/bin/conda env update --file binder/environment.yml --name base
           # python -m pip install --upgrade pip
           # pip install --requirement requirements.txt
-          # pip install -e .
+          pip install -e .
 
       # Set EARTHDATA login as environment variables
       # - name: Environment Variables from Dotenv
@@ -55,6 +55,7 @@ jobs:
           pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
           # conda install pytest-cov=4
           # $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+      
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
