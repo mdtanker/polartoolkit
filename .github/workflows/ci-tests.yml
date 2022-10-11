@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9.13"]
+        python-version: ["3.9"]
     runs-on: ubuntu-latest
 
     steps:
@@ -33,30 +33,29 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2.1.1
         with:
           activate-environment: antarctic_plots
-          # python-version: ${{ matrix.python-version }}
+          environment-file: binder/environment.yml
+          python-version: ${{ matrix.python-version }}
           channels: conda-forge,nodefaults
           channel-priority: strict
           miniforge-version: latest
           miniforge-variant: Mambaforge
           mamba-version: "*"
           use-mamba: true
+          auto-activate-base: false
 
       # Install dependencies from conda-forge
       - name: Install dependencies
         run: |
-          mamba install python=${{ matrix.python-version }} \
-                        pygmt=0.7.0 geopandas=0.11.0 \
-                        pytest-cov=4.0.0 
-          pip install --pre --prefer-binary \
-                        numpy pandas xarray netCDF4 packaging \
+          mamba install pytest-cov=4.0.0 
+          #pip install --pre --prefer-binary            
                         
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
         run: mamba list
        
       # Install antarctic-plots itself
-      - name: Install the package
-        run: make install
+      #- name: Install the package
+      #  run: make install
      
 #       # Install Python
 #       - name: Set up Python ${{ matrix.python-version }}
