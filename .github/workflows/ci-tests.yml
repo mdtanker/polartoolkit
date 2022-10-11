@@ -17,7 +17,10 @@ jobs:
       matrix:
         python-version: ["3.9"]
     runs-on: ubuntu-latest
-
+    defaults:
+     run:
+      shell: bash -l {0}
+      
     steps:
       # Checkout current git repository
       - name: Checkout
@@ -51,7 +54,9 @@ jobs:
                         
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
-        run: mamba list
+        run: |
+          mamba list
+          pip list
        
       # Install antarctic-plots itself
       #- name: Install the package
