@@ -37,7 +37,7 @@ jobs:
       # Install package dependencies
       - name: Install dependencies
         run: |
-          pip install pytest-cov>=4.0.0
+          $CONDA/bin/conda install pytest-cov=4.0.0 -c conda-forge
           $CONDA/bin/conda env update --file binder/environment.yml --name base
           # python -m pip install --upgrade pip
           # pip install --requirement requirements.txt
@@ -52,9 +52,9 @@ jobs:
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Run tests with pytest
         run: |
-          pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          # pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
           # conda install pytest-cov=4
-          # $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
