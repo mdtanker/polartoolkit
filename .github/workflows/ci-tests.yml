@@ -21,27 +21,55 @@ jobs:
     steps:
       # Checkout current git repository
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0
 
       - name: Switch to Current Branch
         run: git checkout ${{ env.BRANCH }}
-
-      # Install Python
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      
+      # Install Mambaforge with conda-forge dependencies
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2.1.1
         with:
-          python-version: ${{ matrix.python-version }}
+          activate-environment: antarctic_plots
+          # python-version: ${{ matrix.python-version }}
+          channels: conda-forge,nodefaults
+          channel-priority: strict
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          mamba-version: "*"
+          use-mamba: true
 
-      # Install package dependencies
+      # Install dependencies from conda-forge
       - name: Install dependencies
         run: |
-          $CONDA/bin/conda install pytest-cov=4.0.0 -c conda-forge
-          $CONDA/bin/conda env update --file binder/environment.yml --name base
-          # python -m pip install --upgrade pip
-          # pip install --requirement requirements.txt
-          pip install -e .
+          mamba install python=${{ matrix.python-version }} \
+                        pygmt=0.7.0 geopandas=0.11.0 \
+                        pytest-cov=4.0.0 
+          pip install --pre --prefer-binary \
+                        numpy pandas xarray netCDF4 packaging \
+                        
+      # Show installed pkg information for postmortem diagnostic
+      - name: List installed packages
+        run: mamba list
+       
+      # Install antarctic-plots itself
+      - name: Install the package
+        run: make install
+     
+#       # Install Python
+#       - name: Set up Python ${{ matrix.python-version }}
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: ${{ matrix.python-version }}
+
+#       # Install package dependencies
+#       - name: Install dependencies
+#         run: |
+#           $CONDA/bin/conda install pytest-cov=4.0.0 -c conda-forge
+#           $CONDA/bin/conda env update --file binder/environment.yml --name base
+#           pip install -e .
 
       # Set EARTHDATA login as environment variables
       # - name: Environment Variables from Dotenv
@@ -52,10 +80,8 @@ jobs:
       # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
       - name: Run tests with pytest
         run: |
-          # pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
-          # conda install pytest-cov=4
-          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v3.1.1
