@@ -9,6 +9,7 @@ import glob
 import os
 from getpass import getpass
 from pathlib import Path
+import shutil
 
 import pandas as pd
 import pooch
@@ -1289,12 +1290,15 @@ def geothermal(
             resampled = GHF_points
         
         elif kwargs.get('points', False) is False:
-            import shutil
-            # resampled = [p for p in path if p.endswith("Mean.tif")]#[0]
-            file = glob.glob(
-                f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
-            new_file = shutil.copyfile(file, f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/Mean.tif")
-            
+            file = [p for p in path if p.endswith("Mean.tif")][0]
+            # file = glob.glob(
+                # f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*Mean.tif")[0]
+            try:
+                new_file = shutil.copyfile(file, f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/Mean.tif")
+            except shutil.SameFileError:
+                # print('file already copied to new location')
+                new_file = file
+
             # find path to .tif file
             # path = glob.glob(
             #     f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
