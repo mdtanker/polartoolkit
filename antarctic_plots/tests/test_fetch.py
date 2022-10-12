@@ -21,6 +21,10 @@ import pytest
 
 from antarctic_plots import fetch, utils
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 earthdata_login = [
     os.environ.get("EARTHDATA_USERNAME", None),
     os.environ.get("EARTHDATA_PASSWORD", None),
