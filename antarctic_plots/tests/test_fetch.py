@@ -552,15 +552,11 @@ test = [
     ),
 ]
 
-
-@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
-@pytest.mark.issue
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
     expected = [
@@ -605,7 +601,9 @@ test = [
         ),
     ),
 ]
-
+# causing and error: Error: Process completed with exit code 139
+# Fatal Python error: Segmentation fault
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
