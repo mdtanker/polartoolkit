@@ -50,37 +50,12 @@ jobs:
       # Install dependencies from conda-forge
       - name: Install dependencies
         run: |
-          mamba install pytest-cov=4.0.0 "isort>=5.10.1" 
-          pip install "black["jupyter"]>=22.6.0"
+          mamba install pytest-cov=4.0.0
 
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
         run: |
           mamba list
-          pip list
-       
-      # Install antarctic-plots itself
-      #- name: Install the package
-      #  run: make install
-     
-#       # Install Python
-#       - name: Set up Python ${{ matrix.python-version }}
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: ${{ matrix.python-version }}
-
-#       # Install package dependencies
-#       - name: Install dependencies
-#         run: |
-#           $CONDA/bin/conda install pytest-cov=4.0.0 -c conda-forge
-#           $CONDA/bin/conda env update --file binder/environment.yml --name base
-#           pip install -e .
-
-      # Set EARTHDATA login as environment variables
-      # - name: Environment Variables from Dotenv
-      #   uses: c-py/action-dotenv-to-setenv@v4
-      #   with:
-      #     env-file: .env
 
       # Run tests and create coverage report: currently excluding tests which need an earthdata login
       # -m "not slow" excludes tests marked as 'slow'
