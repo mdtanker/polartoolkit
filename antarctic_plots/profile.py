@@ -12,7 +12,7 @@ import pygmt
 import pyogrio
 import verde as vd
 
-from antarctic_plots import fetch, maps, utils
+from antarctic_plots import fetch, maps, regions, utils
 
 try:
     import ipyleaflet
@@ -769,6 +769,6 @@ def draw_lines(**kwargs):
     m.add_control(myDrawControl)
 
     clear_m()
-    display(m)
+    display(m)  # noqa
 
     return lines

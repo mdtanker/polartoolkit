@@ -17,8 +17,8 @@ import xarray as xr
 from antarctic_plots import fetch, regions, utils
 
 if TYPE_CHECKING:
-    import numpy as np
     import geopandas as gpd
+    import numpy as np
 
 try:
     import ipyleaflet
@@ -114,7 +114,8 @@ def plot_grd(
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
-        except:
+        except (ValueError, pygmt.exceptions.GMTInvalidInput):
+            raise
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
@@ -181,7 +182,8 @@ def plot_grd(
                 series=(zmin, zmax),
                 verbose="e",
             )
-        except:
+        except (ValueError, pygmt.exceptions.GMTInvalidInput):
+            raise
             print("grid region can't be extracted.")
             pygmt.makecpt(
                 cmap=cmap,
@@ -514,7 +516,7 @@ def interactive_map(
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
-        display(label_xy) # noqa
+        display(label_xy)  # noqa
 
         def handle_click(**kwargs):
             if kwargs.get("type") == "click":
@@ -524,7 +526,7 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
-        display(m) # noqa
+        display(m)  # noqa
 
     return m
 
@@ -577,8 +579,9 @@ def plot_3d(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
-        except:
-            print("first grids region can't be extracted, using antarctic region.")
+        except (ValueError, pygmt.exceptions.GMTInvalidInput):
+            raise
+            print("first grids' region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
     # set figure projection and size from input region
@@ -603,7 +606,7 @@ def plot_3d(
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]
-        # if provided, mask grid with polygon from interactive map via 
+        # if provided, mask grid with polygon from interactive map via
         # regions.draw_region
         elif polygon_mask is not None:
             grid = utils.mask_from_polygon(
@@ -628,7 +631,8 @@ def plot_3d(
                     continuous=True,
                     series=(zmin, zmax),
                 )
-            except:
+            except (ValueError, pygmt.exceptions.GMTInvalidInput):
+                raise
                 print("grid region can't be extracted.")
                 pygmt.makecpt(
                     cmap=cmaps[i],

@@ -46,11 +46,11 @@ def get_grid_info(grid):
     if isinstance(grid, str):
         # grid = xr.load_dataarray(grid)
         try:
-            # grid = pygmt.load_dataarray(grid)
             grid = xr.load_dataarray(grid).squeeze()
         except ValueError:
-            print("getting grid info didnt work")
-            pass
+            print("loading grid as dataarray didn't work")
+            raise
+            # pass
             # grid = xr.open_rasterio(grid)
             # grid = rioxarray.open_rasterio(grid)
 
@@ -66,8 +66,9 @@ def get_grid_info(grid):
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
         reg = grid.gmt.registration
         registration = "g" if reg == 0 else "p"
-    except Exception:
+    except pygmt.exceptions.GMTInvalidInput:
         print("grid info can't be extracted, check number of dimensions, should be 2.")
+        raise
         spacing = None
         region = None
         zmin = None
@@ -1317,6 +1318,6 @@ def mask_from_polygon(
         inverse = inverse.where(inverse != 0)
         masked = inverse * ds.z
 
-    masked = masked.where(masked.notnull() == True, drop=True)
+    masked = masked.where(masked.notnull() is True, drop=True)
 
     return masked

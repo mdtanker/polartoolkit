@@ -6,12 +6,12 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 """
-Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify 
+Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify
 grids have been properly fetch. Also tests the `resample_grid()` function
 Follow this format:
 def test_():
     grid = fetch.()
-    expected = 
+    expected =
     assert utils.get_grid_info(grid) == expected
 """
 import os
@@ -20,13 +20,10 @@ import pytest
 
 from antarctic_plots import fetch, utils
 
-try:
-    earthdata_login = [
-        os.environ.get("EARTHDATA_USERNAME", None),
-        os.environ.get("EARTHDATA_PASSWORD", None),
-    ]
-except:
-    earthdata_login = [None, None]
+earthdata_login = [
+    os.environ.get("EARTHDATA_USERNAME", None),
+    os.environ.get("EARTHDATA_PASSWORD", None),
+]
 
 # create skipif decorator for fetch calls which use NSIDC Earthdata logins
 skip_earthdata = pytest.mark.skipif(
@@ -34,8 +31,7 @@ skip_earthdata = pytest.mark.skipif(
     reason="requires earthdata login credentials set as environment variables",
 )
 
-#%%
-# resample_grid
+# %% resample_grid
 test = [
     # no inputs
     (
@@ -197,8 +193,7 @@ def test_resample_grid(test_input, expected):
 # resampled = fetch.resample_grid(grid, **test_input)
 # utils.get_grid_info(resampled)
 
-#%%
-# ice_vel
+# %% ice_vel
 @pytest.mark.issue
 @pytest.mark.slow
 @pytest.mark.earthdata
@@ -234,10 +229,9 @@ def test_ice_vel_highres():
 
 
 # grid = fetch.ice_vel(resolution='lowres')
-# utils.get_grid_info(grid)
+# ut ils.get_grid_info(grid)
 
-#%%
-# modis_moa
+# %% modis_moa
 @pytest.mark.issue
 @pytest.mark.slow
 @pytest.mark.earthdata
@@ -260,14 +254,12 @@ def test_modis_moa():
 # grid = fetch.modis_moa(version=750)
 # utils.get_grid_info(grid)
 
-#%%
-# imagery, not testing, too large
+# %% imagery, not testing, too large
 
 # grid = fetch.imagery()
 # utils.get_grid_info(grid)
 
-#%%
-# basement
+# %% basement
 
 
 @pytest.mark.issue
@@ -286,8 +278,7 @@ def test_basement():
 # grid = fetch.basement()
 # utils.get_grid_info(grid)
 
-#%%
-# bedmachine
+# %% bedmachine
 # test for all layers, but only test reference models with 1 layer
 
 test = [
@@ -365,8 +356,7 @@ def test_bedmachine_reference():
 # grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
 # utils.get_grid_info(grid)
 
-#%%
-# bedmap2
+# %% bedmap2
 # test for all layers, but only test reference models with 1 layer
 
 test = [
@@ -422,8 +412,7 @@ def test_bedmap2_reference():
 # grid = fetch.bedmap2(layer='gl04c_geiod_to_WGS84')
 # utils.get_grid_info(grid)
 
-#%%
-# deepbedmap
+# %% deepbedmap
 @pytest.mark.issue
 @pytest.mark.slow
 def test_deepbedmap():
@@ -441,8 +430,7 @@ def test_deepbedmap():
 # grid = fetch.deepbedmap()
 # utils.get_grid_info(grid)
 
-#%%
-# gravity
+# %% gravity
 # only testing 1 anomaly type (FA) for each version
 
 test = [
@@ -479,7 +467,6 @@ test = [
 ]
 
 
-@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type="FA")
@@ -489,8 +476,7 @@ def test_gravity(test_input, expected):
 # grid = fetch.gravity(version='eigen')
 # utils.get_grid_info(grid)
 
-#%%
-# magnetics
+# %% magnetics
 
 test = [
     (
@@ -515,8 +501,7 @@ def test_magnetics(test_input, expected):
 # grid = fetch.magnetics(version='admap1')
 # utils.get_grid_info(grid)
 
-#%%
-# ghf
+# %% ghf
 
 test = [
     (
@@ -551,6 +536,7 @@ test = [
     ),
 ]
 
+
 # causing and error: Error: Process completed with exit code 139
 # Fatal Python error: Segmentation fault
 @pytest.mark.issue
@@ -558,6 +544,7 @@ test = [
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 # causing and error: Error: Process completed with exit code 139
 # Fatal Python error: Segmentation fault
@@ -591,8 +578,7 @@ def test_ghf_points():
 # grid = fetch.ghf(version='burton-johnson-2020')
 # utils.get_grid_info(grid)
 
-#%%
-# gia
+# %% gia
 
 test = [
     (
@@ -606,6 +592,8 @@ test = [
         ),
     ),
 ]
+
+
 # causing and error: Error: Process completed with exit code 139
 # Fatal Python error: Segmentation fault
 @pytest.mark.issue
@@ -618,8 +606,7 @@ def test_gia(test_input, expected):
 # grid = fetch.gia(version='stal-2020')
 # utils.get_grid_info(grid)
 
-#%%
-# crustal_thickness
+# %% crustal_thickness
 
 test = [
     (
@@ -654,8 +641,7 @@ def test_crustal_thickness(test_input, expected):
 # grid = fetch.crustal_thickness(version='an-2015')
 # utils.get_grid_info(grid)
 
-#%%
-# moho
+# %% moho
 
 test = [
     (
