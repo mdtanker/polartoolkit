@@ -59,7 +59,8 @@ jobs:
           # pip install python-dotenv==0.21.0
           $CONDA/bin/conda install pytest=7.1.3 pytest-cov=4.0.0 -c conda-forge
           $CONDA/bin/conda env update --file binder/environment.yml --name base
-          pip install -e .
+          $CONDA/bin/pip install python-dotenv==0.21.0
+          $CONDA/bin/pip install -e .
 
       # Show installed pkg information for postmortem diagnostic
       # - name: List installed packages
