@@ -50,9 +50,9 @@ jobs:
       # Install dependencies from conda-forge
       - name: Install dependencies
         run: |
-          mamba install pytest-cov=4.0.0 
-          #pip install --pre --prefer-binary            
-                        
+          mamba install pytest-cov=4.0.0 "isort>=5.10.1" 
+          pip install "black["jupyter"]>=22.6.0"
+
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
         run: |
@@ -82,14 +82,19 @@ jobs:
       #   with:
       #     env-file: .env
 
-      # Run tests and create coverage report
+      # Run tests and create coverage report: currently excluding tests which need an earthdata login
       # -m "not slow" excludes tests marked as 'slow'
       # -m "not earthdata" excludes tests markes as 'earthdata'
       # -m "not slow or not earthdata" excludes both
       - name: Run tests with pytest
         run: |
-          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata"
+          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata or not slow"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3.1.1
+      
+      # Format the code
+      - name: Run tests with pytest
+        run: |
+          make format
