@@ -176,7 +176,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
@@ -390,7 +390,6 @@ def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-@pytest.mark.issue
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
