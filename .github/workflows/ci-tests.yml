@@ -3,7 +3,8 @@
 
 name: Tests
 
-on: [push, pull_request]
+# on: [push, pull_request]
+on: [pull_request]
 
 # cancel any currently running workflows in this same PR
 concurrency:
@@ -87,7 +88,7 @@ jobs:
       # -m "not slow or not earthdata" excludes both
       - name: Run tests with pytest
         run: |
-          pytest --cov=. --cov-report=html --cov-report=xml -rs
+          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
