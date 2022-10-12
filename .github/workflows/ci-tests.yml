@@ -81,10 +81,13 @@ jobs:
       #   with:
       #     env-file: .env
 
-      # Run tests and create coverage report, try replacing with pytest --cov=antarctic_plots antarctic_plots/tests/
+      # Run tests and create coverage report
+      # -m "not slow" excludes tests marked as 'slow'
+      # -m "not earthdata" excludes tests markes as 'earthdata'
+      # -m "not slow or not earthdata" excludes both
       - name: Run tests with pytest
         run: |
-          pytest --cov=. --cov-report=html --cov-report=xml -m "not slow"
+          pytest --cov=. --cov-report=html --cov-report=xml -rs
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov

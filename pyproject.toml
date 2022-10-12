@@ -53,5 +53,6 @@ omit = [
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "earthdata: marks tests as requiring earthdata login info (deselect with '-m \"not earthdata\"')",
     "serial",
 ]
