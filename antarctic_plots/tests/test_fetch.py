@@ -98,7 +98,7 @@ test = [
     ),
 ]
 
-@pytest.mark.slow
+@pytest.mark.issues
 @pytest.mark.parametrize("test_input,expected", test)
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version='antgg', anomaly_type='FA')
@@ -116,6 +116,7 @@ def test_resample_grid(test_input, expected):
 
 #%%
 # ice_vel
+@pytest.mark.issues
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -125,6 +126,7 @@ def test_ice_vel_lowres():
     expected = ('5000', [-2800000.0, 2795000.0, -2795000.0, 2800000.0], -15.5856771469, 4201.70605469, 'g')
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
+@pytest.mark.issues
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -139,6 +141,7 @@ def test_ice_vel_highres():
 
 #%%
 # modis_moa
+@pytest.mark.issues
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -270,7 +273,7 @@ test = [
         ('5000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], 977835.3125, 980167.75, 'g')
     )
 ]
-
+@pytest.mark.issues
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type='FA')

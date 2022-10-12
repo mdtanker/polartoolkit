@@ -1,0 +1,5 @@
+# Requirements for running the Github Action: format
+flake8==4.0.1
+isort==5.10.1
+flake8-pyproject==0.9.1
+black[jupyter]==22.10.0
