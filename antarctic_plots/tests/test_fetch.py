@@ -269,6 +269,7 @@ def test_modis_moa():
 #%%
 # basement
 
+
 @pytest.mark.issue
 def test_basement():
     grid = fetch.basement()
@@ -336,6 +337,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.issue
 @pytest.mark.earthdata
 @skip_earthdata
@@ -343,6 +345,7 @@ test = [
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.issue
 @pytest.mark.earthdata
@@ -395,11 +398,13 @@ test = [
     ),
 ]
 
+
 @pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.issue
 def test_bedmap2_reference():
@@ -499,6 +504,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
@@ -600,6 +606,7 @@ test = [
     ),
 ]
 
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
@@ -635,6 +642,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
@@ -669,6 +677,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.parametrize("test_input,expected", test)
 def test_moho(test_input, expected):
