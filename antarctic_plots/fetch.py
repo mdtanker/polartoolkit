@@ -65,9 +65,13 @@ def resample_grid(
     elif spacing < initial_spacing:
         print(f"Warning, requested spacing ({spacing}) is smaller than the original ",
             f"({initial_spacing}).")
+        cut = pygmt.grdcut(
+            grid=grid,
+            region=region,
+        )
         resampled = pygmt.grdsample(
             grid=grid, 
-            region=region,
+            region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
             spacing=f"{spacing}+e", 
             registration=registration,
         )
@@ -88,19 +92,18 @@ def resample_grid(
             spacing=spacing,
             registration=registration,
         )
-    # if only region is different, return subregion
-    elif (spacing == initial_spacing) and (region != initial_region) and (registration == initial_registration): # noqa
-        print('returning subregion')
-        resampled = pygmt.grdcut(
-            grid=grid,
-            region=pygmt.grdinfo(grid, spacing=f"r", verbose='q')[2:-1],
-        )
 
     else:
-        print('returning grid with new region and registration')
-        resampled = pygmt.grdsample(
+        print('returning grid with new region and/or registration, same spacing')
+        cut = pygmt.grdcut(
             grid=grid,
             region=region,
+            extend='',
+        )
+        resampled = pygmt.grdsample(
+            grid=grid,
+            spacing=f"{spacing}+e",
+            region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
             registration=registration,
         )
 
@@ -165,6 +168,7 @@ def sample_shp(name: str) -> str:
     """
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles", 
         processor=pooch.Unzip(),
         known_hash=None,
     )
@@ -254,6 +258,8 @@ def ice_vel(
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",  # noqa
+        fname='measures_ice_vel_phase_map.nc',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_velocity", 
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
@@ -293,6 +299,8 @@ def modis_moa(
     if version == 125:
         path = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz",  # noqa
+            fname='moa125.tif.gz',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
             known_hash=None,
@@ -301,6 +309,8 @@ def modis_moa(
     elif version == 750:
         path = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz",  # noqa
+            fname='moa750.tif.gz',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
             known_hash=None,
@@ -327,6 +337,8 @@ def imagery() -> xr.DataArray:
     """
     path = pooch.retrieve(
         url="https://lima.usgs.gov/tiff_90pct.zip",
+        fname='lima.zip',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
         processor=pooch.Unzip(),
         known_hash=None,
         progressbar=True,
@@ -350,6 +362,8 @@ def groundingline() -> str:
     """
     path = pooch.retrieve(
         url="https://doi.pangaea.de/10013/epic.42133.d001",
+        fname='groundingline_depoorter_2013.d001',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",  
         known_hash=None,
         processor=pooch.Unzip(),
         progressbar=True,
@@ -399,6 +413,8 @@ def basement(
 
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",  # noqa
+        fname='basement.nc',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/basement",          
         known_hash=None,
         progressbar=True,
     )
@@ -472,6 +488,8 @@ def bedmachine(
 
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc",  # noqa
+        fname='bedmachine.nc',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",        
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
@@ -573,6 +591,8 @@ def bedmap2(
 
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
+        fname='bedmap2_tiff.zip',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         known_hash=None,
         processor=pooch.Unzip(),
         progressbar=True,
@@ -673,6 +693,8 @@ def deepbedmap(
 
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
+        fname='deepbedmap.tif',
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         known_hash=None,
         progressbar=True,
     )
@@ -762,6 +784,8 @@ def gravity(
 
         path = pooch.retrieve(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
+            fname='antgg.nc',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             progressbar=True,
         )
@@ -843,6 +867,8 @@ def gravity(
 
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
+            fname='antgg_update.zip',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -896,6 +922,8 @@ def gravity(
         
         path = pooch.retrieve(
             url="doi:10.5281/zenodo.5882207/earth-gravity-10arcmin.nc",
+            fname='eigen.nc',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -1015,6 +1043,8 @@ def magnetics(
 
         path = pooch.retrieve(
             url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+            fname='admap1.zip',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1041,13 +1071,17 @@ def magnetics(
     #     )
 
     elif version == "admap2_gdb":
+        plot=False
+        info=False
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
+            fname='admap2_gdb.zip',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True,
         )
-    
+        resampled=path
     else:
         raise ValueError('invalid version string')
     
@@ -1060,7 +1094,7 @@ def magnetics(
 
 
 
-def geothermal(
+def ghf(
     version: str,
     plot: bool = False,
     info: bool = False,
@@ -1147,7 +1181,9 @@ def geothermal(
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
@@ -1172,6 +1208,8 @@ def geothermal(
         
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
+            fname='an_2015_.tar.gz',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -1201,7 +1239,9 @@ def geothermal(
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix('.nc')
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load the data
@@ -1226,6 +1266,8 @@ def geothermal(
         
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz", # noqa
+            fname='martos_2017.xyz',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -1250,33 +1292,22 @@ def geothermal(
             spacing = initial_spacing
         if registration is None:
             registration = initial_registration
-    
+        
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
+            fname='burton_johnson_2020.zip',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             processor=pooch.Unzip(
-                extract_dir="Burton_Johnson_2020",
+                extract_dir='burton_johnson_2020'
             ),
             progressbar=True,
         )
-        
-        # if (' ' in file) == True:
-        #     try:
-        #         os.rename(
-        #             file[:-9],
-        #             file[:-9].replace(" ", "_"),
-        #         )
-        #     except FileNotFoundError:
-        #         pass
 
         if kwargs.get('points', False) is True:
             file = [p for p in path if p.endswith("V003.xlsx")][0]
             info = False
             plot = False
-            # find path to the point data
-            # path = glob.glob(
-            #     f"{pooch.os_cache('pooch')}/**/*V003.xlsx")[0]
-            
             # read the excel file with pandas
             GHF_points = pd.read_excel(file)
 
@@ -1291,19 +1322,15 @@ def geothermal(
         
         elif kwargs.get('points', False) is False:
             file = [p for p in path if p.endswith("Mean.tif")][0]
-            # file = glob.glob(
-                # f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*Mean.tif")[0]
+            # pygmt gives issues when orginal filepath has spaces in it. To get around 
+            # this, we will copy the file into the parent directory.
             try:
-                new_file = shutil.copyfile(file, f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/Mean.tif")
+                new_file = shutil.copyfile(file, 
+                    f"{pooch.os_cache('pooch')}/antarctic_plots/ghf/burton_johnson_2020/Mean.tif")
             except shutil.SameFileError:
-                # print('file already copied to new location')
                 new_file = file
 
-            # find path to .tif file
-            # path = glob.glob(
-            #     f"{pooch.os_cache('pooch')}/Burton_Johnson_2020/**/*mean.tif")[0]
-
-            grid = xr.load_dataarray(new_file).squeeze()
+            grid = xr.load_dataarray(file).squeeze()
 
             resampled = resample_grid(grid, 
                     initial_spacing, initial_region, initial_registration, 
@@ -1371,6 +1398,8 @@ def geothermal(
         
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",  # noqa
+            fname='losing_ebbing_2021_ghf.csv',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -1398,6 +1427,8 @@ def geothermal(
 
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
+            fname='aq1.nc',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
         )
@@ -1464,6 +1495,8 @@ def geothermal(
 
         path = pooch.retrieve(
             url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",  # noqa
+            fname='shen_2020_ghf.xyz',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1537,6 +1570,8 @@ def gia(
 
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
+            fname='stal_2020_gia.tiff',
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gia",
             known_hash=None,
             progressbar=True,
         )
@@ -1625,7 +1660,7 @@ def crustal_thickness(
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname.with_stem('shen_2018_crustal_thickness_preprocessed')
             fname_processed = fname_pre.with_suffix('.nc')
 
             # Only recalculate if new download or the processed file doesn't exist yet
@@ -1665,6 +1700,8 @@ def crustal_thickness(
         path = pooch.retrieve(
             url="https://weisen.wustl.edu/For_Comrades/for_self/moho.WCANT.dat",
             known_hash=None,
+            fname="shen_2018_crustal_thickness.dat",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
             processor=preprocessing,
             progressbar=True,
         )
@@ -1690,9 +1727,11 @@ def crustal_thickness(
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, reproject the .nc file, and save it back"
-            fname = pooch.Untar()(fname, action, pooch2)[0]
-            fname = Path(fname)
-
+            path = pooch.Untar(
+                extract_dir='An_2015_crustal_thickness',
+                members=['AN1-CRUST.grd']
+                )(fname, action, pooch2)
+            fname = Path(path[0])
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname.with_stem(fname.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
@@ -1722,6 +1761,8 @@ def crustal_thickness(
         
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
+            fname="an_2015_crustal_thickness.tar.gz",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -1801,7 +1842,10 @@ def moho(
 
         def preprocessing(fname, action, pooch2):
             "Load the .dat file, grid it, and save it back as a .nc"
-            path = pooch.Untar()(fname, action, pooch2)
+            path = pooch.Untar(
+                extract_dir='Shen_2018_moho',
+                members=['WCANT_MODEL/moho.final.dat']
+                )(fname, action, pooch2)
             fname = [p for p in path if p.endswith("moho.final.dat")][0]
             fname = Path(fname)
 
@@ -1845,6 +1889,8 @@ def moho(
 
         path = pooch.retrieve(
             url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            fname="shen_2018_moho.tar",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
