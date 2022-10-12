@@ -54,6 +54,6 @@ omit = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "earthdata: marks tests as requiring earthdata login info (deselect with '-m \"not earthdata\"')",
-    "serial",
     "issue: mark tests with current issues (deselect with '-m \"not issues\"')",
+    "working: marks tests which are working",
 ]

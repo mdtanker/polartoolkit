@@ -177,7 +177,6 @@ test = [
 ]
 
 
-@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
@@ -196,7 +195,6 @@ def test_resample_grid(test_input, expected):
 
 # %% ice_vel
 @pytest.mark.issue
-@pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_lowres():
@@ -262,7 +260,7 @@ def test_modis_moa():
 
 # %% basement
 
-
+@pytest.mark.working
 def test_basement():
     grid = fetch.basement()
     expected = (
@@ -410,7 +408,8 @@ def test_bedmap2_reference():
 
 # %% deepbedmap
 
-
+@pytest.mark.working
+@pytest.mark.slow
 def test_deepbedmap():
     grid = fetch.deepbedmap()
     expected = (
@@ -462,7 +461,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type="FA")
@@ -487,7 +486,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_magnetics(test_input, expected):
     grid = fetch.magnetics(test_input)
@@ -627,7 +626,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
@@ -662,7 +661,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
