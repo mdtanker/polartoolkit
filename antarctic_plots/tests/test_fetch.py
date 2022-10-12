@@ -377,7 +377,12 @@ test = [
     (
         "gl04c_geiod_to_WGS84",
         (
-            "1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], -65.8680496216, 36.6361198425, "p",),
+            "1000",
+            [-3333500.0, 3333500.0, -3332500.0, 3332500.0],
+            -65.8680496216,
+            36.6361198425,
+            "p",
+        ),
     ),
 ]
 
@@ -391,7 +396,12 @@ def test_bedmap(test_input, expected):
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
-        ('1000', [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -50.4912605286, 4090.53417969, 'g')
+        "1000",
+        [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
+        -50.4912605286,
+        4090.53417969,
+        "g",
+    )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
@@ -399,6 +409,7 @@ def test_bedmap2_reference():
 # utils.get_grid_info(grid)
 
 # %% deepbedmap
+
 
 @pytest.mark.slow
 def test_deepbedmap():
