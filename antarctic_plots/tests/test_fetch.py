@@ -8,7 +8,7 @@
 """
 Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify 
 grids have been properly fetch. Also tests the `resample_grid()` function
-Follow this formate:
+Follow this format:
 def test_():
     grid = fetch.()
     expected = 
@@ -25,14 +25,97 @@ try:
 except:
     earthdata_login = [None, None]
 
-# creat skipif decorate for fetch calls which use NSIDC Earthdata logins
-skip_earthdata = pytest.mark.slow
-# skip_earthdata = pytest.mark.skipif(
-#     earthdata_login == [None, None], 
-#     reason='requires earthdata login credentials set as environment variables')
+# create skipif decorator for fetch calls which use NSIDC Earthdata logins
+skip_earthdata = pytest.mark.skipif(
+    earthdata_login == [None, None], 
+    reason='requires earthdata login credentials set as environment variables')
+
+#%%
+# resample_grid
+test = [
+    # no inputs
+    (dict(),
+    ('10000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], -384.5, 204.800003052, 'g')
+    ),
+    # return original with given initials
+    (dict(
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+        initial_spacing=10e3,
+        initial_registration='g',
+    ), 
+    ('10000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], -384.5, 204.800003052, 'g')
+    ),
+    # give false initial values, return actual initial values
+    (dict(
+        initial_region=[-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+        initial_spacing=8e3,
+        initial_registration='p',
+    ),
+    ('10000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], -384.5, 204.800003052, 'g')
+    ),
+    # Only registration is different
+    (dict(
+        registration='p',
+    ),
+    ('10000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], -337.490234375, 170.69921875, 'p')
+    ),
+    # smaller spacing, uneven, reset region to keep exact spacing
+    (dict(spacing=8212),
+    ('8212', [-3325860.0, 3325860.0, -3325860.0, 3325860.0], -374.47366333, 182.33392334, 'g')
+    ),
+    # larger spacing, uneven, reset region to keep exact spacing
+    (dict(spacing=10119),
+    ('10119', [-3329151.0, 3329151.0, -3329151.0, 3329151.0], -318.772613525, 177.986114502, 'g')
+    ),
+    # uneven subregion, reset region to keep exact spacing
+    (dict(region=[210012.0, 390003.0, -1310217.0, -1121376.0]),
+    ('10000', [210000.0, 400000.0, -1320000.0, -1120000.0], -175.400009155, 54.1000022888, 'g')
+    ),
+    # uneven subregion with diff reg, reset region to keep exact spacing
+    (dict(
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+        registration='p',
+    ),
+    ('10000', [210000.0, 400000.0, -1320000.0, -1120000.0], -156.026565552, 46.8070335388, 'p')
+    ),
+    # uneven spacing (smaller) and uneven region, reset region to keep exact spacing
+    (dict(
+        spacing=8212,
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+    ),
+    ('8212', [205300.0, 402388.0, -1322132.0, -1116832.0], -170.436401367, 47.9773178101, 'g')
+    ),
+    # uneven spacing (larger) and uneven region, reset region to keep exact spacing
+    (dict(
+        spacing=10119,
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+    ),
+    ('10119', [212499.0, 384522.0, -1305351.0, -1123209.0], -173.363143921, 50.2054672241, 'g')
+    ),
+    # larger than initial region, return initial region
+    (dict(region=[-3400e3, 3400e3, -3400e3, 34030e3]),
+    ('10000', [-3330000.0, 3330000.0, -3330000.0, 3330000.0], -384.5, 204.800003052, 'g')
+    ),
+]
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_resample_grid(test_input, expected):
+    grid = fetch.gravity(version='antgg', anomaly_type='FA')
+    resampled = fetch.resample_grid(grid, **test_input)
+    assert utils.get_grid_info(resampled) == pytest.approx(expected, rel=0.1)
+
+# test_input = dict(
+#     spacing=10119,
+#     region=[-3400e3, 3400e3, -3400e3, 34030e3],
+#     registration='p',
+# )
+# grid = fetch.gravity(version='antgg', anomaly_type='FA')
+# resampled = fetch.resample_grid(grid, **test_input)
+# utils.get_grid_info(resampled)
 
 #%%
 # ice_vel
+@pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_lowres():
     resolution='lowres'
@@ -41,6 +124,7 @@ def test_ice_vel_lowres():
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 @pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_highres():
     resolution='highres'
@@ -54,6 +138,7 @@ def test_ice_vel_highres():
 #%%
 # modis_moa
 @pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 def test_modis_moa():
     version=750
@@ -105,12 +190,14 @@ test = [
     )
 ]
 @pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
+@pytest.mark.earthdata
 @skip_earthdata
 def test_bedmachine_reference():
     grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
@@ -208,7 +295,7 @@ def test_magnetics(test_input, expected):
 # utils.get_grid_info(grid)
 
 #%%
-# geothermal
+# ghf
 
 test = [
     ('an-2015', 
@@ -223,21 +310,21 @@ test = [
 ]
 
 @pytest.mark.parametrize("test_input,expected", test)
-def test_geothermal(test_input, expected):
-    grid = fetch.geothermal(test_input)
+def test_ghf(test_input, expected):
+    grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-def test_geothermal_points():
-    df = fetch.geothermal(version='burton-johnson-2020', points=True)
+def test_ghf_points():
+    df = fetch.ghf(version='burton-johnson-2020', points=True)
     expected = [-56.5667, 34.1833, 'C11-44', 0.0, 11, 300, 0.77, 229.0, -5372.0,
         'Anderson1977', 'https://doi.org/10.1594/PANGAEA.796541', 'S3', 
         'Unconsolidated sediments', 2098568.3517061966, 3089886.43259545,229.002]
     assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)
 
-# df = fetch.geothermal(version='burton-johnson-2020', points=True)
+# df = fetch.ghf(version='burton-johnson-2020', points=True)
 # df.iloc[0].dropna().tolist()
 
-# grid = fetch.geothermal(version='burton-johnson-2020')
+# grid = fetch.ghf(version='burton-johnson-2020')
 # utils.get_grid_info(grid)
 
 #%%
