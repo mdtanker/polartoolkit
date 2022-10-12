@@ -382,13 +382,6 @@ test = [
     ),
 ]
 
-@pytest.mark.issue
-@pytest.mark.parametrize("test_input,expected", test)
-def test_bedmap2(test_input, expected):
-    grid = fetch.bedmap2(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-
-@pytest.mark.working
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
@@ -398,6 +391,11 @@ def test_bedmap2_reference():
         4090.53417969,
         "g",
     )
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_bedmap2(test_input, expected):
+    grid = fetch.bedmap2(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
