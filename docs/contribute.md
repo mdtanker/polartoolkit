@@ -1,12 +1,10 @@
 # Contribution guide
-## Build the docs
-The Docs are build with `Sphinx` and `Read the Docs`. Due to issues with included C programs (GMT and GDAL) in a pip-installed package, `PyGMT` and `GeoPandas` aren't included in the package dependencies, so `Read the Docs` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`.
 
-Additionally we use `Poetry` as a package manager, which also can't include `PyGMT` or `GeoPandas` successfully (since it installs with Pip). To get around this, we will export the poetry venv, add `PyGMT` and `Geopandas` independently, run the .ipynb's for the docs, then build the docs.
+## Set up a virtual environment
 
-### Set up a virtual environment
+Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install packages. Two of the dependencies, `PyGMT` and `GeoPandas`, need to be installed with `conda` since they contain C packages. To navigate this issue, we install `PyGMT` and `Geopandas` independently, then export the `Poetry` env to a file, and use that to add the remaining dependencies.
 
-The main branch of the GitHub repo contains a requirements.txt which defines the packages need to use and develop the package.
+The file is `requirements.txt` which defines the packages need to use and develop the package.
 
 Run the following to create a conda env "antarctic_plots_dev":
 
@@ -20,7 +18,18 @@ Install the necessary packages:
 
     make install_reqs
 
-This package contains your local, editable version of Antarctic-Plots, meaning if you alter the package, it will automatically include those changes in your environement. 
+This environment contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you'll need to restart your kernel). 
+
+## Formatting the code
+
+poetry export -f requirements.txt --output env/requirements-dev.txt --only dev
+
+## Testing the code
+
+
+## Build the docs
+
+The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned issues with the included C programs, `Read the Docs` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
 
 ### Run all .ipynb's to update them
 
@@ -37,11 +46,7 @@ Fix issues shown in `make check`. If lines are too long, split them. If they are
 
     make test
 
-or, to skip the slower tests :
-
-    make test_fast
-
-### Check the build manually
+### Check the build manually (Optional)
 
     make build_docs
 
@@ -51,6 +56,7 @@ Check for returned errors and open `index.html` in docs/_build/html/ to view the
 ### Automatically build the docs 
 
 Add, commit, and push all changes to Github in a Pull Request, and RTD should automatically build the docs.
+
 
 ## Build and publish the package
 Follow all the above instructions for building the docs
@@ -120,58 +126,3 @@ This will create an environment with the core dependencies, and export it to a .
     - -e ..
 ```
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement. 
-
-<!-- This uses the doc_requirements.txt included in the repository, which was create with the below code:
-
-    conda create --name doc_requirements python=3.9
-    conda activate doc_requirements
-    mamba install pytest flake8 isort jupyter-book 
-    pip install black[jupyer]
-    pip list --format=freeze > doc_requirements.txt
-
-This should be included in the .readthedocs.yaml, so it should be the env RTD uses to build.
-Since `execute_notebooks: "off"` is set in _config.yml, RTD shouldn't need any other packages installed to build.
-
-Add, commit, and push all changes to Github, and RTD should automatically build the docs -->
-
-<!-- ### Need local install to build
-
-    conda create --name ant_plots_build --clone doc_requirements
-    conda activate ant_plots_build
-    conda install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas
-
-Export to requirements.txt
-    
-    pip list --format=freeze > requirements.txt
-
-Add them to poetry.lock file
-    cat requirements.txt | xargs poetry add
-    pip install -r requirements.txt -->
-
-<!-- ## Older instructions
-
-## install the dependencies seperately:
-    
-    mamba install pandas numpy pooch xarray pyproj verde rioxarray pygmt geopandas netCDF4 tqdm
-
-Optionally add ipykernel jupyterlab and notebook if you want to use iPython.
-
-## to import working env into poetry
-    mamba create --name antarctic_plots python=3.8
-    mamba activate antarctic_plots
-    mamba install pandas numpy pooch xarray pyproj verde rioxarray netCDF4 pygmt geopandas black pytest flake8 isort jupyter-book
-    pip list --format=freeze > requirements.txt
-    cat requirements.txt | xargs poetry add
-    pip instal -e . 
-
-## to get poetry to work
-without hashes
-    poetry export -f requirements.txt --output requirements.txt --dev --without-hashes
-    pip install -r requirements.txt
-
-or with hashes
-    poetry export -f requirements.txt --output requirements.txt --dev 
-    pip install --no-deps -r requirements.txt
-
-pip install -e .
-conda install pygmt geopandas -->
