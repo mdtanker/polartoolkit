@@ -33,6 +33,14 @@ This package contains your local, editable version of Antarctic-Plots, meaning i
 
 Fix issues shown in `make check`. If lines are too long, split them. If they are urls, and you want flake8 to ignore the line, add `# noqa` at the end of the line. 
 
+### run the tests
+
+    make test
+
+or, to skip the slower tests :
+
+    make test_fast
+
 ### Check the build manually
 
     make build_docs
