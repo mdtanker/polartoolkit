@@ -531,13 +531,13 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.working
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
     expected = [
@@ -582,7 +582,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)

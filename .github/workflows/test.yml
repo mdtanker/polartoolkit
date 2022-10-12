@@ -74,7 +74,7 @@ jobs:
       - name: Run tests with pytest
         run: |
           # pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not working and not issue" --assert="plain"
-          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not working and not issue" --assert="plain"
+          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata" --assert="plain"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
