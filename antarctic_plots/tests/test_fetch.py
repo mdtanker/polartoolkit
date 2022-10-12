@@ -389,14 +389,12 @@ test = [
 ]
 
 
-@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-@pytest.mark.issue
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
@@ -413,7 +411,7 @@ def test_bedmap2_reference():
 # utils.get_grid_info(grid)
 
 # %% deepbedmap
-@pytest.mark.issue
+
 @pytest.mark.slow
 def test_deepbedmap():
     grid = fetch.deepbedmap()
