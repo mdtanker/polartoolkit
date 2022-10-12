@@ -5,11 +5,10 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
-import glob
 import os
+import shutil
 from getpass import getpass
 from pathlib import Path
-import shutil
 
 import pandas as pd
 import pooch
@@ -54,36 +53,40 @@ def resample_grid(
     #     region=initial_region
 
     # if all specs are same as orginal, return orginal
-    rules = [   spacing == initial_spacing,
-                region == initial_region, 
-                registration == initial_registration]
+    rules = [
+        spacing == initial_spacing,
+        region == initial_region,
+        registration == initial_registration,
+    ]
     if all(rules):
-        print('returning original grid')
+        print("returning original grid")
         resampled = grid
 
-    # if spacing is smaller, return resampled 
+    # if spacing is smaller, return resampled
     elif spacing < initial_spacing:
-        print(f"Warning, requested spacing ({spacing}) is smaller than the original ",
-            f"({initial_spacing}).")
+        print(
+            f"Warning, requested spacing ({spacing}) is smaller than the original ",
+            f"({initial_spacing}).",
+        )
         cut = pygmt.grdcut(
             grid=grid,
             region=region,
         )
         resampled = pygmt.grdsample(
-            grid=grid, 
+            grid=grid,
             region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
-            spacing=f"{spacing}+e", 
+            spacing=f"{spacing}+e",
             registration=registration,
         )
 
-    # if spacing is larger, return filtered / resampled 
+    # if spacing is larger, return filtered / resampled
     elif spacing > initial_spacing:
-        print('spacing larger than original, filtering and resampling')
+        print("spacing larger than original, filtering and resampling")
         filtered = pygmt.grdfilter(
             grid=grid,
             filter=f"g{spacing}",
             region=region,
-            distance=kwargs.get('distance',"0"),
+            distance=kwargs.get("distance", "0"),
             # nans=kwargs.get('nans',"r"),
         )
         resampled = pygmt.grdsample(
@@ -94,11 +97,11 @@ def resample_grid(
         )
 
     else:
-        print('returning grid with new region and/or registration, same spacing')
+        print("returning grid with new region and/or registration, same spacing")
         cut = pygmt.grdcut(
             grid=grid,
             region=region,
-            extend='',
+            extend="",
         )
         resampled = pygmt.grdsample(
             grid=grid,
@@ -108,6 +111,7 @@ def resample_grid(
         )
 
     return resampled
+
 
 class EarthDataDownloader:
     """
@@ -168,7 +172,7 @@ def sample_shp(name: str) -> str:
     """
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles", 
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",
         processor=pooch.Unzip(),
         known_hash=None,
     )
@@ -179,7 +183,7 @@ def sample_shp(name: str) -> str:
 def ice_vel(
     plot: bool = False,
     info: bool = False,
-    resolution='highres',
+    resolution="highres",
     region=None,
     spacing=None,
     registration=None,
@@ -208,10 +212,10 @@ def ice_vel(
     """
 
     # found with utils.get_grid_info()
-    initial_region= [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
-    initial_spacing=450
-    initial_registration='g'
-    
+    initial_region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
+    initial_spacing = 450
+    initial_registration = "g"
+
     if region is None:
         region = initial_region
     if spacing is None:
@@ -248,18 +252,18 @@ def ice_vel(
             processed_lowres.to_netcdf(fname_processed)
         return str(fname_processed)
 
-    if resolution == 'highres':
-        preprocessing=preprocessing_highres
-    elif resolution == 'lowres':
-        preprocessing=preprocessing_lowres
+    if resolution == "highres":
+        preprocessing = preprocessing_highres
+    elif resolution == "lowres":
+        preprocessing = preprocessing_lowres
     else:
-        raise ValueError('invalid resolution string')
+        raise ValueError("invalid resolution string")
 
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",  # noqa
-        fname='measures_ice_vel_phase_map.nc',
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_velocity", 
+        fname="measures_ice_vel_phase_map.nc",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_velocity",
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
@@ -268,9 +272,15 @@ def ice_vel(
 
     grid = xr.load_dataarray(path)
 
-    resampled = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+    resampled = resample_grid(
+        grid,
+        initial_spacing,
+        initial_region,
+        initial_registration,
+        spacing,
+        region,
+        registration,
+    )
 
     if plot is True:
         resampled.plot(robust=True)
@@ -299,8 +309,8 @@ def modis_moa(
     if version == 125:
         path = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz",  # noqa
-            fname='moa125.tif.gz',
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
+            fname="moa125.tif.gz",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
             known_hash=None,
@@ -309,15 +319,15 @@ def modis_moa(
     elif version == 750:
         path = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz",  # noqa
-            fname='moa750.tif.gz',
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
+            fname="moa750.tif.gz",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
             known_hash=None,
             progressbar=True,
         )
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     return path
 
@@ -337,8 +347,8 @@ def imagery() -> xr.DataArray:
     """
     path = pooch.retrieve(
         url="https://lima.usgs.gov/tiff_90pct.zip",
-        fname='lima.zip',
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery", 
+        fname="lima.zip",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
         processor=pooch.Unzip(),
         known_hash=None,
         progressbar=True,
@@ -362,8 +372,8 @@ def groundingline() -> str:
     """
     path = pooch.retrieve(
         url="https://doi.pangaea.de/10013/epic.42133.d001",
-        fname='groundingline_depoorter_2013.d001',
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",  
+        fname="groundingline_depoorter_2013.d001",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",
         known_hash=None,
         processor=pooch.Unzip(),
         progressbar=True,
@@ -373,12 +383,12 @@ def groundingline() -> str:
 
 
 def basement(
-    plot: bool = False, 
+    plot: bool = False,
     info: bool = False,
     region=None,
     spacing=None,
     registration=None,
-    ) -> xr.DataArray:
+) -> xr.DataArray:
     """
     Load a grid of basement topography.
     Offshore and sub-Ross Ice Shelf basement topography.
@@ -400,9 +410,9 @@ def basement(
     """
 
     # found with utils.get_grid_info()
-    initial_region= [-3330000.0, 1900000.0, -3330000.0, 1850000.0]
-    initial_spacing=5e3
-    initial_registration='p'
+    initial_region = [-3330000.0, 1900000.0, -3330000.0, 1850000.0]
+    initial_spacing = 5e3
+    initial_registration = "p"
 
     if region is None:
         region = initial_region
@@ -413,17 +423,23 @@ def basement(
 
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",  # noqa
-        fname='basement.nc',
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/basement",          
+        fname="basement.nc",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/basement",
         known_hash=None,
         progressbar=True,
     )
 
     grid = xr.load_dataarray(path)
 
-    resampled = resample_grid(grid,
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+    resampled = resample_grid(
+        grid,
+        initial_spacing,
+        initial_region,
+        initial_registration,
+        spacing,
+        region,
+        registration,
+    )
 
     if plot is True:
         resampled.plot(robust=True)
@@ -475,9 +491,9 @@ def bedmachine(
     """
 
     # found with utils.get_grid_info()
-    initial_region= [-3333000.0, 3333000.0, -3333000.0, 3333000.0]
-    initial_spacing=500
-    initial_registration='g'
+    initial_region = [-3333000.0, 3333000.0, -3333000.0, 3333000.0]
+    initial_spacing = 500
+    initial_registration = "g"
 
     if region is None:
         region = initial_region
@@ -488,45 +504,79 @@ def bedmachine(
 
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc",  # noqa
-        fname='bedmachine.nc',
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",        
+        fname="bedmachine.nc",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
     )
 
     if layer == "icebase":
-        grid = xr.load_dataset(path)['surface']
-        surface = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        grid = xr.load_dataset(path)["surface"]
+        surface = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
-        grid = xr.load_dataset(path)['thickness']
-        thickness = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        grid = xr.load_dataset(path)["thickness"]
+        thickness = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
         resampled = surface - thickness
 
-    elif layer in ['surface','thickness','bed','firn','geoid','mapping','mask','errbed','source']: # noqa
+    elif layer in [
+        "surface",
+        "thickness",
+        "bed",
+        "firn",
+        "geoid",
+        "mapping",
+        "mask",
+        "errbed",
+        "source",
+    ]:  # noqa
         grid = xr.load_dataset(path)[layer]
-        resampled = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     else:
-        raise ValueError('invalid layer string')
+        raise ValueError("invalid layer string")
 
     if reference == "ellipsoid" and layer != "thickness":
-        geoid = xr.load_dataset(path)['geoid']
-        resampled_geoid = resample_grid(geoid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
-        
+        geoid = xr.load_dataset(path)["geoid"]
+        resampled_geoid = resample_grid(
+            geoid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
         final_grid = resampled + resampled_geoid
 
-    elif reference not in ['ellipsoid', 'geoid']:
-        raise ValueError('invalid reference string')
+    elif reference not in ["ellipsoid", "geoid"]:
+        raise ValueError("invalid reference string")
 
     else:
         final_grid = resampled
@@ -578,9 +628,9 @@ def bedmap2(
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
     # found with utils.get_grid_info()
-    initial_region=[-3333500, 3333500, -3332500, 3332500]
-    initial_spacing=1e3
-    initial_registration='p'
+    initial_region = [-3333500, 3333500, -3332500, 3332500]
+    initial_spacing = 1e3
+    initial_registration = "p"
 
     if region is None:
         region = initial_region
@@ -591,7 +641,7 @@ def bedmap2(
 
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
-        fname='bedmap2_tiff.zip',
+        fname="bedmap2_tiff.zip",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         known_hash=None,
         processor=pooch.Unzip(),
@@ -601,45 +651,69 @@ def bedmap2(
     if layer == "icebase":
         fname = [p for p in path if p.endswith("surface.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
-        surface = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        surface = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
-        thickness = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        thickness = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
         resampled = surface - thickness
 
-    elif layer in ['surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84']:
+    elif layer in ["surface", "thickness", "bed", "gl04c_geiod_to_WGS84"]:
         fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
-        resampled = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     else:
-       raise ValueError('invalid layer string')
+        raise ValueError("invalid layer string")
 
     if reference == "ellipsoid" and layer != "thickness":
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
         geoid = xr.load_dataarray(geoid_file).squeeze()
-        resampled_geoid = resample_grid(grid, 
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        resampled_geoid = resample_grid(
+            geoid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
         final_grid = resampled + resampled_geoid
-    
-    elif reference not in ['ellipsoid', 'geoid']:
-        raise ValueError('invalid reference string')
+
+    elif reference not in ["ellipsoid", "geoid"]:
+        raise ValueError("invalid reference string")
 
     else:
         final_grid = resampled
 
     # replace nans with 0 for surface of thickness
-    if layer == "surface" or layer =="thickness":
+    if layer == "surface" or layer == "thickness":
         final_grid = final_grid.fillna(0)
 
     if plot is True:
@@ -651,8 +725,8 @@ def bedmap2(
 
 
 def deepbedmap(
-    plot: bool = False, 
-    info: bool = False, 
+    plot: bool = False,
+    info: bool = False,
     region=None,
     spacing=None,
     registration=None,
@@ -680,9 +754,9 @@ def deepbedmap(
     """
 
     # found with utils.get_grid_info()
-    initial_region=[-2700000.0, 2800000.0, -2199750.0, 2299750.0]
-    initial_spacing=250
-    initial_registration='p'
+    initial_region = [-2700000.0, 2800000.0, -2199750.0, 2299750.0]
+    initial_spacing = 250
+    initial_registration = "p"
 
     if region is None:
         region = initial_region
@@ -693,7 +767,7 @@ def deepbedmap(
 
     path = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
-        fname='deepbedmap.tif',
+        fname="deepbedmap.tif",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         known_hash=None,
         progressbar=True,
@@ -701,9 +775,15 @@ def deepbedmap(
 
     grid = xr.load_dataarray(path).squeeze()
 
-    resampled = resample_grid(grid,
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+    resampled = resample_grid(
+        grid,
+        initial_spacing,
+        initial_region,
+        initial_registration,
+        spacing,
+        region,
+        registration,
+    )
 
     if plot is True:
         resampled.plot(robust=True)
@@ -726,9 +806,9 @@ def gravity(
     Loads 1 of 3 'versions' of Antarctic gravity grids.
 
     version='antgg'
-    Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne 
-    data, from Scheinert et al. 2016: New Antarctic gravity anomaly grid for enhanced 
-    geodetic and geophysical studies in Antarctica. 
+    Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne
+    data, from Scheinert et al. 2016: New Antarctic gravity anomaly grid for enhanced
+    geodetic and geophysical studies in Antarctica.
     DOI: https://doi.org/10.1002/2015GL067439
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.848168
 
@@ -746,7 +826,7 @@ def gravity(
     ----------
     version : str
         choose which version of gravity data to fetch.
-    
+
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -767,13 +847,13 @@ def gravity(
         Returns a loaded, and optional clip/resampled grid of either free-air or
         Bouguer gravity anomalies.
     """
-    anomaly_type = kwargs.get('anomaly_type', None)
+    anomaly_type = kwargs.get("anomaly_type", None)
 
-    if version == 'antgg':
+    if version == "antgg":
         # found with utils.get_grid_info()
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=10e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 10e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -784,35 +864,41 @@ def gravity(
 
         path = pooch.retrieve(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
-            fname='antgg.nc',
+            fname="antgg.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             progressbar=True,
         )
 
-        if anomaly_type == 'FA':
-            anomaly_type = 'free_air_anomaly'
-        elif anomaly_type == 'BA':
-            anomaly_type = 'bouguer_anomaly'
+        if anomaly_type == "FA":
+            anomaly_type = "free_air_anomaly"
+        elif anomaly_type == "BA":
+            anomaly_type = "bouguer_anomaly"
         else:
-            raise ValueError('invalid anomaly type')
+            raise ValueError("invalid anomaly type")
 
         file = xr.load_dataset(path)[anomaly_type]
-        
+
         # convert coordinates from km to m
         file_meters = file.copy()
-        file_meters['x']=file.x*1000
-        file_meters['y']=file.y*1000
+        file_meters["x"] = file.x * 1000
+        file_meters["y"] = file.y * 1000
 
-        resampled = resample_grid(file_meters,
-            initial_spacing, initial_region, initial_registration, 
-            spacing, region, registration)
+        resampled = resample_grid(
+            file_meters,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
-    elif version == 'antgg-update':
+    elif version == "antgg-update":
         # found in documentation
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=10e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 10e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -821,7 +907,7 @@ def gravity(
         if registration is None:
             registration = initial_registration
 
-        if anomaly_type not in ('FA', 'BA'):
+        if anomaly_type not in ("FA", "BA"):
             raise ValueError("anomaly_type must be eith 'FA' or 'BA'")
 
         def preprocessing(fname, action, pooch2):
@@ -832,7 +918,7 @@ def gravity(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -845,21 +931,23 @@ def gravity(
                 )
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
-                
+                df["x"], df["y"] = transformer.transform(
+                    df.lat.tolist(), df.lon.tolist()
+                )  # noqa
+
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", anomaly_type]], 
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    df[["x", "y", anomaly_type]],
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
                 )
                 processed = pygmt.surface(
-                    data=df[["x", "y", anomaly_type]], 
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    data=df[["x", "y", anomaly_type]],
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
-                    M="1c", 
+                    M="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -867,7 +955,7 @@ def gravity(
 
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
-            fname='antgg_update.zip',
+            fname="antgg_update.zip",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             processor=preprocessing,
@@ -876,15 +964,21 @@ def gravity(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
-    elif version == 'eigen':
-        
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3
-        initial_registration='g'
+    elif version == "eigen":
+
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -902,13 +996,13 @@ def gravity(
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
                 grid = xr.load_dataset(fname).gravity
-                
+
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
                     grid,
-                    projection='EPSG:3031',
+                    projection="EPSG:3031",
                     spacing=initial_spacing,
-                )   
+                )
                 # get just antarctica region
                 processed = pygmt.grdsample(
                     grid2,
@@ -919,24 +1013,30 @@ def gravity(
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
-        
+
         path = pooch.retrieve(
             url="doi:10.5281/zenodo.5882207/earth-gravity-10arcmin.nc",
-            fname='eigen.nc',
+            fname="eigen.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
         )
 
-        grid= xr.load_dataarray(path)
-        
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-    
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     if plot is True:
         resampled.plot(robust=True)
@@ -989,9 +1089,9 @@ def magnetics(
 
     if version == "admap1":
         # was in lat long, so just using standard values here
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1007,7 +1107,7 @@ def magnetics(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -1021,21 +1121,23 @@ def magnetics(
 
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
-                
+                df["x"], df["y"] = transformer.transform(
+                    df.lat.tolist(), df.lon.tolist()
+                )  # noqa
+
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "nT"]], 
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    df[["x", "y", "nT"]],
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
                 )
                 processed = pygmt.surface(
-                    data=df[["x", "y", "nT"]], 
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    data=df[["x", "y", "nT"]],
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
-                    M="1c", 
+                    M="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -1043,7 +1145,7 @@ def magnetics(
 
         path = pooch.retrieve(
             url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
-            fname='admap1.zip',
+            fname="admap1.zip",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
             known_hash=None,
             processor=preprocessing,
@@ -1052,10 +1154,16 @@ def magnetics(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-  
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
     # elif version == "admap2":
     #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
     #     grd = xr.load_dataarray(path)
@@ -1071,27 +1179,26 @@ def magnetics(
     #     )
 
     elif version == "admap2_gdb":
-        plot=False
-        info=False
+        plot = False
+        info = False
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
-            fname='admap2_gdb.zip',
+            fname="admap2_gdb.zip",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True,
         )
-        resampled=path
+        resampled = path
     else:
-        raise ValueError('invalid version string')
-    
+        raise ValueError("invalid version string")
+
     if plot is True:
         resampled.plot(robust=True)
     if info is True:
         print(pygmt.grdinfo(resampled))
 
     return resampled
-
 
 
 def ghf(
@@ -1101,19 +1208,19 @@ def ghf(
     region=None,
     spacing=None,
     registration=None,
-    **kwargs
+    **kwargs,
 ) -> xr.DataArray:
     """
     Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
-    
+
     version='an-2015'
-    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux 
+    From At et al. 2015: emperature, lithosphere–asthenosphere boundary, and heat flux
     beneath the Antarctic Plate inferred from seismic velocities
     http://dx.doi.org/doi:10.1002/2015JB011917
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
 
     version='martos-2017'
-    From Martos et al. 2017: Heat flux distribution of Antarctica unveiled. Geophysical 
+    From Martos et al. 2017: Heat flux distribution of Antarctica unveiled. Geophysical
     Research Letters, 44(22), 11417-11426, https://doi.org/10.1002/2017GL075609
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.882503
 
@@ -1121,7 +1228,7 @@ def ghf(
     From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
     Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to 
+    Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to
     generate a direct download link from google drive page.
     https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
 
@@ -1130,13 +1237,13 @@ def ghf(
     current and future directions, https://doi.org/10.5194/tc-14-3843-2020
     Accessed from supplementary material
     Choose for either of grid, or the point measurements
-    
+
     version='losing-ebbing-2021'
     From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
     Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6),
     https://doi.org/10.1029/2020JB021499
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
-    
+
     version='aq1'
     From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
     https://doi.org/10.1029/2020GC009428
@@ -1162,11 +1269,11 @@ def ghf(
          Returns a loaded, and optional clip/resampled grid of GHF data.
     """
 
-    if version == 'an-2015':
+    if version == "an-2015":
         # was in lat long, so just using standard values here
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1182,19 +1289,19 @@ def ghf(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
                 grid = xr.load_dataarray(fname)
-                
+
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
                     grid,
-                    projection='EPSG:3031',
+                    projection="EPSG:3031",
                     spacing=initial_spacing,
-                )   
+                )
                 # get just antarctica region
                 processed = pygmt.grdsample(
                     grid2,
@@ -1205,27 +1312,33 @@ def ghf(
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
-        
+
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-            fname='an_2015_.tar.gz',
+            fname="an_2015_.tar.gz",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
         )
 
-        grid= xr.load_dataarray(path)
-        
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        grid = xr.load_dataarray(path)
 
-    elif version == 'martos-2017':
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
+    elif version == "martos-2017":
         # found from df.describe()
-        initial_region=[-2535e3, 2715e3, -2130e3, 2220e3]
-        initial_spacing=15e3
-        initial_registration='g' 
+        initial_region = [-2535e3, 2715e3, -2130e3, 2220e3]
+        initial_spacing = 15e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1233,58 +1346,60 @@ def ghf(
             spacing = initial_spacing
         if registration is None:
             registration = initial_registration
-        
+
         def preprocessing(fname, action, pooch2):
             "Load the .xyz file, grid it, and save it back as a .nc"
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load the data
                 df = pd.read_csv(
-                    fname, 
-                    header=None,
-                    delim_whitespace=True,
-                    names=['x', 'y', 'GHF']
+                    fname, header=None, delim_whitespace=True, names=["x", "y", "GHF"]
                 )
-                
+
                 # grid the data
                 processed = pygmt.xyz2grd(
-                    df, 
-                    region = initial_region, 
-                    registration = initial_registration, 
-                    spacing = initial_spacing,
+                    df,
+                    region=initial_region,
+                    registration=initial_registration,
+                    spacing=initial_spacing,
                 )
 
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
-        
+
         path = pooch.retrieve(
-            url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz", # noqa
-            fname='martos_2017.xyz',
+            url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz",  # noqa
+            fname="martos_2017.xyz",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
         )
 
-        grid= xr.load_dataarray(path)
-        
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        grid = xr.load_dataarray(path)
 
-    
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
     elif version == "burton-johnson-2020":
         # found from utils.get_grid_info(grid)
-        initial_region=[-2543500.0, 2624500.0, -2121500.0, 2213500.0]
-        initial_spacing=17e3
-        initial_registration='p'
+        initial_region = [-2543500.0, 2624500.0, -2121500.0, 2213500.0]
+        initial_spacing = 17e3
+        initial_registration = "p"
 
         if region is None:
             region = initial_region
@@ -1292,19 +1407,17 @@ def ghf(
             spacing = initial_spacing
         if registration is None:
             registration = initial_registration
-        
+
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
-            fname='burton_johnson_2020.zip',
+            fname="burton_johnson_2020.zip",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
-            processor=pooch.Unzip(
-                extract_dir='burton_johnson_2020'
-            ),
+            processor=pooch.Unzip(extract_dir="burton_johnson_2020"),
             progressbar=True,
         )
 
-        if kwargs.get('points', False) is True:
+        if kwargs.get("points", False) is True:
             file = [p for p in path if p.endswith("V003.xlsx")][0]
             info = False
             plot = False
@@ -1313,34 +1426,45 @@ def ghf(
 
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-            GHF_points['x'], GHF_points['y'] = transformer.transform(GHF_points['(1) Latitude'].tolist(),GHF_points['(2) Longitude'].tolist()) # noqa
-        
-            # rename 
-            GHF_points['GHF'] = GHF_points['(8) GHF (mW/m²)']
+            GHF_points["x"], GHF_points["y"] = transformer.transform(
+                GHF_points["(1) Latitude"].tolist(),
+                GHF_points["(2) Longitude"].tolist(),
+            )  # noqa
+
+            # rename
+            GHF_points["GHF"] = GHF_points["(8) GHF (mW/m²)"]
 
             resampled = GHF_points
-        
-        elif kwargs.get('points', False) is False:
+
+        elif kwargs.get("points", False) is False:
             file = [p for p in path if p.endswith("Mean.tif")][0]
-            # pygmt gives issues when orginal filepath has spaces in it. To get around 
+            # pygmt gives issues when orginal filepath has spaces in it. To get around
             # this, we will copy the file into the parent directory.
             try:
-                new_file = shutil.copyfile(file, 
-                    f"{pooch.os_cache('pooch')}/antarctic_plots/ghf/burton_johnson_2020/Mean.tif")
+                new_file = shutil.copyfile(
+                    file,
+                    f"{pooch.os_cache('pooch')}/antarctic_plots/ghf/burton_johnson_2020/Mean.tif",  # noqa
+                )
             except shutil.SameFileError:
                 new_file = file
 
-            grid = xr.load_dataarray(file).squeeze()
+            grid = xr.load_dataarray(new_file).squeeze()
 
-            resampled = resample_grid(grid, 
-                    initial_spacing, initial_region, initial_registration, 
-                    spacing, region, registration)
+            resampled = resample_grid(
+                grid,
+                initial_spacing,
+                initial_region,
+                initial_registration,
+                spacing,
+                region,
+                registration,
+            )
 
     elif version == "losing-ebbing-2021":
         # was in lat long, so just using standard values here
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3 # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3  # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1355,7 +1479,7 @@ def ghf(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -1367,23 +1491,23 @@ def ghf(
                     df[["Lon", "Lat", "HF [mW/m2]"]],
                     spacing="30m",
                     coltypes="g",
-                    region='AQ',
+                    region="AQ",
                     registration=initial_registration,
                 )
                 grid = pygmt.surface(
-                    data=df[['Lon','Lat','HF [mW/m2]']],
+                    data=df[["Lon", "Lat", "HF [mW/m2]"]],
                     spacing="30m",
                     coltypes="g",
                     region="AQ",
                     registration=initial_registration,
-                    )
+                )
 
                 # re-project to polar stereographic
                 reprojected = pygmt.grdproject(
                     grid,
-                    projection='EPSG:3031',
+                    projection="EPSG:3031",
                     # spacing=initial_spacing,
-                )   
+                )
 
                 processed = pygmt.grdsample(
                     reprojected,
@@ -1395,10 +1519,10 @@ def ghf(
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
-        
+
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",  # noqa
-            fname='losing_ebbing_2021_ghf.csv',
+            fname="losing_ebbing_2021_ghf.csv",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
@@ -1407,17 +1531,22 @@ def ghf(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     elif version == "aq1":
         # found from utils.get_grid_info(grid)
-        initial_region=[-2800000.0, 2800000.0, -2800000.0, 2800000.0]
-        initial_spacing=20e3 # was actually 20071.6845878
-        initial_registration='g'
+        initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+        initial_spacing = 20e3  # was actually 20071.6845878
+        initial_registration = "g"
 
- 
         if region is None:
             region = initial_region
         if spacing is None:
@@ -1427,7 +1556,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
-            fname='aq1.nc',
+            fname="aq1.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             progressbar=True,
@@ -1436,16 +1565,21 @@ def ghf(
 
         grid = grid * 1000
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-        
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     elif version == "shen-2020":
         # was in lat long, so just using standard values here
-        initial_region=regions.antarctica
-        initial_spacing=10e3
-        initial_registration='g'
+        initial_region = regions.antarctica
+        initial_spacing = 10e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1460,34 +1594,36 @@ def ghf(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname, 
-                    delim_whitespace=True, 
-                    header=None, 
+                    fname,
+                    delim_whitespace=True,
+                    header=None,
                     names=["lon", "lat", "GHF"],
                 )
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+                df["x"], df["y"] = transformer.transform(
+                    df.lat.tolist(), df.lon.tolist()
+                )  # noqa
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "GHF"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "GHF"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
-                    M="1c", 
+                    M="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -1495,7 +1631,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",  # noqa
-            fname='shen_2020_ghf.xyz',
+            fname="shen_2020_ghf.xyz",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
             known_hash=None,
             processor=preprocessing,
@@ -1504,12 +1640,18 @@ def ghf(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-    
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     if plot is True:
         resampled.plot(robust=True)
@@ -1517,6 +1659,7 @@ def ghf(
         print(pygmt.grdinfo(resampled))
 
     return resampled
+
 
 def gia(
     version: str,
@@ -1528,13 +1671,13 @@ def gia(
 ) -> xr.DataArray:
     """
     Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
-    
+
     version='stal-2020'
-    From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a 
-    flexible 3D model and framework for interdisciplinary research, 
+    From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a
+    flexible 3D model and framework for interdisciplinary research,
     https://doi.org/10.5194/tc-14-3843-2020
     Accessed from https://doi.org/10.5281/zenodo.4003423
-    
+
     Parameters
     ----------
     version : str
@@ -1557,9 +1700,9 @@ def gia(
 
     if version == "stal-2020":
         # found from utils.get_grid_info(grid)
-        initial_region= [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
-        initial_spacing=10e3
-        initial_registration='p'
+        initial_region = [-2800000.0, 2800000.0, -2800000.0, 2800000.0]
+        initial_spacing = 10e3
+        initial_registration = "p"
 
         if region is None:
             region = initial_region
@@ -1569,20 +1712,26 @@ def gia(
             registration = initial_registration
 
         path = pooch.retrieve(
-            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1", # noqa
-            fname='stal_2020_gia.tiff',
+            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",  # noqa
+            fname="stal_2020_gia.tiff",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gia",
             known_hash=None,
             progressbar=True,
         )
         grid = xr.load_dataarray(path).squeeze()
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-    
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     if plot is True:
         resampled.plot(robust=True)
@@ -1602,30 +1751,30 @@ def crustal_thickness(
 ) -> xr.DataArray:
     """
     Load 1 of x 'versions' of Antarctic crustal thickness grids.
-    
+
     version='shen-2018'
-    Crustal thickness (excluding ice layer) from Shen et al. 2018: The crust and upper 
-    mantle structure of central and West Antarctica from Bayesian inversion of Rayleigh 
+    Crustal thickness (excluding ice layer) from Shen et al. 2018: The crust and upper
+    mantle structure of central and West Antarctica from Bayesian inversion of Rayleigh
     wave and receiver functions. https://doi.org/10.1029/2017JB015346
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
 
     version='an-2015'
     Crustal thickness (distance from solid (ice and rock) top to Moho discontinuity)
-    from An et al. 2015:  S-velocity Model and Inferred Moho Topography beneath the 
-    Antarctic Plate from Rayleigh Waves. J. Geophys. Res., 120(1),359–383, 
+    from An et al. 2015:  S-velocity Model and Inferred Moho Topography beneath the
+    Antarctic Plate from Rayleigh Waves. J. Geophys. Res., 120(1),359–383,
     doi:10.1002/2014JB011332
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
-    File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses 
-    referred to below are the distance from the solid surface to the Moho. We note that 
+    File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses
+    referred to below are the distance from the solid surface to the Moho. We note that
     this definition of Moho depth is different from that in the compilation of AN-MOHO".
-    Unclear, but seems moho depth is just negative of crustal thickness. Not sure if its 
-    to the ice surface or ice base. 
+    Unclear, but seems moho depth is just negative of crustal thickness. Not sure if its
+    to the ice surface or ice base.
 
     Parameters
     ----------
     version : str
-        Either 'shen-2018', 
-        will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1', 
+        Either 'shen-2018',
+        will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes', 'pappa', 'stal'
     plot : bool, optional
         choose to plot grid, by default False
@@ -1642,11 +1791,11 @@ def crustal_thickness(
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
     """
-    if version == 'shen-2018':
+    if version == "shen-2018":
         # was in lat long, so just using standard values here
-        initial_region=regions.antarctica
-        initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration='g'
+        initial_region = regions.antarctica
+        initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1660,38 +1809,40 @@ def crustal_thickness(
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem('shen_2018_crustal_thickness_preprocessed')
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_pre = fname.with_stem("shen_2018_crustal_thickness_preprocessed")
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname, 
-                    delim_whitespace=True, 
-                    header=None, 
+                    fname,
+                    delim_whitespace=True,
+                    header=None,
                     names=["lon", "lat", "thickness"],
                 )
                 # convert to meters
-                df.thickness = df.thickness*1000
+                df.thickness = df.thickness * 1000
 
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+                df["x"], df["y"] = transformer.transform(
+                    df.lat.tolist(), df.lon.tolist()
+                )  # noqa
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "thickness"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "thickness"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
-                    M="1c", 
+                    M="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -1708,15 +1859,21 @@ def crustal_thickness(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-    
-    elif version == 'an-2015':
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
+    elif version == "an-2015":
         # was in lat long, so just using standard values here
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1728,9 +1885,8 @@ def crustal_thickness(
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, reproject the .nc file, and save it back"
             path = pooch.Untar(
-                extract_dir='An_2015_crustal_thickness',
-                members=['AN1-CRUST.grd']
-                )(fname, action, pooch2)
+                extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
+            )(fname, action, pooch2)
             fname = Path(path[0])
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname.with_stem(fname.stem + "_preprocessed")
@@ -1738,16 +1894,16 @@ def crustal_thickness(
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
                 grid = xr.load_dataarray(fname)
-                
-                # convert to meters 
+
+                # convert to meters
                 grid = grid * 1000
 
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
                     grid,
-                    projection='EPSG:3031',
+                    projection="EPSG:3031",
                     spacing=initial_spacing,
-                )   
+                )
                 # get just antarctica region
                 processed = pygmt.grdsample(
                     grid2,
@@ -1758,9 +1914,9 @@ def crustal_thickness(
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
-        
+
         path = pooch.retrieve(
-            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
+            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",  # noqa
             fname="an_2015_crustal_thickness.tar.gz",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
             known_hash=None,
@@ -1768,14 +1924,20 @@ def crustal_thickness(
             processor=preprocessing,
         )
 
-        grid= xr.load_dataarray(path)
-        
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     if plot is True:
         resampled.plot(robust=True)
@@ -1795,11 +1957,11 @@ def moho(
 ) -> xr.DataArray:
     """
     Load 1 of x 'versions' of Antarctic Moho depth grids.
-    
+
     version='shen-2018'
-    Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)  
-    from Shen et al. 2018: The crust and upper mantle structure of central and West 
-    Antarctica from Bayesian inversion of Rayleigh wave and receiver functions. 
+    Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)
+    from Shen et al. 2018: The crust and upper mantle structure of central and West
+    Antarctica from Bayesian inversion of Rayleigh wave and receiver functions.
     https://doi.org/10.1029/2017JB015346
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
     Appears to be almost identical to crustal thickness from Shen et al. 2018
@@ -1809,7 +1971,7 @@ def moho(
     ----------
     version : str
         Either 'shen-2018', 'an-2015', 'pappa-2019',
-        will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1', 
+        will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes',
     plot : bool, optional
         choose to plot grid, by default False
@@ -1827,11 +1989,11 @@ def moho(
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
     """
 
-    if version == 'shen-2018':
+    if version == "shen-2018":
         # was in lat long, so just using standard values here
-        initial_region=regions.antarctica
-        initial_spacing=10e3 # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration='g'
+        initial_region = regions.antarctica
+        initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1843,52 +2005,53 @@ def moho(
         def preprocessing(fname, action, pooch2):
             "Load the .dat file, grid it, and save it back as a .nc"
             path = pooch.Untar(
-                extract_dir='Shen_2018_moho',
-                members=['WCANT_MODEL/moho.final.dat']
-                )(fname, action, pooch2)
+                extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
+            )(fname, action, pooch2)
             fname = [p for p in path if p.endswith("moho.final.dat")][0]
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname.with_stem(fname.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix('.nc')
+            fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname, 
-                    delim_whitespace=True, 
-                    header=None, 
+                    fname,
+                    delim_whitespace=True,
+                    header=None,
                     names=["lon", "lat", "depth"],
                 )
                 # convert to meters
-                df.depth = df.depth*-1000
+                df.depth = df.depth * -1000
 
                 # re-project to polar stereographic
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(df.lat.tolist(), df.lon.tolist()) # noqa
+                df["x"], df["y"] = transformer.transform(
+                    df.lat.tolist(), df.lon.tolist()
+                )  # noqa
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "depth"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "depth"]],
-                    spacing=initial_spacing, 
-                    region=initial_region, 
+                    spacing=initial_spacing,
+                    region=initial_region,
                     registration=initial_registration,
-                    M="1c", 
+                    M="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",  # noqa
             fname="shen_2018_moho.tar",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
             known_hash=None,
@@ -1898,15 +2061,21 @@ def moho(
 
         grid = xr.load_dataarray(path)
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
-    
-    elif version=='an-2015':
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
+
+    elif version == "an-2015":
         # was in lat long, so just using standard values here
-        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0]
-        initial_spacing=5e3
-        initial_registration='g'
+        initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
 
         if region is None:
             region = initial_region
@@ -1915,14 +2084,20 @@ def moho(
         if registration is None:
             registration = initial_registration
 
-        grid = crustal_thickness(version='an-2015') * -1
+        grid = crustal_thickness(version="an-2015") * -1
 
-        resampled = resample_grid(grid, 
-                initial_spacing, initial_region, initial_registration, 
-                spacing, region, registration)
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     else:
-        raise ValueError('invalid version string')
+        raise ValueError("invalid version string")
 
     if plot is True:
         resampled.plot(robust=True)

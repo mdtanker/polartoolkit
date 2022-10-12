@@ -88,7 +88,7 @@ jobs:
       # -m "not slow or not earthdata" excludes both
       - name: Run tests with pytest
         run: |
-          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not slow and not issues"
+          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not slow and not issue"
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov

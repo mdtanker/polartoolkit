@@ -13,11 +13,12 @@ from typing import TYPE_CHECKING, Union
 import pygmt
 import pyogrio
 import xarray as xr
+
 from antarctic_plots import fetch, regions, utils
 
 if TYPE_CHECKING:
     import numpy as np
-    import xarray as xr
+    import geopandas as gpd
 
 try:
     import ipyleaflet
@@ -513,7 +514,7 @@ def interactive_map(
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
-        display(label_xy)
+        display(label_xy) # noqa
 
         def handle_click(**kwargs):
             if kwargs.get("type") == "click":
@@ -523,9 +524,10 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
-        display(m)
+        display(m) # noqa
 
     return m
+
 
 def plot_3d(
     grids: list,
@@ -570,7 +572,6 @@ def plot_3d(
         _description_
     """
     fig_height = kwargs.get("fig_height", 15)
-    
 
     # if plot region not specified, try to pull from grid info
     if region is None:
@@ -595,19 +596,20 @@ def plot_3d(
         # if provided, mask grid with shapefile
         if shp_mask is not None:
             grid = utils.mask_from_shp(
-                shp_mask, 
-                xr_grid=grid, 
-                masked=True, 
-                invert=kwargs.get('invert', False),
-            ) 
-            grid.to_netcdf('tmp.nc')
-            grid = xr.load_dataset('tmp.nc')['z']
-        # if provided, mask grid with polygon from interactive map via regions.draw_region
+                shp_mask,
+                xr_grid=grid,
+                masked=True,
+                invert=kwargs.get("invert", False),
+            )
+            grid.to_netcdf("tmp.nc")
+            grid = xr.load_dataset("tmp.nc")["z"]
+        # if provided, mask grid with polygon from interactive map via 
+        # regions.draw_region
         elif polygon_mask is not None:
             grid = utils.mask_from_polygon(
-                polygon_mask, 
+                polygon_mask,
                 grid=grid,
-                )
+            )
         # create colorscales
         if grd2cpt is True:
             pygmt.grd2cpt(
@@ -633,18 +635,18 @@ def plot_3d(
                     background=True,
                     continuous=True,
                 )
-        
+
         # set transparency values
-        transparencies = kwargs.get('transparencies', None)
+        transparencies = kwargs.get("transparencies", None)
         if transparencies is None:
             transparency = 0
         else:
             transparency = transparencies[i]
-    
+
         # plot as perspective view
         fig.grdview(
             grid=grid,
-            cmap=True,#cmaps[i],
+            cmap=True,  # cmaps[i],
             projection=proj,
             region=region,
             frame=None,
@@ -658,35 +660,33 @@ def plot_3d(
 
         # display colorbar
         if colorbar is True:
-            cbar_xshift=kwargs.get('cbar_xshift', None)
-            cbar_yshift=kwargs.get('cbar_yshift', None)
+            cbar_xshift = kwargs.get("cbar_xshift", None)
+            cbar_yshift = kwargs.get("cbar_yshift", None)
 
             if cbar_xshift is None:
                 xshift = 0
-            else: 
+            else:
                 xshift = cbar_xshift[i]
 
             if cbar_yshift is None:
-                yshift = fig_height/2
+                yshift = fig_height / 2
             else:
                 yshift = cbar_yshift[i]
 
-            fig.shift_origin(yshift=f'{yshift}c', xshift=f'{xshift}c')
+            fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             fig.colorbar(
                 cmap=True,
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
                 frame=f"xaf+l{kwargs.get('cbar_labels',' ')[i]}",
                 perspective=True,
-                box='+gwhite+c3p',
+                box="+gwhite+c3p",
             )
-            fig.shift_origin(yshift=f'{-yshift}c', xshift=f'{-xshift}c')
+            fig.shift_origin(yshift=f"{-yshift}c", xshift=f"{-xshift}c")
 
-        # shift up for next grid   
-        if kwargs.get('zshifts', None) is None:
+        # shift up for next grid
+        if kwargs.get("zshifts", None) is None:
             fig.shift_origin(yshift=f"{fig_height/2}c")
-        else: 
+        else:
             fig.shift_origin(yshift=f"{kwargs.get('zshifts')[i]}c")
-        
-    return fig
-    
 
+    return fig

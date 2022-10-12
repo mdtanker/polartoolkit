@@ -46,9 +46,9 @@ jobs:
         run: |
           make format
 
-      - name: Check the code
-        run: |
-          make check
+      # - name: Check the code
+      #   run: |
+      #     make check
 
       - name: Add licenses to the code
         run: |

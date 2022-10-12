@@ -462,8 +462,8 @@ def grd_trend(
     coords: list = ["x", "y", "z"],
     deg: int = 1,
     plot: bool = False,
-    plot_type = 'pygmt',
-    **kwargs
+    plot_type="pygmt",
+    **kwargs,
 ):
     """
     Fit an arbitrary order trend to a grid and use it to detrend.
@@ -480,7 +480,7 @@ def grd_trend(
         plot the results, by default False
     plot_type : str, by default "pygmt"
         choose to plot results with pygmt or xarray
-    
+
     Returns
     -------
     tuple
@@ -513,7 +513,7 @@ def grd_trend(
     )
 
     if plot is True:
-        if plot_type == 'xarray':
+        if plot_type == "xarray":
             fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
             da.plot(
                 ax=ax[0],
@@ -547,48 +547,51 @@ def grd_trend(
                 a.set_ylabel("")
                 a.set_aspect("equal")
 
-        elif plot_type == 'pygmt':
-            fig_height = kwargs.get('fig_height', None)
-            cmap = kwargs.get('cmap','plasma')
-            coast= kwargs.get('coast', True)
-            inset = kwargs.get('inset', True)
-            inset_pos = kwargs.get('inset_pos', 'BL')
-            origin_shift = kwargs.get('origin_shift', 'yshift')
-            fit_label = kwargs.get('fit_label', f"fitted trend (order {deg})")
-            input_label = kwargs.get('input_label', 'input grid')
-            title = kwargs.get('title', "Detrending a grid")
-            detrended_label = kwargs.get('detrended_label', 'detrended')
+        elif plot_type == "pygmt":
+            fig_height = kwargs.get("fig_height", None)
+            cmap = kwargs.get("cmap", "plasma")
+            coast = kwargs.get("coast", True)
+            inset = kwargs.get("inset", True)
+            inset_pos = kwargs.get("inset_pos", "BL")
+            origin_shift = kwargs.get("origin_shift", "yshift")
+            fit_label = kwargs.get("fit_label", f"fitted trend (order {deg})")
+            input_label = kwargs.get("input_label", "input grid")
+            title = kwargs.get("title", "Detrending a grid")
+            detrended_label = kwargs.get("detrended_label", "detrended")
 
             fig = maps.plot_grd(
                 detrend,
-                fig_height=fig_height, 
+                fig_height=fig_height,
                 cmap=cmap,
-                grd2cpt=True, 
+                grd2cpt=True,
                 coast=coast,
-                cbar_label=detrended_label)
+                cbar_label=detrended_label,
+            )
 
             fig = maps.plot_grd(
-                fit, 
-                fig=fig,  
-                fig_height=fig_height, 
+                fit,
+                fig=fig,
+                fig_height=fig_height,
                 cmap=cmap,
-                grd2cpt=True, 
+                grd2cpt=True,
                 coast=coast,
-                cbar_label=fit_label,  
-                inset=inset, 
+                cbar_label=fit_label,
+                inset=inset,
                 inset_pos=inset_pos,
-                origin_shift=origin_shift)
+                origin_shift=origin_shift,
+            )
 
             fig = maps.plot_grd(
-                da, 
-                fig=fig, 
-                fig_height=fig_height, 
+                da,
+                fig=fig,
+                fig_height=fig_height,
                 cmap=cmap,
-                grd2cpt=True, 
+                grd2cpt=True,
                 coast=coast,
                 cbar_label=input_label,
                 title=title,
-                origin_shift=origin_shift)
+                origin_shift=origin_shift,
+            )
 
             fig.show()
 
@@ -725,10 +728,10 @@ def grd_compare(
 
     if plot is True:
         if plot_type == "pygmt":
-            cmap = kwargs.get('cmap','viridis')
-            fig_height = kwargs.get('fig_height', 10)
-            coast = kwargs.get('coast', True)
-            origin_shift = kwargs.get('origin_shift', 'xshift')
+            cmap = kwargs.get("cmap", "viridis")
+            fig_height = kwargs.get("fig_height", 10)
+            coast = kwargs.get("coast", True)
+            origin_shift = kwargs.get("origin_shift", "xshift")
 
             fig = maps.plot_grd(
                 grid1,
@@ -749,14 +752,14 @@ def grd_compare(
                 cbar_label="difference",
                 cpt_lims=(-diff_maxabs, diff_maxabs),
                 fig=fig,
-                title=kwargs.get('title', "Comparing Grids"),
-                inset=kwargs.get('inset', True),
-                inset_pos = kwargs.get('inset_pos', 'TL'),
+                title=kwargs.get("title", "Comparing Grids"),
+                inset=kwargs.get("inset", True),
+                inset_pos=kwargs.get("inset_pos", "TL"),
                 fig_height=fig_height,
                 # **kwargs,
             )
             fig = maps.plot_grd(
-                grid2, 
+                grid2,
                 cmap=cmap,
                 region=region,
                 coast=coast,
@@ -767,7 +770,7 @@ def grd_compare(
                 fig_height=fig_height,
                 # **kwargs,
             )
-            
+
             fig.show()
 
         elif plot_type == "xarray":
@@ -1245,6 +1248,7 @@ def polygon_to_region(polygon: list):
 
     return region
 
+
 def mask_from_polygon(
     polygon: list,
     invert: bool = False,
@@ -1252,7 +1256,7 @@ def mask_from_polygon(
     region: list = None,
     spacing: int = None,
     **kwargs,
-    ):
+):
     """
     convert the output of `regions.draw_region` to a mask or use it to mask a grid
 
@@ -1274,11 +1278,11 @@ def mask_from_polygon(
     xr.Dataarray
         masked grid or mask grid with 1's inside the mask.
     """
-   
+
     # convert drawn polygon into dataframe
     df = shapes_to_df(polygon)
     data_coords = (df.x, df.y)
-    
+
     # remove additional polygons
     if df.shape_num.max() > 0:
         print("supplied dataframe has multiple polygons, only using the first one.")
@@ -1290,29 +1294,29 @@ def mask_from_polygon(
         ds = grid.to_dataset()
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
-    
+
     # if no grid given, make a dummy one with supplied region and spacing
     if grid is None:
         coords = vd.grid_coordinates(
-            region=region, 
-            spacing=spacing, 
-            pixel_register=kwargs.get('pixel_register', False),
+            region=region,
+            spacing=spacing,
+            pixel_register=kwargs.get("pixel_register", False),
         )
         ds = vd.make_xarray_grid(
             coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
         )
 
     masked = vd.convexhull_mask(
-        data_coords, 
+        data_coords,
         grid=ds,
-        ).z
-    
+    ).z
+
     # reverse the mask
     if invert is True:
         inverse = masked.isnull()
-        inverse = inverse.where(inverse!=0)
-        masked = inverse*ds.z
+        inverse = inverse.where(inverse != 0)
+        masked = inverse * ds.z
 
-    masked = masked.where(masked.notnull()==True, drop=True)
+    masked = masked.where(masked.notnull() == True, drop=True)
 
     return masked

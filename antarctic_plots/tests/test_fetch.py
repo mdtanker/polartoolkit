@@ -180,7 +180,7 @@ test = [
 ]
 
 
-@pytest.mark.issues
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
@@ -199,7 +199,7 @@ def test_resample_grid(test_input, expected):
 
 #%%
 # ice_vel
-@pytest.mark.issues
+@pytest.mark.issue
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -216,7 +216,7 @@ def test_ice_vel_lowres():
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-@pytest.mark.issues
+@pytest.mark.issue
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -238,7 +238,7 @@ def test_ice_vel_highres():
 
 #%%
 # modis_moa
-@pytest.mark.issues
+@pytest.mark.issue
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -269,7 +269,7 @@ def test_modis_moa():
 #%%
 # basement
 
-
+@pytest.mark.issue
 def test_basement():
     grid = fetch.basement()
     expected = (
@@ -336,7 +336,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.issue
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.parametrize("test_input,expected", test)
@@ -344,7 +344,7 @@ def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.issue
 @pytest.mark.earthdata
 @skip_earthdata
 def test_bedmachine_reference():
@@ -395,13 +395,13 @@ test = [
     ),
 ]
 
-
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap(test_input, expected):
     grid = fetch.bedmap2(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.issue
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
@@ -419,6 +419,7 @@ def test_bedmap2_reference():
 
 #%%
 # deepbedmap
+@pytest.mark.issue
 @pytest.mark.slow
 def test_deepbedmap():
     grid = fetch.deepbedmap()
@@ -473,7 +474,7 @@ test = [
 ]
 
 
-@pytest.mark.issues
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type="FA")
@@ -499,7 +500,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_magnetics(test_input, expected):
     grid = fetch.magnetics(test_input)
@@ -599,7 +600,6 @@ test = [
     ),
 ]
 
-
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
@@ -635,7 +635,6 @@ test = [
     ),
 ]
 
-
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
@@ -670,7 +669,6 @@ test = [
         ),
     ),
 ]
-
 
 @pytest.mark.parametrize("test_input,expected", test)
 def test_moho(test_input, expected):

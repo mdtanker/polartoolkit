@@ -1,8 +1,5 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
-TESTDIR=tmp-test-dir-with-unique-name
-# PYTEST_ARGS= ${PYTEST_EXTRA}
-# NUMBATEST_ARGS=--doctest-modules -v --pyargs -m use_numba
 STYLE_CHECK_FILES= $(PROJECT) docs tools
 
 help:
