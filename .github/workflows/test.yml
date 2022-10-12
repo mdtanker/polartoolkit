@@ -63,9 +63,10 @@ jobs:
           $CONDA/bin/pip install -e .
 
       # Show installed pkg information for postmortem diagnostic
-      # - name: List installed packages
-      #   run: |
-      #     mamba list
+      - name: List installed packages
+        run: |
+          # mamba list
+          $CONDA/bin/conda list
 
       # Run tests and create coverage report: currently excluding tests which need an earthdata login
       # -m "not slow" excludes tests marked as 'slow'
@@ -73,8 +74,8 @@ jobs:
       # -m "not slow or not earthdata" excludes both
       - name: Run tests with pytest
         run: |
-          # pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not working and not issue" --assert="plain"
-          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata" --assert="plain"
+          # pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not working and not issue" --assert=plain
+          $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata" --assert=plain
       
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
