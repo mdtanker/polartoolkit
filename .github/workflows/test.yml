@@ -93,8 +93,3 @@ jobs:
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3.1.1
-      
-      # Format the code
-      - name: Run tests with pytest
-        run: |
-          make format
