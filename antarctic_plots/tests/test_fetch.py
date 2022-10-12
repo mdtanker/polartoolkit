@@ -381,7 +381,7 @@ test = [
         ),
     ),
 ]
-
+@pytest.mark.working
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
@@ -392,7 +392,7 @@ def test_bedmap2_reference():
         "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-
+@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2(test_input, expected):
     grid = fetch.bedmap2(test_input)
@@ -587,11 +587,11 @@ test = [
 
 # causing and error: Error: Process completed with exit code 139
 # Fatal Python error: Segmentation fault
-@pytest.mark.issue
+
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert utils.get_grid_info(grid) == expected
 
 
 # grid = fetch.gia(version='stal-2020')
