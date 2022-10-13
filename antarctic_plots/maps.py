@@ -133,6 +133,7 @@ def plot_grd(
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
+    coast_pen = kwargs.get('')
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
@@ -142,10 +143,18 @@ def plot_grd(
         fig = pygmt.Figure()
     elif origin_shift == "xshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(xshift=(fig_width + 0.4))
+        fig.shift_origin(xshift=(kwargs.get('xshift_amount',1)*(fig_width + 0.4)))
     elif origin_shift == "yshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(fig_height + 3))
+        fig.shift_origin(yshift=(kwargs.get('yshift_amount',1)*(fig_height + 3)))
+    elif origin_shift == "both_shift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(
+            xshift=(kwargs.get('xshift_amount',1)*(fig_width + 0.4)),
+            yshift=(kwargs.get('yshift_amount',1)*(fig_height + 3))
+            )
+    elif origin_shift == "no_shift":
+            fig = kwargs.get("fig")
 
     # set cmap
     if image is True:
@@ -213,11 +222,13 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
-        add_coast(fig, region, proj, no_coast=kwargs.get("no_coast", False))
-        # fig.plot(
-        #     data=fetch.groundingline(),
-        #     pen=".6p,black",
-        # )
+        add_coast(
+            fig, 
+            region, 
+            proj, 
+            pen=kwargs.get('coast_pen', None),
+            no_coast=kwargs.get("no_coast", False),
+            )
 
     # add datapoints
     if points is not None:
@@ -271,7 +282,7 @@ def add_coast(
     region: Union[str or np.ndarray],
     projection: str,
     no_coast: bool = False,
-    pen: str = "0.6p,black",
+    pen = None,
 ):
     """
     add coastline and groundingline to figure.
@@ -285,9 +296,12 @@ def add_coast(
         GMT projection string
     no_coast : bool
         If True, only plot groundingline, not coastline, by default is False
-    pen : str, optional
+    pen : None
         GMT pen string, by default "0.6p,black"
     """
+    if pen is None:
+        pen = "0.6p,black"
+
     gdf = pyogrio.read_dataframe(fetch.groundingline())
 
     if no_coast is False:
@@ -530,6 +544,54 @@ def interactive_map(
 
     return m
 
+def subplots(
+    grid_dict: dict,
+    region: Union[str or np.ndarray] = None,
+    dims: tuple = None,
+    **kwargs,
+):
+    # if no define region, get from first grid in dictionary
+    if region is None:
+        try:
+            region = utils.get_grid_info(list(grid_dict.values()[0]))[1]
+        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+            # raise
+            print("grid region can't be extracted, using antarctic region.")
+            region = regions.antarctica
+
+    # get square dimensions for subplot 
+    if dims is None:
+        subplot_dimensions = utils.square_subplots(len(grid_dict.items()))
+    else:
+        subplot_dimensions = dims
+
+    # get subplot size
+    proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+        region, kwargs.get('fig_height', 15)) 
+
+    fig = pygmt.Figure()
+
+    with fig.subplot(
+        nrows=subplot_dimensions[0], 
+        ncols=subplot_dimensions[1],
+        subsize=(fig_width, fig_height),
+        frame=kwargs.get('frame', 'f'),
+        clearance=kwargs.get('clearance', None),
+        margins=kwargs.get('margins', None),
+        title=kwargs.get('subplot_title', None),
+        autolabel=kwargs.get('autolabel')
+        ):
+        for i, (k, v) in enumerate(grid_dict.items()):
+            with fig.set_panel(panel=i):
+                # plot the grids
+                plot_grd(
+                    v['grid'], 
+                    fig=fig, 
+                    origin_shift='no_shift', 
+                    region=region, 
+                    **kwargs,
+                    )
+    return fig
 
 def plot_3d(
     grids: list,
