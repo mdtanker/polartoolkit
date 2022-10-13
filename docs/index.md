@@ -18,6 +18,7 @@ Functions to automate Antarctic data visualization
  <a href=LICENSE><img src="https://img.shields.io/pypi/l/antarctic-plots?style=flat-square" alt="license"></a>
  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/static/v1?label=code style&message=black&color=black&style=flat-square"></a>
 <a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
+<a href="https://codecov.io/gh/mdtanker/antarctic_plots" ><img src="https://codecov.io/gh/mdtanker/antarctic_plots/branch/main/graph/badge.svg?token=LNTFTGRRFU"/> 
  </p>
  
 ![](cover_fig.png)
