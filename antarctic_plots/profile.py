@@ -12,7 +12,7 @@ import pygmt
 import pyogrio
 import verde as vd
 
-from antarctic_plots import fetch, maps, utils
+from antarctic_plots import fetch, maps, regions, utils
 
 try:
     import ipyleaflet
@@ -21,8 +21,9 @@ except ImportError:
 else:
     _has_ipyleaflet = True
 
-import os
 import contextlib
+import os
+
 
 def create_profile(
     method: str,
@@ -250,12 +251,12 @@ def default_layers(version, region=None) -> dict:
     if region is None:
         region = regions.antarctica
 
-    if version == 'bedmap2':
+    if version == "bedmap2":
         surface = fetch.bedmap2("surface", region=region)
         icebase = fetch.bedmap2("icebase", region=region)
         bed = fetch.bedmap2("bed", region=region)
 
-    elif version == 'bedmachine':
+    elif version == "bedmachine":
         surface = fetch.bedmachine("surface", region=region)
         icebase = fetch.bedmachine("icebase", region=region)
         bed = fetch.bedmachine("bed", region=region)
@@ -297,16 +298,16 @@ def default_data(region=None) -> dict:
         region = regions.antarctica
 
     mag = fetch.magnetics(
-        version="admap1", 
-        region=region, 
+        version="admap1",
+        region=region,
         spacing=10e3,
-        )
+    )
     FA_grav = fetch.gravity(
-        version="antgg-update", 
-        anomaly_type="FA", 
-        region=region, 
+        version="antgg-update",
+        anomaly_type="FA",
+        region=region,
         spacing=10e3,
-        )
+    )
     data_names = [
         "ADMAP-1 magnetics",
         "ANT-4d Free-air grav",
@@ -331,7 +332,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
-    layers_version='bedmap2',
+    layers_version="bedmap2",
     **kwargs,
 ):
     """
@@ -377,9 +378,9 @@ def plot_profile(
     data_buffer: float (0-1)
         Change vertical white space within data graph, by default is 0.1.
     legend_loc: str
-        Change the legend location with a GMT position string, by default is 
+        Change the legend location with a GMT position string, by default is
         "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
-        Right corner of the plot, with 0 offset. 
+        Right corner of the plot, with 0 offset.
     inset : bool
         choose to plot inset map showing figure location, by default is True
     inset_pos : str
@@ -552,7 +553,7 @@ def plot_profile(
                     pen="1p,black",
                 )
         # shift figure to make space for x-section and profiles
-        if kwargs.get("subplot_orientation", None) == 'vertical':
+        if kwargs.get("subplot_orientation", None) == "vertical":
             fig.shift_origin(yshift=(fig_height) + 1)
         else:
             fig.shift_origin(xshift=(fig_width) + 1)
@@ -669,7 +670,7 @@ def plot_profile(
 def rel_dist(
     df: pd.DataFrame,
     reverse: bool = False,
-    ):
+):
     """
     calculate distance between x,y points in a dataframe, relative to the previous row.
 
@@ -717,7 +718,7 @@ def cum_dist(df: pd.DataFrame, **kwargs):
     pd.DataFrame
         Returns orignal dataframe with additional column dist
     """
-    reverse = kwargs.get('reverse', False)
+    reverse = kwargs.get("reverse", False)
     df = rel_dist(df, reverse=reverse)
     df["dist"] = df.rel_dist.cumsum()
     return df
@@ -768,6 +769,6 @@ def draw_lines(**kwargs):
     m.add_control(myDrawControl)
 
     clear_m()
-    display(m)
+    display(m)  # noqa
 
     return lines

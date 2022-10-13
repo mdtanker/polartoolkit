@@ -146,6 +146,6 @@ def draw_region(**kwargs):
     m.add_control(myDrawControl)
 
     clear_m()
-    display(m)
+    display(m)  # noqa
 
     return poly

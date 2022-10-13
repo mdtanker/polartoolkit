@@ -1,8 +1,5 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
-TESTDIR=tmp-test-dir-with-unique-name
-PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
-# NUMBATEST_ARGS=--doctest-modules -v --pyargs -m use_numba
 STYLE_CHECK_FILES= $(PROJECT) docs tools
 
 help:
@@ -19,10 +16,13 @@ install:
 	pip install -e .
 
 test:
-	pytest --cov=.
+	pytest --cov=. -rs
 
 test_fast:
-	pytest --cov=. -m "not slow"
+	pytest --cov=. -rs -m "not slow"
+
+test_fast_no_earthdata:
+	pytest --cov=. -rs -m "not slow or not earthdata"
 
 format: isort black license-add
 
@@ -102,14 +102,12 @@ delete_test_env:
 test_env: delete_test_env
 	mamba create --name antarctic_plots_test --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
 
-binder_yml:
+binder_env: 
 	mamba remove --name antarctic_plots_binder --all --yes
-	rm binder/environment.yml -f
 	mamba create --name antarctic_plots_binder --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 pandas=1.5 numpy=1.23.1 pooch=1.6.0 tqdm=4.64.0 verde=1.7.0 xarray=2022.6.0 cfgrib=0.9.10.1 rasterio=1.3.2 cftime=1.6.1 zarr=2.12.0 pydap=3.2.2 scipy=1.9.1 h5netcdf=1.0.2 netcdf4=1.6.1 pyproj=3.4 matplotlib=3.6 pyogrio=0.4.1 ipyleaflet=0.17.1 openpyxl=3.0.10
-	conda env export --name antarctic_plots_binder --from-history --no-build > binder/environment.yml
 
-clean:
-	find . -name "*.pyc" -exec rm -v {} \;
-	find . -name ".coverage.*" -exec rm -v {} \;
-	rm -rvf docs/_build dist *.egg-info __pycache__ .coverage .cache .pytest_cache $(PROJECT)/_version.py
-	rm -rvf $(TESTDIR) dask-worker-space
+binder_yml: 
+	rm binder/environment.yml -f
+	mamba env export --name antarctic_plots_binder --from-history --no-build > binder/environment.yml
+
+update_binder: binder_env  binder_yml

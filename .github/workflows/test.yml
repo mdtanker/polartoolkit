@@ -1,0 +1,82 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Tests
+
+on: [pull_request]
+
+# cancel any currently running workflows in this same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.13"]
+    runs-on: ubuntu-latest
+    defaults:
+     run:
+      shell: bash -l {0}
+      
+    steps:
+      # Checkout current git repository
+      - name: Checkout
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+      
+      # Install Mambaforge with conda-forge dependencies
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2.1.1
+        with:
+          activate-environment: antarctic_plots
+          environment-file: binder/environment.yml
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,nodefaults
+          channel-priority: strict
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          mamba-version: "*"
+          use-mamba: true
+          auto-activate-base: false
+
+      # # Install Python
+      # - name: Set up Python ${{ matrix.python-version }}
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: ${{ matrix.python-version }}        
+
+      # Install dependencies from conda-forge
+      - name: Install dependencies
+        run: |
+          mamba install pytest=7.1.3 pytest-cov=4.0.0 # pytest-faulthandler=2.0.1
+          pip install python-dotenv==0.21.0
+          # $CONDA/bin/conda install pytest=7.1.3 pytest-cov=4.0.0 -c conda-forge
+          # $CONDA/bin/conda env update --file binder/environment.yml --name base
+          # $CONDA/bin/pip install python-dotenv==0.21.0
+          # $CONDA/bin/pip install -e .
+
+      # Show installed pkg information for postmortem diagnostic
+      - name: List installed packages
+        run: |
+          mamba list
+          # $CONDA/bin/conda list
+
+      # Run tests and create coverage report: currently excluding tests which need an earthdata login
+      # -m "not slow" excludes tests marked as 'slow'
+      # -m "not earthdata" excludes tests markes as 'earthdata'
+      # -m "not slow or not earthdata" excludes both
+      - name: Run tests with pytest
+        run: |
+          pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not issue" --assert=plain
+          # $CONDA/bin/pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not issue" --assert=plain
+      
+      # Upload coverage report to codecov
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3.1.1

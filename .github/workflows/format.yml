@@ -1,0 +1,59 @@
+# This workflow will format the code by running the following Makefile commands:
+# make format
+# make check
+# make license-add
+# make license-check
+
+name: Format
+
+on: [pull_request]
+
+# cancel any currently running workflows in this same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout current git repository
+      - name: Checkout
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: pip install -r env/requirements-format.txt
+
+      - name: List installed packages
+        run: pip freeze
+      
+      - name: Format the code
+        run: |
+          make format
+
+      - name: Check the code
+        run: |
+          make check
+
+      - name: Add licenses to the code
+        run: |
+          make license-add
+
+      - name: Check the code for licenses
+        run: |
+          make license-check

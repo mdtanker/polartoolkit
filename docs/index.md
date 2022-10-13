@@ -36,7 +36,7 @@ The **Antarctic-plots** python package provides some basic tools for creating ma
 
 Check out our [Documentation](https://antarctic-plots.readthedocs.io/en/latest/) for instructions on installing and using the package.
 
-Feel free to use, share, modify, and contribute to this project. I've mostly made this for personal usage so expect significant changes and hopefully I'll implement some tests and more Gallery examples soon. 
+Feel free to use, share, modify, and [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html) to this project. I've mostly made this for personal usage so expect significant changes. Hopefully I'll implement more tests and Gallery examples soon. 
 
 ## Project goals
 
@@ -44,6 +44,7 @@ Below is a list of some features I hope to eventually include. Feel free to make
 
 * Create 3D interactive models to help visualize data.
 * Include more Antarctic datasets to aid in download and storage.
+* Additional projections and possible support for the Arctic region as well.
 
 ```{tableofcontents}
 ```

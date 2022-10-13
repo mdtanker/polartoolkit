@@ -1,6 +1,7 @@
 name: antarctic_plots_binder
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - python=3.9
   - pygmt=0.7.0
@@ -27,4 +28,4 @@ dependencies:
   - pip
   - pip:
     - -e ..
-prefix: C:\Users\matthewt\AppData\Local\miniforge3\envs\antarctic_plots_binder
+prefix: /home/tankerma/miniconda/envs/antarctic_plots_binder
