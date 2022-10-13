@@ -18,10 +18,9 @@ def test_():
 import os
 
 import pytest
+from dotenv import load_dotenv
 
 from antarctic_plots import fetch, utils
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -180,6 +179,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_resample_grid(test_input, expected):
@@ -234,6 +234,7 @@ def test_ice_vel_highres():
 
 # %% modis_moa
 
+
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -261,6 +262,7 @@ def test_modis_moa():
 # utils.get_grid_info(grid)
 
 # %% basement
+
 
 @pytest.mark.working
 def test_basement():
@@ -385,6 +387,8 @@ test = [
         ),
     ),
 ]
+
+
 @pytest.mark.working
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
@@ -396,6 +400,8 @@ def test_bedmap2_reference():
         "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2(test_input, expected):
@@ -407,6 +413,7 @@ def test_bedmap2(test_input, expected):
 # utils.get_grid_info(grid)
 
 # %% deepbedmap
+
 
 @pytest.mark.working
 @pytest.mark.slow
@@ -461,6 +468,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
@@ -485,6 +493,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
@@ -531,11 +540,13 @@ test = [
     ),
 ]
 
+
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.working
 def test_ghf_points():
@@ -582,6 +593,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
@@ -617,6 +629,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
@@ -651,6 +664,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)

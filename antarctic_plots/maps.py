@@ -114,7 +114,7 @@ def plot_grd(
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
-        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+        except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
@@ -133,7 +133,6 @@ def plot_grd(
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
-    coast_pen = kwargs.get('')
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
@@ -143,18 +142,18 @@ def plot_grd(
         fig = pygmt.Figure()
     elif origin_shift == "xshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(xshift=(kwargs.get('xshift_amount',1)*(fig_width + 0.4)))
+        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
     elif origin_shift == "yshift":
         fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(kwargs.get('yshift_amount',1)*(fig_height + 3)))
+        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
     elif origin_shift == "both_shift":
         fig = kwargs.get("fig")
         fig.shift_origin(
-            xshift=(kwargs.get('xshift_amount',1)*(fig_width + 0.4)),
-            yshift=(kwargs.get('yshift_amount',1)*(fig_height + 3))
-            )
+            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+        )
     elif origin_shift == "no_shift":
-            fig = kwargs.get("fig")
+        fig = kwargs.get("fig")
 
     # set cmap
     if image is True:
@@ -191,7 +190,7 @@ def plot_grd(
                 series=(zmin, zmax),
                 verbose="e",
             )
-        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+        except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("grid region can't be extracted.")
             pygmt.makecpt(
@@ -223,12 +222,12 @@ def plot_grd(
     # plot groundingline and coastlines
     if coast is True:
         add_coast(
-            fig, 
-            region, 
-            proj, 
-            pen=kwargs.get('coast_pen', None),
+            fig,
+            region,
+            proj,
+            pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
-            )
+        )
 
     # add datapoints
     if points is not None:
@@ -282,7 +281,7 @@ def add_coast(
     region: Union[str or np.ndarray],
     projection: str,
     no_coast: bool = False,
-    pen = None,
+    pen=None,
 ):
     """
     add coastline and groundingline to figure.
@@ -544,6 +543,7 @@ def interactive_map(
 
     return m
 
+
 def subplots(
     grid_dict: dict,
     region: Union[str or np.ndarray] = None,
@@ -554,12 +554,12 @@ def subplots(
     if region is None:
         try:
             region = utils.get_grid_info(list(grid_dict.values()[0]))[1]
-        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+        except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
-    # get square dimensions for subplot 
+    # get square dimensions for subplot
     if dims is None:
         subplot_dimensions = utils.square_subplots(len(grid_dict.items()))
     else:
@@ -567,31 +567,33 @@ def subplots(
 
     # get subplot size
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-        region, kwargs.get('fig_height', 15)) 
+        region, kwargs.get("fig_height", 15)
+    )
 
     fig = pygmt.Figure()
 
     with fig.subplot(
-        nrows=subplot_dimensions[0], 
+        nrows=subplot_dimensions[0],
         ncols=subplot_dimensions[1],
         subsize=(fig_width, fig_height),
-        frame=kwargs.get('frame', 'f'),
-        clearance=kwargs.get('clearance', None),
-        margins=kwargs.get('margins', None),
-        title=kwargs.get('subplot_title', None),
-        autolabel=kwargs.get('autolabel')
-        ):
+        frame=kwargs.get("frame", "f"),
+        clearance=kwargs.get("clearance", None),
+        margins=kwargs.get("margins", None),
+        title=kwargs.get("subplot_title", None),
+        autolabel=kwargs.get("autolabel"),
+    ):
         for i, (k, v) in enumerate(grid_dict.items()):
             with fig.set_panel(panel=i):
                 # plot the grids
                 plot_grd(
-                    v['grid'], 
-                    fig=fig, 
-                    origin_shift='no_shift', 
-                    region=region, 
+                    v["grid"],
+                    fig=fig,
+                    origin_shift="no_shift",
+                    region=region,
                     **kwargs,
-                    )
+                )
     return fig
+
 
 def plot_3d(
     grids: list,
@@ -641,7 +643,7 @@ def plot_3d(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
-        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+        except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("first grids' region can't be extracted, using antarctic region.")
             region = regions.antarctica
@@ -693,7 +695,7 @@ def plot_3d(
                     continuous=True,
                     series=(zmin, zmax),
                 )
-            except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+            except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
                 # raise
                 print("grid region can't be extracted.")
                 pygmt.makecpt(

@@ -48,11 +48,11 @@ def get_grid_info(grid):
         # try:
         grid = xr.load_dataarray(grid).squeeze()
         # except ValueError:
-            # print("loading grid as dataarray didn't work")
-            # raise
-            # pass
-            # grid = xr.open_rasterio(grid)
-            # grid = rioxarray.open_rasterio(grid)
+        # print("loading grid as dataarray didn't work")
+        # raise
+        # pass
+        # grid = xr.open_rasterio(grid)
+        # grid = rioxarray.open_rasterio(grid)
 
     if int(len(grid.dims)) > 2:
         grid = grid.squeeze()
@@ -66,7 +66,7 @@ def get_grid_info(grid):
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
         reg = grid.gmt.registration
         registration = "g" if reg == 0 else "p"
-    except Exception:#pygmt.exceptions.GMTInvalidInput:
+    except Exception:  # pygmt.exceptions.GMTInvalidInput:
         print("grid info can't be extracted, check number of dimensions, should be 2.")
         # raise
         spacing = None
