@@ -38,6 +38,10 @@ If you get errors related to GDAL and GMT, try reinstall Geopandas and PyGMT wit
 
     mamba install geopandas pygmt --force-reinstall
 
+If you get errors related to the PyProj EPSG database, try the following:
+
+    mamba install -c conda-forge proj-data
+
 If you get an error related to traitlets run the following command as discussed [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):
 
     mamba install ipykernel --update-deps --force-reinstall
