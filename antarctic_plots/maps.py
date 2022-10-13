@@ -114,8 +114,8 @@ def plot_grd(
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
-        except (ValueError, pygmt.exceptions.GMTInvalidInput):
-            raise
+        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+            # raise
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
@@ -182,8 +182,8 @@ def plot_grd(
                 series=(zmin, zmax),
                 verbose="e",
             )
-        except (ValueError, pygmt.exceptions.GMTInvalidInput):
-            raise
+        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+            # raise
             print("grid region can't be extracted.")
             pygmt.makecpt(
                 cmap=cmap,
@@ -579,8 +579,8 @@ def plot_3d(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
-        except (ValueError, pygmt.exceptions.GMTInvalidInput):
-            raise
+        except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+            # raise
             print("first grids' region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
@@ -631,8 +631,8 @@ def plot_3d(
                     continuous=True,
                     series=(zmin, zmax),
                 )
-            except (ValueError, pygmt.exceptions.GMTInvalidInput):
-                raise
+            except Exception:#(ValueError, pygmt.exceptions.GMTInvalidInput):
+                # raise
                 print("grid region can't be extracted.")
                 pygmt.makecpt(
                     cmap=cmaps[i],
