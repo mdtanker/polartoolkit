@@ -27,13 +27,14 @@ contributions.
 * [Reporting a Bug](#reporting-a-bug)
 * [Editing the Documentation](#editing-the-documentation)
 * [Contributing Code](#contributing-code)
-  - [General guidelines](#general-guidelines)
   - [Setting up your environment](#setting-up-your-environment)
   - [Code style](#code-style)
   - [Testing your code](#testing-your-code)
   - [Documentation](#documentation)
   - [Code Review](#code-review)
-
+* [Release a New Version](#release-a-new-version)
+* [Update the Dependencies](#update-the-dependencies)
+* [Set up Binder](#set-up-the-binder-configuration)
 
 ## What Can I Do?
 
@@ -102,25 +103,17 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 [La Terminal de Unix](https://swcarpentry.github.io/shell-novice-es/)
 
 
-
-
-
-
-
-
-
-
-
-
-## Set up a virtual environment
+### Setting up your environment
 
 Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install packages. Two of the dependencies, `PyGMT` and `GeoPandas`, need to be installed with `conda` since they contain C packages. To navigate this issue, we install `PyGMT` and `Geopandas` independently, then export the `Poetry` env to a file, and use that to add the remaining dependencies.
 
 The file is `requirements.txt` which defines the packages need to use and develop the package.
 
-Run the following to create a conda env "antarctic_plots_dev":
+Run the following to create a conda/mamba env "antarctic_plots_dev":
 
     make new_env
+
+> **Note:** `mamba` and `conda` are interchangable in all these commands.
 
 Activate it with:
 
@@ -130,52 +123,130 @@ Install the necessary packages:
 
     make install_reqs
 
-This environment contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you'll need to restart your kernel). 
+This environment contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
-## Formatting the code
+> **Note:** You'll need to activate the environment every time you start a new terminal.
 
-poetry export -f requirements.txt --output env/requirements-dev.txt --only dev
+### Code style
 
-## Testing the code
-
-
-## Build the docs
-
-The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned issues with the included C programs, `Read the Docs` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
-
-### Run all .ipynb's to update them
-
-    make run_doc_files
-
-### format and check all the code
-
+We use [Black](https://github.com/ambv/black) to format the code so we don't have to
+think about it.
+Black loosely follows the [PEP8](http://pep8.org) guide but with a few differences.
+Regardless, you won't have to worry about formatting the code yourself.
+Before committing, run the following to automatically format your code:
+    
     make format
+
+Some formatting changes can't be applied automatically. Running the following to see these.
+
     make check
 
-Fix issues shown in `make check`. If lines are too long, split them. If they are urls, and you want flake8 to ignore the line, add `# noqa` at the end of the line. 
+Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it. 
 
-### run the tests
+#### Docstrings
+
+**All docstrings** should follow the
+[numpy style guide](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard).
+All functions/classes/methods should have docstrings with a full description of all
+arguments and return values.
+
+While the maximum line length for code is automatically set by *Black*, docstrings
+must be formatted manually. To play nicely with Jupyter and IPython, **keep docstrings
+limited to 88 characters** per line. We don't have a good way of enforcing this
+automatically yet, so please do your best.
+
+### Testing your code
+
+Automated testing helps ensure that our code is as free of bugs as it can be.
+It also lets us know immediately if a change we make breaks any other part of the code.
+
+All of our test code and data are stored in the `tests` subpackage.
+We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests. 
+
+Please write tests for your code so that we can be sure that it won't break any of the
+existing functionality.
+Tests also help us be confident that we won't break your code in the future.
+
+If you're **new to testing**, see existing test files for examples of things to do.
+**Don't let the tests keep you from submitting your contribution!**
+If you're not sure how to do this or are having trouble, submit your pull request
+anyway.
+We will help you create the tests and sort out any kind of problem during code review.
+
+Run the tests and calculate test coverage using:
 
     make test
 
-### Check the build manually (Optional)
+You can choose to exclude the slow tests:
+
+    make test_fast
+
+To run a specific test by name:
+
+    pytest --cov=. -k "test_name"
+
+The coverage report will let you know which lines of code are touched by the tests.
+**Strive to get 100% coverage for the lines you changed.**
+It's OK if you can't or don't know how to test something.
+Leave a comment in the PR and we'll help you out.
+
+### Documentation
+
+The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
+
+> **Note:** The docs are automatically built on PR's by `RTD`, but it's good practise to build them manually before a PR, to check them for errors.
+
+#### Run all .ipynb's to update them
+
+    make run_doc_files
+
+#### Check the build manually (optional)
 
     make build_docs
 
 This will run the `.ipynb` files, and convert them to markdown to be included in the docs.
 Check for returned errors and open `index.html` in docs/_build/html/ to view the docs.
 
-### Automatically build the docs 
+#### Automatically build the docs 
 
-Add, commit, and push all changes to Github in a Pull Request, and RTD should automatically build the docs.
+Add, commit, and push all changes to Github in a Pull Request, and `RTD` should automatically build the docs.
 
+### Code Review
 
-## Build and publish the package
+After you've submitted a pull request, you should expect to hear at least a comment
+within a couple of days.
+We may suggest some changes or improvements or alternatives.
+
+Some things that will increase the chance that your pull request is accepted quickly:
+
+* Write a good and detailed description of what the PR does.
+* Write tests for the code you wrote/modified.
+* Readable code is better than clever code (even with comments).
+* Write documentation for your code (docstrings) and leave comments explaining the
+  *reason* behind non-obvious things.
+* Include an example of new features in the gallery or tutorials.
+* Follow the [numpy guide](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt)
+  for documentation.
+* Run the automatic code formatter and style checks.
+
+If you're PR involves changing the package dependencies, see the below instructions for [updating the dependencies](#update-the-dependencies).
+
+Pull requests will automatically have tests run by GitHub Actions.
+This includes running both the unit tests as well as code linters.
+Github will show the status of these checks on the pull request.
+Try to get them all passing (green).
+If you have any trouble, leave a comment in the PR or
+[post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
+
+## Release a new version 
+
+This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
+
 Follow all the above instructions for building the docs
 
 Increase the version number in `pyproject.toml`
 
-Recreate the poetry environement without the dev packages:
+Recreate the poetry environment without the dev packages:
 
     make poetry_env
 
@@ -185,10 +256,10 @@ Then run the following:
 
 This will both build the dist files, and upload to TestPyPI.
 
-Make a new environment, activate it:
+Make a new environment and activate it:
 
-    make test_env
-    mamba activate antarctic_plots_test
+    make test_pypi_env
+    mamba activate antarctic_plots_test_pypi
 
  and run the following, replacing the asterisks with the version number:
 
@@ -227,6 +298,7 @@ Then run through the commands at the top of this page again to update the conda 
 If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
 
 ## Set up the binder configuration
+
 To run this pacakge online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
 
     make binder_yml
