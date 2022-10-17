@@ -697,8 +697,8 @@ def bedmap2(
         "icemask_grounded_and_shelves",
         "lakemask_vostok",
         "rockmask",
-        "surface",
-        "thickness",
+        # "surface",
+        # "thickness",
         "thickness_uncertainty_5km",
         "gl04c_geiod_to_WGS84",
     ]:
