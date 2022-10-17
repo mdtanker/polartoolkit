@@ -240,15 +240,15 @@ def ice_vel(
             # Save to disk
             processed_lowres.to_netcdf(fname_processed)
         return str(fname_processed)
-    
+
     # determine which resolution of preprocessed grid to use
-    if spacing < 5e3: 
+    if spacing < 5e3:
         preprocessor = preprocessing_fullres
         initial_region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
         initial_spacing = 450
         initial_registration = "g"
     elif spacing >= 5e3:
-        print(f"using preprocessed 5km grid since spacing is > 5km")
+        print("using preprocessed 5km grid since spacing is > 5km")
         preprocessor = preprocessing_5k
         initial_region = [-2800000.0, 2795000.0, -2795000.0, 2800000.0]
         initial_spacing = 5e3
@@ -749,7 +749,8 @@ def bedmap2(
     # # replace nans with 0's
     # if layer in ["surface", "thickness"]:
     #     # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-    #     final_grid = final_grid.fillna(0)  # this changes the registration from pixel to gridline
+    #     # this changes the registration from pixel to gridline
+    #     final_grid = final_grid.fillna(0)
 
     if plot is True:
         final_grid.plot(robust=True)

@@ -204,13 +204,13 @@ def test_resample_grid(test_input, expected):
 @pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_lowres():
-    grid = fetch.ice_vel(spacing = 8e3)
+    grid = fetch.ice_vel(spacing=8e3)
     expected = (
-        '8000',
+        "8000",
         [-2800000.0, 2792000.0, -2792000.0, 2800000.0],
         -125.007492065,
         4200.79833984,
-        'g',
+        "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
@@ -219,13 +219,13 @@ def test_ice_vel_lowres():
 @pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_highres():
-    grid = fetch.ice_vel(spacing = 1e3)
+    grid = fetch.ice_vel(spacing=1e3)
     expected = (
-        '1000',
+        "1000",
         [-2800000.0, 2799000.0, -2799000.0, 2800000.0],
         -92.828956604,
         4216.78759766,
-        'g',
+        "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
@@ -367,11 +367,11 @@ test = [
     ),
     (
         "surface",
-        ('1000', [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, 'p'),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, "p"),
     ),
     (
         "thickness",
-        ('1000', [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, 'p'),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, "p"),
     ),
     (
         "bed",
@@ -394,11 +394,11 @@ test = [
 def test_bedmap2_reference():
     grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
     expected = (
-        '1000',
+        "1000",
         [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
         -50.4912605286,
         4090.53417969,
-        'g',
+        "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
