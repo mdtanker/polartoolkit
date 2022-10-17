@@ -18,11 +18,13 @@ def test_():
 import os
 
 import pytest
-from dotenv import load_dotenv
 
 from antarctic_plots import fetch, utils
 
-load_dotenv()
+# from dotenv import load_dotenv
+
+
+# load_dotenv()
 
 earthdata_login = [
     os.environ.get("EARTHDATA_USERNAME", None),
@@ -198,16 +200,16 @@ def test_resample_grid(test_input, expected):
 # utils.get_grid_info(resampled)
 
 # %% ice_vel
+@pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_lowres():
-    resolution = "lowres"
-    grid = fetch.ice_vel(resolution=resolution)
+    grid = fetch.ice_vel(spacing=8e3)
     expected = (
-        "5000",
-        [-2800000.0, 2795000.0, -2795000.0, 2800000.0],
-        -15.5856771469,
-        4201.70605469,
+        "8000",
+        [-2800000.0, 2792000.0, -2792000.0, 2800000.0],
+        -125.007492065,
+        4200.79833984,
         "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -217,20 +219,19 @@ def test_ice_vel_lowres():
 @pytest.mark.earthdata
 @skip_earthdata
 def test_ice_vel_highres():
-    resolution = "highres"
-    grid = fetch.ice_vel(resolution=resolution)
+    grid = fetch.ice_vel(spacing=1e3)
     expected = (
-        "450",
-        [-2800000.0, 2799800.0, -2799800.0, 2800000.0],
-        2.34232032881e-07,
-        4218.26513672,
+        "1000",
+        [-2800000.0, 2799000.0, -2799000.0, 2800000.0],
+        -92.828956604,
+        4216.78759766,
         "g",
     )
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-# grid = fetch.ice_vel(resolution='lowres')
-# ut ils.get_grid_info(grid)
+# grid = fetch.ice_vel(spacing=1e3)
+# utils.get_grid_info(grid)
 
 # %% modis_moa
 
@@ -366,11 +367,11 @@ test = [
     ),
     (
         "surface",
-        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4082.0, "g"),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, "p"),
     ),
     (
         "thickness",
-        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4621.0, "g"),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, "p"),
     ),
     (
         "bed",

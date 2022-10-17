@@ -183,7 +183,6 @@ def sample_shp(name: str) -> str:
 def ice_vel(
     plot: bool = False,
     info: bool = False,
-    resolution="highres",
     region=None,
     spacing=None,
     registration=None,
@@ -204,6 +203,8 @@ def ice_vel(
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3, original spacing
         is 450m
+    registration : str, optional
+        set either 'p' for pixel or 'g' for gridline registration, by default is 'g'
 
     Returns
     -------
@@ -211,24 +212,12 @@ def ice_vel(
         Returns a calculated grid of ice velocity in meters/year.
     """
 
-    # found with utils.get_grid_info()
-    initial_region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
-    initial_spacing = 450
-    initial_registration = "g"
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
-
     # preprocessing for full, 450m resolution
-    def preprocessing_highres(fname, action, pooch):
+    def preprocessing_fullres(fname, action, pooch):
         "Load the .nc file, calculate velocity magnitude, save it back"
         fname = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_highres")
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_fullres")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
@@ -238,11 +227,11 @@ def ice_vel(
         return str(fname_processed)
 
     # preprocessing for filtered 5k resolution
-    def preprocessing_lowres(fname, action, pooch):
-        "Load the .nc file, calculate velocity magnitude, save it back"
+    def preprocessing_5k(fname, action, pooch):
+        "Load the .nc file, calculate velocity magnitude, resample to 5k, save it back"
         fname = Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_lowres")
+        # Rename to the file to ***_preprocessed_5k.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_5k")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
@@ -252,12 +241,25 @@ def ice_vel(
             processed_lowres.to_netcdf(fname_processed)
         return str(fname_processed)
 
-    if resolution == "highres":
-        preprocessing = preprocessing_highres
-    elif resolution == "lowres":
-        preprocessing = preprocessing_lowres
-    else:
-        raise ValueError("invalid resolution string")
+    # determine which resolution of preprocessed grid to use
+    if spacing < 5e3:
+        preprocessor = preprocessing_fullres
+        initial_region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
+        initial_spacing = 450
+        initial_registration = "g"
+    elif spacing >= 5e3:
+        print("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+        initial_region = [-2800000.0, 2795000.0, -2795000.0, 2800000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
 
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
@@ -267,19 +269,19 @@ def ice_vel(
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
-        processor=preprocessing,
+        processor=preprocessor,
     )
 
     grid = xr.load_dataarray(path)
 
     resampled = resample_grid(
         grid,
-        initial_spacing,
-        initial_region,
-        initial_registration,
-        spacing,
-        region,
-        registration,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
     )
 
     if plot is True:
@@ -515,23 +517,23 @@ def bedmachine(
         grid = xr.load_dataset(path)["surface"]
         surface = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         grid = xr.load_dataset(path)["thickness"]
         thickness = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         resampled = surface - thickness
@@ -546,16 +548,16 @@ def bedmachine(
         "mask",
         "errbed",
         "source",
-    ]:  # noqa
+    ]:
         grid = xr.load_dataset(path)[layer]
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     else:
@@ -565,12 +567,12 @@ def bedmachine(
         geoid = xr.load_dataset(path)["geoid"]
         resampled_geoid = resample_grid(
             geoid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         final_grid = resampled + resampled_geoid
@@ -627,10 +629,22 @@ def bedmap2(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
-    # found with utils.get_grid_info()
-    initial_region = [-3333500, 3333500, -3332500, 3332500]
-    initial_spacing = 1e3
-    initial_registration = "p"
+    # Declare initial grid values, found with utils.get_grid_info()
+    # several of the layers have different values
+    if layer == "lakemask_vostok":
+        initial_region = [1189500.0, 1470500.0, -401500.0, -291500.0]
+        initial_spacing = 1e3
+        initial_registration = "p"
+
+    elif layer == "thickness_uncertainty_5km":
+        initial_region = [-3401500.0, 3403500.0, -3397500.0, 3397500.0]
+        initial_spacing = 5e3
+        initial_registration = "p"
+
+    else:
+        initial_region = [-3333500, 3333500, -3332500, 3332500]
+        initial_spacing = 1e3
+        initial_registration = "p"
 
     if region is None:
         region = initial_region
@@ -639,6 +653,7 @@ def bedmap2(
     if registration is None:
         registration = initial_registration
 
+    # retrieve the specified layer file
     path = pooch.retrieve(
         url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
         fname="bedmap2_tiff.zip",
@@ -648,60 +663,79 @@ def bedmap2(
         progressbar=True,
     )
 
+    # calculate icebase as surface-thickness
     if layer == "icebase":
         fname = [p for p in path if p.endswith("surface.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         surface = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         thickness = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
+        # this changes the registration from pixel to gridline
         resampled = surface - thickness
 
-    elif layer in ["surface", "thickness", "bed", "gl04c_geiod_to_WGS84"]:
+    elif layer in [
+        "bed",
+        "coverage",
+        "grounded_bed_uncertainty",
+        "icemask_grounded_and_shelves",
+        "lakemask_vostok",
+        "rockmask",
+        "surface",
+        "thickness",
+        "thickness_uncertainty_5km",
+        "gl04c_geiod_to_WGS84",
+    ]:
+
         fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     else:
         raise ValueError("invalid layer string")
 
-    if reference == "ellipsoid" and layer != "thickness":
+    # change layer elevation to be relative to the ellipsoid instead of the geoid
+    if reference == "ellipsoid" and layer in [
+        "surface",
+        "icebase",
+        "bed",
+    ]:
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
         geoid = xr.load_dataarray(geoid_file).squeeze()
         resampled_geoid = resample_grid(
             geoid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         final_grid = resampled + resampled_geoid
@@ -712,9 +746,11 @@ def bedmap2(
     else:
         final_grid = resampled
 
-    # replace nans with 0 for surface of thickness
-    if layer == "surface" or layer == "thickness":
-        final_grid = final_grid.fillna(0)
+    # # replace nans with 0's
+    # if layer in ["surface", "thickness"]:
+    #     # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+    #     # this changes the registration from pixel to gridline
+    #     final_grid = final_grid.fillna(0)
 
     if plot is True:
         final_grid.plot(robust=True)
