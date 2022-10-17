@@ -515,23 +515,23 @@ def bedmachine(
         grid = xr.load_dataset(path)["surface"]
         surface = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         grid = xr.load_dataset(path)["thickness"]
         thickness = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         resampled = surface - thickness
@@ -550,12 +550,12 @@ def bedmachine(
         grid = xr.load_dataset(path)[layer]
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     else:
@@ -565,12 +565,12 @@ def bedmachine(
         geoid = xr.load_dataset(path)["geoid"]
         resampled_geoid = resample_grid(
             geoid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         final_grid = resampled + resampled_geoid
@@ -697,8 +697,8 @@ def bedmap2(
         "icemask_grounded_and_shelves",
         "lakemask_vostok",
         "rockmask",
-        # "surface",
-        # "thickness",
+        "surface",
+        "thickness",
         "thickness_uncertainty_5km",
         "gl04c_geiod_to_WGS84",
     ]:
@@ -707,25 +707,6 @@ def bedmap2(
         grid = xr.load_dataarray(fname).squeeze()
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-        )
-
-    # replace nans with 0 for surface or thickness
-    elif layer in ["surface", "thickness"]:
-        fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-
-        # fill nans with 0
-        # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-        filled = grid.fillna(0)  # this changes the registration from pixel to gridline
-
-        resampled = resample_grid(
-            filled,
             initial_spacing=initial_spacing,
             initial_region=initial_region,
             initial_registration=initial_registration,
@@ -762,6 +743,11 @@ def bedmap2(
 
     else:
         final_grid = resampled
+
+    # # replace nans with 0's
+    # if layer in ["surface", "thickness"]:
+    #     # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+    #     final_grid = final_grid.fillna(0)  # this changes the registration from pixel to gridline
 
     if plot is True:
         final_grid.plot(robust=True)
