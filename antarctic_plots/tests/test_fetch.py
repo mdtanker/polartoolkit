@@ -230,8 +230,8 @@ def test_ice_vel_highres():
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-grid = fetch.ice_vel(spacing=1e3)
-utils.get_grid_info(grid)
+# grid = fetch.ice_vel(spacing=1e3)
+# utils.get_grid_info(grid)
 
 # %% modis_moa
 
