@@ -667,24 +667,24 @@ def bedmap2(
         grid = xr.load_dataarray(fname).squeeze()
         surface = resample_grid(
             grid,
-            initial_spacing = initial_spacing,
-            initial_region = initial_region,
-            initial_registration = initial_registration,
-            spacing = spacing,
-            region = region,
-            registration = registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         thickness = resample_grid(
             grid,
-            initial_spacing = initial_spacing,
-            initial_region = initial_region,
-            initial_registration = initial_registration,
-            spacing = spacing,
-            region = region,
-            registration = registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         # this changes the registration from pixel to gridline
@@ -692,27 +692,27 @@ def bedmap2(
 
     elif layer in [
         "bed",
-        "coverage", 
-        "grounded_bed_uncertainty", 
+        "coverage",
+        "grounded_bed_uncertainty",
         "icemask_grounded_and_shelves",
         "lakemask_vostok",
         "rockmask",
-        "surface", 
-        "thickness", 
+        "surface",
+        "thickness",
         "thickness_uncertainty_5km",
         "gl04c_geiod_to_WGS84",
-        ]:
+    ]:
 
         fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
         grid = xr.load_dataarray(fname).squeeze()
         resampled = resample_grid(
             grid,
-            initial_spacing = initial_spacing,
-            initial_region = initial_region,
-            initial_registration = initial_registration,
-            spacing = spacing,
-            region = region,
-            registration = registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     # replace nans with 0 for surface or thickness
@@ -722,33 +722,37 @@ def bedmap2(
 
         # fill nans with 0
         # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-        filled = grid.fillna(0) # this changes the registration from pixel to gridline
+        filled = grid.fillna(0)  # this changes the registration from pixel to gridline
 
         resampled = resample_grid(
             filled,
-            initial_spacing = initial_spacing,
-            initial_region = initial_region,
-            initial_registration = initial_registration,
-            spacing = spacing,
-            region = region,
-            registration = registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     else:
         raise ValueError("invalid layer string")
 
     # change layer elevation to be relative to the ellipsoid instead of the geoid
-    if reference == "ellipsoid" and layer in ['surface', 'icebase','bed']: #!= "thickness":
+    if reference == "ellipsoid" and layer in [
+        "surface",
+        "icebase",
+        "bed",
+    ]:
         geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
         geoid = xr.load_dataarray(geoid_file).squeeze()
         resampled_geoid = resample_grid(
             geoid,
-            initial_spacing = initial_spacing,
-            initial_region = initial_region,
-            initial_registration = initial_registration,
-            spacing = spacing,
-            region = region,
-            registration = registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
         final_grid = resampled + resampled_geoid

@@ -18,9 +18,11 @@ def test_():
 import os
 
 import pytest
-# from dotenv import load_dotenv
 
 from antarctic_plots import fetch, utils
+
+# from dotenv import load_dotenv
+
 
 # load_dotenv()
 
@@ -366,11 +368,11 @@ test = [
     ),
     (
         "surface",
-        ('1000', [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, 'p'),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, "p"),
     ),
     (
         "thickness",
-        ('1000', [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, 'p'),
+        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, "p"),
     ),
     (
         "bed",

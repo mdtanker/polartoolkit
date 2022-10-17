@@ -1322,6 +1322,7 @@ def mask_from_polygon(
 
     return masked
 
+
 def change_reg(grid):
     """
     Use GMT grdedit to change the registration type in the metadata.
@@ -1335,13 +1336,13 @@ def change_reg(grid):
     -------
     xr.DataArray
         returns a dataarray with switch reg type.
-    """    
+    """
     with pygmt.clib.Session() as ses:
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_grid(grid) as f_in:
             # send the output to a file so that we can read it
-            with pygmt.helpers.GMTTempFile(suffix='.nc') as tmpfile:
-                args = f"{f_in} -T -G{tmpfile.name}"            
+            with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
+                args = f"{f_in} -T -G{tmpfile.name}"
                 ses.call_module("grdedit", args)
                 f_out = pygmt.load_dataarray(tmpfile.name)
     return f_out
