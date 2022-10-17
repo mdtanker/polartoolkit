@@ -173,13 +173,20 @@ def plot_grd(
             verbose="e",
         )
     elif cpt_lims is not None:
-        pygmt.makecpt(
-            cmap=cmap,
-            background=True,
-            # continuous=True,
-            series=cpt_lims,
-            verbose="e",
-        )
+        try:
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                # continuous=True,
+                series=cpt_lims,
+                verbose="e",
+            )
+        except (pygmt.exceptions.GMTCLibError):
+            pygmt.makecpt(
+                cmap=cmap,
+                background=True,
+                verbose="e",
+            )
     else:
         try:
             zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
