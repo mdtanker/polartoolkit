@@ -17,7 +17,7 @@ import verde as vd
 import xarray as xr
 from pyproj import Transformer
 
-from antarctic_plots import maps
+from antarctic_plots import maps, fetch
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -665,6 +665,7 @@ def grd_compare(
     if isinstance(da2, str):
         da2 = xr.load_dataarray(da2)
 
+    # first cut the grids to save time on the possible resampling below
     if region is not None:
         da1 = pygmt.grdcut(
             da1,
@@ -677,67 +678,52 @@ def grd_compare(
             verbose="e",
         )
 
-    da1_spacing = get_grid_info(da1)[0]
-    da2_spacing = get_grid_info(da2)[0]
+    # get minimum grid spacing of both grids
+    da1_spacing = float(get_grid_info(da1)[0])
+    da2_spacing = float(get_grid_info(da2)[0])
+    
+    min_spacing = min(da1_spacing, da2_spacing)
 
+    if da1_spacing != da2_spacing:
+        print(
+            "grid spacings don't match, using smaller spacing",
+            f"({min_spacing}m).",
+        )
+
+    # get inside region of both grids
     da1_reg = get_grid_info(da1)[1]
     da2_reg = get_grid_info(da2)[1]
-
-    spacing = min(da1_spacing, da2_spacing)
 
     e = max(da1_reg[0], da2_reg[0])
     w = min(da1_reg[1], da2_reg[1])
     n = max(da1_reg[2], da2_reg[2])
     s = min(da1_reg[3], da2_reg[3])
 
-    region = [e, w, n, s]
+    sub_region = [e, w, n, s]
 
-    if (da1_spacing != da2_spacing) and (da1_reg != da2_reg):
-        print(
-            "grid spacings and regions dont match, using smaller spacing",
-            f"({spacing}m) and inner region.",
-        )
-        grid1 = pygmt.grdsample(
-            da1,
-            spacing=spacing,
-            region=region,
-            registration="p",
-            verbose="e",
-        )
-        grid2 = pygmt.grdsample(
-            da2,
-            spacing=spacing,
-            region=region,
-            registration="p",
-            verbose="e",
-        )
-    elif da1_spacing != da2_spacing:
-        print("grid spacings dont match, using smaller spacing of supplied grids")
-        grid1 = pygmt.grdsample(
-            da1,
-            spacing=spacing,
-            registration="p",
-            verbose="e",
-        )
-        grid2 = pygmt.grdsample(
-            da2,
-            spacing=spacing,
-            registration="p",
-            verbose="e",
-        )
-    elif da1_reg != da2_reg:
-        print("grid regions dont match, using inner region of supplied grids")
-        grid1 = pygmt.grdcut(
-            da1,
-            region=region,
-            verbose="e",
-        )
-        grid2 = pygmt.grdcut(da2, region=region, verbose="e")
-    else:
-        print("grid regions and spacing match")
-        grid1 = da1
-        grid2 = da2
+    if da1_reg != da2_reg:
+        print(f"grid regions dont match, using inner region {sub_region}")
 
+    # use registration from first grid, or from kwarg
+    if kwargs.get('registration', None) is None:
+        registration = get_grid_info(da1)[4]
+    else: 
+        registration = kwargs.get('registration', None)
+    
+    grid1 = fetch.resample_grid(
+        da1,
+        spacing=min_spacing,
+        region=sub_region,
+        registration=registration,
+    )
+
+    grid2 = fetch.resample_grid(
+        da2,
+        spacing=min_spacing,
+        region=sub_region,
+        registration=registration,
+    )
+    
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
