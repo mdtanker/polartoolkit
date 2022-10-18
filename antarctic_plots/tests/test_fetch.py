@@ -240,11 +240,10 @@ def test_ice_vel_highres():
 @pytest.mark.earthdata
 @skip_earthdata
 def test_modis_moa():
-    version = 750
-    grid = fetch.modis_moa(version=version)
+    grid = fetch.modis_moa(version=750)
     expected = (
         "750",
-        [-3174450.0, 2867550.0, -2815925.0, 2405575.0],
+        [-3174450.0, 2867550.0, -2816675.0, 2406325.0],
         0.0,
         42374.0,
         "p",
@@ -257,7 +256,21 @@ def test_modis_moa():
 # grid = fetch.modis_moa(version=750)
 # utils.get_grid_info(grid)
 
-# %% imagery, not testing, too large
+# %% imagery
+
+
+@pytest.mark.slow
+def test_imagery():
+    grid = fetch.imagery()
+    expected = (
+        "240.000000516",
+        [-2668274.98913, 2813804.9199, -2294625.04002, 2362334.96998],
+        1.79769313486e308,
+        -1.79769313486e308,
+        "p",
+    )
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 # grid = fetch.imagery()
 # utils.get_grid_info(grid)

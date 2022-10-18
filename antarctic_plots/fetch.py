@@ -98,6 +98,7 @@ def resample_grid(
 
     else:
         print("returning grid with new region and/or registration, same spacing")
+
         cut = pygmt.grdcut(
             grid=grid,
             region=region,
@@ -109,7 +110,11 @@ def resample_grid(
             region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
             registration=registration,
         )
-
+        resampled = pygmt.grdcut(
+            grid=resampled,
+            region=region,
+            extend="",
+        )
     return resampled
 
 
@@ -629,19 +634,21 @@ def bedmap2(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
-    # Declare initial grid values, found with utils.get_grid_info()
+    # Declare initial grid values,
+    # use utils.get_grid_info(xr.load_dataarray(file).squeeze())
     # several of the layers have different values
     if layer == "lakemask_vostok":
-        initial_region = [1189500.0, 1470500.0, -401500.0, -291500.0]
+        initial_region = [1189500, 1470500, -401500, -291500]
         initial_spacing = 1e3
         initial_registration = "p"
 
     elif layer == "thickness_uncertainty_5km":
-        initial_region = [-3401500.0, 3403500.0, -3397500.0, 3397500.0]
+        initial_region = [-3401500, 3403500, -3397500, 3397500]
         initial_spacing = 5e3
         initial_registration = "p"
 
     else:
+        # y lims are differnt if inputting fname straight to utils.get_grid_info()
         initial_region = [-3333500, 3333500, -3332500, 3332500]
         initial_spacing = 1e3
         initial_registration = "p"

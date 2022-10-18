@@ -43,36 +43,58 @@ def get_grid_info(grid):
         grid registration)
     """
 
-    if isinstance(grid, str):
-        # grid = xr.load_dataarray(grid)
-        # try:
-        grid = xr.load_dataarray(grid).squeeze()
-        # except ValueError:
-        # print("loading grid as dataarray didn't work")
-        # raise
-        # pass
-        # grid = xr.open_rasterio(grid)
-        # grid = rioxarray.open_rasterio(grid)
-
-    if int(len(grid.dims)) > 2:
-        grid = grid.squeeze()
+    # if isinstance(grid, str):
+    # grid = xr.load_dataarray(grid)
+    # try:
+    # grid = xr.load_dataarray(grid).squeeze()
+    # except ValueError:
+    # print("loading grid as dataarray didn't work")
+    # raise
+    # pass
+    # grid = xr.open_rasterio(grid)
+    # grid = rioxarray.open_rasterio(grid)
+    if isinstance(grid, xr.DataArray):
+        if int(len(grid.dims)) > 2:
+            grid = grid.squeeze()
 
     try:
         spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
+    except Exception:  # pygmt.exceptions.GMTInvalidInput:
+        print("grid spacing can't be extracted")
+        spacing = None
+
+    try:
         region = [
             float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
         ]
+    except Exception:  # pygmt.exceptions.GMTInvalidInput:
+        print("grid region can't be extracted")
+        region = None
+
+    try:
         zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+    except Exception:  # pygmt.exceptions.GMTInvalidInput:
+        print("grid zmin can't be extracted")
+        zmin = None
+
+    try:
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+    except Exception:  # pygmt.exceptions.GMTInvalidInput:
+        print("grid zmax can't be extracted")
+        zmax = None
+
+    try:
         reg = grid.gmt.registration
         registration = "g" if reg == 0 else "p"
-    except Exception:  # pygmt.exceptions.GMTInvalidInput:
-        print("grid info can't be extracted, check number of dimensions, should be 2.")
-        # raise
-        spacing = None
-        region = None
-        zmin = None
-        zmax = None
+    except AttributeError:
+        print(
+            "grid registration not extracted, re-trying with file loaded as xarray grid"
+        )  # noqa
+        grid = xr.load_dataarray(grid)
+        reg = grid.gmt.registration
+        registration = "g" if reg == 0 else "p"
+    except Exception:
+        print("grid registration can't be extracted")
         registration = None
 
     return spacing, region, zmin, zmax, registration
