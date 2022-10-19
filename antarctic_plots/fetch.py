@@ -455,6 +455,283 @@ def basement(
 
     return resampled
 
+def sediment_thickness(
+    version: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+) -> xr.DataArray:
+    """
+    Load 1 of 4 'versions' of sediment thickness data.
+    
+    version='ANTASed'
+    From Baranov A, Morelli A and Chuvaev A (2021) ANTASed; An Updated Sediment Model 
+    for Antarctica. Front. Earth Sci. 9:722699. 
+    doi: 10.3389/feart.2021.722699
+    Accessed from https://www.itpz-ran.ru/en/activity/current-projects/antased-a-new-sediment-model-for-antarctica/
+
+    version='tankersley-2022'
+    From Tankersley, Matthew; Horgan, Huw J; Siddoway, Christine S; Caratori Tontini, 
+    Fabio; Tinto, Kirsty (2022): Basement topography and sediment thickness beneath 
+    Antarctica's Ross Ice Shelf. Geophysical Research Letters.
+    https://doi.org/10.1029/2021GL097371
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238?format=html#download
+   
+    version='lindeque-2018'
+    From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for 
+    the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics, 
+    Geosystems, 17(10), 4276-4285.
+    https://doi.org/10.1002/2016GC006401
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.864906
+
+    version='GlobSed'
+    From  Straume, E. O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker, 
+    J. M., et al. (2019). GlobSed: Updated total sediment thickness in the world's 
+    oceans. Geochemistry, Geophysics, Geosystems, 20, 1756– 1772. 
+    https://doi.org/10.1029/2018GC008115 
+    Accessed from https://ngdc.noaa.gov/mgg/sedthick/
+
+    Parameters
+    ----------
+    version : str, 
+        choose which version of data to fetch.
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of sediment thickness.
+    """
+    if version == "ANTASed":
+        # found with df.describe()
+        initial_region = [-2350000.0, 2490000.0, -1990000.0, 2090000.0]
+        initial_spacing = 10e3
+        initial_registration = "g"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            path = pooch.Unzip(
+                extract_dir="Baranov_2021_sediment_thickness", 
+                )(fname, action, pooch2)
+            fname = [p for p in path if p.endswith(".dat")][0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + f"_preprocessed")
+            fname_processed = fname_pre.with_suffix(".nc")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(fname, 
+                    header=None, 
+                    delim_whitespace=True, 
+                    names=['x_100km', 'y_100km', 'thick_km'],
+                )
+                # change units to meters
+                df['x'] = df.x_100km*100000
+                df['y'] = df.y_100km*100000
+                df['thick'] = df.thick_km*1000
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "thick"]],
+                    spacing=initial_spacing,
+                    region=initial_region,
+                    registration=initial_registration,
+                )
+                processed = pygmt.xyz2grd(
+                    data=df[['x','y','thick']], 
+                    region=initial_region, 
+                    spacing = initial_spacing, 
+                    registration=initial_registration, 
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://www.itpz-ran.ru/wp-content/uploads/2021/04/0.1_lim_b.dat_.zip",
+            fname="ANTASed.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+        )
+
+    elif version == "tankersley-2022":
+        # found with utils.get_grid_info()
+        initial_region = [-3330000.0, 1900000.0, -3330000.0, 1850000.0]
+        initial_spacing = 5e3
+        initial_registration = "p"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        path = pooch.retrieve(
+            url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_sediment.nc",  # noqa
+            fname="tankersley_2022_sediment_thickness.nc",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+        )
+
+    elif version == "lindeque-2018":
+        # found with utils.get_grid_info()
+        initial_region = [-4600000.0, 1900000.0, -3900000.0, 1850000.0]
+        initial_spacing = 5e3
+        initial_registration = "g"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        path = pooch.retrieve(
+            url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",  # noqa
+            fname="lindeque_2018_total_sediment_thickness.nc",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+        )
+
+    elif version == "GlobSed":
+        # was in lat long, so just using standard values here
+        initial_region = [-3330000, 3330000, -3330000, 3330000]
+        initial_spacing = 1e3  # given as 5 arc min (0.08333 degrees), which is 
+        #~0.8km at -85deg, or 3km at -70deg
+        initial_registration = "g"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "Unzip the folder, reproject the grid, and save it back as a .nc"
+            path = pooch.Unzip(
+                extract_dir="GlobSed", 
+                )(fname, action, pooch2)
+            fname = [p for p in path if p.endswith("GlobSed-v3.nc")][0]
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                grid = xr.load_dataarray(fname)
+                
+                # reproject to polar stereographic
+                grid2 = pygmt.grdproject(
+                    grid,
+                    projection="EPSG:3031",
+                    # spacing=f"{initial_spacing}+e",
+                    # region=initial_region,
+                    # registration=initial_registration,
+                )
+                processed = pygmt.grdsample(
+                    grid2,
+                    region=initial_region,
+                    spacing=initial_spacing,
+                    registration=initial_registration,
+                )
+
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://ngdc.noaa.gov/mgg/sedthick/data/version3/GlobSed.zip",
+            fname="GlobSed.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+        )
+
+    else:
+        raise ValueError("invalid version string")
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
 
 def bedmachine(
     layer: str,
@@ -1070,12 +1347,12 @@ def gravity(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
+            initial_spacing=initial_spacing,
+            initial_region=initial_region,
+            initial_registration=initial_registration,
+            spacing=spacing,
+            region=region,
+            registration=registration,
         )
 
     else:

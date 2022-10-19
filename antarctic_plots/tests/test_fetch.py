@@ -294,6 +294,49 @@ def test_basement():
 # grid = fetch.basement()
 # utils.get_grid_info(grid)
 
+# %% sediment thickness
+
+
+test = [
+    (
+        "ANTASed",
+        (
+        '10000', [-2350000.0, 2490000.0, -1990000.0, 2090000.0], 0.0, 12730.0, 'g'
+        ),
+    ),
+    (
+        "tankersley-2022",
+        (
+        '5000', [-3330000.0, 1900000.0, -3330000.0, 1850000.0], 0.0, 8002.51953125, 'p'
+        ),
+    ),
+    (
+        "lindeque-2018",
+        (
+        '5000', [-4600000.0, 1900000.0, -3900000.0, 1850000.0], 0.0, 8042.0, 'g'
+        ),
+    ),
+    (
+        "GlobSed",
+        (
+        '1000', 
+        [-3330000.0, 3330000.0, -3330000.0, 3330000.0], 
+        -19.3497409821,
+        14011.1240234,
+        'g'
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_sediment_thickness(test_input, expected):
+    grid = fetch.sediment_thickness(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.sediment_thickness(version='GlobSed')
+# utils.get_grid_info(grid)
 # %% bedmachine
 # test for all layers, but only test reference models with 1 layer
 
