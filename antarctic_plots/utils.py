@@ -278,11 +278,13 @@ def GMT_reg_xy_to_ll(input, decimal_degree=False):
 def GMT_reg_to_bounding_box(input):
     """
     Convert GMT region string [e, w, n, s] to bounding box format used for icepyx:
-    [ lower left long,
-      lower left lat,
-      upper right long,
-      uper right lat
+    [ lower left longitude,
+      lower left latitude,
+      upper right longitude,
+      uper right latitude
     ]
+    Same format as [xmin, ymin, xmax, ymax], used for `bbox` parameter of 
+    geopandas.read_file
 
     Parameters
     ----------
