@@ -738,6 +738,86 @@ def sediment_thickness(
 
     return resampled
 
+def IBCSO_coverage(
+    region: Union[str or np.ndarray],
+    plot: bool = False,
+):
+    """
+    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart 
+    of the Southern Ocean Version 2. Scientific Data, 9(1), 275, 
+    https://doi.org/10.1038/s41597-022-01366-7
+
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
+
+    Parameters
+    ----------
+    region : str or np.ndarray, optional
+        GMT-format region to subset the data from.
+    plot : bool, optional
+        choose whether to plot the resulting points on a map, by default is False
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        Returns a geodataframe of a subset of IBCSO v2 point measurement locations
+    """
+    # download / retrieve the geopackage file
+    path = pooch.retrieve(
+                url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg", # noqa
+                fname="IBCSO_v2_coverage.gpkg",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                known_hash=None,
+                progressbar=True,
+            )
+
+    # extract the geometries which are within the supplied region
+    data = gpd.read_file(
+        path, 
+        layer="IBCSO_coverage",
+        bbox=utils.GMT_reg_to_bounding_box(region),
+        )
+
+    # expand from multipoint/mulitpolygon to point/polygon
+    data_coords = data.explode(index_parts=False)
+
+    # extract the single points/polygons within region
+    data_subset = data_coords.clip(mask=utils.GMT_reg_to_bounding_box(region))
+
+    # seperate points and polygons
+    points = data_subset[data_subset.geometry.type=="Point"]
+    polygons = data_subset[data_subset.geometry.type=="Polygon"]
+
+    # this isn't working currently
+    # points_3031 = points.to_crs(epsg=3031)
+    # polygons_3031 = polygons.to_crs(epsg=3031)
+
+    if plot is True:
+        print("WARNING; these data haven't been reprojected yet so their locations",
+            " will be incorrect!")
+        fig = maps.plot_grd(
+            fetch.modis_moa(version=750),
+            cmap="gray",
+            image=True,
+            coast=True,
+            region=region
+        )
+        if points.empty is False:
+            fig.plot(
+                points,
+                style="c.2c",
+                color='blue',
+                pen='blue',
+                )
+        if polygons.empty is False:
+            fig.plot(
+                polygons,
+                pen='2p,red',
+                )
+        fig.show()
+
+    return (points, polygons)
+    
+
 def bedmachine(
     layer: str,
     reference: str = "geoid",

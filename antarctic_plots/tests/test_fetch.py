@@ -325,6 +325,36 @@ def test_sediment_thickness(test_input, expected):
 
 # grid = fetch.sediment_thickness(version='GlobSed')
 # utils.get_grid_info(grid)
+
+# %% IBCSO coverage data
+
+
+def test_IBCSO_coverage():
+    # collect a few points    
+    points, polygons = fetch.IBCSO_coverage(
+        region=utils.alter_region(regions.siple_coast, zoom=270e3)[0])
+
+    # re-create the expected geodataframe
+    df_points = pd.DataFrame(
+        {'dataset_name': [
+            'RIGGS_7378_seismic_PS65.xyz', 
+            'RossSea_seismic_usedbyTinto2019_PS65.xyz', 
+            'RossSea_seismic_usedbyTinto2019_PS65.xyz'],
+        'dataset_tid': [12, 12, 12],
+        'weight' : [10, 10, 10],
+        'x': [-300114.000, -324498.000, -240709.000],
+        'y': [-810976.000, -747471.000, -736104.000]},
+        index=[1,0,0])
+    expected = gpd.GeoDataFrame(
+        df_points, geometry=gpd.points_from_xy(df_points.x, df_points.y)
+        ).drop(columns=['x','y']).set_crs(epsg=9354)
+
+    # check if they match
+    assert_geodataframe_equal(points, expected) 
+    # check that the polygon geodataframe is empty
+    assert len(polygons) == 0
+
+
 # %% bedmachine
 # test for all layers, but only test reference models with 1 layer
 
