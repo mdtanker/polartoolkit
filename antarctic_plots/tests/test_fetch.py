@@ -17,9 +17,12 @@ def test_():
 """
 import os
 
+import geopandas as gpd
+import pandas as pd
 import pytest
+from geopandas.testing import assert_geodataframe_equal
 
-from antarctic_plots import fetch, utils
+from antarctic_plots import fetch, regions, utils
 
 # from dotenv import load_dotenv
 
@@ -293,6 +296,161 @@ def test_basement():
 
 # grid = fetch.basement()
 # utils.get_grid_info(grid)
+
+# %% sediment thickness
+
+
+test = [
+    (
+        "ANTASed",
+        ("10000", [-2350000.0, 2490000.0, -1990000.0, 2090000.0], 0.0, 12730.0, "g"),
+    ),
+    (
+        "tankersley-2022",
+        (
+            "5000",
+            [-3330000.0, 1900000.0, -3330000.0, 1850000.0],
+            0.0,
+            8002.51953125,
+            "p",
+        ),
+    ),
+    (
+        "lindeque-2018",
+        ("5000", [-4600000.0, 1900000.0, -3900000.0, 1850000.0], 0.0, 8042.0, "g"),
+    ),
+    (
+        "GlobSed",
+        (
+            "1000",
+            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            -19.3497409821,
+            14011.1240234,
+            "g",
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_sediment_thickness(test_input, expected):
+    grid = fetch.sediment_thickness(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.sediment_thickness(version='GlobSed')
+# utils.get_grid_info(grid)
+
+# %% IBCSO coverage data
+
+
+def test_IBCSO_coverage():
+    # collect a few points
+    points, polygons = fetch.IBCSO_coverage(
+        region=utils.alter_region(regions.siple_coast, zoom=270e3)[0]
+    )
+
+    # re-create the expected geodataframe
+    df_points = pd.DataFrame(
+        {
+            "dataset_name": [
+                "RIGGS_7378_seismic_PS65.xyz",
+                "RossSea_seismic_usedbyTinto2019_PS65.xyz",
+                "RossSea_seismic_usedbyTinto2019_PS65.xyz",
+            ],
+            "dataset_tid": [12, 12, 12],
+            "weight": [10, 10, 10],
+            "x": [-300114.000, -324498.000, -240709.000],
+            "y": [-810976.000, -747471.000, -736104.000],
+        },
+        index=[1, 0, 0],
+    )
+    expected = (
+        gpd.GeoDataFrame(
+            df_points, geometry=gpd.points_from_xy(df_points.x, df_points.y)
+        )
+        .drop(columns=["x", "y"])
+        .set_crs(epsg=9354)
+    )
+
+    # check if they match
+    assert_geodataframe_equal(points, expected)
+    # check that the polygon geodataframe is empty
+    assert len(polygons) == 0
+
+
+# %% IBCSO surface and bed elevations
+
+
+test = [
+    (
+        dict(
+            layer="surface",
+            spacing=500,
+        ),
+        (
+            "500",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6321.07080078,
+            4799.17333984,
+            "p",
+        ),
+    ),
+    (
+        dict(
+            layer="surface",
+            spacing=5e3,
+        ),
+        (
+            "5000",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6223.27148438,
+            4134.63476563,
+            "p",
+        ),
+    ),
+    (
+        dict(
+            layer="bed",
+            spacing=500,
+        ),
+        (
+            "500",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6321.07080078,
+            4723.67041016,
+            "p",
+        ),
+    ),
+    (
+        dict(
+            layer="bed",
+            spacing=5e3,
+        ),
+        (
+            "5000",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6223.27148438,
+            4126.67089844,
+            "p",
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_IBCSO(test_input, expected):
+    grid = fetch.IBCSO(**test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# test_input = dict(
+#     layer='surface',
+#     spacing=500,
+# )
+# grid = fetch.IBCSO(test_input)
+# utils.get_grid_info(grid)
+
 
 # %% bedmachine
 # test for all layers, but only test reference models with 1 layer
