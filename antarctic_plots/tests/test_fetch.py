@@ -383,40 +383,56 @@ def test_IBCSO_coverage():
 
 
 test = [
-    (dict(
-        layer='surface',
-        spacing=1e3,
-        region=regions.minna_bluff,
+    (
+        dict(
+            layer="surface",
+            spacing=500,
         ),
         (
-            
+            "500",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6321.07080078,
+            4799.17333984,
+            "p",
         ),
     ),
-    (dict(
-        layer='surface',
-        spacing=10e3,
-        region=regions.minna_bluff,
+    (
+        dict(
+            layer="surface",
+            spacing=5e3,
         ),
         (
-            
+            "5000",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6223.27148438,
+            4134.63476563,
+            "p",
         ),
     ),
-    (dict(
-        layer='bed',
-        spacing=1e3,
-        region=regions.minna_bluff,
+    (
+        dict(
+            layer="bed",
+            spacing=500,
         ),
         (
-            
+            "500",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6321.07080078,
+            4723.67041016,
+            "p",
         ),
     ),
-    (dict(
-        layer='bed',
-        spacing=10e3,
-        region=regions.minna_bluff,
+    (
+        dict(
+            layer="bed",
+            spacing=5e3,
         ),
         (
-            
+            "5000",
+            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            -6223.27148438,
+            4126.67089844,
+            "p",
         ),
     ),
 ]
@@ -424,7 +440,7 @@ test = [
 
 @pytest.mark.parametrize("test_input,expected", test)
 def test_IBCSO(test_input, expected):
-    grid = fetch.IBCSO(test_input)
+    grid = fetch.IBCSO(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 

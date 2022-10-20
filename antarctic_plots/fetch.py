@@ -890,13 +890,17 @@ def IBCSO(
             )
             print(utils.get_grid_info(cut))
 
+            # set the projection
+            cut.rio.write_crs("EPSG:9354", inplace=True)
+            assert cut.rio.crs == "EPSG:9354"
+
             # reproject to EPSG:3031
-            reprojected = pygmt.grdproject(
-                grid=cut,
-                projection="EPSG:3031",
-                # registration = 'p',# strange, this line actually makes it gridline reg
-            )
-            print(utils.get_grid_info(reprojected))
+            reprojected = cut.rio.reproject("epsg:3031")
+            assert reprojected.rio.crs == "EPSG:3031"
+
+            # need to save to .nc and reload, issues with pygmt
+            reprojected.to_netcdf("tmp.nc")
+            processed = xr.load_dataset("tmp.nc").z
 
             # resample to correct spacing (remove buffer) and region and save to .nc
             pygmt.grdsample(
@@ -906,7 +910,10 @@ def IBCSO(
                 registration="p",
                 outgrid=fname_processed,
             )
-            
+
+            # remove tmp file
+            os.remove("tmp.nc")
+
         return str(fname_processed)
 
     # preprocessing for filtered 5k resolution
@@ -939,13 +946,17 @@ def IBCSO(
             )
             print(utils.get_grid_info(cut))
 
+            # set the projection
+            cut.rio.write_crs("EPSG:9354", inplace=True)
+            assert cut.rio.crs == "EPSG:9354"
+
             # reproject to EPSG:3031
-            reprojected = pygmt.grdproject(
-                grid=cut,
-                projection="EPSG:3031",
-                # registration = 'p',# strange, this line actually makes it gridline reg
-            )
-            print(utils.get_grid_info(reprojected))
+            reprojected = cut.rio.reproject("epsg:3031")
+            assert reprojected.rio.crs == "EPSG:3031"
+
+            # need to save to .nc and reload, issues with pygmt
+            reprojected.to_netcdf("tmp.nc")
+            processed = xr.load_dataset("tmp.nc").z
 
             # resample to correct spacing (remove buffer) and region and save to .nc
             pygmt.grdsample(
@@ -955,6 +966,9 @@ def IBCSO(
                 registration="p",
                 outgrid=fname_processed,
             )
+
+            # remove tmp file
+            os.remove("tmp.nc")
 
         return str(fname_processed)
 
@@ -1000,7 +1014,7 @@ def IBCSO(
     else:
         raise ValueError("invalid layer string")
 
-    grid = xr.load_dataarray(path)
+    grid = xr.load_dataset(path).z
 
     resampled = resample_grid(
         grid,
