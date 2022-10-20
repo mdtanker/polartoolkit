@@ -10,14 +10,16 @@ import shutil
 from getpass import getpass
 from pathlib import Path
 
+from typing import Union
 import pandas as pd
 import pooch
 import pygmt
 import requests
 import xarray as xr
 from pyproj import Transformer
+import geopandas as gpd
 
-from antarctic_plots import regions, utils
+from antarctic_plots import regions, utils, maps, fetch
 
 
 def resample_grid(
@@ -217,6 +219,8 @@ def ice_vel(
         Returns a calculated grid of ice velocity in meters/year.
     """
 
+    original_spacing = 450
+
     # preprocessing for full, 450m resolution
     def preprocessing_fullres(fname, action, pooch):
         "Load the .nc file, calculate velocity magnitude, save it back"
@@ -246,11 +250,14 @@ def ice_vel(
             processed_lowres.to_netcdf(fname_processed)
         return str(fname_processed)
 
+    if spacing is None:
+        spacing = original_spacing
+
     # determine which resolution of preprocessed grid to use
     if spacing < 5e3:
         preprocessor = preprocessing_fullres
         initial_region = [-2800000.0, 2799800.0, -2799800.0, 2800000.0]
-        initial_spacing = 450
+        initial_spacing = original_spacing
         initial_registration = "g"
     elif spacing >= 5e3:
         print("using preprocessed 5km grid since spacing is > 5km")
@@ -261,8 +268,6 @@ def ice_vel(
 
     if region is None:
         region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
     if registration is None:
         registration = initial_registration
 
