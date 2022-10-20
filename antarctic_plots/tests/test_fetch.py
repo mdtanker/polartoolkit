@@ -18,8 +18,11 @@ def test_():
 import os
 
 import pytest
+import pandas as pd
+import geopandas as gpd
+from geopandas.testing import assert_geodataframe_equal, assert_geoseries_equal
 
-from antarctic_plots import fetch, utils
+from antarctic_plots import fetch, utils, regions
 
 # from dotenv import load_dotenv
 
@@ -40,8 +43,7 @@ skip_earthdata = pytest.mark.skipif(
 # %% resample_grid
 test = [
     # no inputs
-    (
-        dict(),
+    (dict(),
         (
             "10000",
             [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
@@ -51,11 +53,10 @@ test = [
         ),
     ),
     # return original with given initials
-    (
-        dict(
-            initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0],
-            initial_spacing=10e3,
-            initial_registration="g",
+    (dict(
+        initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+        initial_spacing=10e3,
+        initial_registration="g",
         ),
         (
             "10000",
@@ -66,11 +67,10 @@ test = [
         ),
     ),
     # give false initial values, return actual initial values
-    (
-        dict(
-            initial_region=[-2800000.0, 2800000.0, -2800000.0, 2800000.0],
-            initial_spacing=8e3,
-            initial_registration="p",
+    (dict(
+        initial_region=[-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+        initial_spacing=8e3,
+        initial_registration="p",
         ),
         (
             "10000",
@@ -81,9 +81,8 @@ test = [
         ),
     ),
     # Only registration is different
-    (
-        dict(
-            registration="p",
+    (dict(
+        registration="p",
         ),
         (
             "10000",
@@ -94,8 +93,7 @@ test = [
         ),
     ),
     # smaller spacing, uneven, reset region to keep exact spacing
-    (
-        dict(spacing=8212),
+    (dict(spacing=8212),
         (
             "8212",
             [-3325860.0, 3325860.0, -3325860.0, 3325860.0],
@@ -105,8 +103,7 @@ test = [
         ),
     ),
     # larger spacing, uneven, reset region to keep exact spacing
-    (
-        dict(spacing=10119),
+    (dict(spacing=10119),
         (
             "10119",
             [-3329151.0, 3329151.0, -3329151.0, 3329151.0],
@@ -116,8 +113,7 @@ test = [
         ),
     ),
     # uneven subregion, reset region to keep exact spacing
-    (
-        dict(region=[210012.0, 390003.0, -1310217.0, -1121376.0]),
+    (dict(region=[210012.0, 390003.0, -1310217.0, -1121376.0]),
         (
             "10000",
             [210000.0, 400000.0, -1320000.0, -1120000.0],
@@ -127,10 +123,9 @@ test = [
         ),
     ),
     # uneven subregion with diff reg, reset region to keep exact spacing
-    (
-        dict(
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
-            registration="p",
+    (dict(
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+        registration="p",
         ),
         (
             "10000",
@@ -141,10 +136,9 @@ test = [
         ),
     ),
     # uneven spacing (smaller) and uneven region, reset region to keep exact spacing
-    (
-        dict(
-            spacing=8212,
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+    (dict(
+        spacing=8212,
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
         ),
         (
             "8212",
@@ -155,10 +149,9 @@ test = [
         ),
     ),
     # uneven spacing (larger) and uneven region, reset region to keep exact spacing
-    (
-        dict(
-            spacing=10119,
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
+    (dict(
+        spacing=10119,
+        region=[210012.0, 390003.0, -1310217.0, -1121376.0],
         ),
         (
             "10119",
@@ -169,8 +162,7 @@ test = [
         ),
     ),
     # larger than initial region, return initial region
-    (
-        dict(region=[-3400e3, 3400e3, -3400e3, 34030e3]),
+    (dict(region=[-3400e3, 3400e3, -3400e3, 34030e3]),
         (
             "10000",
             [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
@@ -298,26 +290,22 @@ def test_basement():
 
 
 test = [
-    (
-        "ANTASed",
+    ("ANTASed",
         (
         '10000', [-2350000.0, 2490000.0, -1990000.0, 2090000.0], 0.0, 12730.0, 'g'
         ),
     ),
-    (
-        "tankersley-2022",
+    ("tankersley-2022",
         (
         '5000', [-3330000.0, 1900000.0, -3330000.0, 1850000.0], 0.0, 8002.51953125, 'p'
         ),
     ),
-    (
-        "lindeque-2018",
+    ("lindeque-2018",
         (
         '5000', [-4600000.0, 1900000.0, -3900000.0, 1850000.0], 0.0, 8042.0, 'g'
         ),
     ),
-    (
-        "GlobSed",
+    ("GlobSed",
         (
         '1000', 
         [-3330000.0, 3330000.0, -3330000.0, 3330000.0], 
