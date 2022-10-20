@@ -488,7 +488,7 @@ def sediment_thickness(
     https://doi.org/10.1029/2021GL097371
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238?format=html#download
 
-    version='lindeque-2018'
+    version='lindeque-2016'
     From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for
     the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics,
     Geosystems, 17(10), 4276-4285.
@@ -630,7 +630,7 @@ def sediment_thickness(
             registration=registration,
         )
 
-    elif version == "lindeque-2018":
+    elif version == "lindeque-2016":
         # found with utils.get_grid_info()
         initial_region = [-4600000.0, 1900000.0, -3900000.0, 1850000.0]
         initial_spacing = 5e3
@@ -645,7 +645,7 @@ def sediment_thickness(
 
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",  # noqa
-            fname="lindeque_2018_total_sediment_thickness.nc",
+            fname="lindeque_2016_total_sediment_thickness.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
             known_hash=None,
             progressbar=True,
