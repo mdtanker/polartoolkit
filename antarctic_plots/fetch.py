@@ -818,6 +818,196 @@ def IBCSO_coverage(
     return (points, polygons)
     
 
+def IBCSO(
+    layer: str,
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+) -> xr.DataArray:
+    """
+    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart 
+    of the Southern Ocean Version 2. Scientific Data, 9(1), 275, 
+    https://doi.org/10.1038/s41597-022-01366-7
+
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
+
+    Parameters
+    ----------
+    layer : str
+        choose which layer to fetch:
+        'surface', 'bed'
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of IBCSO data.
+    """
+    original_spacing = 500
+
+    # preprocessing for full, 500m resolution
+    def preprocessing_fullres(fname, action, pooch):
+        "Load the .nc file, reproject, and save it back"
+        fname = Path(fname)
+        # Rename to the file to ***_preprocessed.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_fullres")
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # give warning about time
+            print("WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                " the first time can take up to 30 minutes!")
+
+            # load grid
+            grid = xr.load_dataset(fname).z
+            print(utils.get_grid_info(grid))
+
+            # subset to a smaller region (buffer by 1 cell width)
+            cut = pygmt.grdcut(
+                grid=grid,
+                region=utils.alter_region(
+                        regions.antarctica, 
+                        zoom=-original_spacing,
+                    )[0],
+            )
+            print(utils.get_grid_info(cut))
+
+            # reproject to EPSG:3031
+            reprojected = pygmt.grdproject(
+                grid=cut,
+                projection="EPSG:3031",
+                # registration = 'p',# strange, this line actually makes it gridline reg
+            )
+            print(utils.get_grid_info(reprojected))
+
+            # resample to correct spacing (remove buffer) and region and save to .nc
+            pygmt.grdsample(
+                grid = reprojected,
+                spacing = original_spacing,
+                region = regions.antarctica,
+                registration = 'p',
+                outgrid = fname_processed
+            )
+            
+        return str(fname_processed)
+
+    # preprocessing for filtered 5k resolution
+    def preprocessing_5k(fname, action, pooch):
+        "Load the .nc file, reproject and resample to 5km, and save it back"
+        fname = Path(fname)
+        # Rename to the file to ***_preprocessed.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed_5k")
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # give warning about time
+            print("WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                " the first time can take up to 30 minutes!")
+
+            # load grid
+            grid = xr.load_dataset(fname).z
+            print(utils.get_grid_info(grid))
+
+            # cut and change spacing, with 1 cell buffer
+            cut = resample_grid(
+                grid,
+                initial_spacing=original_spacing,
+                initial_region=[-4800000, 4800000, -4800000, 4800000],
+                initial_registration='p',
+                spacing=5e3,
+                region=utils.alter_region(regions.antarctica, zoom=-5e3)[0],
+                registration='p',
+            )
+            print(utils.get_grid_info(cut))
+
+            # reproject to EPSG:3031
+            reprojected = pygmt.grdproject(
+                grid=cut,
+                projection="EPSG:3031",
+                # registration = 'p',# strange, this line actually makes it gridline reg
+            )
+            print(utils.get_grid_info(reprojected))
+
+            # resample to correct spacing (remove buffer) and region and save to .nc
+            pygmt.grdsample(
+                grid = reprojected,
+                spacing = 5e3,
+                region = regions.antarctica,
+                registration = 'p',
+                outgrid = fname_processed
+            )
+
+        return str(fname_processed)
+
+    if spacing is None:
+        spacing = original_spacing
+
+    # determine which resolution of preprocessed grid to use
+    if spacing < 5e3:
+        preprocessor = preprocessing_fullres
+        initial_region = regions.antarctica
+        initial_spacing = original_spacing
+        initial_registration = "p"
+    elif spacing >= 5e3:
+        print("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+        initial_region = regions.antarctica
+        initial_spacing = 5e3
+        initial_registration = "p"
+
+    if region is None:
+        region = initial_region
+    if registration is None:
+        registration = initial_registration
+
+    if layer == "surface":
+        path = pooch.retrieve(
+            url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc", # noqa
+            fname="IBCSO_ice_surface.nc",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessor,
+        )
+    elif layer == "bed":
+        path = pooch.retrieve(
+            url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.nc",
+            fname="IBCSO_bed.nc",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessor,
+        )
+    else:
+        raise ValueError("invalid layer string")
+
+    grid = xr.load_dataarray(path)
+
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+    )
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+
 def bedmachine(
     layer: str,
     reference: str = "geoid",

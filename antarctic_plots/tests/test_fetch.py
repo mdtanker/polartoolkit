@@ -355,6 +355,63 @@ def test_IBCSO_coverage():
     assert len(polygons) == 0
 
 
+# %% IBCSO surface and bed elevations
+
+
+test = [
+    (dict(
+        layer='surface',
+        spacing=1e3,
+        region=regions.minna_bluff,
+        ),
+        (
+            
+        ),
+    ),
+    (dict(
+        layer='surface',
+        spacing=10e3,
+        region=regions.minna_bluff,
+        ),
+        (
+            
+        ),
+    ),
+    (dict(
+        layer='bed',
+        spacing=1e3,
+        region=regions.minna_bluff,
+        ),
+        (
+            
+        ),
+    ),
+    (dict(
+        layer='bed',
+        spacing=10e3,
+        region=regions.minna_bluff,
+        ),
+        (
+            
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_IBCSO(test_input, expected):
+    grid = fetch.IBCSO(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+# test_input = dict(
+#     layer='surface',
+#     spacing=1e3,
+#     region=regions.minna_bluff,
+# )
+# grid = fetch.IBCSO(test_input)
+# utils.get_grid_info(grid)
+
+
 # %% bedmachine
 # test for all layers, but only test reference models with 1 layer
 
