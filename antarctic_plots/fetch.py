@@ -9,17 +9,20 @@ import os
 import shutil
 from getpass import getpass
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
-from typing import Union
+if TYPE_CHECKING:
+    import numpy as np
+
+import geopandas as gpd
 import pandas as pd
 import pooch
 import pygmt
 import requests
 import xarray as xr
 from pyproj import Transformer
-import geopandas as gpd
 
-from antarctic_plots import regions, utils, maps, fetch
+from antarctic_plots import fetch, maps, regions, utils
 
 
 def resample_grid(
@@ -460,6 +463,7 @@ def basement(
 
     return resampled
 
+
 def sediment_thickness(
     version: str,
     plot: bool = False,
@@ -470,37 +474,37 @@ def sediment_thickness(
 ) -> xr.DataArray:
     """
     Load 1 of 4 'versions' of sediment thickness data.
-    
+
     version='ANTASed'
-    From Baranov A, Morelli A and Chuvaev A (2021) ANTASed; An Updated Sediment Model 
-    for Antarctica. Front. Earth Sci. 9:722699. 
+    From Baranov A, Morelli A and Chuvaev A (2021) ANTASed; An Updated Sediment Model
+    for Antarctica. Front. Earth Sci. 9:722699.
     doi: 10.3389/feart.2021.722699
-    Accessed from https://www.itpz-ran.ru/en/activity/current-projects/antased-a-new-sediment-model-for-antarctica/
+    Accessed from https://www.itpz-ran.ru/en/activity/current-projects/antased-a-new-sediment-model-for-antarctica/ # noqa
 
     version='tankersley-2022'
-    From Tankersley, Matthew; Horgan, Huw J; Siddoway, Christine S; Caratori Tontini, 
-    Fabio; Tinto, Kirsty (2022): Basement topography and sediment thickness beneath 
+    From Tankersley, Matthew; Horgan, Huw J; Siddoway, Christine S; Caratori Tontini,
+    Fabio; Tinto, Kirsty (2022): Basement topography and sediment thickness beneath
     Antarctica's Ross Ice Shelf. Geophysical Research Letters.
     https://doi.org/10.1029/2021GL097371
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238?format=html#download
-   
+
     version='lindeque-2018'
-    From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for 
-    the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics, 
+    From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for
+    the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics,
     Geosystems, 17(10), 4276-4285.
     https://doi.org/10.1002/2016GC006401
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.864906
 
     version='GlobSed'
-    From  Straume, E. O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker, 
-    J. M., et al. (2019). GlobSed: Updated total sediment thickness in the world's 
-    oceans. Geochemistry, Geophysics, Geosystems, 20, 1756– 1772. 
-    https://doi.org/10.1029/2018GC008115 
+    From  Straume, E. O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker,
+    J. M., et al. (2019). GlobSed: Updated total sediment thickness in the world's
+    oceans. Geochemistry, Geophysics, Geosystems, 20, 1756– 1772.
+    https://doi.org/10.1029/2018GC008115
     Accessed from https://ngdc.noaa.gov/mgg/sedthick/
 
     Parameters
     ----------
-    version : str, 
+    version : str,
         choose which version of data to fetch.
     plot : bool, optional
         choose to plot grid, by default False
@@ -532,27 +536,28 @@ def sediment_thickness(
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
             path = pooch.Unzip(
-                extract_dir="Baranov_2021_sediment_thickness", 
-                )(fname, action, pooch2)
+                extract_dir="Baranov_2021_sediment_thickness",
+            )(fname, action, pooch2)
             fname = [p for p in path if p.endswith(".dat")][0]
             fname = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + f"_preprocessed")
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                df = pd.read_csv(fname, 
-                    header=None, 
-                    delim_whitespace=True, 
-                    names=['x_100km', 'y_100km', 'thick_km'],
+                df = pd.read_csv(
+                    fname,
+                    header=None,
+                    delim_whitespace=True,
+                    names=["x_100km", "y_100km", "thick_km"],
                 )
                 # change units to meters
-                df['x'] = df.x_100km*100000
-                df['y'] = df.y_100km*100000
-                df['thick'] = df.thick_km*1000
+                df["x"] = df.x_100km * 100000
+                df["y"] = df.y_100km * 100000
+                df["thick"] = df.thick_km * 1000
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
@@ -562,10 +567,10 @@ def sediment_thickness(
                     registration=initial_registration,
                 )
                 processed = pygmt.xyz2grd(
-                    data=df[['x','y','thick']], 
-                    region=initial_region, 
-                    spacing = initial_spacing, 
-                    registration=initial_registration, 
+                    data=df[["x", "y", "thick"]],
+                    region=initial_region,
+                    spacing=initial_spacing,
+                    registration=initial_registration,
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -661,8 +666,8 @@ def sediment_thickness(
     elif version == "GlobSed":
         # was in lat long, so just using standard values here
         initial_region = [-3330000, 3330000, -3330000, 3330000]
-        initial_spacing = 1e3  # given as 5 arc min (0.08333 degrees), which is 
-        #~0.8km at -85deg, or 3km at -70deg
+        initial_spacing = 1e3  # given as 5 arc min (0.08333 degrees), which is
+        # ~0.8km at -85deg, or 3km at -70deg
         initial_registration = "g"
 
         if region is None:
@@ -675,8 +680,8 @@ def sediment_thickness(
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, reproject the grid, and save it back as a .nc"
             path = pooch.Unzip(
-                extract_dir="GlobSed", 
-                )(fname, action, pooch2)
+                extract_dir="GlobSed",
+            )(fname, action, pooch2)
             fname = [p for p in path if p.endswith("GlobSed-v3.nc")][0]
             fname = Path(fname)
 
@@ -687,7 +692,7 @@ def sediment_thickness(
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 grid = xr.load_dataarray(fname)
-                
+
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
                     grid,
@@ -738,13 +743,14 @@ def sediment_thickness(
 
     return resampled
 
+
 def IBCSO_coverage(
     region: Union[str or np.ndarray],
     plot: bool = False,
 ):
     """
-    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart 
-    of the Southern Ocean Version 2. Scientific Data, 9(1), 275, 
+    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart
+    of the Southern Ocean Version 2. Scientific Data, 9(1), 275,
     https://doi.org/10.1038/s41597-022-01366-7
 
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
@@ -763,19 +769,19 @@ def IBCSO_coverage(
     """
     # download / retrieve the geopackage file
     path = pooch.retrieve(
-                url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg", # noqa
-                fname="IBCSO_v2_coverage.gpkg",
-                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-                known_hash=None,
-                progressbar=True,
-            )
+        url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg",  # noqa
+        fname="IBCSO_v2_coverage.gpkg",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        known_hash=None,
+        progressbar=True,
+    )
 
     # extract the geometries which are within the supplied region
     data = gpd.read_file(
-        path, 
+        path,
         layer="IBCSO_coverage",
         bbox=utils.GMT_reg_to_bounding_box(region),
-        )
+    )
 
     # expand from multipoint/mulitpolygon to point/polygon
     data_coords = data.explode(index_parts=False)
@@ -784,39 +790,41 @@ def IBCSO_coverage(
     data_subset = data_coords.clip(mask=utils.GMT_reg_to_bounding_box(region))
 
     # seperate points and polygons
-    points = data_subset[data_subset.geometry.type=="Point"]
-    polygons = data_subset[data_subset.geometry.type=="Polygon"]
+    points = data_subset[data_subset.geometry.type == "Point"]
+    polygons = data_subset[data_subset.geometry.type == "Polygon"]
 
     # this isn't working currently
     # points_3031 = points.to_crs(epsg=3031)
     # polygons_3031 = polygons.to_crs(epsg=3031)
 
     if plot is True:
-        print("WARNING; these data haven't been reprojected yet so their locations",
-            " will be incorrect!")
+        print(
+            "WARNING; these data haven't been reprojected yet so their locations",
+            " will be incorrect!",
+        )
         fig = maps.plot_grd(
             fetch.modis_moa(version=750),
             cmap="gray",
             image=True,
             coast=True,
-            region=region
+            region=region,
         )
         if points.empty is False:
             fig.plot(
                 points,
                 style="c.2c",
-                color='blue',
-                pen='blue',
-                )
+                color="blue",
+                pen="blue",
+            )
         if polygons.empty is False:
             fig.plot(
                 polygons,
-                pen='2p,red',
-                )
+                pen="2p,red",
+            )
         fig.show()
 
     return (points, polygons)
-    
+
 
 def IBCSO(
     layer: str,
@@ -827,8 +835,8 @@ def IBCSO(
     registration=None,
 ) -> xr.DataArray:
     """
-    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart 
-    of the Southern Ocean Version 2. Scientific Data, 9(1), 275, 
+    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart
+    of the Southern Ocean Version 2. Scientific Data, 9(1), 275,
     https://doi.org/10.1038/s41597-022-01366-7
 
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
@@ -845,7 +853,7 @@ def IBCSO(
     region : str or np.ndarray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 
+        grid spacing to resample the loaded grid to, by default
 
     Returns
     -------
@@ -863,8 +871,10 @@ def IBCSO(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            print("WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
-                " the first time can take up to 30 minutes!")
+            print(
+                "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                " the first time can take several minutes!"
+            )
 
             # load grid
             grid = xr.load_dataset(fname).z
@@ -874,9 +884,9 @@ def IBCSO(
             cut = pygmt.grdcut(
                 grid=grid,
                 region=utils.alter_region(
-                        regions.antarctica, 
-                        zoom=-original_spacing,
-                    )[0],
+                    regions.antarctica,
+                    zoom=-original_spacing,
+                )[0],
             )
             print(utils.get_grid_info(cut))
 
@@ -890,11 +900,11 @@ def IBCSO(
 
             # resample to correct spacing (remove buffer) and region and save to .nc
             pygmt.grdsample(
-                grid = reprojected,
-                spacing = original_spacing,
-                region = regions.antarctica,
-                registration = 'p',
-                outgrid = fname_processed
+                grid=processed,
+                spacing=original_spacing,
+                region=regions.antarctica,
+                registration="p",
+                outgrid=fname_processed,
             )
             
         return str(fname_processed)
@@ -908,8 +918,10 @@ def IBCSO(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            print("WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
-                " the first time can take up to 30 minutes!")
+            print(
+                "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                " the first time can take several minutes!"
+            )
 
             # load grid
             grid = xr.load_dataset(fname).z
@@ -920,10 +932,10 @@ def IBCSO(
                 grid,
                 initial_spacing=original_spacing,
                 initial_region=[-4800000, 4800000, -4800000, 4800000],
-                initial_registration='p',
+                initial_registration="p",
                 spacing=5e3,
                 region=utils.alter_region(regions.antarctica, zoom=-5e3)[0],
-                registration='p',
+                registration="p",
             )
             print(utils.get_grid_info(cut))
 
@@ -937,11 +949,11 @@ def IBCSO(
 
             # resample to correct spacing (remove buffer) and region and save to .nc
             pygmt.grdsample(
-                grid = reprojected,
-                spacing = 5e3,
-                region = regions.antarctica,
-                registration = 'p',
-                outgrid = fname_processed
+                grid=processed,
+                spacing=5e3,
+                region=regions.antarctica,
+                registration="p",
+                outgrid=fname_processed,
             )
 
         return str(fname_processed)
@@ -969,7 +981,7 @@ def IBCSO(
 
     if layer == "surface":
         path = pooch.retrieve(
-            url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc", # noqa
+            url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc",  # noqa
             fname="IBCSO_ice_surface.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
             known_hash=None,

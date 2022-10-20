@@ -17,7 +17,7 @@ import verde as vd
 import xarray as xr
 from pyproj import Transformer
 
-from antarctic_plots import maps, fetch
+from antarctic_plots import fetch, maps
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -283,7 +283,7 @@ def GMT_reg_to_bounding_box(input):
       upper right longitude,
       uper right latitude
     ]
-    Same format as [xmin, ymin, xmax, ymax], used for `bbox` parameter of 
+    Same format as [xmin, ymin, xmax, ymax], used for `bbox` parameter of
     geopandas.read_file
 
     Parameters
@@ -683,7 +683,7 @@ def grd_compare(
     # get minimum grid spacing of both grids
     da1_spacing = float(get_grid_info(da1)[0])
     da2_spacing = float(get_grid_info(da2)[0])
-    
+
     min_spacing = min(da1_spacing, da2_spacing)
 
     if da1_spacing != da2_spacing:
@@ -707,11 +707,11 @@ def grd_compare(
         print(f"grid regions dont match, using inner region {sub_region}")
 
     # use registration from first grid, or from kwarg
-    if kwargs.get('registration', None) is None:
+    if kwargs.get("registration", None) is None:
         registration = get_grid_info(da1)[4]
-    else: 
-        registration = kwargs.get('registration', None)
-    
+    else:
+        registration = kwargs.get("registration", None)
+
     grid1 = fetch.resample_grid(
         da1,
         spacing=min_spacing,
@@ -725,7 +725,7 @@ def grd_compare(
         region=sub_region,
         registration=registration,
     )
-    
+
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
