@@ -1182,6 +1182,7 @@ def bedmap2(
     region=None,
     spacing=None,
     registration=None,
+    fill_nans=False,
 ) -> xr.DataArray:
     """
     Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
@@ -1331,11 +1332,12 @@ def bedmap2(
     else:
         final_grid = resampled
 
-    # # replace nans with 0's
-    # if layer in ["surface", "thickness"]:
-    #     # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-    #     # this changes the registration from pixel to gridline
-    #     final_grid = final_grid.fillna(0)
+    # replace nans with 0's
+    if fill_nans is True:
+        if layer in ["surface", "thickness", "icebase"]:
+            # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+            # this changes the registration from pixel to gridline
+            final_grid = final_grid.fillna(0)
 
     if plot is True:
         final_grid.plot(robust=True)
@@ -2587,6 +2589,17 @@ def moho(
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
     Appears to be almost identical to crustal thickness from Shen et al. 2018
 
+    version='an-2015'
+    This is fetch.crustal_thickness(version='an-2015)* -1
+    Documentation is unclear whether the An crust model is crustal thickness or moho 
+    depths, or whether it makes a big enough difference to matter.
+
+    version='pappa-2019'
+    from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica: 
+    Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics, 
+    Geosystems, 20, 1629– 1645. 
+    https://doi.org/10.1029/2018GC008111 
+    Accessed from supplement material
 
     Parameters
     ----------
@@ -2716,6 +2729,31 @@ def moho(
             region,
             registration,
         )
+
+    elif version == 'pappa-2019':
+        print("Pappa et al. 2019 moho model download is not working currently.")
+        # resampled = pooch.retrieve(
+        #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",  # noqa
+        #     fname="pappa_moho.zip",
+        #     path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
+        #     known_hash=None,
+        #     progressbar=True,
+        #     processor=pooch.Unzip(extract_dir="pappa_moho"),
+        # )
+        # fname='/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd'
+        # grid = pygmt.load_dataarray(fname)
+        # Moho_Pappa = grid.to_dataframe().reset_index()
+        # Moho_Pappa.z=Moho_Pappa.z.apply(lambda x:x*-1000)
+
+        # transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        # Moho_Pappa['x'], Moho_Pappa['y'] = transformer.transform(Moho_Pappa.lat.tolist(), Moho_Pappa.lon.tolist())
+
+        # Moho_Pappa = pygmt.blockmedian(Moho_Pappa[['x','y','z']], spacing=10e3, registration='g', region='-1560000/1400000/-2400000/560000')
+
+        # fname='inversion_layers/Pappa_moho.nc'
+
+        # pygmt.surface(Moho_Pappa[['x','y','z']], region='-1560000/1400000/-2400000/560000', 
+        #     spacing=10e3, registration='g', M='1c', outgrid=fname)
 
     else:
         raise ValueError("invalid version string")
