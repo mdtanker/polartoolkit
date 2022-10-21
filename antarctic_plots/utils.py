@@ -1356,3 +1356,37 @@ def change_reg(grid):
                 ses.call_module("grdedit", args)
                 f_out = pygmt.load_dataarray(tmpfile.name)
     return f_out
+
+def grdblend(
+    grid1 : xr.DataArray, 
+    grid2 : xr.DataArray, 
+    **kwargs,
+    ):
+    """
+    Use GMT grdblend to blend 2 grids into 1.
+
+    Parameters
+    ----------
+    grid1 : xr.DataArray
+        input grid to change the reg for.
+
+    grid2 : xr.DataArray
+        input grid to change the reg for.
+
+    Returns
+    -------
+    xr.DataArray
+        returns a blended dataarray.
+    """
+    with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
+        with pygmt.clib.Session() as lib:
+            # store the input grids in a virtual files so GMT can read it from dataarrays
+            file_context1 = lib.virtualfile_from_grid(grid1)
+            file_context2 = lib.virtualfile_from_grid(grid2)
+            with file_context1 as infile1, file_context2 as infile2:
+                # if (outgrid := kwargs.get("G")) is None:
+                #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
+                args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
+                lib.call_module(
+                    module="grdblend", args=args)
+    return pygmt.load_dataarray(infile1)# if outgrid == tmpfile.name else None
