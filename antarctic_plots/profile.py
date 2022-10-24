@@ -666,6 +666,119 @@ def plot_profile(
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
+def plot_data(
+    method: str,
+    data_dict: dict,
+    **kwargs,
+):
+    """
+    Sample and plot data along a path.
+
+    Parameters
+    ----------
+    method : str
+        Choose the sample method, either 'points', or 'shapefile'.
+    data_dict : dict
+        nested dictionary of data to include in option graph, construct with
+        `profile.make_data_dict`.
+
+    Keyword Args
+    ------------
+    fillnans: bool
+        Choose whether to fill nans in layers, defaults to True.
+    clip: bool
+        Choose whether to clip the profile based on distance.
+    num: int
+        Number of points to sample at along a line.
+    max_dist: int
+        Clip all distances greater than.
+    min_dist: int
+        Clip all distances less than.
+    data_buffer: float (0-1)
+        Change vertical white space within data graph, by default is 0.1.
+    legend_loc: str
+        Change the legend location with a GMT position string, by default is
+        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
+        Right corner of the plot, with 0 offset.
+    save: bool
+        Choose to save the image, by default is False.
+    path: str
+        Filename for saving image, by default is None.
+    """
+    points = create_profile(method, **kwargs)
+    data_region = vd.get_region((points.x, points.y))
+    fig_height = kwargs.get('fig_height', 5)
+    fig_width = kwargs.get('fig_width', 10)
+    pen_width = kwargs.get('pen_width', "1.5p")
+
+    points = points[["x", "y", "dist"]].copy()
+    for k, v in data_dict.items():
+        df_data = sample_grids(points, v["grid"], name=v["name"])
+
+    # shorten profiles
+    if kwargs.get("clip") is True:
+        if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
+            raise ValueError(
+                f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
+            )
+        df_layers = shorten(df_layers, **kwargs)
+        if data_dict is not None:
+            df_data = shorten(df_data, **kwargs)
+
+    fig = pygmt.Figure()
+
+    # if using a shared y-axis for data, get overall max and min values
+    if kwargs.get('share_yaxis', False) is True:
+        data_min = df_data[df_data.columns[3:]].min().min()
+        data_max = df_data[df_data.columns[3:]].max().max()
+        # add space above and below top and bottom of graph
+        y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+        # set region for data
+        region_data = [
+            df_data.dist.min(),
+            df_data.dist.max(),
+            data_min - y_buffer,
+            data_max + y_buffer,
+        ]
+        # set frame
+        frame=["neSW", "ag",]
+    
+    data_projection = f"X{fig_width}c/{fig_height}c"
+
+    for k, v in data_dict.items():
+        if kwargs.get('share_yaxis', False) is False:
+            # if using individual y-axes for data, get individual max/mins
+            data_min = df_data[k].min()
+            data_max = df_data[k].max()
+            # add space above and below top and bottom of graph
+            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+            region_data = [
+                df_data.dist.min(),
+                df_data.dist.max(),
+                data_min - y_buffer,
+                data_max + y_buffer,
+            ]
+            # turn off frame tick labels
+            frame=["neSw", "xag",]
+
+        fig.plot(
+            region=region_data,
+            projection=data_projection,
+            frame=frame,
+            x=df_data.dist,
+            y=df_data[k],
+            pen=f"{pen_width},{v['color']}",
+            label=v["name"],
+        )
+    fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
+
+    fig.show()
+
+    if kwargs.get("save") is True:
+        if kwargs.get("path") is None:
+            raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
+        fig.savefig(kwargs.get("path"), dpi=300)
+
 
 def rel_dist(
     df: pd.DataFrame,
