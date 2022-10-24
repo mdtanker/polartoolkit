@@ -381,6 +381,9 @@ def add_inset(
     region: Union[str or np.ndarray],
     fig_width: Union[int, float],
     inset_pos: str = "TL",
+    inset_width: float = 0.25,
+    inset_reg : list = [-2800e3, 2800e3, -2800e3, 2800e3],
+    **kwargs,
 ):
     """
     add an inset map showing the figure region relative to the Antarctic continent.
@@ -394,12 +397,17 @@ def add_inset(
         width of figure in cm
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
+    inset_width : float, optional
+        Inset width as percentage of the total figure width, by default is 25% (0.25)
+    inset_reg : list, optional
+        Region of Antarctica to plot for the inset map, by default is whole continent
     """
-    inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
-    inset_map = f"X{fig_width*.25}c"
+    coast_pen = kwargs.get('coast_pen', "0.2,black")
+    
+    inset_map = f"X{fig_width*inset_width}c"
 
     with fig.inset(
-        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
+        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
         verbose="q",
     ):
         gdf = pyogrio.read_dataframe(fetch.groundingline())
@@ -410,7 +418,7 @@ def add_inset(
             color="skyblue",
         )
         fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+        fig.plot(data=fetch.groundingline(), pen=coast_pen)
 
         fig.plot(
             x=[
