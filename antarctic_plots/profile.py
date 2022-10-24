@@ -433,15 +433,133 @@ def plot_profile(
 
     fig = pygmt.Figure()
 
+    # PLOT CROSS SECTION AND PROFILES
+    # get max and min of all the layers
+    layers_min = df_layers[df_layers.columns[3:]].min().min()
+    layers_max = df_layers[df_layers.columns[3:]].max().max()
+    # add space above and below top and bottom of cross-section
+    y_buffer = (layers_max - layers_min) * kwargs.get("layer_buffer", 0.1)
+    # set region for x-section
+    fig_reg = [
+        df_layers.dist.min(),
+        df_layers.dist.max(),
+        layers_min - y_buffer,
+        layers_max + y_buffer,
+    ]
+    # if data for profiles is set, set region and plot them, if not,
+    # make region for x-section fill space
+    if data_dict is not None:
+        # if using a shared y-axis for data, get overall max and min values
+        if kwargs.get('share_yaxis', False) is True:
+            data_min = df_data[df_data.columns[3:]].min().min()
+            data_max = df_data[df_data.columns[3:]].max().max()
+            # add space above and below top and bottom of graph
+            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+            # set region for data
+            region_data = [
+                df_data.dist.min(),
+                df_data.dist.max(),
+                data_min - y_buffer,
+                data_max + y_buffer,
+            ]
+            # set frame
+            frame=["neSW", "ag",]
+        
+            data_projection = f"X{fig_height}c/2.5c"
+            layers_projection = f"X{fig_height}c/6c"
+
+        try:
+            for k, v in data_dict.items():
+                if kwargs.get('share_yaxis', False) is False:
+                    # if using individual y-axes for data, get individual max/mins
+                    data_min = df_data[k].min()
+                    data_max = df_data[k].max()
+                    # add space above and below top and bottom of graph
+                    y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+                    region_data = [
+                        df_data.dist.min(),
+                        df_data.dist.max(),
+                        data_min - y_buffer,
+                        data_max + y_buffer,
+                    ]
+                    # turn off frame tick labels
+                    frame=["neSw", "xag",]
+
+                fig.plot(
+                    region=region_data,
+                    projection=data_projection,
+                    frame=frame,
+                    x=df_data.dist,
+                    y=df_data[k],
+                    pen=f"2p,{v['color']}",
+                    label=v["name"],
+                )
+            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
+            fig.shift_origin(yshift="3c")
+            fig.basemap(region=fig_reg, projection=layers_projection, frame=True)
+        except Exception:
+            print("error plotting data profiles")
+    else:
+        # if no data, make xsection fill space
+        fig.basemap(region=fig_reg, projection=f"X{fig_height}c/{fig_height}c", frame=True)
+
+    # plot colored df_layers
+    for i, (k, v) in enumerate(layers_dict.items()):
+        fig.plot(
+            x=df_layers.dist,
+            y=df_layers[k],
+            # close the polygons, 
+            close="+yb",
+            color=v["color"],
+            frame=["nSew", "a"],
+        )
+
+    # plot lines between df_layers
+    for k, v in layers_dict.items():
+        fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
+
+    # plot 'A','B' locations
+    fig.text(
+        x=fig_reg[0],
+        y=fig_reg[3],
+        text="A",
+        font="20p,Helvetica,black",
+        justify="CM",
+        fill="white",
+        no_clip=True,
+    )
+    fig.text(
+        x=fig_reg[1],
+        y=fig_reg[3],
+        text="B",
+        font="20p,Helvetica,black",
+        justify="CM",
+        fill="white",
+        no_clip=True,
+    )
+
     if add_map is True:
+
         # Automatic data extent + buffer as % of line length
         df_reg = vd.get_region((df_layers.x, df_layers.y))
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
         fig_reg = utils.alter_region(df_reg, buffer=buffer)[1]
+
         # Set figure parameters
-        fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
-            fig_reg, fig_height=fig_height
-        )
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
+                fig_reg, fig_height=fig_height)
+            # shift map to the right with a 1 cm margin
+            fig.shift_origin(xshift=(-fig_width) - 1, yshift="-3c")
+        elif subplot_orientation == "vertical":
+           # if shifting vertically, set map width to match graph width
+            fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
+                fig_reg, fig_width=fig_height)
+            # shift map down with a 1 cm margin
+            fig.shift_origin(yshift=(fig_height) + 3)
+        else:
+            raise ValueError("invalid subplot_orientation string")
 
         # plot imagery, or supplied grid as background
         fig.grdimage(
@@ -512,132 +630,13 @@ def plot_profile(
         # add inset map
         if inset is True:
             maps.add_inset(
-                fig, 
-                fig_reg, 
-                fig_width, 
+                fig,
+                fig_reg,
+                fig_width,
                 inset_pos = kwargs.get("inset_pos", "TL"),
                 inset_width = kwargs.get("inset_width", 0.25),
                 inset_reg = kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
                 )
-
-        # shift figure to make space for x-section and profiles
-        if subplot_orientation == "horizontal":
-            fig.shift_origin(xshift=(fig_width) + 1)
-        elif subplot_orientation == "vertical":
-            fig.shift_origin(yshift=(fig_height) + 1)
-        else:
-            raise ValueError("invalid subplot_orientation string")
-
-    # PLOT CROSS SECTION AND PROFILES
-    # get max and min of all the layers
-    layers_min = df_layers[df_layers.columns[3:]].min().min()
-    layers_max = df_layers[df_layers.columns[3:]].max().max()
-    # add space above and below top and bottom of cross-section
-    y_buffer = (layers_max - layers_min) * kwargs.get("layer_buffer", 0.1)
-    # set region for x-section
-    fig_reg = [
-        df_layers.dist.min(),
-        df_layers.dist.max(),
-        layers_min - y_buffer,
-        layers_max + y_buffer,
-    ]
-    # if data for profiles is set, set region and plot them, if not,
-    # make region for x-section fill space
-    if data_dict is not None:
-        # if using a shared y-axis for data, get overall max and min values
-        if kwargs.get('share_yaxis', False) is True:
-            data_min = df_data[df_data.columns[3:]].min().min()
-            data_max = df_data[df_data.columns[3:]].max().max()
-            # add space above and below top and bottom of graph
-            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-            # set region for data
-            region_data = [
-                df_data.dist.min(),
-                df_data.dist.max(),
-                data_min - y_buffer,
-                data_max + y_buffer,
-            ]
-            # set frame
-            frame=["neSW", "ag",]
-        
-        if subplot_orientation == "horizontal":
-            data_projection = f"X{fig_height}c/2.5c"
-            layers_projection = f"X{fig_height}c/6c"
-        elif subplot_orientation == "vertical":
-            data_projection = f"X{fig_width}c/2.5c"
-            layers_projection = f"X{fig_width}c/6c"
-        else:
-            raise ValueError("invalid subplot_orientation string")
-
-        try:
-            for k, v in data_dict.items():
-                if kwargs.get('share_yaxis', False) is False:
-                    # if using individual y-axes for data, get individual max/mins
-                    data_min = df_data[k].min()
-                    data_max = df_data[k].max()
-                    # add space above and below top and bottom of graph
-                    y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-                    region_data = [
-                        df_data.dist.min(),
-                        df_data.dist.max(),
-                        data_min - y_buffer,
-                        data_max + y_buffer,
-                    ]
-                    # turn off frame tick labels
-                    frame=["neSw", "xag",]
-
-                fig.plot(
-                    region=region_data,
-                    projection=data_projection,
-                    frame=frame,
-                    x=df_data.dist,
-                    y=df_data[k],
-                    pen=f"2p,{v['color']}",
-                    label=v["name"],
-                )
-            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
-            fig.shift_origin(yshift="h+.5c")
-            fig.basemap(region=fig_reg, projection=layers_projection, frame=True)
-        except Exception:
-            print("error plotting data profiles")
-    else:
-        # if no data, make xsection fill space
-        fig.basemap(region=fig_reg, projection=f"X{fig_height}c/{fig_height}c", frame=True)
-
-    # plot colored df_layers
-    for i, (k, v) in enumerate(layers_dict.items()):
-        fig.plot(
-            x=df_layers.dist,
-            y=df_layers[k],
-            # close the polygons, 
-            close="+yb",
-            color=v["color"],
-            frame=["nSew", "a"],
-        )
-
-    # plot lines between df_layers
-    for k, v in layers_dict.items():
-        fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
-
-    # plot 'A','B' locations
-    fig.text(
-        x=fig_reg[0],
-        y=fig_reg[3],
-        text="A",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
-        no_clip=True,
-    )
-    fig.text(
-        x=fig_reg[1],
-        y=fig_reg[3],
-        text="B",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
-        no_clip=True,
-    )
 
     fig.show()
 
