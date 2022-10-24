@@ -453,9 +453,10 @@ def alter_region(
 def set_proj(
     region: Union[str or np.ndarray],
     fig_height: float = 15,
+    fig_width: float = None,
 ) -> str:
     """
-    Gives GMT format projection string from region and figure height.
+    Gives GMT format projection string from region and figure height or width.
     Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
 
     Parameters
@@ -464,6 +465,9 @@ def set_proj(
         GMT-format region str or list (e, w, n, s) in meters EPSG:3031
     fig_height : float
         desired figure height in cm
+    fig_width : float
+        instead of using figure height, set the projection based on figure width in cm,
+        by default is None
 
     Returns
     -------
@@ -472,11 +476,19 @@ def set_proj(
         fig_height)
     """
     e, w, n, s = region
-    fig_width = fig_height * (w - e) / (s - n)
 
-    ratio = (s - n) / (fig_height / 100)
+    if fig_width is not None:
+        fig_height = fig_width * (s - n) / (w - e)
+        ratio = (w - e) / (fig_width / 100)
+    else:
+        fig_width = fig_height * (w - e) / (s - n)
+        ratio = (s - n) / (fig_height / 100)
+
     proj = f"x1:{ratio}"
     proj_latlon = f"s0/-90/-71/1:{ratio}"
+
+
+
 
     return proj, proj_latlon, fig_width, fig_height
 
