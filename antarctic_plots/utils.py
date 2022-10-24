@@ -365,7 +365,6 @@ def mask_from_shp(
     """
 
     if isinstance(shapefile, str):
-        # shp = gpd.read_file(shapefile).geometry
         shp = pyogrio.read_dataframe(shapefile)
     else:
         shp = shapefile
@@ -952,7 +951,7 @@ def raps(
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
-            ax = sns.lineplot((raps.wavelength, raps.power), label=j, palette="viridis")
+            ax = sns.lineplot(x=raps.wavelength, y=raps.power, label=j)
             ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
@@ -1358,8 +1357,8 @@ def change_reg(grid):
     return f_out
 
 def grdblend(
-    grid1 : xr.DataArray, 
-    grid2 : xr.DataArray, 
+    grid1 : xr.DataArray,
+    grid2 : xr.DataArray,
     **kwargs,
     ):
     """
