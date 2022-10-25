@@ -236,7 +236,7 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
 
 def default_layers(version, region=None) -> dict:
     """
-    Fetch default Bedmachine layers.
+    Fetch default ice surface, ice base, and bed layers.
 
     Parameters
     ----------
@@ -252,8 +252,8 @@ def default_layers(version, region=None) -> dict:
         region = regions.antarctica
 
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region, fill_nans=True)
-        icebase = fetch.bedmap2("icebase", region=region, fill_nans=True)
+        surface = fetch.bedmap2("surface", region=region)#, fill_nans=True)
+        icebase = fetch.bedmap2("icebase", region=region)#, fill_nans=True)
         bed = fetch.bedmap2("bed", region=region)
 
     elif version == "bedmachine":
@@ -332,7 +332,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
-    layers_version="bedmap2",
+    layers_version="bedmachine",
     **kwargs,
 ):
     """
@@ -464,7 +464,7 @@ def plot_profile(
             ]
             # set frame
             frame=["neSW", "ag",]
-        
+
         # height of data and layers, plus 0.5cm margin equals total figure height
         data_height = kwargs.get('data_height', 2.5)
         layers_height = fig_height - 0.5 - data_height
@@ -512,7 +512,7 @@ def plot_profile(
         fig.plot(
             x=df_layers.dist,
             y=df_layers[k],
-            # close the polygons, 
+            # close the polygons,
             close="+yb",
             color=v["color"],
             frame=["nSew", "a"],
@@ -725,7 +725,7 @@ def plot_data(
         ]
         # set frame
         frame=["neSW", "ag",]
-    
+
     data_projection = f"X{fig_width}c/{fig_height}c"
 
     for k, v in data_dict.items():
