@@ -465,8 +465,12 @@ def plot_profile(
             # set frame
             frame=["neSW", "ag",]
         
-            data_projection = f"X{fig_height}c/2.5c"
-            layers_projection = f"X{fig_height}c/6c"
+        # height of data and layers, plus 0.5cm margin equals total figure height
+        data_height = kwargs.get('data_height', 2.5)
+        layers_height = fig_height - 0.5 - data_height
+
+        data_projection = f"X{fig_height}c/{data_height}c"
+        layers_projection = f"X{fig_height}c/{layers_height}c"
 
         try:
             for k, v in data_dict.items():
@@ -495,7 +499,7 @@ def plot_profile(
                     label=v["name"],
                 )
             fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
-            fig.shift_origin(yshift="3c")
+            fig.shift_origin(yshift=f"{data_height+0.5}c")
             fig.basemap(region=fig_reg, projection=layers_projection, frame=True)
         except Exception:
             print("error plotting data profiles")
@@ -550,14 +554,14 @@ def plot_profile(
             # if shifting horizontally, set map height to match graph height
             fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
                 fig_reg, fig_height=fig_height)
-            # shift map to the right with a 1 cm margin
-            fig.shift_origin(xshift=(-fig_width) - 1, yshift="-3c")
+            # shift map to the right with 1/2 cm margin
+            fig.shift_origin(xshift=(-fig_width) - 1, yshift=f"-{data_height+0.5}c")
         elif subplot_orientation == "vertical":
            # if shifting vertically, set map width to match graph width
             fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
                 fig_reg, fig_width=fig_height)
             # shift map down with a 1 cm margin
-            fig.shift_origin(yshift=(fig_height) + 3)
+            fig.shift_origin(yshift=f"{fig_height + 1}c")
         else:
             raise ValueError("invalid subplot_orientation string")
 
