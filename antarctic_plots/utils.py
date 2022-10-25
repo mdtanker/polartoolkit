@@ -860,7 +860,7 @@ def make_grid(
         Returns a xr.DataArray with 1 variable of constant value.
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
-    data = np.ones_like(coords[0]) + value
+    data = np.ones_like(coords[0]) * value
     grid = vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
     return grid
 
