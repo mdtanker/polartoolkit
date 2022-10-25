@@ -651,6 +651,25 @@ def test_gravity(test_input, expected):
 # grid = fetch.gravity(version='eigen')
 # utils.get_grid_info(grid)
 
+# %% ROSETTA gravity
+
+def test_ROSETTA_gravity():
+    df = fetch.ROSETTA_gravity()
+    expected = [
+        -80.57119757556714,
+        -36.74185651880941,
+        1457514923.0469708,
+        793.0566192217011,
+        -84278.81094301463,
+        -1000705.4912593851,
+        4.329633132958233e-15,
+        ]
+    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
+
+df = fetch.ROSETTA_gravity()
+# get mean values of each column
+df.describe().iloc[1].tolist()
+
 # %% magnetics
 
 test = [

@@ -1668,6 +1668,46 @@ def gravity(
 
     return resampled
 
+def ROSETTA_gravity():
+    """
+    Load a dataframe of ROSETTA-Ice airborne gravity data over the Ross Ice Shelf.
+    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
+    https://doi.org/10.1038/s41561‐019‐0370‐2
+    Accessed from https://www.usap-dc.org/view/project/p0010035
+
+    This is only data from the first 2 of the 3 field seasons.
+
+    Columns:
+    Line Number: The ROSETTA-Ice survey line number
+    Latitude (degrees): Latitude decimal degrees WGS84
+    Longitude (degrees): Longitude decimal degrees WGS84
+    unixtime (seconds): The number of seconds that have elapsed since midnight (00:00:00 UTC) on January 1st, 1970
+    Height (meters): Height above WGS84 ellipsoid
+    x (meters): Polar stereographic projected coordinates true to scale at 71° S
+    y (meters): Polar stereographic projected coordinates true to scale at 71° S
+    FAG_levelled (mGal): Levelled free air gravity (centered on 0)
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a dataframe containing the gravity data
+    """
+
+    path = pooch.retrieve(
+        url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
+        fname="ROSETTA_2019_grav.csv",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+        known_hash=None,
+        progressbar=True,
+    )
+
+    df = pd.read_csv(path)
+
+    # center grav data on 0
+    df['FAG_levelled'] -= df.FAG_levelled.mean()
+
+    return df
 
 def magnetics(
     version: str,
@@ -2591,14 +2631,14 @@ def moho(
 
     version='an-2015'
     This is fetch.crustal_thickness(version='an-2015)* -1
-    Documentation is unclear whether the An crust model is crustal thickness or moho 
+    Documentation is unclear whether the An crust model is crustal thickness or moho
     depths, or whether it makes a big enough difference to matter.
 
     version='pappa-2019'
-    from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica: 
-    Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics, 
-    Geosystems, 20, 1629– 1645. 
-    https://doi.org/10.1029/2018GC008111 
+    from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica:
+    Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics,
+    Geosystems, 20, 1629– 1645.
+    https://doi.org/10.1029/2018GC008111
     Accessed from supplement material
 
     Parameters
@@ -2752,7 +2792,7 @@ def moho(
 
         # fname='inversion_layers/Pappa_moho.nc'
 
-        # pygmt.surface(Moho_Pappa[['x','y','z']], region='-1560000/1400000/-2400000/560000', 
+        # pygmt.surface(Moho_Pappa[['x','y','z']], region='-1560000/1400000/-2400000/560000',
         #     spacing=10e3, registration='g', M='1c', outgrid=fname)
 
     else:
