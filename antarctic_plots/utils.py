@@ -293,7 +293,7 @@ def GMT_reg_to_bounding_box(input):
 
     Returns
     -------
-    np.ndarray
+    list
         Array of 4 strings in bounding box format.
     """
     return [input[0], input[2], input[1], input[3]]
@@ -318,6 +318,36 @@ def region_to_bounding_box(input):
     box = GMT_reg_to_bounding_box(reg_ll)
     return box
 
+
+def points_inside_region(
+    df: pd.DataFrame,
+    region: list,
+):
+    """
+    return a subset of a dataframe which is within a region
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe with columns 'x','y' to use for defining if within region
+    region : list
+        GMT region string to use as bounds for new subset dataframe
+
+    Returns
+    -------
+    pd.DataFrame
+       returns a subset dataframe
+    """
+    # make column of booleans for whether row is within the region
+    df['inside'] = vd.inside(coordinates=(df.x, df.y), region=region)
+
+    # subset if True
+    df_inside = df.loc[df.inside==True].copy()
+
+    # drop the column 'inside'
+    df_inside.drop(columns='inside', inplace=True)
+
+    return df_inside
 
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
