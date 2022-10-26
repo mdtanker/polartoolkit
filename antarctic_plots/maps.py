@@ -242,22 +242,29 @@ def plot_grd(
             grid=grid,
             region=cmap_region,
             background=True,
-            continuous=True,
+            continuous=kwargs.get("continuous", True),
+            color_model=kwargs.get("color_model", "R"),
+            categorical=kwargs.get("categorical", False),
             verbose="e",
         )
     elif cpt_lims is not None:
         try:
             pygmt.makecpt(
                 cmap=cmap,
-                background=True,
-                # continuous=True,
                 series=cpt_lims,
+                background=True,
+                continuous=kwargs.get("continuous", False),
+                color_model=kwargs.get("color_model", "R"),
+                categorical=kwargs.get("categorical", False),
                 verbose="e",
             )
         except (pygmt.exceptions.GMTCLibError):
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
+                continuous=kwargs.get("continuous", False),
+                color_model=kwargs.get("color_model", "R"),
+                categorical=kwargs.get("categorical", False),
                 verbose="e",
             )
     else:
@@ -266,7 +273,7 @@ def plot_grd(
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
-                continuous=True,
+                continuous=kwargs.get("continuous", True),
                 series=(zmin, zmax),
                 verbose="e",
             )
@@ -276,7 +283,7 @@ def plot_grd(
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
-                continuous=True,
+                continuous=kwargs.get("continuous", True),
                 verbose="e",
             )
 
