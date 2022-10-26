@@ -11,6 +11,10 @@ import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
+from typing import TYPE_CHECKING, Union
+
+if TYPE_CHECKING:
+    import xarray as xr
 
 from antarctic_plots import fetch, maps, regions, utils
 
@@ -129,7 +133,11 @@ def create_profile(
     return df_out
 
 
-def sample_grids(df, grid, name: str = None):
+def sample_grids(
+    df: pd.DataFrame,
+    grid: Union[str or xr.DataArray],
+    name: str = None,
+):
     """
     Sample data at every point along a line
 
@@ -150,9 +158,16 @@ def sample_grids(df, grid, name: str = None):
     if name is None:
         name = grid
 
-    df[name] = (pygmt.grdtrack(points=df[["x", "y"]], grid=grid, newcolname=str(name)))[
-        name
-    ]
+    # sample the grid at all x,y points
+    sampled = pygmt.grdtrack(
+            points=df[["x", "y"]],
+            grid=grid,
+            newcolname=str(name),
+            )
+
+    # add sampled data to dataframe
+    df[name] = (sampled)[name]
+
     return df
 
 
@@ -299,14 +314,14 @@ def default_data(region=None) -> dict:
 
     mag = fetch.magnetics(
         version="admap1",
-        region=region,
-        spacing=10e3,
+        # region=region,
+        # spacing=10e3,
     )
     FA_grav = fetch.gravity(
         version="antgg-update",
         anomaly_type="FA",
-        region=region,
-        spacing=10e3,
+        # region=region,
+        # spacing=10e3,
     )
     data_names = [
         "ADMAP-1 magnetics",
@@ -343,7 +358,7 @@ def plot_profile(
     Parameters
     ----------
     method : str
-        Choose the sample method, either 'points', or 'shapefile'.
+        Choose sampling method, either "points", "shapefile", or "polyline"
     layers_dict : dict, optional
         nested dictionary of layers to include in cross-section, construct with
         `profile.make_data_dict`, by default is Bedmap2 layers.
@@ -459,15 +474,10 @@ def plot_profile(
         if kwargs.get('share_yaxis', False) is True:
             data_min = df_data[df_data.columns[3:]].min().min()
             data_max = df_data[df_data.columns[3:]].max().max()
+
             # add space above and below top and bottom of graph
             y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-            # set region for data
-            data_reg = [
-                df_data.dist.min(),
-                df_data.dist.max(),
-                data_min - y_buffer,
-                data_max + y_buffer,
-            ]
+
             # set frame
             frame=["neSW", "ag",]
 
@@ -480,20 +490,24 @@ def plot_profile(
 
         try:
             for k, v in data_dict.items():
+                 # if using individual y-axes for data, get individual max/mins
                 if kwargs.get('share_yaxis', False) is False:
-                    # if using individual y-axes for data, get individual max/mins
                     data_min = df_data[k].min()
                     data_max = df_data[k].max()
+
                     # add space above and below top and bottom of graph
                     y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-                    data_reg = [
+
+                    # turn off frame tick labels
+                    frame=["neSw", "xag",]
+
+                # set region for data
+                data_reg = [
                         df_data.dist.min(),
                         df_data.dist.max(),
                         data_min - y_buffer,
                         data_max + y_buffer,
                     ]
-                    # turn off frame tick labels
-                    frame=["neSw", "xag",]
 
                 fig.plot(
                     region=data_reg,
@@ -678,7 +692,7 @@ def plot_data(
     Parameters
     ----------
     method : str
-        Choose the sample method, either 'points', or 'shapefile'.
+        Choose sampling method, either "points", "shapefile", or "polyline"
     data_dict : dict
         nested dictionary of data to include in option graph, construct with
         `profile.make_data_dict`.
