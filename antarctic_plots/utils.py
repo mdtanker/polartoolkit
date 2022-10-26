@@ -194,21 +194,22 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
 
+    df_out = df.copy()
+
     if isinstance(df, list):
-        xy = df.copy()
-        df = list(transformer.transform(xy[0], xy[1]))
+        df_out = list(transformer.transform(df_out[0], df_out[1]))
     else:
-        df[output[1]], df[output[0]] = transformer.transform(
-            df[input[0]].tolist(), df[input[1]].tolist()
+        df_out[output[1]], df_out[output[0]] = transformer.transform(
+            df_out[input[0]].tolist(), df_out[input[1]].tolist()
         )
         if reg is True:
-            df = [
-                df[output[0]].min(),
-                df[output[0]].max(),
-                df[output[1]].min(),
-                df[output[1]].max(),
+            df_out = [
+                df_out[output[0]].min(),
+                df_out[output[0]].max(),
+                df_out[output[1]].min(),
+                df_out[output[1]].max(),
             ]
-    return df
+    return df_out
 
 
 def reg_str_to_df(input, names=["x", "y"], reverse=False):
