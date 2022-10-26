@@ -1051,6 +1051,16 @@ def bedmachine(
     Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
+    Surface and ice thickness are in ice equivalents. Actually snow surface is from
+    REMA (Howat et al. 2019), and has had firn thickness removed from it to get
+    Bedmachine Surface.
+
+    To get snow surface: surface+firn
+    To get firn and ice thickness: thickness+firn
+
+    Here, icebase will return a grid of surface-thickness
+    This should be the same as snow-surface - (firn and ice thickness)
+
     Parameters
     ----------
     layer : str
@@ -1194,8 +1204,9 @@ def bedmap2(
     ----------
     layer : str
         choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84', 'icebase' will give
-        results of surface-thickness
+        "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
+        "lakemask_vostok", "rockmask", "surface", "thickness",
+        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
     reference : str
         choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
         (WGS84), by default is 'geoid'
