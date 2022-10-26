@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Union
 import pygmt
 import pyogrio
 import xarray as xr
+import pandas as pd
+import verde as vd
 
 from antarctic_plots import fetch, regions, utils
 
@@ -28,6 +30,77 @@ except ImportError:
 else:
     _has_ipyleaflet = True
 
+def basemap(
+    region: Union[str or np.ndarray] = None,
+    fig_height: float = 15,
+    fig_width: float = None,
+    **kwargs,
+):
+    # set figure projection and size from input region and figure dimensions
+    # by default use figure height to set projection
+    if fig_width is None:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_height = fig_height,
+            )
+    # if fig_width is set, use it to set projection
+    else:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_width = fig_width,
+            )
+
+    # initialize the figure
+    fig = pygmt.Figure()
+
+    # create blank basemap
+    fig.basemap(
+        region = region,
+        projection = proj,
+        frame = ["nwse", "xf100000", "yf100000", "g0"],
+        verbose='e')
+
+    # add lat long grid lines
+    if kwargs.get("grid_lines", True) is True:
+        add_gridlines(
+            fig,
+            region,
+            proj_latlon,
+            x_annots=kwargs.get("x_annots", 30),
+            y_annots=kwargs.get("y_annots", 4),
+        )
+
+    # add inset map to show figure location
+    if kwargs.get("inset", True) is True:
+        add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
+
+    # add scalebar
+    if kwargs.get("scalebar", True) is True:
+        add_scalebar(
+            fig,
+            region,
+            proj_latlon,
+            font_color=kwargs.get("scale_font_color", "black"),
+            scale_length=kwargs.get("scale_length"),
+            length_perc=kwargs.get("scale_length_perc", 0.25),
+            position=kwargs.get("scale_position", "n.5/.05"),
+        )
+
+    # blank plotting call to reset projection to EPSG:3031, optionall add title
+    if kwargs.get("title", None) is None:
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame="wesn",
+            )
+    else:
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame=f"wesn+t{kwargs.get('title')}",
+            )
+
+    return fig
 
 def plot_grd(
     grid: Union[str or xr.DataArray],
@@ -403,7 +476,7 @@ def add_inset(
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
     coast_pen = kwargs.get('coast_pen', "0.2,black")
-    
+
     inset_map = f"X{fig_width*inset_width}c"
 
     with fig.inset(
