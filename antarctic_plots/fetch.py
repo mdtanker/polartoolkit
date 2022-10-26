@@ -2096,22 +2096,35 @@ def ghf(
             info = False
             plot = False
             # read the excel file with pandas
-            GHF_points = pd.read_excel(file)
+            df = pd.read_excel(file)
+
+            # drop 2 extra columns
+            df.drop(columns = ["Unnamed: 15", "Unnamed: 16"], inplace=True)
+
+            # remove numbers from all column names
+            df.columns = df.columns.str[4:]
+
+            # rename some columns, remove symbols
+            df.rename(
+                columns={
+                    "Latitude": "lat",
+                    "Longitude": "lon",
+                    "grad (°C/km)": "grad",
+                    "GHF (mW/m²)": "GHF",
+                    "Err (mW/m²)": "err",
+                }, inplace=True)
 
             # drop few rows without coordinates
-            GHF_points.dropna(subset=["(1) Latitude","(2) Longitude"], inplace=True)
+            df.dropna(subset=["lat","lon"], inplace=True)
 
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-            GHF_points["x"], GHF_points["y"] = transformer.transform(
-                GHF_points["(1) Latitude"].tolist(),
-                GHF_points["(2) Longitude"].tolist(),
-            )  # noqa
+            df["x"], df["y"] = transformer.transform(
+                df["lat"].tolist(),
+                df["lon"].tolist(),
+            )
 
-            # rename
-            GHF_points["GHF"] = GHF_points["(8) GHF (mW/m²)"]
-
-            resampled = GHF_points
+            resampled = df
 
         elif kwargs.get("points", False) is False:
             file = [p for p in path if p.endswith("Mean.tif")][0]

@@ -745,21 +745,21 @@ def test_ghf_points():
     expected = [
         -56.5667,
         34.1833,
-        "C11-44",
+        'C11-44',
         0.0,
         11,
         300,
         0.77,
         229.0,
         -5372.0,
-        "Anderson1977",
-        "https://doi.org/10.1594/PANGAEA.796541",
-        "S3",
-        "Unconsolidated sediments",
+        'Anderson1977',
+        'https://doi.org/10.1594/PANGAEA.796541',
+        'S3',
+        'Unconsolidated sediments',
         2098568.3517061966,
-        3089886.43259545,
-        229.002,
+        3089886.43259545
     ]
+
     assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)
 
 
