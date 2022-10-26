@@ -2098,6 +2098,9 @@ def ghf(
             # read the excel file with pandas
             GHF_points = pd.read_excel(file)
 
+            # drop few rows without coordinates
+            GHF_points.dropna(subset=["(1) Latitude","(2) Longitude"], inplace=True)
+
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
             GHF_points["x"], GHF_points["y"] = transformer.transform(
