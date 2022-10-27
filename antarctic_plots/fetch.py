@@ -698,16 +698,18 @@ def sediment_thickness(
                 grid.rio.write_crs("EPSG:4326", inplace=True)
 
                 # set names of coordinates
-                grid = grid.rename({"lon":'x', "lat":'y'})
+                grid = grid.rename({"lon": "x", "lat": "y"})
 
                 # clip to antarctica
                 grid = grid.rio.clip_box(
                     *utils.GMT_reg_to_bounding_box(initial_region),
                     crs="EPSG:3031",
-                    )
+                )
 
                 # reproject to polar stereographic
-                reprojected = grid.rio.reproject("epsg:3031", resolution=inital_spacing)
+                reprojected = grid.rio.reproject(
+                    "epsg:3031", resolution=initial_spacing
+                )
 
                 # need to save to .nc and reload, issues with pygmt
                 reprojected.to_netcdf("tmp.nc")
@@ -2013,7 +2015,7 @@ def ghf(
                 grid.rio.write_crs("EPSG:4326", inplace=True)
 
                 # set names of coordinates
-                grid = grid.rename({"lon":'x', "lat":'y'})
+                grid = grid.rename({"lon": "x", "lat": "y"})
 
                 # reproject to polar stereographic
                 reprojected = grid.rio.reproject("epsg:3031")
@@ -2030,7 +2032,7 @@ def ghf(
                     registration=initial_registration,
                     outgrid=fname_processed,
                 )
-                
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -2639,7 +2641,7 @@ def crustal_thickness(
                 grid.rio.write_crs("EPSG:4326", inplace=True)
 
                 # set names of coordinates
-                grid = grid.rename({"lon":'x', "lat":'y'})
+                grid = grid.rename({"lon": "x", "lat": "y"})
 
                 # reproject to polar stereographic
                 reprojected = grid.rio.reproject("EPSG:3031")
