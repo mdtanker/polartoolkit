@@ -34,6 +34,7 @@ def basemap(
     region: Union[str or np.ndarray] = None,
     fig_height: float = 15,
     fig_width: float = None,
+    origin_shift: str = "initialize",
     **kwargs,
 ):
     # set figure projection and size from input region and figure dimensions
@@ -50,14 +51,30 @@ def basemap(
             fig_width = fig_width,
             )
 
-    # initialize the figure
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
     fig = pygmt.Figure()
+    elif origin_shift == "xshift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
+    elif origin_shift == "yshift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+    elif origin_shift == "both_shift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(
+            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+        )
+    elif origin_shift == "no_shift":
+        fig = kwargs.get("fig")
+
 
     # create blank basemap
     fig.basemap(
         region = region,
         projection = proj,
-        frame = ["nwse", "xf100000", "yf100000", "g0"],
+        frame = [f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
         verbose='e')
 
     # add lat long grid lines
@@ -71,11 +88,11 @@ def basemap(
         )
 
     # add inset map to show figure location
-    if kwargs.get("inset", True) is True:
+    if kwargs.get("inset", False) is True:
         add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
 
     # add scalebar
-    if kwargs.get("scalebar", True) is True:
+    if kwargs.get("scalebar", False) is True:
         add_scalebar(
             fig,
             region,
