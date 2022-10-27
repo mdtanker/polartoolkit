@@ -2230,15 +2230,14 @@ def ghf(
                     # spacing=initial_spacing,
                 )
 
-                processed = pygmt.grdsample(
+                pygmt.grdsample(
                     reprojected,
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
 
-                # Save to disk
-                processed.to_netcdf(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -2629,7 +2628,7 @@ def crustal_thickness(
                 reprojected = grid.rio.reproject("EPSG:3031")
 
                 # get just antarctica region and save to disk
-                processed = pygmt.grdsample(
+                pygmt.grdsample(
                     reprojected,
                     region=initial_region,
                     spacing=initial_spacing,
