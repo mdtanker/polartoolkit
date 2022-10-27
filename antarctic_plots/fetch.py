@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     import numpy as np
 
+import pyogrio
 import geopandas as gpd
 import pandas as pd
 import pooch
@@ -1679,9 +1680,10 @@ def gravity(
 
     return resampled
 
-def ROSETTA_gravity():
+def ROSETTA_gravity(shapefile: bool = False):
     """
-    Load a dataframe of ROSETTA-Ice airborne gravity data over the Ross Ice Shelf.
+    Load either a shapefile of ROSETTA-ice flightliens, or a dataframe of ROSETTA-Ice
+    airborne gravity data over the Ross Ice Shelf.
     from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
     imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
     https://doi.org/10.1038/s41561‐019‐0370‐2
@@ -1699,28 +1701,48 @@ def ROSETTA_gravity():
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
     FAG_levelled (mGal): Levelled free air gravity (centered on 0)
 
+    Parameters
+    ----------
+    shapefile : bool, optional
+        If true, instead return a shapefile of flight line locations
+
     Returns
     -------
     pd.DataFrame
         Returns a dataframe containing the gravity data
     """
 
-    path = pooch.retrieve(
-        url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
-        fname="ROSETTA_2019_grav.csv",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
-        known_hash=None,
-        progressbar=True,
-    )
+    if shapefile is True:
+        path = pooch.retrieve(
+                url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
+                fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+                known_hash=None,
+                progressbar=True,
+                processor=pooch.Unzip()
+            )
+        # path to shapefile
+        fname = [p for p in path if p.endswith(".shp")][0]
 
-    df = pd.read_csv(path)
+        # read the file into a geodataframe
+        df = pyogrio.read_dataframe(fname)
+    else:
+        path = pooch.retrieve(
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
+            fname="ROSETTA_2019_grav.csv",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+        )
 
-    # convert line numbers into float format (L200 -> 200)
-    df.Line = df.Line.str[1:]
-    df['Line'] = pd.to_numeric(df['Line'])
-    
-    # center grav data on 0
-    df['FAG_levelled'] -= df.FAG_levelled.mean()
+        df = pd.read_csv(path)
+
+        # convert line numbers into float format (L200 -> 200)
+        df.Line = df.Line.str[1:]
+        df['Line'] = pd.to_numeric(df['Line'])
+
+        # center grav data on 0
+        df['FAG_levelled'] -= df.FAG_levelled.mean()
 
     return df
 
