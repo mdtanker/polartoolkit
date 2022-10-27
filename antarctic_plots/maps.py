@@ -311,7 +311,7 @@ def plot_grd(
         projection=proj,
         region=region,
         nan_transparent=True,
-        frame=["+gwhite"],
+        frame=[f"+g{kwargs.get('background', 'white')}"],
         verbose="q",
     )
 
