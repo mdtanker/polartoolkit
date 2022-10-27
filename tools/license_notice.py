@@ -29,7 +29,7 @@ NOTICE = f"""
 """.strip()
 CHECK_HELP = """
 Don't write the files, just return the status. Return code 0 means
-nothing would change. Return code 1 means some files lacks the license notice.
+nothing would change. Return code 1 means some files lack the license notice.
 """
 
 
@@ -71,7 +71,7 @@ def main():
 
     missing_notice_files = []
     for pyfile in python_files:
-        code = pyfile.read_text()
+        code = pyfile.read_text(encoding="utf-8")
         if not code.startswith(NOTICE):
             missing_notice_files.append(pyfile)
 

@@ -194,21 +194,22 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
 
+    df_out = df.copy()
+
     if isinstance(df, list):
-        xy = df.copy()
-        df = list(transformer.transform(xy[0], xy[1]))
+        df_out = list(transformer.transform(df_out[0], df_out[1]))
     else:
-        df[output[1]], df[output[0]] = transformer.transform(
-            df[input[0]].tolist(), df[input[1]].tolist()
+        df_out[output[1]], df_out[output[0]] = transformer.transform(
+            df_out[input[0]].tolist(), df_out[input[1]].tolist()
         )
         if reg is True:
-            df = [
-                df[output[0]].min(),
-                df[output[0]].max(),
-                df[output[1]].min(),
-                df[output[1]].max(),
+            df_out = [
+                df_out[output[0]].min(),
+                df_out[output[0]].max(),
+                df_out[output[1]].min(),
+                df_out[output[1]].max(),
             ]
-    return df
+    return df_out
 
 
 def reg_str_to_df(input, names=["x", "y"], reverse=False):
@@ -293,7 +294,7 @@ def GMT_reg_to_bounding_box(input):
 
     Returns
     -------
-    np.ndarray
+    list
         Array of 4 strings in bounding box format.
     """
     return [input[0], input[2], input[1], input[3]]
@@ -317,6 +318,37 @@ def region_to_bounding_box(input):
     reg_ll = GMT_reg_xy_to_ll(input, decimal_degree=True)
     box = GMT_reg_to_bounding_box(reg_ll)
     return box
+
+
+def points_inside_region(
+    df: pd.DataFrame,
+    region: list,
+):
+    """
+    return a subset of a dataframe which is within a region
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe with columns 'x','y' to use for defining if within region
+    region : list
+        GMT region string to use as bounds for new subset dataframe
+
+    Returns
+    -------
+    pd.DataFrame
+       returns a subset dataframe
+    """
+    # make column of booleans for whether row is within the region
+    df["inside"] = vd.inside(coordinates=(df.x, df.y), region=region)
+
+    # subset if True
+    df_inside = df.loc[df.inside is True].copy()
+
+    # drop the column 'inside'
+    df_inside.drop(columns="inside", inplace=True)
+
+    return df_inside
 
 
 def mask_from_shp(
@@ -365,7 +397,6 @@ def mask_from_shp(
     """
 
     if isinstance(shapefile, str):
-        # shp = gpd.read_file(shapefile).geometry
         shp = pyogrio.read_dataframe(shapefile)
     else:
         shp = shapefile
@@ -454,9 +485,10 @@ def alter_region(
 def set_proj(
     region: Union[str or np.ndarray],
     fig_height: float = 15,
+    fig_width: float = None,
 ) -> str:
     """
-    Gives GMT format projection string from region and figure height.
+    Gives GMT format projection string from region and figure height or width.
     Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
 
     Parameters
@@ -465,6 +497,9 @@ def set_proj(
         GMT-format region str or list (e, w, n, s) in meters EPSG:3031
     fig_height : float
         desired figure height in cm
+    fig_width : float
+        instead of using figure height, set the projection based on figure width in cm,
+        by default is None
 
     Returns
     -------
@@ -473,9 +508,14 @@ def set_proj(
         fig_height)
     """
     e, w, n, s = region
-    fig_width = fig_height * (w - e) / (s - n)
 
-    ratio = (s - n) / (fig_height / 100)
+    if fig_width is not None:
+        fig_height = fig_width * (s - n) / (w - e)
+        ratio = (w - e) / (fig_width / 100)
+    else:
+        fig_width = fig_height * (w - e) / (s - n)
+        ratio = (s - n) / (fig_height / 100)
+
     proj = f"x1:{ratio}"
     proj_latlon = f"s0/-90/-71/1:{ratio}"
 
@@ -849,7 +889,7 @@ def make_grid(
         Returns a xr.DataArray with 1 variable of constant value.
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
-    data = np.ones_like(coords[0]) + value
+    data = np.ones_like(coords[0]) * value
     grid = vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
     return grid
 
@@ -952,7 +992,7 @@ def raps(
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
-            ax = sns.lineplot((raps.wavelength, raps.power), label=j, palette="viridis")
+            ax = sns.lineplot(x=raps.wavelength, y=raps.power, label=j)
             ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
@@ -1356,3 +1396,38 @@ def change_reg(grid):
                 ses.call_module("grdedit", args)
                 f_out = pygmt.load_dataarray(tmpfile.name)
     return f_out
+
+
+def grdblend(
+    grid1: xr.DataArray,
+    grid2: xr.DataArray,
+    **kwargs,
+):
+    """
+    Use GMT grdblend to blend 2 grids into 1.
+
+    Parameters
+    ----------
+    grid1 : xr.DataArray
+        input grid to change the reg for.
+
+    grid2 : xr.DataArray
+        input grid to change the reg for.
+
+    Returns
+    -------
+    xr.DataArray
+        returns a blended dataarray.
+    """
+    with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
+        with pygmt.clib.Session() as lib:
+            # store the input grids in a virtual files so GMT can read it from
+            # dataarrays
+            file_context1 = lib.virtualfile_from_grid(grid1)
+            file_context2 = lib.virtualfile_from_grid(grid2)
+            with file_context1 as infile1, file_context2 as infile2:
+                # if (outgrid := kwargs.get("G")) is None:
+                #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
+                args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
+                lib.call_module(module="grdblend", args=args)
+    return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None

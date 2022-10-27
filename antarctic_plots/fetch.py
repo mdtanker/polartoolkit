@@ -18,6 +18,7 @@ import geopandas as gpd
 import pandas as pd
 import pooch
 import pygmt
+import pyogrio
 import requests
 import xarray as xr
 from pyproj import Transformer
@@ -488,7 +489,7 @@ def sediment_thickness(
     https://doi.org/10.1029/2021GL097371
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238?format=html#download
 
-    version='lindeque-2018'
+    version='lindeque-2016'
     From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for
     the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics,
     Geosystems, 17(10), 4276-4285.
@@ -630,7 +631,7 @@ def sediment_thickness(
             registration=registration,
         )
 
-    elif version == "lindeque-2018":
+    elif version == "lindeque-2016":
         # found with utils.get_grid_info()
         initial_region = [-4600000.0, 1900000.0, -3900000.0, 1850000.0]
         initial_spacing = 5e3
@@ -645,7 +646,7 @@ def sediment_thickness(
 
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",  # noqa
-            fname="lindeque_2018_total_sediment_thickness.nc",
+            fname="lindeque_2016_total_sediment_thickness.nc",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
             known_hash=None,
             progressbar=True,
@@ -693,23 +694,39 @@ def sediment_thickness(
                 # load data
                 grid = xr.load_dataarray(fname)
 
-                # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    # spacing=f"{initial_spacing}+e",
-                    # region=initial_region,
-                    # registration=initial_registration,
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon": "x", "lat": "y"})
+
+                # clip to antarctica
+                grid = grid.rio.clip_box(
+                    *utils.GMT_reg_to_bounding_box(initial_region),
+                    crs="EPSG:3031",
                 )
-                processed = pygmt.grdsample(
-                    grid2,
+
+                # reproject to polar stereographic
+                reprojected = grid.rio.reproject(
+                    "epsg:3031", resolution=initial_spacing
+                )
+
+                # need to save to .nc and reload, issues with pygmt
+                reprojected.to_netcdf("tmp.nc")
+                processed = xr.load_dataset("tmp.nc").z
+
+                # resample and save to disk
+                pygmt.grdsample(
+                    processed,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
 
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+                # remove tmp file
+                os.remove("tmp.nc")
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -892,11 +909,9 @@ def IBCSO(
 
             # set the projection
             cut.rio.write_crs("EPSG:9354", inplace=True)
-            assert cut.rio.crs == "EPSG:9354"
 
             # reproject to EPSG:3031
             reprojected = cut.rio.reproject("epsg:3031")
-            assert reprojected.rio.crs == "EPSG:3031"
 
             # need to save to .nc and reload, issues with pygmt
             reprojected.to_netcdf("tmp.nc")
@@ -948,11 +963,9 @@ def IBCSO(
 
             # set the projection
             cut.rio.write_crs("EPSG:9354", inplace=True)
-            assert cut.rio.crs == "EPSG:9354"
 
             # reproject to EPSG:3031
             reprojected = cut.rio.reproject("epsg:3031")
-            assert reprojected.rio.crs == "EPSG:3031"
 
             # need to save to .nc and reload, issues with pygmt
             reprojected.to_netcdf("tmp.nc")
@@ -1050,6 +1063,16 @@ def bedmachine(
     Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/1.
     Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
+
+    Surface and ice thickness are in ice equivalents. Actually snow surface is from
+    REMA (Howat et al. 2019), and has had firn thickness removed from it to get
+    Bedmachine Surface.
+
+    To get snow surface: surface+firn
+    To get firn and ice thickness: thickness+firn
+
+    Here, icebase will return a grid of surface-thickness
+    This should be the same as snow-surface - (firn and ice thickness)
 
     Parameters
     ----------
@@ -1182,6 +1205,7 @@ def bedmap2(
     region=None,
     spacing=None,
     registration=None,
+    fill_nans=False,
 ) -> xr.DataArray:
     """
     Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
@@ -1193,8 +1217,9 @@ def bedmap2(
     ----------
     layer : str
         choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'gl04c_geiod_to_WGS84', 'icebase' will give
-        results of surface-thickness
+        "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
+        "lakemask_vostok", "rockmask", "surface", "thickness",
+        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
     reference : str
         choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
         (WGS84), by default is 'geoid'
@@ -1331,11 +1356,12 @@ def bedmap2(
     else:
         final_grid = resampled
 
-    # # replace nans with 0's
-    # if layer in ["surface", "thickness"]:
-    #     # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-    #     # this changes the registration from pixel to gridline
-    #     final_grid = final_grid.fillna(0)
+    # replace nans with 0's
+    if fill_nans is True:
+        if layer in ["surface", "thickness", "icebase"]:
+            # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+            # this changes the registration from pixel to gridline
+            final_grid = final_grid.fillna(0)
 
     if plot is True:
         final_grid.plot(robust=True)
@@ -1667,6 +1693,74 @@ def gravity(
     return resampled
 
 
+def ROSETTA_gravity(shapefile: bool = False):
+    """
+    Load either a shapefile of ROSETTA-ice flightliens, or a dataframe of ROSETTA-Ice
+    airborne gravity data over the Ross Ice Shelf.
+    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
+    https://doi.org/10.1038/s41561‐019‐0370‐2
+    Accessed from https://www.usap-dc.org/view/project/p0010035
+
+    This is only data from the first 2 of the 3 field seasons.
+
+    Columns:
+    Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
+    Latitude (degrees): Latitude decimal degrees WGS84
+    Longitude (degrees): Longitude decimal degrees WGS84
+    unixtime (seconds): The number of seconds that have elapsed since midnight
+        (00:00:00 UTC) on January 1st, 1970
+    Height (meters): Height above WGS84 ellipsoid
+    x (meters): Polar stereographic projected coordinates true to scale at 71° S
+    y (meters): Polar stereographic projected coordinates true to scale at 71° S
+    FAG_levelled (mGal): Levelled free air gravity (centered on 0)
+
+    Parameters
+    ----------
+    shapefile : bool, optional
+        If true, instead return a shapefile of flight line locations
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a dataframe containing the gravity data
+    """
+
+    if shapefile is True:
+        path = pooch.retrieve(
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
+            fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+            processor=pooch.Unzip(),
+        )
+        # path to shapefile
+        fname = [p for p in path if p.endswith(".shp")][0]
+
+        # read the file into a geodataframe
+        df = pyogrio.read_dataframe(fname)
+    else:
+        path = pooch.retrieve(
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
+            fname="ROSETTA_2019_grav.csv",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        df = pd.read_csv(path)
+
+        # convert line numbers into float format (L200 -> 200)
+        df.Line = df.Line.str[1:]
+        df["Line"] = pd.to_numeric(df["Line"])
+
+        # center grav data on 0
+        df["FAG_levelled"] -= df.FAG_levelled.mean()
+
+    return df
+
+
 def magnetics(
     version: str,
     plot: bool = False,
@@ -1917,21 +2011,28 @@ def ghf(
                 # load grid
                 grid = xr.load_dataarray(fname)
 
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon": "x", "lat": "y"})
+
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    spacing=initial_spacing,
-                )
-                # get just antarctica region
-                processed = pygmt.grdsample(
-                    grid2,
+                reprojected = grid.rio.reproject("epsg:3031")
+
+                # need to save to .nc and reload, issues with pygmt
+                reprojected.to_netcdf("tmp.nc")
+                processed = xr.load_dataset("tmp.nc").z
+
+                # get just antarctica region and save to disk
+                pygmt.grdsample(
+                    processed,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -2043,19 +2144,37 @@ def ghf(
             info = False
             plot = False
             # read the excel file with pandas
-            GHF_points = pd.read_excel(file)
+            df = pd.read_excel(file)
+
+            # drop 2 extra columns
+            df.drop(columns=["Unnamed: 15", "Unnamed: 16"], inplace=True)
+
+            # remove numbers from all column names
+            df.columns = df.columns.str[4:]
+
+            # rename some columns, remove symbols
+            df.rename(
+                columns={
+                    "Latitude": "lat",
+                    "Longitude": "lon",
+                    "grad (°C/km)": "grad",
+                    "GHF (mW/m²)": "GHF",
+                    "Err (mW/m²)": "err",
+                },
+                inplace=True,
+            )
+
+            # drop few rows without coordinates
+            df.dropna(subset=["lat", "lon"], inplace=True)
 
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-            GHF_points["x"], GHF_points["y"] = transformer.transform(
-                GHF_points["(1) Latitude"].tolist(),
-                GHF_points["(2) Longitude"].tolist(),
-            )  # noqa
+            df["x"], df["y"] = transformer.transform(
+                df["lat"].tolist(),
+                df["lon"].tolist(),
+            )
 
-            # rename
-            GHF_points["GHF"] = GHF_points["(8) GHF (mW/m²)"]
-
-            resampled = GHF_points
+            resampled = df
 
         elif kwargs.get("points", False) is False:
             file = [p for p in path if p.endswith("Mean.tif")][0]
@@ -2130,15 +2249,14 @@ def ghf(
                     # spacing=initial_spacing,
                 )
 
-                processed = pygmt.grdsample(
+                pygmt.grdsample(
                     reprojected,
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
 
-                # Save to disk
-                processed.to_netcdf(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -2333,7 +2451,7 @@ def gia(
             registration = initial_registration
 
         path = pooch.retrieve(
-            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",  # noqa
+            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
             fname="stal_2020_gia.tiff",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gia",
             known_hash=None,
@@ -2519,21 +2637,24 @@ def crustal_thickness(
                 # convert to meters
                 grid = grid * 1000
 
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon": "x", "lat": "y"})
+
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    spacing=initial_spacing,
-                )
-                # get just antarctica region
-                processed = pygmt.grdsample(
-                    grid2,
+                reprojected = grid.rio.reproject("EPSG:3031")
+
+                # get just antarctica region and save to disk
+                pygmt.grdsample(
+                    reprojected,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -2587,6 +2708,17 @@ def moho(
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
     Appears to be almost identical to crustal thickness from Shen et al. 2018
 
+    version='an-2015'
+    This is fetch.crustal_thickness(version='an-2015)* -1
+    Documentation is unclear whether the An crust model is crustal thickness or moho
+    depths, or whether it makes a big enough difference to matter.
+
+    version='pappa-2019'
+    from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica:
+    Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics,
+    Geosystems, 20, 1629– 1645.
+    https://doi.org/10.1029/2018GC008111
+    Accessed from supplement material
 
     Parameters
     ----------
@@ -2716,6 +2848,44 @@ def moho(
             region,
             registration,
         )
+
+    elif version == "pappa-2019":
+        print("Pappa et al. 2019 moho model download is not working currently.")
+        # resampled = pooch.retrieve(
+        #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",  # noqa
+        #     fname="pappa_moho.zip",
+        #     path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
+        #     known_hash=None,
+        #     progressbar=True,
+        #     processor=pooch.Unzip(extract_dir="pappa_moho"),
+        # )
+        # fname='/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd' # noqa
+        # grid = pygmt.load_dataarray(fname)
+        # Moho_Pappa = grid.to_dataframe().reset_index()
+        # Moho_Pappa.z=Moho_Pappa.z.apply(lambda x:x*-1000)
+
+        # transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        # Moho_Pappa['x'], Moho_Pappa['y'] = transformer.transform(
+        #   Moho_Pappa.lat.tolist(),
+        # Moho_Pappa.lon.tolist())
+
+        # Moho_Pappa = pygmt.blockmedian(
+        #   Moho_Pappa[['x','y','z']],
+        #   spacing=10e3,
+        #   registration='g',
+        #   region='-1560000/1400000/-2400000/560000',
+        # )
+
+        # fname='inversion_layers/Pappa_moho.nc'
+
+        # pygmt.surface(
+        #   Moho_Pappa[['x','y','z']],
+        #   region='-1560000/1400000/-2400000/560000',
+        #   spacing=10e3,
+        #   registration='g',
+        #   M='1c',
+        #   outgrid=fname,
+        # )
 
     else:
         raise ValueError("invalid version string")

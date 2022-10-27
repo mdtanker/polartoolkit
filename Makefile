@@ -11,8 +11,13 @@ help:
 	@echo "  check     run code style and quality checks"
 	@echo "  clean     clean up build and generated files"
 	@echo ""
-
+#
+#
+#
 # ENVIRONMENTS
+#
+#
+#
 # main
 install:
 	pip install -e .
@@ -54,8 +59,13 @@ binder_yml:
 	mamba env export --name antarctic_plots_binder --from-history --no-build > binder/environment.yml
 
 update_binder: binder_env  binder_yml
-
+#
+#
+#
 # TESTING
+#
+#
+#
 test:
 	pytest --cov=. -rs
 
@@ -64,8 +74,13 @@ test_fast:
 
 test_fast_no_earthdata:
 	pytest --cov=. -rs -m "not slow or not earthdata"
-
+#
+#
+#
 # STYLE
+#
+#
+#
 format: isort black license-add
 
 check: isort-check black-check license-check flake8
@@ -90,8 +105,13 @@ license-check:
 
 flake8:
 	flake8p $(STYLE_CHECK_FILES) --exclude=*/_build/*
-
+#
+#
+#
 # DOCUMENTATION
+#
+#
+#
 run_gallery:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
 
@@ -109,8 +129,13 @@ build_docs:
 	jupyter-book build docs/
 	@echo
 	@echo "Build finished. The HTML pages are in docs/build/html."
-
+#
+#
+#
 # PACKAGING
+#
+#
+#
 package:
 	poetry build
 

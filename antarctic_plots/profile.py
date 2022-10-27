@@ -6,11 +6,16 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
+from typing import TYPE_CHECKING, Union
+
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
+
+if TYPE_CHECKING:
+    import xarray as xr
 
 from antarctic_plots import fetch, maps, regions, utils
 
@@ -21,8 +26,7 @@ except ImportError:
 else:
     _has_ipyleaflet = True
 
-import contextlib
-import os
+from contextlib import redirect_stderr, redirect_stdout
 
 
 def create_profile(
@@ -129,7 +133,11 @@ def create_profile(
     return df_out
 
 
-def sample_grids(df, grid, name: str = None):
+def sample_grids(
+    df: pd.DataFrame,
+    grid: Union[str or xr.DataArray],
+    name: str = None,
+):
     """
     Sample data at every point along a line
 
@@ -150,9 +158,16 @@ def sample_grids(df, grid, name: str = None):
     if name is None:
         name = grid
 
-    df[name] = (pygmt.grdtrack(points=df[["x", "y"]], grid=grid, newcolname=str(name)))[
-        name
-    ]
+    # sample the grid at all x,y points
+    sampled = pygmt.grdtrack(
+        points=df[["x", "y"]],
+        grid=grid,
+        newcolname=str(name),
+    )
+
+    # add sampled data to dataframe
+    df[name] = (sampled)[name]
+
     return df
 
 
@@ -236,7 +251,7 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
 
 def default_layers(version, region=None) -> dict:
     """
-    Fetch default Bedmachine layers.
+    Fetch default ice surface, ice base, and bed layers.
 
     Parameters
     ----------
@@ -252,8 +267,8 @@ def default_layers(version, region=None) -> dict:
         region = regions.antarctica
 
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region)
-        icebase = fetch.bedmap2("icebase", region=region)
+        surface = fetch.bedmap2("surface", region=region)  # , fill_nans=True)
+        icebase = fetch.bedmap2("icebase", region=region)  # , fill_nans=True)
         bed = fetch.bedmap2("bed", region=region)
 
     elif version == "bedmachine":
@@ -299,14 +314,14 @@ def default_data(region=None) -> dict:
 
     mag = fetch.magnetics(
         version="admap1",
-        region=region,
-        spacing=10e3,
+        # region=region,
+        # spacing=10e3,
     )
     FA_grav = fetch.gravity(
         version="antgg-update",
         anomaly_type="FA",
-        region=region,
-        spacing=10e3,
+        # region=region,
+        # spacing=10e3,
     )
     data_names = [
         "ADMAP-1 magnetics",
@@ -332,7 +347,9 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
-    layers_version="bedmap2",
+    layers_version="bedmachine",
+    fig_height: float = 9,
+    fig_width: float = 14,
     **kwargs,
 ):
     """
@@ -341,7 +358,7 @@ def plot_profile(
     Parameters
     ----------
     method : str
-        Choose the sample method, either 'points', or 'shapefile'.
+        Choose sampling method, either "points", "shapefile", or "polyline"
     layers_dict : dict, optional
         nested dictionary of layers to include in cross-section, construct with
         `profile.make_data_dict`, by default is Bedmap2 layers.
@@ -352,7 +369,10 @@ def plot_profile(
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
         choose between using 'bedmap2' or 'bedmachine' layers, by default is 'bedmap2'
-
+    fig_height : float, optional
+        Set the height of the figure (excluding the map) in cm, by default is 9.
+    fig_width : float, optional
+        Set the width of the figure (excluding the map) in cm, by default is 14.
     Keyword Args
     ------------
     fillnans: bool
@@ -391,19 +411,22 @@ def plot_profile(
         Filename for saving image, by default is None.
     """
     inset = kwargs.get("inset", True)
-    inset_pos = kwargs.get("inset_pos", "TL")
-
     points = create_profile(method, **kwargs)
-
-    data_region = vd.get_region((points.x, points.y))
+    subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
+    grid_lines = kwargs.get("grid_lines", True)
+    map_points = kwargs.get("map_points", None)
+    coast = kwargs.get("coast", True)
 
     if layers_dict is None:
-        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-            layers_dict = default_layers(layers_version, region=data_region)
+        with redirect_stdout(None), redirect_stderr(None):
+            layers_dict = default_layers(
+                layers_version,
+                region=vd.get_region((points.x, points.y)),
+            )
 
     if data_dict == "default":
-        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-            data_dict = default_data(data_region)
+        with redirect_stdout(None), redirect_stderr(None):
+            data_dict = default_data(region=vd.get_region((points.x, points.y)))
 
     # sample cross-section layers from grids
     for k, v in layers_dict.items():
@@ -430,68 +453,192 @@ def plot_profile(
 
     fig = pygmt.Figure()
 
+    # PLOT CROSS SECTION AND DATA
+    # get max and min of all the layers
+    layers_min = df_layers[df_layers.columns[3:]].min().min()
+    layers_max = df_layers[df_layers.columns[3:]].max().max()
+    # add space above and below top and bottom of cross-section
+    y_buffer = (layers_max - layers_min) * kwargs.get("layer_buffer", 0.1)
+    # set region for x-section
+    layers_reg = [
+        df_layers.dist.min(),
+        df_layers.dist.max(),
+        layers_min - y_buffer,
+        layers_max + y_buffer,
+    ]
+    # if there is data to plot as profiles, set region and plot them, if not,
+    # make region for x-section fill space
+    if data_dict is not None:
+        # if using a shared y-axis for data, get overall max and min values
+        if kwargs.get("share_yaxis", False) is True:
+            data_min = df_data[df_data.columns[3:]].min().min()
+            data_max = df_data[df_data.columns[3:]].max().max()
+
+            # add space above and below top and bottom of graph
+            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+
+            # set frame
+            frame = [
+                "neSW",
+                "ag",
+            ]
+
+        # height of data and layers, plus 0.5cm margin equals total figure height
+        data_height = kwargs.get("data_height", 2.5)
+        layers_height = fig_height - 0.5 - data_height
+
+        data_projection = f"X{fig_width}c/{data_height}c"
+        layers_projection = f"X{fig_width}c/{layers_height}c"
+
+        try:
+            for k, v in data_dict.items():
+                # if using individual y-axes for data, get individual max/mins
+                if kwargs.get("share_yaxis", False) is False:
+                    data_min = df_data[k].min()
+                    data_max = df_data[k].max()
+
+                    # add space above and below top and bottom of graph
+                    y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+
+                    # turn off frame tick labels
+                    frame = [
+                        "neSw",
+                        "xag",
+                    ]
+
+                # set region for data
+                data_reg = [
+                    df_data.dist.min(),
+                    df_data.dist.max(),
+                    data_min - y_buffer,
+                    data_max + y_buffer,
+                ]
+
+                fig.plot(
+                    region=data_reg,
+                    projection=data_projection,
+                    frame=frame,
+                    x=df_data.dist,
+                    y=df_data[k],
+                    pen=f"2p,{v['color']}",
+                    label=v["name"],
+                )
+            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
+            # shift origin up by height of the data profile plus 1/2 cm buffer
+            fig.shift_origin(yshift=f"{data_height+0.5}c")
+            # setup cross-section plot
+            fig.basemap(region=layers_reg, projection=layers_projection, frame=True)
+        except Exception:
+            print("error plotting data profiles")
+    else:
+        # if no data, make xsection fill space
+        fig.basemap(
+            region=layers_reg, projection=f"X{fig_width}c/{fig_height}c", frame=True
+        )
+
+    # plot colored df_layers
+    for i, (k, v) in enumerate(layers_dict.items()):
+        fig.plot(
+            x=df_layers.dist,
+            y=df_layers[k],
+            # close the polygons,
+            close="+yb",
+            color=v["color"],
+            frame=["nSew", "a"],
+        )
+
+    # plot lines between df_layers
+    for k, v in layers_dict.items():
+        fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
+
+    # plot 'A','B' locations
+    fig.text(
+        x=layers_reg[0],
+        y=layers_reg[3],
+        text="A",
+        font="20p,Helvetica,black",
+        justify="CM",
+        fill="white",
+        no_clip=True,
+    )
+    fig.text(
+        x=layers_reg[1],
+        y=layers_reg[3],
+        text="B",
+        font="20p,Helvetica,black",
+        justify="CM",
+        fill="white",
+        no_clip=True,
+    )
+
     if add_map is True:
         # Automatic data extent + buffer as % of line length
-        df_reg = vd.get_region((df_layers.x, df_layers.y))
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
-        fig_reg = utils.alter_region(df_reg, buffer=buffer)[1]
+        map_reg = utils.alter_region(
+            vd.get_region((df_layers.x, df_layers.y)), buffer=buffer
+        )[1]
+
         # Set figure parameters
-        fig_proj, fig_proj_ll, fig_width, fig_height = utils.set_proj(
-            fig_reg, fig_height=9
-        )
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
+                map_reg,
+                fig_height=fig_height,
+            )
+            # shift map to the left with 1 cm margin
+            if data_dict is not None:
+                fig.shift_origin(
+                    xshift=f"-{map_width+1}c", yshift=f"-{data_height+.5}c"
+                )
+            else:
+                fig.shift_origin(xshift=f"-{map_width+1}c")
+        elif subplot_orientation == "vertical":
+            # if shifting vertically, set map width to match graph width
+            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
+                map_reg,
+                fig_width=fig_width,
+            )
+            # shift map up with a 1/2 cm margin
+            if data_dict is not None:
+                fig.shift_origin(yshift=f"{layers_height+.5}c")
+            else:
+                fig.shift_origin(yshift=f"{fig_height+.5}c")
+        else:
+            raise ValueError("invalid subplot_orientation string")
 
-        fig.coast(
-            region=fig_reg,
-            projection=fig_proj_ll,
-            land="grey",
-            water="grey",
-            frame=["nwse", "xf100000", "yf100000", "g0"],
-            verbose="q",
-        )
-
+        # plot imagery, or supplied grid as background
         fig.grdimage(
-            projection=fig_proj,
+            region=map_reg,
+            projection=map_proj,
             grid=kwargs.get("map_background", fetch.imagery()),
             cmap=kwargs.get("map_cmap", "earth"),
             verbose="q",
         )
 
         # plot groundingline and coastlines
-        fig.plot(
-            data=fetch.groundingline(),
-            pen="1.2p,black",
-        )
-
-        # Plot graticules overtop, at 4d latitude and 30d longitude
-        with pygmt.config(
-            MAP_ANNOT_OFFSET_PRIMARY="-2p",
-            MAP_FRAME_TYPE="inside",
-            MAP_ANNOT_OBLIQUE=0,
-            FONT_ANNOT_PRIMARY="6p,black,-=2p,white",
-            MAP_GRID_PEN_PRIMARY="grey",
-            MAP_TICK_LENGTH_PRIMARY="-10p",
-            MAP_TICK_PEN_PRIMARY="thinnest,grey",
-            FORMAT_GEO_MAP="dddF",
-            MAP_POLAR_CAP="90/90",
-        ):
-            fig.basemap(
-                projection=fig_proj_ll,
-                region=fig_reg,
-                frame=["NSWE", "xa30g15", "ya4g2"],
-                verbose="q",
+        if coast is True:
+            maps.add_coast(
+                fig,
+                map_reg,
+                map_proj,
+                pen=kwargs.get("coast_pen", "1.2p,black"),
+                no_coast=kwargs.get("no_coast", False),
             )
-            with pygmt.config(FONT_ANNOT_PRIMARY="6p,black"):
-                fig.basemap(
-                    projection=fig_proj_ll,
-                    region=fig_reg,
-                    frame=["NSWE", "xa30", "ya4"],
-                    verbose="q",
-                )
+
+        # add lat long grid lines
+        if grid_lines is True:
+            maps.add_gridlines(
+                fig,
+                map_reg,
+                map_proj_ll,
+                x_annots=kwargs.get("x_annots", 30),
+                y_annots=kwargs.get("y_annots", 4),
+            )
 
         # plot profile location, and endpoints on map
         fig.plot(
-            projection=fig_proj,
-            region=fig_reg,
+            projection=map_proj,
+            region=map_reg,
             x=df_layers.x,
             y=df_layers.y,
             pen="2p,red",
@@ -515,149 +662,143 @@ def plot_profile(
             clearance="+tO",
         )
 
+        # add x,y points to plot
+        if map_points is not None:
+            fig.plot(
+                x=map_points.x,
+                y=map_points.y,
+                style=kwargs.get("map_points_style", "x.15c"),
+                pen=kwargs.get("map_points_pen", ".2p,blue"),
+                color=kwargs.get("map_points_color", "blue"),
+            )
+
         # add inset map
         if inset is True:
-            inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
-            inset_map = f"X{fig_width*.25}c"
+            maps.add_inset(
+                fig,
+                map_reg,
+                map_width,
+                inset_pos=kwargs.get("inset_pos", "TL"),
+                inset_width=kwargs.get("inset_width", 0.25),
+                inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
+            )
 
-            with fig.inset(
-                position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
-                verbose="q",
-            ):
-                # gdf = gpd.read_file(fetch.groundingline())
-                gdf = pyogrio.read_dataframe(fetch.groundingline())
-                fig.plot(
-                    projection=inset_map,
-                    region=inset_reg,
-                    data=gdf[gdf.Id_text == "Ice shelf"],
-                    color="skyblue",
-                )
-                fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-                fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+    fig.show()
 
-                fig.plot(
-                    x=[
-                        fig_reg[0],
-                        fig_reg[0],
-                        fig_reg[1],
-                        fig_reg[1],
-                        fig_reg[0],
-                    ],
-                    y=[
-                        fig_reg[2],
-                        fig_reg[3],
-                        fig_reg[3],
-                        fig_reg[2],
-                        fig_reg[2],
-                    ],
-                    pen="1p,black",
-                )
-        # shift figure to make space for x-section and profiles
-        if kwargs.get("subplot_orientation", None) == "vertical":
-            fig.shift_origin(yshift=(fig_height) + 1)
-        else:
-            fig.shift_origin(xshift=(fig_width) + 1)
+    if kwargs.get("save") is True:
+        if kwargs.get("path") is None:
+            raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
+        fig.savefig(kwargs.get("path"), dpi=300)
 
-    # PLOT CROSS SECTION AND PROFILES
-    # add space above and below top and bottom of cross-section
-    min = df_layers[df_layers.columns[3:]].min().min()
-    max = df_layers[df_layers.columns[3:]].max().max()
-    y_buffer = (max - min) * kwargs.get("layer_buffer", 0.1)
-    # set region for x-section
-    fig_reg = [
-        df_layers.dist.min(),
-        df_layers.dist.max(),
-        min - y_buffer,
-        max + y_buffer,
-    ]
-    # if data for profiles is set, set region and plot them, if not,
-    # make region for x-section fill space
-    if data_dict is not None:
-        try:
-            for k, v in data_dict.items():
-                # add space above and below top and bottom of cross-section
-                min = df_data[k].min()
-                max = df_data[k].max()
-                y_buffer = (max - min) * kwargs.get("data_buffer", 0.1)
-                region_data = [
-                    df_data.dist.min(),
-                    df_data.dist.max(),
-                    min - y_buffer,
-                    max + y_buffer,
-                ]
-                fig.plot(
-                    region=region_data,
-                    projection="X9c/2.5c",
-                    frame=["nSew", "ag"],
-                    x=df_data.dist,
-                    y=df_data[k],
-                    pen=f"2p,{v['color']}",
-                    label=v["name"],
-                )
-            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
-            fig.shift_origin(yshift="h+.5c")
-            fig.basemap(region=fig_reg, projection="X9c/6c", frame=True)
-        except Exception:
-            print("error plotting data profiles")
-    else:
-        fig.basemap(region=fig_reg, projection="X9c/9c", frame=True)
 
-    # plot colored df_layers
-    for i, (k, v) in enumerate(layers_dict.items()):
+def plot_data(
+    method: str,
+    data_dict: dict,
+    **kwargs,
+):
+    """
+    Sample and plot data along a path.
+
+    Parameters
+    ----------
+    method : str
+        Choose sampling method, either "points", "shapefile", or "polyline"
+    data_dict : dict
+        nested dictionary of data to include in option graph, construct with
+        `profile.make_data_dict`.
+
+    Keyword Args
+    ------------
+    fillnans: bool
+        Choose whether to fill nans in layers, defaults to True.
+    clip: bool
+        Choose whether to clip the profile based on distance.
+    num: int
+        Number of points to sample at along a line.
+    max_dist: int
+        Clip all distances greater than.
+    min_dist: int
+        Clip all distances less than.
+    data_buffer: float (0-1)
+        Change vertical white space within data graph, by default is 0.1.
+    legend_loc: str
+        Change the legend location with a GMT position string, by default is
+        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
+        Right corner of the plot, with 0 offset.
+    save: bool
+        Choose to save the image, by default is False.
+    path: str
+        Filename for saving image, by default is None.
+    """
+    points = create_profile(method, **kwargs)
+    fig_height = kwargs.get("fig_height", 5)
+    fig_width = kwargs.get("fig_width", 10)
+    pen_width = kwargs.get("pen_width", "1.5p")
+
+    points = points[["x", "y", "dist"]].copy()
+    for k, v in data_dict.items():
+        df_data = sample_grids(points, v["grid"], name=v["name"])
+
+    # shorten profiles
+    if kwargs.get("clip") is True:
+        if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
+            raise ValueError(
+                f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
+            )
+        df_data = shorten(df_data, **kwargs)
+
+    fig = pygmt.Figure()
+
+    # if using a shared y-axis for data, get overall max and min values
+    if kwargs.get("share_yaxis", False) is True:
+        data_min = df_data[df_data.columns[3:]].min().min()
+        data_max = df_data[df_data.columns[3:]].max().max()
+        # add space above and below top and bottom of graph
+        y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+        # set region for data
+        region_data = [
+            df_data.dist.min(),
+            df_data.dist.max(),
+            data_min - y_buffer,
+            data_max + y_buffer,
+        ]
+        # set frame
+        frame = [
+            "neSW",
+            "ag",
+        ]
+
+    data_projection = f"X{fig_width}c/{fig_height}c"
+
+    for k, v in data_dict.items():
+        if kwargs.get("share_yaxis", False) is False:
+            # if using individual y-axes for data, get individual max/mins
+            data_min = df_data[k].min()
+            data_max = df_data[k].max()
+            # add space above and below top and bottom of graph
+            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+            region_data = [
+                df_data.dist.min(),
+                df_data.dist.max(),
+                data_min - y_buffer,
+                data_max + y_buffer,
+            ]
+            # turn off frame tick labels
+            frame = [
+                "neSw",
+                "xag",
+            ]
+
         fig.plot(
-            x=df_layers.dist,
-            y=df_layers[k],
-            close="+yb",
-            color=v["color"],
-            frame=["nSew", "a"],
+            region=region_data,
+            projection=data_projection,
+            frame=frame,
+            x=df_data.dist,
+            y=df_data[k],
+            pen=f"{pen_width},{v['color']}",
+            label=v["name"],
         )
-        # if i == len(layers_dict)-1:
-        #     fig.plot(
-        #         x=df_layers.dist,
-        #         y=df_layers[k],
-        #         close="+yb",
-        #         color=v["color"],
-        #         frame=["nSew", "a"],
-        #     )
-        #     fig.plot(
-        #         x=df_layers.dist,
-        #         y=df_layers[k],
-        #         close="+yb",
-        #         color=v["color"],
-        #         frame=["nSew", "a"],
-        #     )
-        # else:
-        #     fig.plot(
-        #         x=df_layers.dist,
-        #         y=df_layers[k],
-        #         close="+yb",
-        #         color=v["color"],
-        #         frame=["nSew", "a"],
-        #     )
-
-    # plot lines between df_layers
-    for k, v in layers_dict.items():
-        fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
-
-    # plot 'A','B' locations
-    fig.text(
-        x=fig_reg[0],
-        y=fig_reg[3],
-        text="A",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
-        no_clip=True,
-    )
-    fig.text(
-        x=fig_reg[1],
-        y=fig_reg[3],
-        text="B",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
-        no_clip=True,
-    )
+    fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
 
     fig.show()
 

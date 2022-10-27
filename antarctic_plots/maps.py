@@ -8,17 +8,16 @@
 
 import warnings
 from math import floor, log10
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
+import geopandas as gpd
+import numpy as np
+import pandas as pd
 import pygmt
 import pyogrio
 import xarray as xr
 
 from antarctic_plots import fetch, regions, utils
-
-if TYPE_CHECKING:
-    import geopandas as gpd
-    import numpy as np
 
 try:
     import ipyleaflet
@@ -27,6 +26,106 @@ except ImportError:
     _has_ipyleaflet = False
 else:
     _has_ipyleaflet = True
+
+
+def basemap(
+    region: Union[str or np.ndarray] = None,
+    fig_height: float = 15,
+    fig_width: float = None,
+    origin_shift: str = "initialize",
+    **kwargs,
+):
+    # set figure projection and size from input region and figure dimensions
+    # by default use figure height to set projection
+    if fig_width is None:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_height=fig_height,
+        )
+    # if fig_width is set, use it to set projection
+    else:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_width=fig_width,
+        )
+
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
+        fig = pygmt.Figure()
+    elif origin_shift == "xshift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
+    elif origin_shift == "yshift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+    elif origin_shift == "both_shift":
+        fig = kwargs.get("fig")
+        fig.shift_origin(
+            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+        )
+    elif origin_shift == "no_shift":
+        fig = kwargs.get("fig")
+
+    # create blank basemap
+    fig.basemap(
+        region=region,
+        projection=proj,
+        frame=[f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
+        verbose="e",
+    )
+
+    # plot coast
+    if kwargs.get("coast", False) is True:
+        add_coast(
+            fig,
+            region,
+            proj,
+            pen=kwargs.get("coast_pen", None),
+            no_coast=kwargs.get("no_coast", False),
+        )
+
+    # add lat long grid lines
+    if kwargs.get("grid_lines", True) is True:
+        add_gridlines(
+            fig,
+            region,
+            proj_latlon,
+            x_annots=kwargs.get("x_annots", 30),
+            y_annots=kwargs.get("y_annots", 4),
+        )
+
+    # add inset map to show figure location
+    if kwargs.get("inset", False) is True:
+        add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
+
+    # add scalebar
+    if kwargs.get("scalebar", False) is True:
+        add_scalebar(
+            fig,
+            region,
+            proj_latlon,
+            font_color=kwargs.get("scale_font_color", "black"),
+            scale_length=kwargs.get("scale_length"),
+            length_perc=kwargs.get("scale_length_perc", 0.25),
+            position=kwargs.get("scale_position", "n.5/.05"),
+        )
+
+    # blank plotting call to reset projection to EPSG:3031, optionall add title
+    if kwargs.get("title", None) is None:
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame="wesn",
+        )
+    else:
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame=f"wesn+t{kwargs.get('title')}",
+        )
+
+    return fig
 
 
 def plot_grd(
@@ -169,22 +268,29 @@ def plot_grd(
             grid=grid,
             region=cmap_region,
             background=True,
-            continuous=True,
+            continuous=kwargs.get("continuous", True),
+            color_model=kwargs.get("color_model", "R"),
+            categorical=kwargs.get("categorical", False),
             verbose="e",
         )
     elif cpt_lims is not None:
         try:
             pygmt.makecpt(
                 cmap=cmap,
-                background=True,
-                # continuous=True,
                 series=cpt_lims,
+                background=True,
+                continuous=kwargs.get("continuous", False),
+                color_model=kwargs.get("color_model", "R"),
+                categorical=kwargs.get("categorical", False),
                 verbose="e",
             )
         except (pygmt.exceptions.GMTCLibError):
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
+                continuous=kwargs.get("continuous", False),
+                color_model=kwargs.get("color_model", "R"),
+                categorical=kwargs.get("categorical", False),
                 verbose="e",
             )
     else:
@@ -193,7 +299,7 @@ def plot_grd(
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
-                continuous=True,
+                continuous=kwargs.get("continuous", True),
                 series=(zmin, zmax),
                 verbose="e",
             )
@@ -203,7 +309,7 @@ def plot_grd(
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
-                continuous=True,
+                continuous=kwargs.get("continuous", True),
                 verbose="e",
             )
 
@@ -214,7 +320,7 @@ def plot_grd(
         projection=proj,
         region=region,
         nan_transparent=True,
-        frame=["+gwhite"],
+        frame=[f"+g{kwargs.get('background', 'white')}"],
         verbose="q",
     )
 
@@ -285,8 +391,8 @@ def plot_grd(
 
 def add_coast(
     fig: pygmt.figure,
-    region: Union[str or np.ndarray],
-    projection: str,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
     no_coast: bool = False,
     pen=None,
 ):
@@ -296,10 +402,10 @@ def add_coast(
     Parameters
     ----------
     fig : pygmt.figure
-    region : Union[str or np.ndarray]
-        region for the figure
-    projection : str
-        GMT projection string
+    region : Union[str or np.ndarray], optional
+        region for the figure, by default is last used by PyGMT
+    projection : str, optional
+        GMT projection string, by default is last used by PyGMT
     no_coast : bool
         If True, only plot groundingline, not coastline, by default is False
     pen : None
@@ -381,6 +487,9 @@ def add_inset(
     region: Union[str or np.ndarray],
     fig_width: Union[int, float],
     inset_pos: str = "TL",
+    inset_width: float = 0.25,
+    inset_reg: list = [-2800e3, 2800e3, -2800e3, 2800e3],
+    **kwargs,
 ):
     """
     add an inset map showing the figure region relative to the Antarctic continent.
@@ -394,12 +503,17 @@ def add_inset(
         width of figure in cm
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
+    inset_width : float, optional
+        Inset width as percentage of the total figure width, by default is 25% (0.25)
+    inset_reg : list, optional
+        Region of Antarctica to plot for the inset map, by default is whole continent
     """
-    inset_reg = [-2800e3, 2800e3, -2800e3, 2800e3]
-    inset_map = f"X{fig_width*.25}c"
+    coast_pen = kwargs.get("coast_pen", "0.2,black")
+
+    inset_map = f"X{fig_width*inset_width}c"
 
     with fig.inset(
-        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*.25}c",
+        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
         verbose="q",
     ):
         gdf = pyogrio.read_dataframe(fetch.groundingline())
@@ -410,7 +524,7 @@ def add_inset(
             color="skyblue",
         )
         fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen="0.2p,black")
+        fig.plot(data=fetch.groundingline(), pen=coast_pen)
 
         fig.plot(
             x=[
@@ -496,10 +610,12 @@ def add_box(
 
 
 def interactive_map(
-    center_xy=[0, 0],
-    zoom=0,
-    display_xy=True,
-    show=True,
+    center_yx: list = None,
+    zoom: float = 0,
+    display_xy: bool = True,
+    show: bool = True,
+    points: pd.DataFrame = None,
+    **kwargs,
 ):
     """
     Plot an interactive map with satellite imagery. Clicking gives the cursor location
@@ -507,24 +623,54 @@ def interactive_map(
 
     Parameters
     ----------
-    center_xy : list, optional
-        choose center coordinates in EPSG3031 [x,y], by default [0,0]
-    zoom : int, optional
+    center_yx : list, optional
+        choose center coordinates in EPSG3031 [y,x], by default [0,0]
+    zoom : float, optional
         choose zoom level, by default 0
     display_xy : bool, optional
         choose if you want clicks to show the xy location, by default True
     show : bool, optional
         choose whether to displat the map, by default True
+    points : pd.DataFrame, optional
+        choose to plot points suppied as columns x, y, in EPSG:3031 in a dataframe
     """
 
     if not _has_ipyleaflet:
         raise ImportError(
             "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
         )
-    layout = ipywidgets.Layout(width="800px", height="800px")
+    layout = ipywidgets.Layout(
+        width=kwargs.get("width", "auto"),
+        height=kwargs.get("height", None),
+    )
 
-    center_ll = utils.epsg3031_to_latlon(center_xy)
+    # if points are supplied, center map on them and plot them
+    if points is not None:
+        if kwargs.get("points_as_latlon", False) is True:
+            center_ll = [points.lon.mean(), points.lat.mean()]
+        else:
+            # convert points to lat lon
+            points_ll = utils.epsg3031_to_latlon(points)
+            # if points supplied, center map on points
+            center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
+            # add points to geodataframe
+            gdf = gpd.GeoDataFrame(
+                points_ll,
+                geometry=gpd.points_from_xy(points_ll.lon, points_ll.lat),
+            )
+            geo_data = ipyleaflet.GeoData(
+                geo_dataframe=gdf,
+                # style={'radius': .5, 'color': 'red', 'weight': .5},
+                point_style={"radius": 1, "color": "red", "weight": 1},
+            )
+    else:
+        # if no points, center map on 0, 0
+        center_ll = utils.epsg3031_to_latlon([0, 0])
 
+    if center_yx is not None:
+        center_ll = utils.epsg3031_to_latlon(center_yx)
+
+    # create the map
     m = ipyleaflet.Map(
         center=center_ll,
         zoom=zoom,
@@ -533,6 +679,10 @@ def interactive_map(
         crs=ipyleaflet.projections.EPSG3031,
         dragging=True,
     )
+
+    if points is not None:
+        m.add_layer(geo_data)
+
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
