@@ -2619,21 +2619,24 @@ def crustal_thickness(
                 # convert to meters
                 grid = grid * 1000
 
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon":'x', "lat":'y'})
+
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    spacing=initial_spacing,
-                )
-                # get just antarctica region
+                reprojected = grid.rio.reproject("EPSG:3031")
+
+                # get just antarctica region and save to disk
                 processed = pygmt.grdsample(
-                    grid2,
+                    reprojected,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+
             return str(fname_processed)
 
         path = pooch.retrieve(
