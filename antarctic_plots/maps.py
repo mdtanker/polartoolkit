@@ -76,6 +76,16 @@ def basemap(
         frame = [f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
         verbose='e')
 
+    # plot coast
+    if kwargs.get('coast', False) is True:
+        add_coast(
+            fig,
+            region,
+            proj,
+            pen=kwargs.get("coast_pen", None),
+            no_coast=kwargs.get("no_coast", False),
+        )
+
     # add lat long grid lines
     if kwargs.get("grid_lines", True) is True:
         add_gridlines(
