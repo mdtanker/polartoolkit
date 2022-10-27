@@ -8,19 +8,18 @@
 
 import warnings
 from math import floor, log10
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 import pygmt
 import pyogrio
 import xarray as xr
 import pandas as pd
 import verde as vd
+import geopandas as gpd
+import numpy as np
 
 from antarctic_plots import fetch, regions, utils
 
-if TYPE_CHECKING:
-    import geopandas as gpd
-    import numpy as np
 
 try:
     import ipyleaflet
@@ -53,7 +52,7 @@ def basemap(
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
-    fig = pygmt.Figure()
+        fig = pygmt.Figure()
     elif origin_shift == "xshift":
         fig = kwargs.get("fig")
         fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
@@ -413,11 +412,11 @@ def add_coast(
         data = gdf[gdf.Id_text == "Grounded ice or land"]
 
     fig.plot(
-        data,
-        projection=projection,
-        region=region,
-        pen=pen,
-    )
+            data,
+            projection=projection,
+            region=region,
+            pen=pen,
+        )
 
 def add_gridlines(
     fig: pygmt.figure,
@@ -600,10 +599,12 @@ def add_box(
 
 
 def interactive_map(
-    center_xy=[0, 0],
-    zoom=0,
-    display_xy=True,
-    show=True,
+    center_yx: list = None,
+    zoom: float = 0,
+    display_xy: bool = True,
+    show: bool = True,
+    points: pd.DataFrame = None,
+    **kwargs,
 ):
     """
     Plot an interactive map with satellite imagery. Clicking gives the cursor location
@@ -611,24 +612,56 @@ def interactive_map(
 
     Parameters
     ----------
-    center_xy : list, optional
-        choose center coordinates in EPSG3031 [x,y], by default [0,0]
-    zoom : int, optional
+    center_yx : list, optional
+        choose center coordinates in EPSG3031 [y,x], by default [0,0]
+    zoom : float, optional
         choose zoom level, by default 0
     display_xy : bool, optional
         choose if you want clicks to show the xy location, by default True
     show : bool, optional
         choose whether to displat the map, by default True
+    points : pd.DataFrame, optional
+        choose to plot points suppied as columns x, y, in EPSG:3031 in a dataframe
     """
 
     if not _has_ipyleaflet:
         raise ImportError(
             "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
         )
-    layout = ipywidgets.Layout(width="800px", height="800px")
+    layout = ipywidgets.Layout(
+        width=kwargs.get("width", "auto"),
+        height=kwargs.get("height", None),
+        )
 
-    center_ll = utils.epsg3031_to_latlon(center_xy)
 
+
+    # if points are supplied, center map on them and plot them
+    if points is not None:
+        if kwargs.get('points_as_latlon', False) is True:
+            center_ll = [points.lon.mean(), points.lat.mean()]
+        else:
+            # convert points to lat lon
+            points_ll = utils.epsg3031_to_latlon(points)
+            # if points supplied, center map on points
+            center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
+            # add points to geodataframe
+            gdf = gpd.GeoDataFrame(
+                points_ll,
+                geometry=gpd.points_from_xy(points_ll.lon, points_ll.lat),
+                )
+            geo_data = ipyleaflet.GeoData(
+                geo_dataframe=gdf,
+                # style={'radius': .5, 'color': 'red', 'weight': .5},
+                point_style={'radius': 1, 'color': 'red', 'weight': 1},
+                )
+    else:
+        # if no points, center map on 0, 0
+        center_ll = utils.epsg3031_to_latlon([0,0])
+
+    if center_yx is not None:
+        center_ll = utils.epsg3031_to_latlon(center_yx)
+
+    # create the map
     m = ipyleaflet.Map(
         center=center_ll,
         zoom=zoom,
@@ -637,10 +670,14 @@ def interactive_map(
         crs=ipyleaflet.projections.EPSG3031,
         dragging=True,
     )
+
+    if points is not None:
+        m.add_layer(geo_data)
+
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
-        display(label_xy)  # noqa
+        display(label_xy)
 
         def handle_click(**kwargs):
             if kwargs.get("type") == "click":
@@ -650,7 +687,7 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
-        display(m)  # noqa
+        display(m)
 
     return m
 
