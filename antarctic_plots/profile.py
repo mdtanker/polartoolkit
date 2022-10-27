@@ -6,12 +6,13 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
+from typing import TYPE_CHECKING, Union
+
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
-from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     import xarray as xr
@@ -26,7 +27,6 @@ else:
     _has_ipyleaflet = True
 
 from contextlib import redirect_stderr, redirect_stdout
-import os
 
 
 def create_profile(
@@ -160,10 +160,10 @@ def sample_grids(
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
-            points=df[["x", "y"]],
-            grid=grid,
-            newcolname=str(name),
-            )
+        points=df[["x", "y"]],
+        grid=grid,
+        newcolname=str(name),
+    )
 
     # add sampled data to dataframe
     df[name] = (sampled)[name]
@@ -267,8 +267,8 @@ def default_layers(version, region=None) -> dict:
         region = regions.antarctica
 
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region)#, fill_nans=True)
-        icebase = fetch.bedmap2("icebase", region=region)#, fill_nans=True)
+        surface = fetch.bedmap2("surface", region=region)  # , fill_nans=True)
+        icebase = fetch.bedmap2("icebase", region=region)  # , fill_nans=True)
         bed = fetch.bedmap2("bed", region=region)
 
     elif version == "bedmachine":
@@ -411,7 +411,6 @@ def plot_profile(
         Filename for saving image, by default is None.
     """
     inset = kwargs.get("inset", True)
-    inset_pos = kwargs.get("inset_pos", "TL")
     points = create_profile(method, **kwargs)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     grid_lines = kwargs.get("grid_lines", True)
@@ -423,7 +422,7 @@ def plot_profile(
             layers_dict = default_layers(
                 layers_version,
                 region=vd.get_region((points.x, points.y)),
-                )
+            )
 
     if data_dict == "default":
         with redirect_stdout(None), redirect_stderr(None):
@@ -471,7 +470,7 @@ def plot_profile(
     # make region for x-section fill space
     if data_dict is not None:
         # if using a shared y-axis for data, get overall max and min values
-        if kwargs.get('share_yaxis', False) is True:
+        if kwargs.get("share_yaxis", False) is True:
             data_min = df_data[df_data.columns[3:]].min().min()
             data_max = df_data[df_data.columns[3:]].max().max()
 
@@ -479,10 +478,13 @@ def plot_profile(
             y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
 
             # set frame
-            frame=["neSW", "ag",]
+            frame = [
+                "neSW",
+                "ag",
+            ]
 
         # height of data and layers, plus 0.5cm margin equals total figure height
-        data_height = kwargs.get('data_height', 2.5)
+        data_height = kwargs.get("data_height", 2.5)
         layers_height = fig_height - 0.5 - data_height
 
         data_projection = f"X{fig_width}c/{data_height}c"
@@ -490,8 +492,8 @@ def plot_profile(
 
         try:
             for k, v in data_dict.items():
-                 # if using individual y-axes for data, get individual max/mins
-                if kwargs.get('share_yaxis', False) is False:
+                # if using individual y-axes for data, get individual max/mins
+                if kwargs.get("share_yaxis", False) is False:
                     data_min = df_data[k].min()
                     data_max = df_data[k].max()
 
@@ -499,15 +501,18 @@ def plot_profile(
                     y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
 
                     # turn off frame tick labels
-                    frame=["neSw", "xag",]
+                    frame = [
+                        "neSw",
+                        "xag",
+                    ]
 
                 # set region for data
                 data_reg = [
-                        df_data.dist.min(),
-                        df_data.dist.max(),
-                        data_min - y_buffer,
-                        data_max + y_buffer,
-                    ]
+                    df_data.dist.min(),
+                    df_data.dist.max(),
+                    data_min - y_buffer,
+                    data_max + y_buffer,
+                ]
 
                 fig.plot(
                     region=data_reg,
@@ -527,7 +532,9 @@ def plot_profile(
             print("error plotting data profiles")
     else:
         # if no data, make xsection fill space
-        fig.basemap(region=layers_reg, projection=f"X{fig_width}c/{fig_height}c", frame=True)
+        fig.basemap(
+            region=layers_reg, projection=f"X{fig_width}c/{fig_height}c", frame=True
+        )
 
     # plot colored df_layers
     for i, (k, v) in enumerate(layers_dict.items()):
@@ -568,8 +575,8 @@ def plot_profile(
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
         map_reg = utils.alter_region(
-            vd.get_region((df_layers.x, df_layers.y)),
-            buffer=buffer)[1]
+            vd.get_region((df_layers.x, df_layers.y)), buffer=buffer
+        )[1]
 
         # Set figure parameters
         if subplot_orientation == "horizontal":
@@ -577,18 +584,20 @@ def plot_profile(
             map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_height=fig_height,
-                )
+            )
             # shift map to the left with 1 cm margin
             if data_dict is not None:
-                fig.shift_origin(xshift=f"-{map_width+1}c", yshift=f"-{data_height+.5}c")
+                fig.shift_origin(
+                    xshift=f"-{map_width+1}c", yshift=f"-{data_height+.5}c"
+                )
             else:
                 fig.shift_origin(xshift=f"-{map_width+1}c")
         elif subplot_orientation == "vertical":
-           # if shifting vertically, set map width to match graph width
+            # if shifting vertically, set map width to match graph width
             map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_width=fig_width,
-                )
+            )
             # shift map up with a 1/2 cm margin
             if data_dict is not None:
                 fig.shift_origin(yshift=f"{layers_height+.5}c")
@@ -669,10 +678,10 @@ def plot_profile(
                 fig,
                 map_reg,
                 map_width,
-                inset_pos = kwargs.get("inset_pos", "TL"),
-                inset_width = kwargs.get("inset_width", 0.25),
-                inset_reg = kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
-                )
+                inset_pos=kwargs.get("inset_pos", "TL"),
+                inset_width=kwargs.get("inset_width", 0.25),
+                inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
+            )
 
     fig.show()
 
@@ -680,6 +689,7 @@ def plot_profile(
         if kwargs.get("path") is None:
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
+
 
 def plot_data(
     method: str,
@@ -721,10 +731,9 @@ def plot_data(
         Filename for saving image, by default is None.
     """
     points = create_profile(method, **kwargs)
-    data_region = vd.get_region((points.x, points.y))
-    fig_height = kwargs.get('fig_height', 5)
-    fig_width = kwargs.get('fig_width', 10)
-    pen_width = kwargs.get('pen_width', "1.5p")
+    fig_height = kwargs.get("fig_height", 5)
+    fig_width = kwargs.get("fig_width", 10)
+    pen_width = kwargs.get("pen_width", "1.5p")
 
     points = points[["x", "y", "dist"]].copy()
     for k, v in data_dict.items():
@@ -736,14 +745,12 @@ def plot_data(
             raise ValueError(
                 f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
             )
-        df_layers = shorten(df_layers, **kwargs)
-        if data_dict is not None:
-            df_data = shorten(df_data, **kwargs)
+        df_data = shorten(df_data, **kwargs)
 
     fig = pygmt.Figure()
 
     # if using a shared y-axis for data, get overall max and min values
-    if kwargs.get('share_yaxis', False) is True:
+    if kwargs.get("share_yaxis", False) is True:
         data_min = df_data[df_data.columns[3:]].min().min()
         data_max = df_data[df_data.columns[3:]].max().max()
         # add space above and below top and bottom of graph
@@ -756,12 +763,15 @@ def plot_data(
             data_max + y_buffer,
         ]
         # set frame
-        frame=["neSW", "ag",]
+        frame = [
+            "neSW",
+            "ag",
+        ]
 
     data_projection = f"X{fig_width}c/{fig_height}c"
 
     for k, v in data_dict.items():
-        if kwargs.get('share_yaxis', False) is False:
+        if kwargs.get("share_yaxis", False) is False:
             # if using individual y-axes for data, get individual max/mins
             data_min = df_data[k].min()
             data_max = df_data[k].max()
@@ -774,7 +784,10 @@ def plot_data(
                 data_max + y_buffer,
             ]
             # turn off frame tick labels
-            frame=["neSw", "xag",]
+            frame = [
+                "neSw",
+                "xag",
+            ]
 
         fig.plot(
             region=region_data,

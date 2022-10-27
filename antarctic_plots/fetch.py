@@ -14,11 +14,11 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     import numpy as np
 
-import pyogrio
 import geopandas as gpd
 import pandas as pd
 import pooch
 import pygmt
+import pyogrio
 import requests
 import xarray as xr
 from pyproj import Transformer
@@ -1680,6 +1680,7 @@ def gravity(
 
     return resampled
 
+
 def ROSETTA_gravity(shapefile: bool = False):
     """
     Load either a shapefile of ROSETTA-ice flightliens, or a dataframe of ROSETTA-Ice
@@ -1695,7 +1696,8 @@ def ROSETTA_gravity(shapefile: bool = False):
     Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
     Latitude (degrees): Latitude decimal degrees WGS84
     Longitude (degrees): Longitude decimal degrees WGS84
-    unixtime (seconds): The number of seconds that have elapsed since midnight (00:00:00 UTC) on January 1st, 1970
+    unixtime (seconds): The number of seconds that have elapsed since midnight
+        (00:00:00 UTC) on January 1st, 1970
     Height (meters): Height above WGS84 ellipsoid
     x (meters): Polar stereographic projected coordinates true to scale at 71° S
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
@@ -1714,13 +1716,13 @@ def ROSETTA_gravity(shapefile: bool = False):
 
     if shapefile is True:
         path = pooch.retrieve(
-                url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
-                fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
-                path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
-                known_hash=None,
-                progressbar=True,
-                processor=pooch.Unzip()
-            )
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
+            fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+            processor=pooch.Unzip(),
+        )
         # path to shapefile
         fname = [p for p in path if p.endswith(".shp")][0]
 
@@ -1739,12 +1741,13 @@ def ROSETTA_gravity(shapefile: bool = False):
 
         # convert line numbers into float format (L200 -> 200)
         df.Line = df.Line.str[1:]
-        df['Line'] = pd.to_numeric(df['Line'])
+        df["Line"] = pd.to_numeric(df["Line"])
 
         # center grav data on 0
-        df['FAG_levelled'] -= df.FAG_levelled.mean()
+        df["FAG_levelled"] -= df.FAG_levelled.mean()
 
     return df
+
 
 def magnetics(
     version: str,
@@ -2125,7 +2128,7 @@ def ghf(
             df = pd.read_excel(file)
 
             # drop 2 extra columns
-            df.drop(columns = ["Unnamed: 15", "Unnamed: 16"], inplace=True)
+            df.drop(columns=["Unnamed: 15", "Unnamed: 16"], inplace=True)
 
             # remove numbers from all column names
             df.columns = df.columns.str[4:]
@@ -2138,10 +2141,12 @@ def ghf(
                     "grad (°C/km)": "grad",
                     "GHF (mW/m²)": "GHF",
                     "Err (mW/m²)": "err",
-                }, inplace=True)
+                },
+                inplace=True,
+            )
 
             # drop few rows without coordinates
-            df.dropna(subset=["lat","lon"], inplace=True)
+            df.dropna(subset=["lat", "lon"], inplace=True)
 
             # re-project the coordinates to Polar Stereographic
             transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
@@ -2428,7 +2433,7 @@ def gia(
             registration = initial_registration
 
         path = pooch.retrieve(
-            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",  # noqa
+            url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
             fname="stal_2020_gia.tiff",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/gia",
             known_hash=None,
@@ -2823,7 +2828,7 @@ def moho(
             registration,
         )
 
-    elif version == 'pappa-2019':
+    elif version == "pappa-2019":
         print("Pappa et al. 2019 moho model download is not working currently.")
         # resampled = pooch.retrieve(
         #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",  # noqa
@@ -2833,20 +2838,33 @@ def moho(
         #     progressbar=True,
         #     processor=pooch.Unzip(extract_dir="pappa_moho"),
         # )
-        # fname='/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd'
+        # fname='/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd' # noqa
         # grid = pygmt.load_dataarray(fname)
         # Moho_Pappa = grid.to_dataframe().reset_index()
         # Moho_Pappa.z=Moho_Pappa.z.apply(lambda x:x*-1000)
 
         # transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        # Moho_Pappa['x'], Moho_Pappa['y'] = transformer.transform(Moho_Pappa.lat.tolist(), Moho_Pappa.lon.tolist())
+        # Moho_Pappa['x'], Moho_Pappa['y'] = transformer.transform(
+        #   Moho_Pappa.lat.tolist(),
+        # Moho_Pappa.lon.tolist())
 
-        # Moho_Pappa = pygmt.blockmedian(Moho_Pappa[['x','y','z']], spacing=10e3, registration='g', region='-1560000/1400000/-2400000/560000')
+        # Moho_Pappa = pygmt.blockmedian(
+        #   Moho_Pappa[['x','y','z']],
+        #   spacing=10e3,
+        #   registration='g',
+        #   region='-1560000/1400000/-2400000/560000',
+        # )
 
         # fname='inversion_layers/Pappa_moho.nc'
 
-        # pygmt.surface(Moho_Pappa[['x','y','z']], region='-1560000/1400000/-2400000/560000',
-        #     spacing=10e3, registration='g', M='1c', outgrid=fname)
+        # pygmt.surface(
+        #   Moho_Pappa[['x','y','z']],
+        #   region='-1560000/1400000/-2400000/560000',
+        #   spacing=10e3,
+        #   registration='g',
+        #   M='1c',
+        #   outgrid=fname,
+        # )
 
     else:
         raise ValueError("invalid version string")

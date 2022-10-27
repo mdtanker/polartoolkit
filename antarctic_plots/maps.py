@@ -10,16 +10,14 @@ import warnings
 from math import floor, log10
 from typing import Union
 
+import geopandas as gpd
+import numpy as np
+import pandas as pd
 import pygmt
 import pyogrio
 import xarray as xr
-import pandas as pd
-import verde as vd
-import geopandas as gpd
-import numpy as np
 
 from antarctic_plots import fetch, regions, utils
-
 
 try:
     import ipyleaflet
@@ -28,6 +26,7 @@ except ImportError:
     _has_ipyleaflet = False
 else:
     _has_ipyleaflet = True
+
 
 def basemap(
     region: Union[str or np.ndarray] = None,
@@ -41,14 +40,14 @@ def basemap(
     if fig_width is None:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
-            fig_height = fig_height,
-            )
+            fig_height=fig_height,
+        )
     # if fig_width is set, use it to set projection
     else:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
-            fig_width = fig_width,
-            )
+            fig_width=fig_width,
+        )
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -68,16 +67,16 @@ def basemap(
     elif origin_shift == "no_shift":
         fig = kwargs.get("fig")
 
-
     # create blank basemap
     fig.basemap(
-        region = region,
-        projection = proj,
-        frame = [f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
-        verbose='e')
+        region=region,
+        projection=proj,
+        frame=[f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
+        verbose="e",
+    )
 
     # plot coast
-    if kwargs.get('coast', False) is True:
+    if kwargs.get("coast", False) is True:
         add_coast(
             fig,
             region,
@@ -118,15 +117,16 @@ def basemap(
             region=region,
             projection=proj,
             frame="wesn",
-            )
+        )
     else:
         fig.basemap(
             region=region,
             projection=proj,
             frame=f"wesn+t{kwargs.get('title')}",
-            )
+        )
 
     return fig
+
 
 def plot_grd(
     grid: Union[str or xr.DataArray],
@@ -422,11 +422,12 @@ def add_coast(
         data = gdf[gdf.Id_text == "Grounded ice or land"]
 
     fig.plot(
-            data,
-            projection=projection,
-            region=region,
-            pen=pen,
-        )
+        data,
+        projection=projection,
+        region=region,
+        pen=pen,
+    )
+
 
 def add_gridlines(
     fig: pygmt.figure,
@@ -487,7 +488,7 @@ def add_inset(
     fig_width: Union[int, float],
     inset_pos: str = "TL",
     inset_width: float = 0.25,
-    inset_reg : list = [-2800e3, 2800e3, -2800e3, 2800e3],
+    inset_reg: list = [-2800e3, 2800e3, -2800e3, 2800e3],
     **kwargs,
 ):
     """
@@ -507,7 +508,7 @@ def add_inset(
     inset_reg : list, optional
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
-    coast_pen = kwargs.get('coast_pen', "0.2,black")
+    coast_pen = kwargs.get("coast_pen", "0.2,black")
 
     inset_map = f"X{fig_width*inset_width}c"
 
@@ -641,13 +642,11 @@ def interactive_map(
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
         height=kwargs.get("height", None),
-        )
-
-
+    )
 
     # if points are supplied, center map on them and plot them
     if points is not None:
-        if kwargs.get('points_as_latlon', False) is True:
+        if kwargs.get("points_as_latlon", False) is True:
             center_ll = [points.lon.mean(), points.lat.mean()]
         else:
             # convert points to lat lon
@@ -658,15 +657,15 @@ def interactive_map(
             gdf = gpd.GeoDataFrame(
                 points_ll,
                 geometry=gpd.points_from_xy(points_ll.lon, points_ll.lat),
-                )
+            )
             geo_data = ipyleaflet.GeoData(
                 geo_dataframe=gdf,
                 # style={'radius': .5, 'color': 'red', 'weight': .5},
-                point_style={'radius': 1, 'color': 'red', 'weight': 1},
-                )
+                point_style={"radius": 1, "color": "red", "weight": 1},
+            )
     else:
         # if no points, center map on 0, 0
-        center_ll = utils.epsg3031_to_latlon([0,0])
+        center_ll = utils.epsg3031_to_latlon([0, 0])
 
     if center_yx is not None:
         center_ll = utils.epsg3031_to_latlon(center_yx)
@@ -687,7 +686,7 @@ def interactive_map(
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
-        display(label_xy)
+        display(label_xy)  # noqa
 
         def handle_click(**kwargs):
             if kwargs.get("type") == "click":
@@ -697,7 +696,7 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
-        display(m)
+        display(m)  # noqa
 
     return m
 

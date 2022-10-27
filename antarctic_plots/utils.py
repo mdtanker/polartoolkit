@@ -340,15 +340,16 @@ def points_inside_region(
        returns a subset dataframe
     """
     # make column of booleans for whether row is within the region
-    df['inside'] = vd.inside(coordinates=(df.x, df.y), region=region)
+    df["inside"] = vd.inside(coordinates=(df.x, df.y), region=region)
 
     # subset if True
-    df_inside = df.loc[df.inside==True].copy()
+    df_inside = df.loc[df.inside is True].copy()
 
     # drop the column 'inside'
-    df_inside.drop(columns='inside', inplace=True)
+    df_inside.drop(columns="inside", inplace=True)
 
     return df_inside
+
 
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
@@ -517,9 +518,6 @@ def set_proj(
 
     proj = f"x1:{ratio}"
     proj_latlon = f"s0/-90/-71/1:{ratio}"
-
-
-
 
     return proj, proj_latlon, fig_width, fig_height
 
@@ -1399,11 +1397,12 @@ def change_reg(grid):
                 f_out = pygmt.load_dataarray(tmpfile.name)
     return f_out
 
+
 def grdblend(
-    grid1 : xr.DataArray,
-    grid2 : xr.DataArray,
+    grid1: xr.DataArray,
+    grid2: xr.DataArray,
     **kwargs,
-    ):
+):
     """
     Use GMT grdblend to blend 2 grids into 1.
 
@@ -1422,13 +1421,13 @@ def grdblend(
     """
     with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
         with pygmt.clib.Session() as lib:
-            # store the input grids in a virtual files so GMT can read it from dataarrays
+            # store the input grids in a virtual files so GMT can read it from
+            # dataarrays
             file_context1 = lib.virtualfile_from_grid(grid1)
             file_context2 = lib.virtualfile_from_grid(grid2)
             with file_context1 as infile1, file_context2 as infile2:
                 # if (outgrid := kwargs.get("G")) is None:
                 #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
                 args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
-                lib.call_module(
-                    module="grdblend", args=args)
-    return pygmt.load_dataarray(infile1)# if outgrid == tmpfile.name else None
+                lib.call_module(module="grdblend", args=args)
+    return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
