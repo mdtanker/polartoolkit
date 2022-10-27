@@ -707,7 +707,7 @@ def sediment_thickness(
                     )
 
                 # reproject to polar stereographic
-                reprojected = grid.rio.reproject("epsg:3031", resolution=1e3)
+                reprojected = grid.rio.reproject("epsg:3031", resolution=inital_spacing)
 
                 # need to save to .nc and reload, issues with pygmt
                 reprojected.to_netcdf("tmp.nc")
@@ -724,7 +724,7 @@ def sediment_thickness(
 
                 # remove tmp file
                 os.remove("tmp.nc")
-                
+
             return str(fname_processed)
 
         path = pooch.retrieve(
