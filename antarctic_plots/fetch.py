@@ -1690,7 +1690,7 @@ def ROSETTA_gravity():
     This is only data from the first 2 of the 3 field seasons.
 
     Columns:
-    Line Number: The ROSETTA-Ice survey line number
+    Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
     Latitude (degrees): Latitude decimal degrees WGS84
     Longitude (degrees): Longitude decimal degrees WGS84
     unixtime (seconds): The number of seconds that have elapsed since midnight (00:00:00 UTC) on January 1st, 1970
@@ -1715,6 +1715,10 @@ def ROSETTA_gravity():
 
     df = pd.read_csv(path)
 
+    # convert line numbers into float format (L200 -> 200)
+    df.Line = df.Line.str[1:]
+    df['Line'] = pd.to_numeric(df['Line'])
+    
     # center grav data on 0
     df['FAG_levelled'] -= df.FAG_levelled.mean()
 

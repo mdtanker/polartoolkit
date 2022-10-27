@@ -656,13 +656,14 @@ def test_gravity(test_input, expected):
 def test_ROSETTA_gravity():
     df = fetch.ROSETTA_gravity()
     expected = [
+        661.2195503654474,
         -80.57119757556714,
         -36.74185651880941,
         1457514923.0469708,
         793.0566192217011,
         -84278.81094301463,
         -1000705.4912593851,
-        4.329633132958233e-15,
+        4.329633132958233e-15
         ]
     assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
 
