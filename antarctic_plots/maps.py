@@ -382,8 +382,8 @@ def plot_grd(
 
 def add_coast(
     fig: pygmt.figure,
-    region: Union[str or np.ndarray],
-    projection: str,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
     no_coast: bool = False,
     pen=None,
 ):
@@ -393,10 +393,10 @@ def add_coast(
     Parameters
     ----------
     fig : pygmt.figure
-    region : Union[str or np.ndarray]
-        region for the figure
-    projection : str
-        GMT projection string
+    region : Union[str or np.ndarray], optional
+        region for the figure, by default is last used by PyGMT
+    projection : str, optional
+        GMT projection string, by default is last used by PyGMT
     no_coast : bool
         If True, only plot groundingline, not coastline, by default is False
     pen : None
@@ -418,7 +418,6 @@ def add_coast(
         region=region,
         pen=pen,
     )
-
 
 def add_gridlines(
     fig: pygmt.figure,
