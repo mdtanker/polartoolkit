@@ -694,23 +694,37 @@ def sediment_thickness(
                 # load data
                 grid = xr.load_dataarray(fname)
 
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon":'x', "lat":'y'})
+
+                # clip to antarctica
+                grid = grid.rio.clip_box(
+                    *utils.GMT_reg_to_bounding_box(initial_region),
+                    crs="EPSG:3031",
+                    )
+
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    # spacing=f"{initial_spacing}+e",
-                    # region=initial_region,
-                    # registration=initial_registration,
-                )
-                processed = pygmt.grdsample(
-                    grid2,
+                reprojected = grid.rio.reproject("epsg:3031", resolution=1e3)
+
+                # need to save to .nc and reload, issues with pygmt
+                reprojected.to_netcdf("tmp.nc")
+                processed = xr.load_dataset("tmp.nc").z
+
+                # resample and save to disk
+                pygmt.grdsample(
+                    processed,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
 
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+                # remove tmp file
+                os.remove("tmp.nc")
+                
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -893,11 +907,9 @@ def IBCSO(
 
             # set the projection
             cut.rio.write_crs("EPSG:9354", inplace=True)
-            assert cut.rio.crs == "EPSG:9354"
 
             # reproject to EPSG:3031
             reprojected = cut.rio.reproject("epsg:3031")
-            assert reprojected.rio.crs == "EPSG:3031"
 
             # need to save to .nc and reload, issues with pygmt
             reprojected.to_netcdf("tmp.nc")
@@ -949,11 +961,9 @@ def IBCSO(
 
             # set the projection
             cut.rio.write_crs("EPSG:9354", inplace=True)
-            assert cut.rio.crs == "EPSG:9354"
 
             # reproject to EPSG:3031
             reprojected = cut.rio.reproject("epsg:3031")
-            assert reprojected.rio.crs == "EPSG:3031"
 
             # need to save to .nc and reload, issues with pygmt
             reprojected.to_netcdf("tmp.nc")
