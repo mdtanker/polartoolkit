@@ -2009,21 +2009,28 @@ def ghf(
                 # load grid
                 grid = xr.load_dataarray(fname)
 
+                # write the current projection
+                grid.rio.write_crs("EPSG:4326", inplace=True)
+
+                # set names of coordinates
+                grid = grid.rename({"lon":'x', "lat":'y'})
+
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    spacing=initial_spacing,
-                )
-                # get just antarctica region
-                processed = pygmt.grdsample(
-                    grid2,
+                reprojected = grid.rio.reproject("epsg:3031")
+
+                # need to save to .nc and reload, issues with pygmt
+                reprojected.to_netcdf("tmp.nc")
+                processed = xr.load_dataset("tmp.nc").z
+
+                # get just antarctica region and save to disk
+                pygmt.grdsample(
+                    processed,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    outgrid=fname_processed,
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+                
             return str(fname_processed)
 
         path = pooch.retrieve(
