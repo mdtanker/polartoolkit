@@ -10,6 +10,8 @@ This Binder environment can also be accessed by clicking the Binder icon in any 
 
 This package and most of it's dependencies can be installed with a simple call to `pip`, but since `PyGMT` requires `GMT` and `GeoPandas` require `GDAL`, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:
 
+If you don't have Python set up on your computer, I recommend setting up python with Miniconda. See the install instructions [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+
 Here I use mamba to install packages, but conda should work as well:
 
 ## Create an environment:
@@ -34,7 +36,7 @@ Test the install by running any of the {doc}`gallery/gallery` examples.
 
 ## Common errors
 
-If you get errors related to GDAL and GMT, try reinstall Geopandas and PyGMT with the following command:
+If you get errors related to GDAL and GMT, try reinstalling Geopandas and PyGMT with the following command:
 
     mamba install geopandas pygmt --force-reinstall
 
