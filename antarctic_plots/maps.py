@@ -321,6 +321,7 @@ def plot_grd(
         region=region,
         nan_transparent=True,
         frame=[f"+g{kwargs.get('background', 'white')}"],
+        shading=kwargs.get("shading", None),
         verbose="q",
     )
 
