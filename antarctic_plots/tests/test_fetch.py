@@ -903,5 +903,24 @@ def test_geoid(test_input, expected):
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-# grid = fetch.magnetics()
+# grid = fetch.geoid()
+# utils.get_grid_info(grid)
+
+# %% etopo
+
+expected = (
+    '5000',
+    [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+    -7093.03369141,
+    4089.17773438,
+    'g'
+)
+
+@pytest.mark.working
+def test_etopo():
+    grid = fetch.etopo()
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.etopo()
 # utils.get_grid_info(grid)

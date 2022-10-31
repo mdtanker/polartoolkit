@@ -1693,6 +1693,104 @@ def gravity(
     return resampled
 
 
+def etopo(
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+    **kwargs,
+) -> xr.DataArray:
+    """
+    Loads a grid of Antarctic topography from ETOPO1. Originally at 10 arc-min
+    resolution, reference to mean sea-level
+
+    orignally from https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316 # noqa
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-topography-10arcmin # noqa
+
+    Parameters
+    ----------
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of topography.
+    """
+    initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
+    initial_spacing = 5e3
+    initial_registration = "g"
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
+    def preprocessing(fname, action, pooch):
+        "Load the .nc file, reproject, and save it back"
+        fname = Path(fname)
+        # Rename to the file to ***_preprocessed.nc
+        fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load grid
+            grid = xr.load_dataset(fname).topography
+
+            # reproject to polar stereographic
+            grid2 = pygmt.grdproject(
+                grid,
+                projection="EPSG:3031",
+                spacing=initial_spacing,
+            )
+            # get just antarctica region
+            processed = pygmt.grdsample(
+                grid2,
+                region=initial_region,
+                spacing=initial_spacing,
+                registration=initial_registration,
+            )
+            # Save to disk
+            processed.to_netcdf(fname_processed)
+        return str(fname_processed)
+
+    path = pooch.retrieve(
+        url="doi:10.5281/zenodo.5882203/earth-topography-10arcmin.nc",
+        fname="etopo.nc",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        known_hash=None,
+        progressbar=True,
+        processor=preprocessing,
+    )
+
+    grid = xr.load_dataarray(path)
+
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+    )
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+
 def geoid(
     plot: bool = False,
     info: bool = False,
@@ -1702,9 +1800,8 @@ def geoid(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid height derived from the EIGeN-6C4 spherical
-    harmonic model of Earth's gravity field. Originally at 10 arc-min resolution at 10km
-    geometric height.
+    Loads a grid of Antarctic geoid height derived from the EIGEN-6C4 spherical
+    harmonic model of Earth's gravity field. Originally at 10 arc-min resolution.
 
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin # noqa
