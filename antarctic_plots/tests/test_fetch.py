@@ -880,4 +880,28 @@ def test_moho(test_input, expected):
 # grid = fetch.moho(version='shen-2018')
 # utils.get_grid_info(grid)
 
-# %%
+# %% geoid
+
+test = [
+    (
+        "eigen",
+        (
+            '5000',
+            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            -66.1241073608,
+            52.2200775146,
+            'g'
+        ),
+    ),
+]
+
+
+@pytest.mark.working
+@pytest.mark.parametrize("test_input,expected", test)
+def test_geoid(test_input, expected):
+    grid = fetch.geoid(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.magnetics()
+# utils.get_grid_info(grid)
