@@ -1371,6 +1371,82 @@ def bedmap2(
     return final_grid
 
 
+def REMA(
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+) -> xr.DataArray:
+    """
+    Load the 1km resolution version of REMA surface elevation data. The data are in EPSG
+    3031 and reference to the WGS84 ellipsoid. To convert the data to be reference to
+    the geoid, add a geoid model, which you can get from fetch.geoid().
+
+    from Howat et al. 2019: The Reference Elevation Model of Antarctica, The Cryosphere,
+    13, 665-674, https://doi.org/10.5194/tc-13-665-2019.
+
+    accessed from https://www.pgc.umn.edu/data/rema/
+
+    Parameters
+    ----------
+    plot : bool, optional
+        choose to plot grid, by default False
+    info : bool, optional
+        choose to print info on grid, by default False
+    region : str or np.ndarray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of the REMA DEM.
+    """
+
+    # found with utils.get_grid_info()
+    initial_region = [-2701000.0, 2751000.0, -2500000.0, 3342000.0]
+    initial_spacing = 1e3
+    initial_registration = "p"
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
+    path = pooch.retrieve(
+        url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",  # noqa
+        fname="rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        known_hash=None,
+        progressbar=True,
+        processor=pooch.Untar(),
+    )
+    fname = [p for p in path if p.endswith("dem.tif")][0]
+
+    grid = xr.load_dataarray(fname).squeeze()
+
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+    )
+
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
+
+    return resampled
+
+
 def deepbedmap(
     plot: bool = False,
     info: bool = False,
@@ -1424,12 +1500,12 @@ def deepbedmap(
 
     resampled = resample_grid(
         grid,
-        initial_spacing,
-        initial_region,
-        initial_registration,
-        spacing,
-        region,
-        registration,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
     )
 
     if plot is True:
