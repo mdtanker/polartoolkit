@@ -21,6 +21,7 @@ import pygmt
 import pyogrio
 import requests
 import xarray as xr
+import verde as vd
 from pyproj import Transformer
 
 from antarctic_plots import fetch, maps, regions, utils
@@ -1349,6 +1350,8 @@ def bedmap2(
         )
 
         final_grid = resampled + resampled_geoid
+        geoid.close()
+        resampled_geoid.close()
 
     elif reference not in ["ellipsoid", "geoid"]:
         raise ValueError("invalid reference string")
@@ -1372,6 +1375,7 @@ def bedmap2(
 
 
 def REMA(
+    version: int = 1e3,
     plot: bool = False,
     info: bool = False,
     region=None,
@@ -1379,9 +1383,11 @@ def REMA(
     registration=None,
 ) -> xr.DataArray:
     """
-    Load the 1km resolution version of REMA surface elevation data. The data are in EPSG
+    Load the REMA surface elevation data. The data are in EPSG
     3031 and reference to the WGS84 ellipsoid. To convert the data to be reference to
     the geoid, add a geoid model, which you can get from fetch.geoid().
+
+    Choose between 1km or 500m resolutions with parameter `version`.
 
     from Howat et al. 2019: The Reference Elevation Model of Antarctica, The Cryosphere,
     13, 665-674, https://doi.org/10.5194/tc-13-665-2019.
@@ -1390,6 +1396,8 @@ def REMA(
 
     Parameters
     ----------
+    version : int, optional,
+        choose which resolution to fetch, either 1km or 500m, by default is 1000
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1405,10 +1413,18 @@ def REMA(
         Returns a loaded, and optional clip/resampled grid of the REMA DEM.
     """
 
-    # found with utils.get_grid_info()
+    if version==500:
+        # found with utils.get_grid_info(grid)
+        initial_region = [-2700500.0, 2750500.0, -2500000.0, 3342000.0]
+        initial_spacing = 500
+        initial_registration = "p"
+    elif version==1e3:
+        # found with utils.get_grid_info(grid)
     initial_region = [-2701000.0, 2751000.0, -2500000.0, 3342000.0]
     initial_spacing = 1e3
     initial_registration = "p"
+    else:
+        raise ValueError("invalid version")
 
     if region is None:
         region = initial_region
@@ -1417,6 +1433,16 @@ def REMA(
     if registration is None:
         registration = initial_registration
 
+    if version==500:
+        path = pooch.retrieve(
+            url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_500m_v2.0_filled_cop30.tar.gz",  # noqa
+            fname="rema_mosaic_500m_v2.0_filled_cop30.tar.gz",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            progressbar=True,
+            processor=pooch.Untar(),
+        )
+    elif version==1e3:
     path = pooch.retrieve(
         url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",  # noqa
         fname="rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",
@@ -1425,6 +1451,9 @@ def REMA(
         progressbar=True,
         processor=pooch.Untar(),
     )
+    else:
+        raise ValueError("invalid version")
+
     fname = [p for p in path if p.endswith("dem.tif")][0]
 
     grid = xr.load_dataarray(fname).squeeze()
@@ -1445,6 +1474,9 @@ def REMA(
         print(pygmt.grdinfo(resampled))
 
     return resampled
+
+
+
 
 
 def deepbedmap(

@@ -927,19 +927,36 @@ def test_etopo():
 
 # %% REMA
 
-expected = (
-    '1000',
-    [-2701000.0, 2751000.0, -2500000.0, 3342000.0],
-    -66.4447631836,
-    4624.09716797,
-    'p'
-)
+
+test = [
+    (
+        dict(version=500),
+        (
+            '500',
+            [-2700500.0, 2750500.0, -2500000.0, 3342000.0],
+            -66.4453125,
+            4685.50097656,
+            'p'
+        ),
+    ),
+    (
+        dict(version=1000),
+        (
+            '1000',
+            [-2701000.0, 2751000.0, -2500000.0, 3342000.0],
+            -66.4447631836,
+            4624.09716797,
+            'p'
+        ),
+    ),
+]
+
 
 @pytest.mark.working
-def test_REMA():
-    grid = fetch.REMA()
+@pytest.mark.parametrize("test_input,expected", test)
+def test_REMA(test_input, expected):
+    grid = fetch.REMA(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
-# grid = fetch.REMA()
+# grid = fetch.REMA(version=500)
 # utils.get_grid_info(grid)
