@@ -1486,13 +1486,15 @@ def gravity(
     Keyword Args
     ------------
     anomaly_type : str
-            either 'FA' or 'BA', for free-air and bouguer anomalies, respectively.
+        either 'FA' or 'BA', for free-air and bouguer anomalies, respectively. For
+        antgg-update can also be 'DG' for gravity disturbance, or 'Err' for error
+        estimates.
 
     Returns
     -------
     xr.DataArray
-        Returns a loaded, and optional clip/resampled grid of either free-air or
-        Bouguer gravity anomalies.
+        Returns a loaded, and optional clip/resampled grid of either observed, free-air
+        or Bouguer gravity anomalies.
     """
     anomaly_type = kwargs.get("anomaly_type", None)
 
@@ -1554,8 +1556,9 @@ def gravity(
         if registration is None:
             registration = initial_registration
 
-        if anomaly_type not in ("FA", "BA"):
-            raise ValueError("anomaly_type must be eith 'FA' or 'BA'")
+        available_anomalies = ["FA", "DG", "BA", "Err"]
+        if anomaly_type not in available_anomalies:
+            raise ValueError("anomaly_type must be either 'FA', 'BA', 'Err' or 'DG'")
 
         def preprocessing(fname, action, pooch2):
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
