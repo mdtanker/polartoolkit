@@ -339,11 +339,15 @@ def points_inside_region(
     pd.DataFrame
        returns a subset dataframe
     """
+
+    # make a copy of the dataframe
+    df1 = df.copy()
+
     # make column of booleans for whether row is within the region
-    df["inside"] = vd.inside(coordinates=(df.x, df.y), region=region)
+    df1["inside"] = vd.inside(coordinates=(df1.x, df1.y), region=region)
 
     # subset if True
-    df_inside = df.loc[df.inside is True].copy()
+    df_inside = df1.loc[df1.inside == True].copy()
 
     # drop the column 'inside'
     df_inside.drop(columns="inside", inplace=True)
@@ -695,8 +699,8 @@ def grd_compare(
         choose a specific region to compare.
     Returns
     -------
-    xr.DataArray
-        the result of da1 - da2
+    list
+        list of xr.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask", None)
     region = kwargs.get("region", None)
@@ -796,7 +800,7 @@ def grd_compare(
             )
             fig = maps.plot_grd(
                 dif,
-                cmap="polar",
+                cmap=kwargs.get("diff_cmap", "polar"),
                 region=region,
                 coast=coast,
                 origin_shift=origin_shift,
