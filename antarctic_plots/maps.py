@@ -232,6 +232,7 @@ def plot_grd(
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
+    reverse_cpt = kwargs.get('reverse_cpt', False)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
@@ -271,6 +272,7 @@ def plot_grd(
             continuous=kwargs.get("continuous", True),
             color_model=kwargs.get("color_model", "R"),
             categorical=kwargs.get("categorical", False),
+            reverse=reverse_cpt,
             verbose="e",
         )
     elif cpt_lims is not None:
@@ -282,6 +284,7 @@ def plot_grd(
                 continuous=kwargs.get("continuous", False),
                 color_model=kwargs.get("color_model", "R"),
                 categorical=kwargs.get("categorical", False),
+                reverse=reverse_cpt,
                 verbose="e",
             )
         except (pygmt.exceptions.GMTCLibError):
@@ -291,6 +294,7 @@ def plot_grd(
                 continuous=kwargs.get("continuous", False),
                 color_model=kwargs.get("color_model", "R"),
                 categorical=kwargs.get("categorical", False),
+                reverse=reverse_cpt,
                 verbose="e",
             )
     else:
@@ -301,6 +305,7 @@ def plot_grd(
                 background=True,
                 continuous=kwargs.get("continuous", True),
                 series=(zmin, zmax),
+                reverse=reverse_cpt,
                 verbose="e",
             )
         except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
@@ -310,6 +315,7 @@ def plot_grd(
                 cmap=cmap,
                 background=True,
                 continuous=kwargs.get("continuous", True),
+                reverse=reverse_cpt,
                 verbose="e",
             )
 
