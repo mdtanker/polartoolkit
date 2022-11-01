@@ -584,6 +584,26 @@ def test_bedmap2(test_input, expected):
 # grid = fetch.bedmap2(layer="surface", reference="geoid")
 # utils.get_grid_info(grid)
 
+# %% Bedmap points
+
+def test_bedmap_points():
+    df = fetch.bedmap_points(version='bedmap1')
+    expected = [
+        952525.5,
+        -50.57860974982828,
+        -76.06615223267103,
+        941.8317307441855,
+        989.0156562819874,
+        -119.0829515327895,
+        -419901.6480732197,
+        490531.6099745441]
+    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
+
+
+# df = fetch.bedmap_points(version='bedmap1')
+# df.describe().iloc[1].tolist()
+
+
 # %% deepbedmap
 
 
@@ -896,7 +916,6 @@ test = [
 ]
 
 
-@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_geoid(test_input, expected):
     grid = fetch.geoid(test_input)
@@ -916,7 +935,6 @@ expected = (
     'g'
 )
 
-@pytest.mark.working
 def test_etopo():
     grid = fetch.etopo()
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -952,7 +970,6 @@ test = [
 ]
 
 
-@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_REMA(test_input, expected):
     grid = fetch.REMA(**test_input)
