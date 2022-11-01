@@ -20,8 +20,8 @@ import pooch
 import pygmt
 import pyogrio
 import requests
-import xarray as xr
 import verde as vd
+import xarray as xr
 from pyproj import Transformer
 
 from antarctic_plots import fetch, maps, regions, utils
@@ -1197,6 +1197,7 @@ def bedmachine(
 
     return final_grid
 
+
 def bedmap_points(
     version: str,
     region: list = None,
@@ -1206,14 +1207,14 @@ def bedmap_points(
     Load bedmap point data, choose from Bedmap 1, 2 or 3
 
     version == 'bedmap1'
-        from Lythe, M. B. and Vaughan, D. G. 2000. BEDMAP-bed topography of the Antarctic,
-        British Antarctic Survey, Natural Environment Research Council
+        from Lythe, M. B. and Vaughan, D. G. 2000. BEDMAP-bed topography of the
+        Antarctic, British Antarctic Survey, Natural Environment Research Council
         DOI:  https://doi.org/10.5285/f64815ec-4077-4432-9f55-0ce230f46029
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01619
 
     version == 'bedmap2'
-        from Fretwell et al. 2013. Bedmap2: improved ice bed, surface and thickness datasets
-        for Antarctica, The Cryosphere, 7, 375–393
+        from Fretwell et al. 2013. Bedmap2: improved ice bed, surface and thickness
+        datasets for Antarctica, The Cryosphere, 7, 375–393
         DOI: https://doi.org/10.5285/2fd95199-365e-4da1-ae26-3b6d48b3e6ac
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01616
 
@@ -1239,9 +1240,9 @@ def bedmap_points(
         Return a dataframe, optionally subset by a region
     """
 
-    if version == 'bedmap1':
+    if version == "bedmap1":
         fname = pooch.retrieve(
-            url="https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2",
+            url="https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2",  # noqa
             fname="BEDMAP1_1966-2000_AIR_BM1.csv",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
             known_hash=None,
@@ -1251,30 +1252,33 @@ def bedmap_points(
         df = pd.read_csv(
             fname,
             skiprows=18,
-            na_values=[-9999], # set additional nan value
+            na_values=[-9999],  # set additional nan value
         )
 
         # drop columns with no entries
-        df.drop(columns=[
-            'trace_number',
-            'date',
-            'time_UTC',
-            'two_way_travel_time (m)',
-            'aircraft_altitude (m)',
-            'along_track_distance (m)',
-            ], inplace=True)
+        df.drop(
+            columns=[
+                "trace_number",
+                "date",
+                "time_UTC",
+                "two_way_travel_time (m)",
+                "aircraft_altitude (m)",
+                "along_track_distance (m)",
+            ],
+            inplace=True,
+        )
 
         # convert from lat lon to EPSG3031
         df = utils.latlon_to_epsg3031(
             df,
-            input=['longitude (degree_east)', 'latitude (degree_north)'],
+            input=["longitude (degree_east)", "latitude (degree_north)"],
         )
 
-    elif version == 'bedmap2':
-        print('fetch bedmap2 point data not implemented yet')
+    elif version == "bedmap2":
+        print("fetch bedmap2 point data not implemented yet")
 
-    elif version == 'bedmap3':
-        print('fetch bedmap3 point data not implemented yet')
+    elif version == "bedmap3":
+        print("fetch bedmap3 point data not implemented yet")
     else:
         raise ValueError("invalid layer string")
 
@@ -1287,20 +1291,21 @@ def bedmap_points(
         fig = maps.basemap(
             vd.get_region((df.x, df.y)),
             coast=True,
-            )
+        )
 
         # plot points
         fig.plot(
             x=df.x,
             y=df.y,
-            style='c.08c',
-            color='blue',
-            pen='black',
-            )
+            style="c.08c",
+            color="blue",
+            pen="black",
+        )
 
         fig.show()
 
     return df
+
 
 def bedmap2(
     layer: str,
@@ -1517,12 +1522,12 @@ def REMA(
         Returns a loaded, and optional clip/resampled grid of the REMA DEM.
     """
 
-    if version==500:
+    if version == 500:
         # found with utils.get_grid_info(grid)
         initial_region = [-2700500.0, 2750500.0, -2500000.0, 3342000.0]
         initial_spacing = 500
         initial_registration = "p"
-    elif version==1e3:
+    elif version == 1e3:
         # found with utils.get_grid_info(grid)
         initial_region = [-2701000.0, 2751000.0, -2500000.0, 3342000.0]
         initial_spacing = 1e3
@@ -1537,7 +1542,7 @@ def REMA(
     if registration is None:
         registration = initial_registration
 
-    if version==500:
+    if version == 500:
         path = pooch.retrieve(
             url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_500m_v2.0_filled_cop30.tar.gz",  # noqa
             fname="rema_mosaic_500m_v2.0_filled_cop30.tar.gz",
@@ -1546,7 +1551,7 @@ def REMA(
             progressbar=True,
             processor=pooch.Untar(),
         )
-    elif version==1e3:
+    elif version == 1e3:
         path = pooch.retrieve(
             url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",  # noqa
             fname="rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",
@@ -1578,9 +1583,6 @@ def REMA(
         print(pygmt.grdinfo(resampled))
 
     return resampled
-
-
-
 
 
 def deepbedmap(
@@ -2102,6 +2104,7 @@ def geoid(
         print(pygmt.grdinfo(resampled))
 
     return resampled
+
 
 def ROSETTA_gravity(shapefile: bool = False):
     """

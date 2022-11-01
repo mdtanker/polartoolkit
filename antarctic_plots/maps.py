@@ -232,7 +232,7 @@ def plot_grd(
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get("scalebar", False)
     colorbar = kwargs.get("colorbar", True)
-    reverse_cpt = kwargs.get('reverse_cpt', False)
+    reverse_cpt = kwargs.get("reverse_cpt", False)
 
     # set figure projection and size from input region
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)

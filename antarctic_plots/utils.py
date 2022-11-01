@@ -347,7 +347,7 @@ def points_inside_region(
     df1["inside"] = vd.inside(coordinates=(df1.x, df1.y), region=region)
 
     # subset if True
-    df_inside = df1.loc[df1.inside == True].copy()
+    df_inside = df1.loc[df1.inside == True].copy()  # noqa
 
     # drop the column 'inside'
     df_inside.drop(columns="inside", inplace=True)
