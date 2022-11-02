@@ -323,7 +323,7 @@ def region_to_bounding_box(input):
 def points_inside_region(
     df: pd.DataFrame,
     region: list,
-    names: list = ['x','y'],
+    names: list = ["x", "y"],
 ):
     """
     return a subset of a dataframe which is within a region
@@ -364,7 +364,7 @@ def mask_from_shp(
     spacing=None,
     masked: bool = False,
     crs: str = "epsg:3031",
-    pixel_register = True,
+    pixel_register=True,
 ):
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -408,7 +408,9 @@ def mask_from_shp(
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
-            region=region, spacing=spacing, pixel_register=pixel_register,
+            region=region,
+            spacing=spacing,
+            pixel_register=pixel_register,
         )
         ds = vd.make_xarray_grid(
             coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"

@@ -35,7 +35,7 @@ def resample_grid(
     spacing=None,
     region=None,
     registration=None,
-    verbose='w',
+    verbose="w",
     **kwargs,
 ):
 
@@ -1410,7 +1410,7 @@ def bedmap2(
             spacing=spacing,
             region=region,
             registration=registration,
-            **kwargs
+            **kwargs,
         )
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
