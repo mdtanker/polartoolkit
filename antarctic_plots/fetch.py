@@ -35,8 +35,10 @@ def resample_grid(
     spacing=None,
     region=None,
     registration=None,
+    verbose='w',
     **kwargs,
 ):
+
     # if initial values not given, extract from supplied grid
     if initial_spacing is None:
         initial_spacing = float(utils.get_grid_info(grid)[0])
@@ -78,12 +80,14 @@ def resample_grid(
         cut = pygmt.grdcut(
             grid=grid,
             region=region,
+            verbose=verbose,
         )
         resampled = pygmt.grdsample(
             grid=grid,
             region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
             spacing=f"{spacing}+e",
             registration=registration,
+            verbose=verbose,
         )
 
     # if spacing is larger, return filtered / resampled
@@ -95,12 +99,14 @@ def resample_grid(
             region=region,
             distance=kwargs.get("distance", "0"),
             # nans=kwargs.get('nans',"r"),
+            verbose=verbose,
         )
         resampled = pygmt.grdsample(
             grid=filtered,
             region=pygmt.grdinfo(filtered, spacing=f"{spacing}r")[2:-1],
             spacing=spacing,
             registration=registration,
+            verbose=verbose,
         )
 
     else:
@@ -110,17 +116,20 @@ def resample_grid(
             grid=grid,
             region=region,
             extend="",
+            verbose=verbose,
         )
         resampled = pygmt.grdsample(
             grid=grid,
             spacing=f"{spacing}+e",
             region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
             registration=registration,
+            verbose=verbose,
         )
         resampled = pygmt.grdcut(
             grid=resampled,
             region=region,
             extend="",
+            verbose=verbose,
         )
     return resampled
 
@@ -1056,6 +1065,7 @@ def bedmachine(
     region=None,
     spacing=None,
     registration=None,
+    **kwargs,
 ) -> xr.DataArray:
     """
     Load BedMachine data,  from Morlighem et al. 2020:
@@ -1130,6 +1140,7 @@ def bedmachine(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
         grid = xr.load_dataset(path)["thickness"]
@@ -1141,6 +1152,7 @@ def bedmachine(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
         resampled = surface - thickness
@@ -1165,6 +1177,7 @@ def bedmachine(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     else:
@@ -1180,6 +1193,7 @@ def bedmachine(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
         final_grid = resampled + resampled_geoid
@@ -1316,6 +1330,7 @@ def bedmap2(
     spacing=None,
     registration=None,
     fill_nans=False,
+    **kwargs,
 ) -> xr.DataArray:
     """
     Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
@@ -1395,6 +1410,7 @@ def bedmap2(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs
         )
 
         fname = [p for p in path if p.endswith("thickness.tif")][0]
@@ -1407,6 +1423,7 @@ def bedmap2(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
         # this changes the registration from pixel to gridline
@@ -1435,6 +1452,7 @@ def bedmap2(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     else:
@@ -1456,11 +1474,12 @@ def bedmap2(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
         final_grid = resampled + resampled_geoid
-        geoid.close()
-        resampled_geoid.close()
+        # geoid.close()
+        # resampled_geoid.close()
 
     elif reference not in ["ellipsoid", "geoid"]:
         raise ValueError("invalid reference string")
