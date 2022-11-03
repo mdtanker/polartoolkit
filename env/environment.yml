@@ -1,0 +1,20 @@
+name: antarctic_plots
+channels:
+  - conda-forge
+  # We want to have a reproducible setup, so we don't want default channels,
+  # which may be different for different users. All required channels should
+  # be listed explicitly here.
+  - nodefaults
+dependencies:
+  - python=3.9.* #* means 3.9 or additional patches
+  - mamba
+  # - poetry=1.1.* # conda doesn't yet have v1.2, which is need for group deps ...
+  - pygmt=0.7.0
+  - geopandas=0.12.1
+  - pip # pip must be mentioned explicitly, or conda-lock will fail
+  - pip:
+    - "poetry>=1.2"
+
+# Non-standard section listing target platforms for conda-lock:
+# platforms:
+#   - win-64
