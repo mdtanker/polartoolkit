@@ -1,43 +1,48 @@
 [tool.poetry]
-name = "antarctic_plots"
+name = "antarctic-plots"
 version = "0.0.4.2"
 description = "Functions to automate Antarctic data visualization"
-readme = "README.md" 
 authors = ["mdtanker <matt.d.tankersley@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+packages = [{include = "antarctic_plots"}]
 homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
 repository = "https://github.com/mdtanker/antarctic_plots"
 documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
 keywords = ["antarctica", "plotting", "pygmt", "cross-section", "bedmap", "bedmachine"]
+exclude = ["antarctic_plots/tests", "docs"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.10"
-pandas = "^1.4.3"
+python = "~3.9"
+pygmt = "0.7.0"
+geopandas = "0.12.1"
+conda-lock = "^1.2.1"
+pandas = "^1.5.1"
 pooch = {extras = ["progress"], version = "^1.6.0"}
 verde = "^1.7.0"
-xarray = {extras = ["io"], version = "^2022.6.0"}
-pyproj = "^3.3.1"
-matplotlib = "^3.5.3"
-pyogrio = "^0.4.1"
-rioxarray = "^0.12.0"
-scipy = ">=1.7.1"
-numpy = "^1.23.3"
+xarray = {extras = ["io"], version = "^2022.10.0"}
+pyproj = "^3.4.0"
+matplotlib = "^3.6.1"
+pyogrio = "^0.4.2"
+rioxarray = "^0.12.4"
+scipy = "^1.9.3"
+numpy = "^1.23.4"
 openpyxl = "^3.0.10"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.1.2"
-flake8 = "^4.0.1"
+pytest = "^7.2.0"
+flake8 = "^5.0.4"
 isort = "^5.10.1"
-Flake8-pyproject = "^0.9.0"
-black = {extras = ["jupyter"], version = "^22.6.0"}
+Flake8-pyproject = "^1.1.0.post0"
+black = {extras = ["jupyter"], version = "^22.10.0"}
 nbsphinx = "^0.8.9"
 sphinx-gallery = "^0.11.1"
 jupyter-book = "^0.13.1"
-nbconvert = "6.5.3"
+nbconvert = "<7"
 pytest-cov = "^4.0.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.flake8]
