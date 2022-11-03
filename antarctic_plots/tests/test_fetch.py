@@ -324,8 +324,8 @@ test = [
         (
             "1000",
             [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
-            -46.9995384216,
-            14007.8945313,
+            -23.5582103729,
+            14005.65625,
             "g",
         ),
     ),
@@ -583,6 +583,28 @@ def test_bedmap2(test_input, expected):
 
 # grid = fetch.bedmap2(layer="surface", reference="geoid")
 # utils.get_grid_info(grid)
+
+# %% Bedmap points
+
+
+def test_bedmap_points():
+    df = fetch.bedmap_points(version="bedmap1")
+    expected = [
+        952525.5,
+        -50.57860974982828,
+        -76.06615223267103,
+        941.8317307441855,
+        989.0156562819874,
+        -119.0829515327895,
+        -419901.6480732197,
+        490531.6099745441,
+    ]
+    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
+
+
+# df = fetch.bedmap_points(version='bedmap1')
+# df.describe().iloc[1].tolist()
+
 
 # %% deepbedmap
 
@@ -880,4 +902,82 @@ def test_moho(test_input, expected):
 # grid = fetch.moho(version='shen-2018')
 # utils.get_grid_info(grid)
 
-# %%
+# %% geoid
+
+test = [
+    (
+        "eigen",
+        (
+            "5000",
+            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            -66.1241073608,
+            52.2200775146,
+            "g",
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_geoid(test_input, expected):
+    grid = fetch.geoid(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.geoid()
+# utils.get_grid_info(grid)
+
+# %% etopo
+
+expected = (
+    "5000",
+    [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+    -7093.03369141,
+    4089.17773438,
+    "g",
+)
+
+
+def test_etopo():
+    grid = fetch.etopo()
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.etopo()
+# utils.get_grid_info(grid)
+
+# %% REMA
+
+
+test = [
+    (
+        dict(version=500),
+        (
+            "500",
+            [-2700500.0, 2750500.0, -2500000.0, 3342000.0],
+            -66.4453125,
+            4685.50097656,
+            "p",
+        ),
+    ),
+    (
+        dict(version=1000),
+        (
+            "1000",
+            [-2701000.0, 2751000.0, -2500000.0, 3342000.0],
+            -66.4447631836,
+            4624.09716797,
+            "p",
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_REMA(test_input, expected):
+    grid = fetch.REMA(**test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
+# grid = fetch.REMA(version=500)
+# utils.get_grid_info(grid)
