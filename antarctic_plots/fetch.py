@@ -1323,14 +1323,14 @@ def bedmap_points(
 
 def bedmap2(
     layer: str,
-    reference: str = "geoid",
-    plot: bool = False,
-    info: bool = False,
-    region=None,
-    spacing=None,
-    registration=None,
-    fill_nans=False,
-    **kwargs,
+    # reference: str = "geoid",
+    # plot: bool = False,
+    # info: bool = False,
+    # region=None,
+    # spacing=None,
+    # registration=None,
+    # fill_nans=False,
+    # **kwargs,
 ) -> xr.DataArray:
     """
     Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
@@ -1362,13 +1362,13 @@ def bedmap2(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
-    # Declare initial grid values,
-    # use utils.get_grid_info(xr.load_dataarray(file).squeeze())
+    # Declare initial grid values, of .nc files not .tiff files
+    # use utils.get_grid_info(xr.load_dataset(file).band_data
     # several of the layers have different values
     if layer == "lakemask_vostok":
-        initial_region = [1189500, 1470500, -401500, -291500]
+        initial_region = [1190000.0, 1470000.0, -402000.0, -291000.0]
         initial_spacing = 1e3
-        initial_registration = "p"
+        initial_registration = "g"
 
     elif layer == "thickness_uncertainty_5km":
         initial_region = [-3401500, 3403500, -3397500, 3397500]
@@ -1376,17 +1376,16 @@ def bedmap2(
         initial_registration = "p"
 
     else:
-        # y lims are differnt if inputting fname straight to utils.get_grid_info()
-        initial_region = [-3333500, 3333500, -3332500, 3332500]
+        initial_region = [-3333000, 3333000, -3333000, 3333000]
         initial_spacing = 1e3
-        initial_registration = "p"
+        initial_registration = "g"
 
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
+    # if region is None:
+    #     region = initial_region
+    # if spacing is None:
+    #     spacing = initial_spacing
+    # if registration is None:
+    #     registration = initial_registration
 
     # retrieve the specified layer file
     path = pooch.retrieve(
@@ -1397,109 +1396,108 @@ def bedmap2(
         processor=pooch.Unzip(),
         progressbar=True,
     )
+# "https://ramadda.data.bas.ac.uk/repository/entry/show/Polar+Data+Centre/DOI/BEDMAP2+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"    fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
+    grid = xr.load_dataarray(fname).squeeze()
+    # # calculate icebase as surface-thickness
+    # if layer == "icebase":
+    #     fname = [p for p in path if p.endswith("surface.tif")][0]
+    #     grid = xr.load_dataarray(fname).squeeze()
+    #     surface = resample_grid(
+    #         grid,
+    #         initial_spacing=initial_spacing,
+    #         initial_region=initial_region,
+    #         initial_registration=initial_registration,
+    #         spacing=spacing,
+    #         region=region,
+    #         registration=registration,
+    #         **kwargs,
+    #     )
 
-    # calculate icebase as surface-thickness
-    if layer == "icebase":
-        fname = [p for p in path if p.endswith("surface.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        surface = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+    #     fname = [p for p in path if p.endswith("thickness.tif")][0]
+    #     grid = xr.load_dataarray(fname).squeeze()
+    #     thickness = resample_grid(
+    #         grid,
+    #         initial_spacing=initial_spacing,
+    #         initial_region=initial_region,
+    #         initial_registration=initial_registration,
+    #         spacing=spacing,
+    #         region=region,
+    #         registration=registration,
+    #         **kwargs,
+    #     )
 
-        fname = [p for p in path if p.endswith("thickness.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        thickness = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+    #     # this changes the registration from pixel to gridline
+    #     resampled = surface - thickness
 
-        # this changes the registration from pixel to gridline
-        resampled = surface - thickness
+    # elif layer in [
+    #     "bed",
+    #     "coverage",
+    #     "grounded_bed_uncertainty",
+    #     "icemask_grounded_and_shelves",
+    #     "lakemask_vostok",
+    #     "rockmask",
+    #     "surface",
+    #     "thickness",
+    #     "thickness_uncertainty_5km",
+    #     "gl04c_geiod_to_WGS84",
+    # ]:
 
-    elif layer in [
-        "bed",
-        "coverage",
-        "grounded_bed_uncertainty",
-        "icemask_grounded_and_shelves",
-        "lakemask_vostok",
-        "rockmask",
-        "surface",
-        "thickness",
-        "thickness_uncertainty_5km",
-        "gl04c_geiod_to_WGS84",
-    ]:
+    #     fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
+    #     grid = xr.load_dataarray(fname).squeeze()
+    #     resampled = resample_grid(
+    #         grid,
+    #         initial_spacing=initial_spacing,
+    #         initial_region=initial_region,
+    #         initial_registration=initial_registration,
+    #         spacing=spacing,
+    #         region=region,
+    #         registration=registration,
+    #         **kwargs,
+    #     )
 
-        fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        resampled = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+    # else:
+    #     raise ValueError("invalid layer string")
 
-    else:
-        raise ValueError("invalid layer string")
+    # # change layer elevation to be relative to the ellipsoid instead of the geoid
+    # if reference == "ellipsoid" and layer in [
+    #     "surface",
+    #     "icebase",
+    #     "bed",
+    # ]:
+    #     geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
+    #     geoid = xr.load_dataarray(geoid_file).squeeze()
+    #     resampled_geoid = resample_grid(
+    #         geoid,
+    #         initial_spacing=initial_spacing,
+    #         initial_region=initial_region,
+    #         initial_registration=initial_registration,
+    #         spacing=spacing,
+    #         region=region,
+    #         registration=registration,
+    #         **kwargs,
+    #     )
 
-    # change layer elevation to be relative to the ellipsoid instead of the geoid
-    if reference == "ellipsoid" and layer in [
-        "surface",
-        "icebase",
-        "bed",
-    ]:
-        geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-        geoid = xr.load_dataarray(geoid_file).squeeze()
-        resampled_geoid = resample_grid(
-            geoid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+    #     final_grid = resampled + resampled_geoid
 
-        final_grid = resampled + resampled_geoid
-        # geoid.close()
-        # resampled_geoid.close()
+    # elif reference not in ["ellipsoid", "geoid"]:
+    #     raise ValueError("invalid reference string")
 
-    elif reference not in ["ellipsoid", "geoid"]:
-        raise ValueError("invalid reference string")
+    # else:
+    #     final_grid = resampled
 
-    else:
-        final_grid = resampled
+    # # replace nans with 0's
+    # if fill_nans is True:
+    #     if layer in ["surface", "thickness", "icebase"]:
+    #         # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+    #         # this changes the registration from pixel to gridline
+    #         final_grid = final_grid.fillna(0)
 
-    # replace nans with 0's
-    if fill_nans is True:
-        if layer in ["surface", "thickness", "icebase"]:
-            # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-            # this changes the registration from pixel to gridline
-            final_grid = final_grid.fillna(0)
+    # if plot is True:
+    #     final_grid.plot(robust=True)
+    # if info is True:
+    #     print(pygmt.grdinfo(final_grid))
 
-    if plot is True:
-        final_grid.plot(robust=True)
-    if info is True:
-        print(pygmt.grdinfo(final_grid))
-
-    return final_grid
+    return grid #final_grid
 
 
 def REMA(
