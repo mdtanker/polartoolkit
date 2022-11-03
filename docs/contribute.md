@@ -11,7 +11,7 @@ Any kind of help would be much appreciated. Here are a few ways to contribute:
 * 🔍 Fixing typos and improving to the documentation
 * 💡 Writing code for everyone to use
 
-If you get stuck at any point you can create an issue on GitHub (look for the Issues tab in the repository). 
+If you get stuck at any point you can create an issue on GitHub (look for the Issues tab in the repository).
 
 For more information on contributing to open source projects,
 [GitHub's own guide](https://guides.github.com/activities/contributing-to-open-source/)
@@ -93,8 +93,8 @@ hesitate to ask questions in the [Github discussions page](https://github.com/md
 * Aaron Meurer's [tutorial on the git workflow](http://www.asmeurer.com/git-workflow/)
 * [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
 
-If you're new to working with git, GitHub, and the Unix Shell, we recommend 
-starting with the [Software Carpentry](https://software-carpentry.org/) lessons, 
+If you're new to working with git, GitHub, and the Unix Shell, we recommend
+starting with the [Software Carpentry](https://software-carpentry.org/) lessons,
 which are available in English and Spanish:
 
 * :gb: [Version Control with Git](http://swcarpentry.github.io/git-novice/) / :es: [Control de
@@ -105,25 +105,16 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 
 ### Setting up your environment
 
-Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install packages. Two of the dependencies, `PyGMT` and `GeoPandas`, need to be installed with `conda` since they contain C packages. To navigate this issue, we install `PyGMT` and `Geopandas` independently, then export the `Poetry` env to a file, and use that to add the remaining dependencies.
-
-The file is `requirements.txt` which defines the packages need to use and develop the package.
+Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install packages. Two of the dependencies, `PyGMT` and `GeoPandas`, need to be installed with `conda` since they contain C packages. To navigate this issue, we install `PyGMT` and `Geopandas` with conda, and the rest of the dependencies with `Poetry`.
 
 Run the following to create a conda/mamba env "antarctic_plots_dev":
 
-    make new_env
-
-> **Note:** `mamba` and `conda` are interchangable in all these commands.
-
-Activate it with:
-
+    # switch "win" for either "linux" or "osx" depending on your computer
+    conda create --name antarctic_plots_dev --file env/conda-win-64.lock
     conda activate antarctic_plots_dev
+    poetry install
 
-Install the necessary packages:
-
-    make install_reqs
-
-This environment contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
+This environment contains your local, editable version of Antarctic-Plots, within the virtual environment `antarctic_plots_dev`, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 > **Note:** You'll need to activate the environment every time you start a new terminal.
 
@@ -134,14 +125,14 @@ think about it.
 Black loosely follows the [PEP8](http://pep8.org) guide but with a few differences.
 Regardless, you won't have to worry about formatting the code yourself.
 Before committing, run the following to automatically format your code:
-    
+
     make format
 
 Some formatting changes can't be applied automatically. Running the following to see these.
 
     make check
 
-Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it. 
+Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it.
 
 #### Docstrings
 
@@ -161,7 +152,7 @@ Automated testing helps ensure that our code is as free of bugs as it can be.
 It also lets us know immediately if a change we make breaks any other part of the code.
 
 All of our test code and data are stored in the `tests` subpackage.
-We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests. 
+We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests.
 
 Please write tests for your code so that we can be sure that it won't break any of the
 existing functionality.
@@ -207,7 +198,7 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 This will run the `.ipynb` files, and convert them to markdown to be included in the docs.
 Check for returned errors and open `index.html` in docs/_build/html/ to view the docs.
 
-#### Automatically build the docs 
+#### Automatically build the docs
 
 Add, commit, and push all changes to Github in a Pull Request, and `RTD` should automatically build the docs.
 
@@ -238,7 +229,7 @@ Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
 [post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
 
-## Release a new version 
+## Release a new version
 
 This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
 
@@ -269,10 +260,10 @@ Run a few gallery examples to make sure this env works, then its read to publish
 
     make publish
 
- Now push the changes to Github and make a release with the matching version number. 
+ Now push the changes to Github and make a release with the matching version number.
 
 ## Update the dependencies
-The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`. 
+The package uses `Poetry` (v.1.2) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`. To get around this, we install `PyGMT` and `GeoPandas` with conda, and install the rest of the dependencies with `Poetry`.
 
 To update or add dependencies, use the below commands:
 
@@ -282,7 +273,11 @@ or if the package is only for development/documentation
 
     poetry add <PACKAGE> --group dev --lock
 
-Replace <PACKAGE> with package name, and optionally set the version with the following formats, as defined [here](https://python-poetry.org/docs/dependency-specification/):
+or if the package should include its optional dependencies
+
+    poetry add <PACKAGE[extras]>
+
+Replace <PACKAGE> with the package name, and optionally set the version with the following formats, as defined [here](https://python-poetry.org/docs/dependency-specification/):
 
     PACKAGE==2.1 (exactly 2.1)
     PACKAGE@^2.1 (>=2.1.0 <3.0.0)
@@ -299,7 +294,7 @@ If you add a dependency necessary for using the package, make sure to include it
 
 ## Set up the binder configuration
 
-To run this pacakge online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
+To run this package online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
 
     make binder_yml
 
@@ -309,4 +304,64 @@ This will create an environment with the core dependencies, and export it to a .
   - pip:
     - -e ..
 ```
-Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement. 
+Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement.
+
+## Initial setup with conda/poetry
+> Note: this is only necessary to do once, by the creator of the package. This instructions are here for referencing only!
+
+This follows a stackoverflow [answer](https://stackoverflow.com/a/71110028/18686384)
+
+Manually make a conda environemnt.yml file which lists the dependencies that need to be installed via conda and place it in the `env` folder:
+
+    name: antarctic_plots
+    channels:
+      - conda-forge
+      # We want to have a reproducible setup, so we don't want default channels,
+      # which may be different for different users. All required channels should
+      # be listed explicitly here.
+      - nodefaults
+    dependencies:
+      - python=3.9.*
+      - mamba
+      - pip # pip must be mentioned explicitly, or conda-lock will fail
+      - poetry=1.2.* # 1.1 or additional patches
+      - pygmt=0.7.0
+      - geopandas=0.12.1
+
+In a conda env, which has Poetry, conda-lock, and mamba installed, run the following:
+
+    # Create Conda lock file(s) from environment.yml
+    conda-lock --file env/environment.yml --kind explicit --filename-template "env/conda-{platform}.lock" --conda mamba
+
+    # Set up Poetry
+    poetry init --python=~3.9  # version spec should match the one from environment.yml
+
+    # Fix package versions installed by Conda to prevent upgrades
+    poetry add --lock pygmt=0.7.0 geopandas=0.12.1
+
+    # Add conda-lock (and other packages, as needed) to pyproject.toml and poetry.lock
+    poetry add --lock conda-lock pandas pooch[progress] verde xarray[io] pyproj matplotlib pyogrio rioxarray scipy numpy openpyxl
+
+    # Add development packages
+    # for Poetry v1.2
+    poetry add --group dev --lock pytest flake8 isort Flake8-pyproject black[jupyter] nbsphinx sphinx-gallery jupyter-book "nbconvert<7" pytest-cov
+
+    # for Poetry v1.1
+    poetry add --dev --lock pytest flake8 isort Flake8-pyproject black[jupyter] nbsphinx sphinx-gallery jupyter-book "nbconvert<7" pytest-cov
+
+Creating the env (choose between win-64, linux-64):
+
+    conda create --name antarctic_plots --file env/conda-win-64.lock
+    conda activate antarctic_plots
+    poetry install
+
+Updating the environment
+
+    # Re-generate Conda lock file(s) based on environment.yml
+    conda-lock --file env/environment.yml --kind explicit --filename-template "env/conda-{platform}.lock" --conda mamba
+
+    # Update Conda packages based on re-generated lock file
+    mamba update --file conda-win-64.lock
+
+    # Update Poetry packages and re-generate poetry.lock
+    poetry update
