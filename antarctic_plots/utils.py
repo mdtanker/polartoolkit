@@ -323,6 +323,7 @@ def region_to_bounding_box(input):
 def points_inside_region(
     df: pd.DataFrame,
     region: list,
+    names: list = ["x", "y"],
 ):
     """
     return a subset of a dataframe which is within a region
@@ -339,11 +340,14 @@ def points_inside_region(
     pd.DataFrame
        returns a subset dataframe
     """
+    # make a copy of the dataframe
+    df1 = df.copy()
+
     # make column of booleans for whether row is within the region
-    df["inside"] = vd.inside(coordinates=(df.x, df.y), region=region)
+    df1["inside"] = vd.inside(coordinates=(df1[names[0]], df1[names[1]]), region=region)
 
     # subset if True
-    df_inside = df.loc[df.inside is True].copy()
+    df_inside = df1.loc[df1.inside == True].copy()  # noqa
 
     # drop the column 'inside'
     df_inside.drop(columns="inside", inplace=True)
@@ -360,6 +364,7 @@ def mask_from_shp(
     spacing=None,
     masked: bool = False,
     crs: str = "epsg:3031",
+    pixel_register=True,
 ):
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -403,7 +408,9 @@ def mask_from_shp(
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
-            region=region, spacing=spacing, pixel_register=True
+            region=region,
+            spacing=spacing,
+            pixel_register=pixel_register,
         )
         ds = vd.make_xarray_grid(
             coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
@@ -695,8 +702,8 @@ def grd_compare(
         choose a specific region to compare.
     Returns
     -------
-    xr.DataArray
-        the result of da1 - da2
+    list
+        list of xr.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask", None)
     region = kwargs.get("region", None)
@@ -796,7 +803,7 @@ def grd_compare(
             )
             fig = maps.plot_grd(
                 dif,
-                cmap="polar",
+                cmap=kwargs.get("diff_cmap", "polar"),
                 region=region,
                 coast=coast,
                 origin_shift=origin_shift,
