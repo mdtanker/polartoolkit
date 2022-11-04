@@ -1323,20 +1323,32 @@ def bedmap_points(
 
 def bedmap2(
     layer: str,
-    # reference: str = "geoid",
-    # plot: bool = False,
-    # info: bool = False,
-    # region=None,
-    # spacing=None,
-    # registration=None,
-    # fill_nans=False,
-    # **kwargs,
+    reference: str = "geoid",
+    plot: bool = False,
+    info: bool = False,
+    region=None,
+    spacing=None,
+    registration=None,
+    fill_nans=False,
+    **kwargs,
 ) -> xr.DataArray:
     """
-    Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
+    Load bedmap2 data as xarray.DataArrays
+    from Fretwell et a. 2022: BEDMAP2 - Ice thickness, bed and surface elevation for
+    Antarctica - gridding products (Version 1.0) [Data set]. NERC EDS UK Polar Data
+    Centre.
+    DOI: https://doi.org/10.5285/FA5D606C-DC95-47EE-9016-7A82E446F2F2
+    accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=fa5d606c-dc95-47ee-9016-7a82e446f2f2. # noqa
+
+    All grids are by default referenced to the g104c geoid. Use the
     'reference' parameter to convert to the ellipsoid.
-    Note, nan's in surface grid are set to 0.
-    from https://doi.org/10.5194/tc-7-375-2013.
+
+    Unlike Bedmachine data, Bedmap2 surface and icethickness contain NaN's over the
+    ocean, instead of 0's. To fill these NaN's with 0's, set `fill_nans=True`.
+    Note, this only makes since if the reference is the geoid, therefore, if
+    `reference='ellipsoid` and `fill_nans=True`, the nan's will be filled before
+    converting the results to the geoid (just for surface, since thickness isn't
+    relative to anything).
 
     Parameters
     ----------
@@ -1344,7 +1356,7 @@ def bedmap2(
         choose which layer to fetch:
         "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
         "lakemask_vostok", "rockmask", "surface", "thickness",
-        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
+        "thickness_uncertainty_5km", "icebase"
     reference : str
         choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
         (WGS84), by default is 'geoid'
@@ -1362,6 +1374,15 @@ def bedmap2(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
+
+    # download url
+    url = (
+        "https://ramadda.data.bas.ac.uk/repository/entry/show/Polar+Data+Centre/"
+        "DOI/BEDMAP2+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica"
+        "+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016"
+        "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
+    )
+
     # Declare initial grid values, of .nc files not .tiff files
     # use utils.get_grid_info(xr.load_dataset(file).band_data
     # several of the layers have different values
@@ -1371,133 +1392,162 @@ def bedmap2(
         initial_registration = "g"
 
     elif layer == "thickness_uncertainty_5km":
-        initial_region = [-3401500, 3403500, -3397500, 3397500]
+        initial_region = [-3399000.0, 3401000.0, -3400000.0, 3400000.0]
         initial_spacing = 5e3
-        initial_registration = "p"
+        initial_registration = "g"
 
-    else:
+    elif layer in [
+        "bed",
+        "coverage",
+        "grounded_bed_uncertainty",
+        "icemask_grounded_and_shelves",
+        "rockmask",
+        "surface",
+        "thickness",
+        "icebase",
+    ]:
         initial_region = [-3333000, 3333000, -3333000, 3333000]
         initial_spacing = 1e3
         initial_registration = "g"
 
-    # if region is None:
-    #     region = initial_region
-    # if spacing is None:
-    #     spacing = initial_spacing
-    # if registration is None:
-    #     registration = initial_registration
+    else:
+        raise ValueError("invalid layer string")
 
-    # retrieve the specified layer file
-    path = pooch.retrieve(
-        url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
-        fname="bedmap2_tiff.zip",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-        known_hash=None,
-        processor=pooch.Unzip(),
-        progressbar=True,
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
+    def preprocessing(fname, action, pooch2):
+        "Unzip the folder, convert the tiffs to compressed .zarr files"
+        # extract each layer to it's own folder
+        fname = pooch.Unzip(
+            extract_dir=f"bedmap2_{layer}",
+            members=[f"bedmap2_tiff/bedmap2_{layer}.tif"],
+        )(fname, action, pooch2)[0]
+        # get the path to the layer's tif file
+        fname = Path(fname)
+
+        # Rename to the file to ***.zarr
+        fname_processed = fname.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            grid = xr.load_dataarray(fname).squeeze().drop_vars(["band", "spatial_ref"])
+            grid = grid.to_dataset(name=layer)
+
+            # Save to disk
+            grid.to_zarr(fname_processed)
+
+        return str(fname_processed)
+
+    # calculate icebase as surface-thickness
+    if layer == "icebase":
+        # set layer variable so pooch retrieves correct file
+        layer = "surface"
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # load zarr as a dataarray
+        surface = xr.open_zarr(fname)[layer]
+
+        layer = "thickness"
+        # set layer variable so pooch retrieves correct file
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # load zarr as a dataarray
+        thickness = xr.open_zarr(fname)[layer]
+
+        # calculate icebase with the resampled surface and thickness
+        grid = surface - thickness
+
+        # reset layer variable
+        layer = "icebase"
+
+    elif layer in [
+        "bed",
+        "coverage",
+        "grounded_bed_uncertainty",
+        "icemask_grounded_and_shelves",
+        "lakemask_vostok",
+        "rockmask",
+        "surface",
+        "thickness",
+        "thickness_uncertainty_5km",
+    ]:
+        # download/unzip all files, retrieve the specified layer file and convert to
+        # .zarr
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # load zarr as a dataarray
+        grid = xr.open_zarr(fname)[layer]
+
+    else:
+        raise ValueError("invalid layer string")
+
+    # replace nans with 0's in surface, thickness or icebase grids
+    if fill_nans is True:
+        if layer in ["surface", "thickness", "icebase"]:
+            # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+            # this changes the registration from pixel to gridline
+            grid = grid.fillna(0)
+
+    # change layer elevation to be relative to the ellipsoid instead of the geoid
+    if reference == "ellipsoid" and layer in [
+        "surface",
+        "icebase",
+        "bed",
+    ]:
+        # get a grid of geoid values matching the user's input
+        geoid_correction = geoid(
+            spacing=initial_spacing,
+            region=initial_region,
+            registration=initial_registration,
+        )
+        # convert grid to be referenced to the ellipsoid
+        grid = grid + geoid_correction
+
+    elif reference not in ["ellipsoid", "geoid"]:
+        raise ValueError("invalid reference string")
+
+    # resample grid to users input
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
     )
-# "https://ramadda.data.bas.ac.uk/repository/entry/show/Polar+Data+Centre/DOI/BEDMAP2+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"    fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
-    grid = xr.load_dataarray(fname).squeeze()
-    # # calculate icebase as surface-thickness
-    # if layer == "icebase":
-    #     fname = [p for p in path if p.endswith("surface.tif")][0]
-    #     grid = xr.load_dataarray(fname).squeeze()
-    #     surface = resample_grid(
-    #         grid,
-    #         initial_spacing=initial_spacing,
-    #         initial_region=initial_region,
-    #         initial_registration=initial_registration,
-    #         spacing=spacing,
-    #         region=region,
-    #         registration=registration,
-    #         **kwargs,
-    #     )
 
-    #     fname = [p for p in path if p.endswith("thickness.tif")][0]
-    #     grid = xr.load_dataarray(fname).squeeze()
-    #     thickness = resample_grid(
-    #         grid,
-    #         initial_spacing=initial_spacing,
-    #         initial_region=initial_region,
-    #         initial_registration=initial_registration,
-    #         spacing=spacing,
-    #         region=region,
-    #         registration=registration,
-    #         **kwargs,
-    #     )
+    if plot is True:
+        resampled.plot(robust=True)
+    if info is True:
+        print(pygmt.grdinfo(resampled))
 
-    #     # this changes the registration from pixel to gridline
-    #     resampled = surface - thickness
-
-    # elif layer in [
-    #     "bed",
-    #     "coverage",
-    #     "grounded_bed_uncertainty",
-    #     "icemask_grounded_and_shelves",
-    #     "lakemask_vostok",
-    #     "rockmask",
-    #     "surface",
-    #     "thickness",
-    #     "thickness_uncertainty_5km",
-    #     "gl04c_geiod_to_WGS84",
-    # ]:
-
-    #     fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
-    #     grid = xr.load_dataarray(fname).squeeze()
-    #     resampled = resample_grid(
-    #         grid,
-    #         initial_spacing=initial_spacing,
-    #         initial_region=initial_region,
-    #         initial_registration=initial_registration,
-    #         spacing=spacing,
-    #         region=region,
-    #         registration=registration,
-    #         **kwargs,
-    #     )
-
-    # else:
-    #     raise ValueError("invalid layer string")
-
-    # # change layer elevation to be relative to the ellipsoid instead of the geoid
-    # if reference == "ellipsoid" and layer in [
-    #     "surface",
-    #     "icebase",
-    #     "bed",
-    # ]:
-    #     geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-    #     geoid = xr.load_dataarray(geoid_file).squeeze()
-    #     resampled_geoid = resample_grid(
-    #         geoid,
-    #         initial_spacing=initial_spacing,
-    #         initial_region=initial_region,
-    #         initial_registration=initial_registration,
-    #         spacing=spacing,
-    #         region=region,
-    #         registration=registration,
-    #         **kwargs,
-    #     )
-
-    #     final_grid = resampled + resampled_geoid
-
-    # elif reference not in ["ellipsoid", "geoid"]:
-    #     raise ValueError("invalid reference string")
-
-    # else:
-    #     final_grid = resampled
-
-    # # replace nans with 0's
-    # if fill_nans is True:
-    #     if layer in ["surface", "thickness", "icebase"]:
-    #         # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
-    #         # this changes the registration from pixel to gridline
-    #         final_grid = final_grid.fillna(0)
-
-    # if plot is True:
-    #     final_grid.plot(robust=True)
-    # if info is True:
-    #     print(pygmt.grdinfo(final_grid))
-
-    return grid #final_grid
+    return resampled
 
 
 def REMA(
