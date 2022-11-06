@@ -413,7 +413,7 @@ def plot_profile(
     inset = kwargs.get("inset", True)
     points = create_profile(method, **kwargs)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
-    grid_lines = kwargs.get("grid_lines", True)
+    gridlines = kwargs.get("gridlines", True)
     map_points = kwargs.get("map_points", None)
     coast = kwargs.get("coast", True)
 
@@ -626,13 +626,13 @@ def plot_profile(
             )
 
         # add lat long grid lines
-        if grid_lines is True:
+        if gridlines is True:
             maps.add_gridlines(
                 fig,
                 map_reg,
                 map_proj_ll,
-                x_annots=kwargs.get("x_annots", 30),
-                y_annots=kwargs.get("y_annots", 4),
+                x_spacing=kwargs.get("x_spacing", None),
+                y_spacing=kwargs.get("y_spacing", None),
             )
 
         # plot profile location, and endpoints on map
