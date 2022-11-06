@@ -1323,7 +1323,7 @@ def bedmap_points(
 
 def bedmap2(
     layer: str,
-    reference: str = "geoid",
+    reference: str = "gl04c",
     plot: bool = False,
     info: bool = False,
     region=None,
@@ -1340,8 +1340,10 @@ def bedmap2(
     DOI: https://doi.org/10.5285/FA5D606C-DC95-47EE-9016-7A82E446F2F2
     accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=fa5d606c-dc95-47ee-9016-7a82e446f2f2. # noqa
 
-    All grids are by default referenced to the g104c geoid. Use the
-    'reference' parameter to convert to the ellipsoid.
+
+    All grids are by default referenced to the gl04c geoid. Use the
+    reference='ellipsoid' to convert to the WGS-84 ellipsoid or reference='eigen' to
+    convert to the EIGEN-6c4 geoid.
 
     Unlike Bedmachine data, Bedmap2 surface and icethickness contain NaN's over the
     ocean, instead of 0's. To fill these NaN's with 0's, set `fill_nans=True`.
@@ -1356,10 +1358,10 @@ def bedmap2(
         choose which layer to fetch:
         "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
         "lakemask_vostok", "rockmask", "surface", "thickness",
-        "thickness_uncertainty_5km", "icebase"
+        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
     reference : str
-        choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
-        (WGS84), by default is 'geoid'
+        choose whether heights are referenced to the EIGEN-6c4 geoid 'eigen', the WGS84
+        ellipsoid, 'ellipsoid', or by default the 'gl04c' geoid.
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1368,6 +1370,13 @@ def bedmap2(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
+    fill_nans : bool, optional,
+        choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
+        to reference to the geoid, will fill nan's before conversion, by default is
+        False
 
     Returns
     -------
@@ -1404,6 +1413,7 @@ def bedmap2(
         "rockmask",
         "surface",
         "thickness",
+        "gl04c_geiod_to_WGS84",
         "icebase",
     ]:
         initial_region = [-3333000, 3333000, -3333000, 3333000]
@@ -1423,10 +1433,13 @@ def bedmap2(
     def preprocessing(fname, action, pooch2):
         "Unzip the folder, convert the tiffs to compressed .zarr files"
         # extract each layer to it's own folder
-        fname = pooch.Unzip(
-            extract_dir=f"bedmap2_{layer}",
-            members=[f"bedmap2_tiff/bedmap2_{layer}.tif"],
-        )(fname, action, pooch2)[0]
+        if layer == "gl04c_geiod_to_WGS84":
+            member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
+        else:
+            member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
+        fname = pooch.Unzip(extract_dir=f"bedmap2_{layer}", members=member,)(
+            fname, action, pooch2
+        )[0]
         # get the path to the layer's tif file
         fname = Path(fname)
 
@@ -1488,6 +1501,7 @@ def bedmap2(
         "surface",
         "thickness",
         "thickness_uncertainty_5km",
+        "gl04c_geiod_to_WGS84",
     ]:
         # download/unzip all files, retrieve the specified layer file and convert to
         # .zarr
@@ -1505,30 +1519,45 @@ def bedmap2(
     else:
         raise ValueError("invalid layer string")
 
-    # replace nans with 0's in surface, thickness or icebase grids
+    # replace nans with 0's in surface or thickness grids
     if fill_nans is True:
-        if layer in ["surface", "thickness", "icebase"]:
+        if layer in ["surface", "thickness"]:
             # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
             # this changes the registration from pixel to gridline
             grid = grid.fillna(0)
 
-    # change layer elevation to be relative to the ellipsoid instead of the geoid
-    if reference == "ellipsoid" and layer in [
-        "surface",
-        "icebase",
-        "bed",
-    ]:
-        # get a grid of geoid values matching the user's input
-        geoid_correction = geoid(
-            spacing=initial_spacing,
-            region=initial_region,
-            registration=initial_registration,
+    # change layer elevation to be relative to different reference frames.
+    if layer in ["surface", "icebase", "bed"]:
+        # set layer variable so pooch retrieves the geoid convertion file
+        layer = "gl04c_geiod_to_WGS84"
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
         )
-        # convert grid to be referenced to the ellipsoid
-        grid = grid + geoid_correction
-
-    elif reference not in ["ellipsoid", "geoid"]:
-        raise ValueError("invalid reference string")
+        # load zarr as a dataarray
+        geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
+        if reference == "ellipsoid":
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+        elif reference == "eigen":
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+            # get a grid of EIGEN geoid values matching the user's input
+            eigen_correction = geoid(
+                spacing=initial_spacing,
+                region=initial_region,
+                registration=initial_registration,
+            )
+            # convert from ellipsoid to eigen geoid
+            grid = grid - eigen_correction
+        elif reference == "gl04c":
+            pass
+        else:
+            raise ValueError("invalid reference string")
 
     # resample grid to users input
     resampled = resample_grid(
@@ -2084,8 +2113,13 @@ def geoid(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid height derived from the EIGEN-6C4 spherical
+    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 spherical
     harmonic model of Earth's gravity field. Originally at 10 arc-min resolution.
+    Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
+    To convert a topographic grid which is referenced to the ellipsoid to be referenced
+    to the geoid, add this grid.
+    To convert a topographic grid which is referenced to the geoid to be reference to the
+    ellipsoid, subtract this grid.
 
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin # noqa
