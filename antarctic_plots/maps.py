@@ -705,15 +705,32 @@ def interactive_map(
 
 
 def subplots(
-    grid_dict: dict,
+    grids: list,
     region: Union[str or np.ndarray] = None,
     dims: tuple = None,
     **kwargs,
 ):
-    # if no define region, get from first grid in dictionary
+    """
+    _summary_
+
+    Parameters
+    ----------
+    grids : list
+        _description_
+    region : Union[str or np.ndarray], optional
+        _description_, by default None
+    dims : tuple, optional
+        _description_, by default None
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    # if no define region, get from first grid in list
     if region is None:
         try:
-            region = utils.get_grid_info(list(grid_dict.values()[0]))[1]
+            region = utils.get_grid_info(grids[0])[1]
         except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("grid region can't be extracted, using antarctic region.")
@@ -721,7 +738,7 @@ def subplots(
 
     # get square dimensions for subplot
     if dims is None:
-        subplot_dimensions = utils.square_subplots(len(grid_dict.items()))
+        subplot_dimensions = utils.square_subplots(len(grids))
     else:
         subplot_dimensions = dims
 
@@ -730,6 +747,7 @@ def subplots(
         region, kwargs.get("fig_height", 15)
     )
 
+    # initialize figure
     fig = pygmt.Figure()
 
     with fig.subplot(
@@ -738,18 +756,48 @@ def subplots(
         subsize=(fig_width, fig_height),
         frame=kwargs.get("frame", "f"),
         clearance=kwargs.get("clearance", None),
-        margins=kwargs.get("margins", None),
-        title=kwargs.get("subplot_title", None),
+        title=kwargs.get("fig_title", None),
+        margins=kwargs.get("margins", "0.5c"),
         autolabel=kwargs.get("autolabel"),
     ):
-        for i, (k, v) in enumerate(grid_dict.items()):
+        for i, j in enumerate(grids):
             with fig.set_panel(panel=i):
+
+                # if list of cmaps provided, use them
+                if kwargs.get("cmaps", None) is not None:
+                    cmap = kwargs.get("cmaps", None)[i]
+                # if not, use viridis
+                else:
+                    cmap = "viridis"
+
+                # if list of titles provided, use them
+                if kwargs.get("subplot_titles", None) is not None:
+                    sub_title = kwargs.get("subplot_titles", None)[i]
+                else:
+                    sub_title = None
+
+                # if list of colorbar labels provided, use them
+                if kwargs.get("cbar_labels", None) is not None:
+                    cbar_label = kwargs.get("cbar_labels", None)[i]
+                else:
+                    cbar_label = " "
+
+                # if list of colorbar units provided, use them
+                if kwargs.get("cbar_units", None) is not None:
+                    cbar_unit = kwargs.get("cbar_units", None)[i]
+                else:
+                    cbar_unit = " "
+
                 # plot the grids
                 plot_grd(
-                    v["grid"],
+                    j,
                     fig=fig,
                     origin_shift="no_shift",
                     region=region,
+                    cmap=cmap,
+                    title=sub_title,
+                    cbar_label=cbar_label,
+                    cbar_unit=cbar_unit,
                     **kwargs,
                 )
     return fig
