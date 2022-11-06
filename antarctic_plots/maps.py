@@ -528,8 +528,8 @@ def add_gridlines(
 
 def add_inset(
     fig: pygmt.figure,
-    region: Union[str or np.ndarray],
     fig_width: Union[int, float],
+    region: Union[str or np.ndarray] = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
     inset_reg: list = [-2800e3, 2800e3, -2800e3, 2800e3],
@@ -541,10 +541,11 @@ def add_inset(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    region : np.ndarray
-        region for the figure
     fig_width : float or int
-        width of figure in cm
+        width of figure in cm, if you didn't explicitly set this in creating the figure
+        find the value with utils.set_proj()
+    region : Union[str or np.ndarray], optional
+        region for the figure
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
     inset_width : float, optional
@@ -555,6 +556,11 @@ def add_inset(
     coast_pen = kwargs.get("coast_pen", "0.2,black")
 
     inset_map = f"X{fig_width*inset_width}c"
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = lib.extract_region()
 
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
@@ -590,7 +596,10 @@ def add_inset(
 
 
 def add_scalebar(
-    fig: pygmt.figure, region: Union[str or np.ndarray], projection: str, **kwargs
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
+    **kwargs,
 ):
     """
     add lat lon grid lines and annotations to a figure.
@@ -598,16 +607,23 @@ def add_scalebar(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    region : np.ndarray
+    region : np.ndarray, optional
         region for the figure
-    projection : str
-        GMT projection string in lat lon
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
 
     """
     font_color = kwargs.get("font_color", "black")
     scale_length = kwargs.get("scale_length")
     length_perc = kwargs.get("length_perc", 0.25)
     position = kwargs.get("position", "n.5/.05")
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = lib.extract_region()
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))
@@ -770,7 +786,7 @@ def subplots(
     -------
     PyGMT.Figure()
         Returns a figure object, which can be used by other PyGMT plotting functions.
-        
+
     """
     # if no define region, get from first grid in list
     if region is None:

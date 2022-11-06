@@ -676,7 +676,6 @@ def plot_profile(
         if inset is True:
             maps.add_inset(
                 fig,
-                map_reg,
                 map_width,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
