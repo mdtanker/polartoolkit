@@ -1143,25 +1143,23 @@ def coherency(grids: list, label: str, **kwargs):
     """
 
 
-def square_subplots(n):
+def square_subplots(n: int):
     """
     From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py # noqa
-    Return an arrangement of rows containing ``n`` axes that is as close to
-    square as looks good.
-    :param n:
-        The number of plots in the subplot
-    :return:
-        Returns a  :class:`tuple` of length ``nrows``, where each element
-        represents the number of plots in that row, so for example a 3 x 2
+    Calculate the number of rows and columns based on the total number of items (n) to
+    make an arrangement as close to square as looks good.
+
+    Parameters
+    ----------
+    n : int
+        The number of total plots in the subplot
+
+    Returns
+    -------
+    tuple
+        Returns a tuple in the format (number of rows, number of columns), so for example a 3 x 2
         grid would be represented as ``(3, 3)``, because there are 2 rows
         of length 3.
-    Example:
-    --------
-    .. code::
-        >>> GridStrategy.get_grid(7)
-        (2, 3, 2)
-        >>> GridStrategy.get_grid(6)
-        (3, 3)
     """
     SPECIAL_CASES = {3: (2, 1), 5: (2, 3)}
     if n in SPECIAL_CASES:

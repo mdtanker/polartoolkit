@@ -711,21 +711,25 @@ def subplots(
     **kwargs,
 ):
     """
-    _summary_
+    Plot a series of grids as individual suplots. This will automatically configure the
+    layout to be closest to a square. Add any parameters from `plot_grd()` here as
+    keyword arguments for further customization.
 
     Parameters
     ----------
     grids : list
-        _description_
+        list of xr.DataArray's to be plotted
     region : Union[str or np.ndarray], optional
-        _description_, by default None
+        choose to subset the grids to a specified region, by default None
     dims : tuple, optional
-        _description_, by default None
+        customize the subplot dimensions (# rows, # columns), by default will use
+        `utils.square_subplots()` to make a square(~ish) layout.
 
     Returns
     -------
-    _type_
-        _description_
+    PyGMT.Figure()
+        Returns a figure object, which can be used by other PyGMT plotting functions.
+        
     """
     # if no define region, get from first grid in list
     if region is None:
