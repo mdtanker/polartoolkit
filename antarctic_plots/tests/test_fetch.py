@@ -18,6 +18,7 @@ def test_():
 import os
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import pytest
 from geopandas.testing import assert_geodataframe_equal
@@ -529,59 +530,105 @@ def test_bedmachine_reference():
 # utils.get_grid_info(grid)
 
 # %% bedmap2
-# test for all layers, but only test reference models with 1 layer
+# test for all layers, but only test reference models with 1 layer and fill_nans with 1
+# layer
 
 test = [
     (
-        "icebase",
+        dict(layer="bed"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -7054.0, 3972.0, "g"),
+    ),
+    (
+        dict(layer="coverage"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 1.0, "g"),
+    ),
+    (
+        dict(layer="grounded_bed_uncertainty"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 65535.0, "g"),
+    ),
+    (
+        dict(layer="icemask_grounded_and_shelves"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 1.0, "g"),
+    ),
+    (
+        dict(layer="rockmask"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 0.0, "g"),
+    ),
+    (
+        dict(layer="surface"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 4082.0, "g"),
+    ),
+    (
+        dict(layer="thickness"),
+        ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4621.0, "g"),
+    ),
+    (
+        dict(layer="icebase"),
         ("1000", [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -2736.0, 3972.0, "g"),
     ),
     (
-        "surface",
-        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 1.0, 4082.0, "p"),
+        dict(layer="lakemask_vostok"),
+        ("1000", [1190000.0, 1470000.0, -402000.0, -291000.0], 1.0, 1.0, "g"),
     ),
     (
-        "thickness",
-        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], 0.0, 4621.0, "p"),
-    ),
-    (
-        "bed",
-        ("1000", [-3333500.0, 3333500.0, -3332500.0, 3332500.0], -7054.0, 3972.0, "p"),
-    ),
-    (
-        "gl04c_geiod_to_WGS84",
-        (
-            "1000",
-            [-3333500.0, 3333500.0, -3332500.0, 3332500.0],
-            -65.8680496216,
-            36.6361198425,
-            "p",
-        ),
+        dict(layer="thickness_uncertainty_5km"),
+        ("5000", [-3399000.0, 3401000.0, -3400000.0, 3400000.0], 0.0, 65535.0, "g"),
     ),
 ]
 
 
-@pytest.mark.working
-def test_bedmap2_reference():
-    grid = fetch.bedmap2(layer="surface", reference="ellipsoid")
-    expected = (
-        "1000",
-        [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
-        -50.4912605286,
-        4090.53417969,
-        "g",
-    )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-
-
-@pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2(test_input, expected):
-    grid = fetch.bedmap2(test_input)
+    grid = fetch.bedmap2(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-# grid = fetch.bedmap2(layer="surface", reference="geoid")
+def test_bedmap2_reference():
+    # fetch variations of grids and reference models
+    region = [-101e3, -100e3, -51e3, -50e3]
+    gl04c_grid = fetch.bedmap2(
+        layer="gl04c_geiod_to_WGS84",
+        region=region,
+    )
+    eigen_grid = fetch.geoid(
+        region=region,
+        spacing=1e3,
+    )
+    surface_eigen_grid = fetch.bedmap2(
+        layer="surface",
+        reference="eigen",
+        region=region,
+    )
+    surface_ellipsoid_grid = fetch.bedmap2(
+        layer="surface",
+        reference="ellipsoid",
+        region=region,
+    )
+    surface_gl04c_grid = fetch.bedmap2(
+        layer="surface",
+        reference="gl04c",
+        region=region,
+    )
+    # get mean values
+    gl04c = np.nanmean(gl04c_grid)
+    eigen = np.nanmean(eigen_grid)
+    surface_eigen = np.nanmean(surface_eigen_grid)
+    surface_ellipsoid = np.nanmean(surface_ellipsoid_grid)
+    surface_gl04c = np.nanmean(surface_gl04c_grid)
+    assert surface_ellipsoid - eigen == pytest.approx(surface_eigen, rel=0.1)
+    assert surface_ellipsoid - gl04c == pytest.approx(surface_gl04c, rel=0.1)
+    assert surface_gl04c + gl04c == pytest.approx(surface_ellipsoid, rel=0.1)
+    assert surface_eigen + eigen == pytest.approx(surface_ellipsoid, rel=0.1)
+
+
+def test_bedmap2_fill_nans():
+    grid = fetch.bedmap2(layer="surface")
+    filled_grid = fetch.bedmap2(layer="surface", fill_nans=True)
+    assert np.nanmean(grid) == pytest.approx(1964.5349, rel=0.1)
+    assert np.nanmean(filled_grid) == pytest.approx(602.32306, rel=0.1)
+
+
+# grid = fetch.bedmap2(layer="surface")
 # utils.get_grid_info(grid)
 
 # %% Bedmap points
