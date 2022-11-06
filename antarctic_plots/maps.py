@@ -329,7 +329,10 @@ def plot_grd(
         fig.colorbar(
             cmap=True,
             position=f"jBC+w{fig_width*.8}c+jTC+h+o0c/.2c+e",
-            frame=f"xaf+l{kwargs.get('cbar_label',' ')}",
+            frame=[
+                f"xaf+l{kwargs.get('cbar_label','')}",
+                f"y+l{kwargs.get('cbar_unit','')}",
+            ],
         )
 
     # plot groundingline and coastlines
