@@ -1528,24 +1528,39 @@ def bedmap2(
 
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
-        # set layer variable so pooch retrieves the geoid convertion file
-        layer = "gl04c_geiod_to_WGS84"
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-            known_hash=None,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # load zarr as a dataarray
-        geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
         if reference == "ellipsoid":
+             # set layer variable so pooch retrieves the geoid convertion file
+            layer = "gl04c_geiod_to_WGS84"
+            fname = pooch.retrieve(
+                url=url,
+                fname="bedmap2_tiff.zip",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                known_hash=None,
+                processor=preprocessing,
+                progressbar=True,
+            )
+            # load zarr as a dataarray
+            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
+
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
         elif reference == "eigen":
+            # set layer variable so pooch retrieves the geoid convertion file
+            layer = "gl04c_geiod_to_WGS84"
+            fname = pooch.retrieve(
+                url=url,
+                fname="bedmap2_tiff.zip",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                known_hash=None,
+                processor=preprocessing,
+                progressbar=True,
+            )
+            # load zarr as a dataarray
+            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
+
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
+
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
                 spacing=initial_spacing,
