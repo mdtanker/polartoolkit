@@ -89,8 +89,8 @@ def basemap(
     if kwargs.get("gridlines", True) is True:
         add_gridlines(
             fig,
-            region = region,
-            projection = proj_latlon,
+            region=region,
+            projection=proj_latlon,
             x_spacing=kwargs.get("x_spacing", None),
             y_spacing=kwargs.get("y_spacing", None),
         )
@@ -100,8 +100,8 @@ def basemap(
         add_inset(
             fig,
             fig_width,
-            inset_pos = kwargs.get("inset_pos", "TL"),
-            )
+            inset_pos=kwargs.get("inset_pos", "TL"),
+        )
 
     # add scalebar
     if kwargs.get("scalebar", False) is True:
@@ -373,8 +373,8 @@ def plot_grd(
     if gridlines is True:
         add_gridlines(
             fig,
-            region = region,
-            projection = proj_latlon,
+            region=region,
+            projection=proj_latlon,
             x_spacing=kwargs.get("x_spacing", None),
             y_spacing=kwargs.get("y_spacing", None),
         )
@@ -385,7 +385,7 @@ def plot_grd(
             fig,
             fig_width,
             inset_pos=kwargs.get("inset_pos", "TL"),
-            )
+        )
 
     # add scalebar
     if scalebar is True:
@@ -469,8 +469,8 @@ def add_gridlines(
 
     """
 
-    x_spacing = kwargs.get('x_spacing', None)
-    y_spacing = kwargs.get('y_spacing', None)
+    x_spacing = kwargs.get("x_spacing", None)
+    y_spacing = kwargs.get("y_spacing", None)
 
     if x_spacing is None:
         x_frames = ["xag", "xa"]
@@ -478,7 +478,7 @@ def add_gridlines(
         x_frames = [
             f"xa{x_spacing}g{x_spacing/2}",
             f"xa{x_spacing}",
-            ]
+        ]
 
     if y_spacing is None:
         y_frames = ["yag", "ya"]
@@ -486,13 +486,15 @@ def add_gridlines(
         y_frames = [
             f"ya{y_spacing}g{y_spacing/2}",
             f"ya{y_spacing}",
-            ]
+        ]
 
     with pygmt.config(
-        MAP_ANNOT_OFFSET_PRIMARY=kwargs.get("MAP_ANNOT_OFFSET_PRIMARY","20p"), # move annotations in/out radially
+        MAP_ANNOT_OFFSET_PRIMARY=kwargs.get(
+            "MAP_ANNOT_OFFSET_PRIMARY", "20p"
+        ),  # move annotations in/out radially
         MAP_ANNOT_MIN_ANGLE=0,
         MAP_FRAME_TYPE="inside",
-        MAP_ANNOT_OBLIQUE=0, # rotate relative to lines
+        MAP_ANNOT_OBLIQUE=0,  # rotate relative to lines
         FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
         MAP_GRID_PEN_PRIMARY="auto,gray",
         MAP_TICK_LENGTH_PRIMARY="-5p",

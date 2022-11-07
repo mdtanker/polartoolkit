@@ -1529,7 +1529,7 @@ def bedmap2(
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
-             # set layer variable so pooch retrieves the geoid convertion file
+            # set layer variable so pooch retrieves the geoid convertion file
             layer = "gl04c_geiod_to_WGS84"
             fname = pooch.retrieve(
                 url=url,
