@@ -261,14 +261,14 @@ def default_layers(version, region=None) -> dict:
     Returns
     -------
     dict[dict]
-        Nested dictionary of Bedmachine layers and attributes
+        Nested dictionary of earth layers and attributes
     """
     if region is None:
         region = regions.antarctica
 
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region)  # , fill_nans=True)
-        icebase = fetch.bedmap2("icebase", region=region)  # , fill_nans=True)
+        surface = fetch.bedmap2("surface", region=region, fill_nans=True)
+        icebase = fetch.bedmap2("icebase", region=region, fill_nans=True)
         bed = fetch.bedmap2("bed", region=region)
 
     elif version == "bedmachine":
@@ -411,12 +411,15 @@ def plot_profile(
         Filename for saving image, by default is None.
     """
     inset = kwargs.get("inset", True)
-    points = create_profile(method, **kwargs)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     gridlines = kwargs.get("gridlines", True)
     map_points = kwargs.get("map_points", None)
     coast = kwargs.get("coast", True)
 
+    # create dataframe of points
+    points = create_profile(method, **kwargs)
+
+    # if no layers supplied, use default
     if layers_dict is None:
         with redirect_stdout(None), redirect_stderr(None):
             layers_dict = default_layers(
@@ -424,6 +427,7 @@ def plot_profile(
                 region=vd.get_region((points.x, points.y)),
             )
 
+    # create default data dictionary
     if data_dict == "default":
         with redirect_stdout(None), redirect_stderr(None):
             data_dict = default_data(region=vd.get_region((points.x, points.y)))
@@ -436,6 +440,7 @@ def plot_profile(
     if kwargs.get("fillnans", True) is True:
         df_layers = fill_nans(df_layers)
 
+    # sample data grids
     if data_dict is not None:
         points = points[["x", "y", "dist"]].copy()
         for k, v in data_dict.items():
@@ -677,6 +682,7 @@ def plot_profile(
             maps.add_inset(
                 fig,
                 map_width,
+                region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
                 inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
