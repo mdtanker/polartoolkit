@@ -1641,14 +1641,28 @@ def REMA(
 
     if version == 500:
         # found with utils.get_grid_info(grid)
-        initial_region = [-2700500.0, 2750500.0, -2500000.0, 3342000.0]
+        initial_region = [-2700250.0, 2750250.0, -2500250.0, 3342250.0]
         initial_spacing = 500
-        initial_registration = "p"
+        initial_registration = "g"
+        # url and file name for download
+        url = (
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic"
+            "/_500m_v2.0_filled_cop30.tar.gz"
+        )
+        fname = "rema_mosaic_500m_v2.0_filled_cop30.tar.gz"
+        members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
     elif version == 1e3:
         # found with utils.get_grid_info(grid)
-        initial_region = [-2701000.0, 2751000.0, -2500000.0, 3342000.0]
+        initial_region = [-2700500.0, 2750500.0, -2500500.0, 3342500.0]
         initial_spacing = 1e3
-        initial_registration = "p"
+        initial_registration = "g"
+        # url and file name for download
+        url = (
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic"
+            "/_1km_v2.0_filled_polarDEM90.tar.gz"
+        )
+        fname = "rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz"
+        members = ["rema_mosaic_1km_v2.0_filled_polarDEM90_dem.tif"]
     else:
         raise ValueError("invalid version")
 
@@ -1659,30 +1673,43 @@ def REMA(
     if registration is None:
         registration = initial_registration
 
-    if version == 500:
-        path = pooch.retrieve(
-            url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_500m_v2.0_filled_cop30.tar.gz",  # noqa
-            fname="rema_mosaic_500m_v2.0_filled_cop30.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-            known_hash=None,
-            progressbar=True,
-            processor=pooch.Untar(),
-        )
-    elif version == 1e3:
-        path = pooch.retrieve(
-            url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",  # noqa
-            fname="rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-            known_hash=None,
-            progressbar=True,
-            processor=pooch.Untar(),
-        )
-    else:
-        raise ValueError("invalid version")
+    def preprocessing(fname, action, pooch2):
+        "Untar the folder, convert the tiffs to compressed .zarr files"
+        # extract the files and get the surface grid
+        path = pooch.Untar(members=members)(fname, action, pooch2)[0]
+        # fname = [p for p in path if p.endswith("dem.tif")]#[0]
+        tiff_file = Path(path)
+        # Rename to the file to ***.zarr
+        fname_processed = tiff_file.with_suffix(".zarr")
 
-    fname = [p for p in path if p.endswith("dem.tif")][0]
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            with xr.open_dataarray(tiff_file).squeeze().drop_vars(
+                ["band", "spatial_ref"]
+            ) as grid:
+                grid = grid.to_dataset(name="surface")
+                # Save to disk
+                grid.to_zarr(fname_processed)
+                grid.close()
 
-    grid = xr.load_dataarray(fname).squeeze()
+        # delete the unzipped file
+        # os.remove(fname)
+
+        return str(fname_processed)
+
+    # download/untar file convert to .zarr and return the path
+    zarr_file = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography/REMA",
+        known_hash=None,
+        progressbar=True,
+        processor=preprocessing,
+    )
+
+    # load zarr as a dataarray
+    grid = xr.open_zarr(zarr_file)["surface"]
 
     resampled = resample_grid(
         grid,
