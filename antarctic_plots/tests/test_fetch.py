@@ -515,15 +515,36 @@ def test_bedmachine(test_input, expected):
 @pytest.mark.earthdata
 @skip_earthdata
 def test_bedmachine_reference():
-    grid = fetch.bedmachine(layer="surface", reference="ellipsoid")
-    expected = (
-        "500",
-        [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
-        -66.0,
-        4797.15527344,
-        "g",
+    # fetch variations of grids and reference models
+    region = [-101e3, -100e3, -51e3, -50e3]
+    eigen_6c4_grid = fetch.geoid(
+        spacing=500,
+        region=region,
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    BM_eigen_6c4_grid = fetch.bedmachine(
+        layer="geoid",
+        region=region,
+    )
+    surface_6c4_grid = fetch.bedmachine(
+        layer="surface",
+        reference="eigen-6c4",
+        region=region,
+    )
+    surface_ellipsoid_grid = fetch.bedmachine(
+        layer="surface",
+        reference="ellipsoid",
+        region=region,
+    )
+
+    # get mean values
+    eigen_6c4 = np.nanmean(eigen_6c4_grid)
+    BM_eigen_6c4 = np.nanmean(BM_eigen_6c4_grid)
+    surface_6c4 = np.nanmean(surface_6c4_grid)
+    surface_ellipsoid = np.nanmean(surface_ellipsoid_grid)
+
+    assert surface_ellipsoid - BM_eigen_6c4 == pytest.approx(surface_6c4, rel=0.1)
+    assert surface_6c4 + BM_eigen_6c4 == pytest.approx(surface_ellipsoid, rel=0.1)
+    assert BM_eigen_6c4 == pytest.approx(eigen_6c4, rel=0.1)
 
 
 # grid = fetch.bedmachine(layer='surface', reference="ellipsoid")
@@ -586,17 +607,17 @@ def test_bedmap2(test_input, expected):
 def test_bedmap2_reference():
     # fetch variations of grids and reference models
     region = [-101e3, -100e3, -51e3, -50e3]
-    gl04c_grid = fetch.bedmap2(
+    eigen_gl04c_grid = fetch.bedmap2(
         layer="gl04c_geiod_to_WGS84",
         region=region,
     )
-    eigen_grid = fetch.geoid(
+    eigen_6c4_grid = fetch.geoid(
         region=region,
         spacing=1e3,
     )
-    surface_eigen_grid = fetch.bedmap2(
+    surface_6c4_grid = fetch.bedmap2(
         layer="surface",
-        reference="eigen",
+        reference="eigen-6c4",
         region=region,
     )
     surface_ellipsoid_grid = fetch.bedmap2(
@@ -606,19 +627,21 @@ def test_bedmap2_reference():
     )
     surface_gl04c_grid = fetch.bedmap2(
         layer="surface",
-        reference="gl04c",
+        reference="eigen-gl04c",
         region=region,
     )
     # get mean values
-    gl04c = np.nanmean(gl04c_grid)
-    eigen = np.nanmean(eigen_grid)
-    surface_eigen = np.nanmean(surface_eigen_grid)
+    eigen_gl04c = np.nanmean(eigen_gl04c_grid)
+    eigen_6c4 = np.nanmean(eigen_6c4_grid)
+
+    surface_6c4 = np.nanmean(surface_6c4_grid)
     surface_ellipsoid = np.nanmean(surface_ellipsoid_grid)
     surface_gl04c = np.nanmean(surface_gl04c_grid)
-    assert surface_ellipsoid - eigen == pytest.approx(surface_eigen, rel=0.1)
-    assert surface_ellipsoid - gl04c == pytest.approx(surface_gl04c, rel=0.1)
-    assert surface_gl04c + gl04c == pytest.approx(surface_ellipsoid, rel=0.1)
-    assert surface_eigen + eigen == pytest.approx(surface_ellipsoid, rel=0.1)
+
+    assert surface_ellipsoid - eigen_6c4 == pytest.approx(surface_6c4, rel=0.1)
+    assert surface_ellipsoid - eigen_gl04c == pytest.approx(surface_gl04c, rel=0.1)
+    assert surface_gl04c + eigen_gl04c == pytest.approx(surface_ellipsoid, rel=0.1)
+    assert surface_6c4 + eigen_6c4 == pytest.approx(surface_ellipsoid, rel=0.1)
 
 
 def test_bedmap2_fill_nans():
@@ -1001,20 +1024,20 @@ test = [
         dict(version=500),
         (
             "500",
-            [-2700500.0, 2750500.0, -2500000.0, 3342000.0],
+            [-2700250.0, 2750250.0, -2500250.0, 3342250.0],
             -66.4453125,
             4685.50097656,
-            "p",
+            "g",
         ),
     ),
     (
         dict(version=1000),
         (
             "1000",
-            [-2701000.0, 2751000.0, -2500000.0, 3342000.0],
+            [-2700500.0, 2750500.0, -2500500.0, 3342500.0],
             -66.4447631836,
             4624.09716797,
-            "p",
+            "g",
         ),
     ),
 ]

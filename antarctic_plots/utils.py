@@ -780,6 +780,10 @@ def grd_compare(
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
     diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask))
 
+    # if kwarg supplied, reset diff_maxabs
+    if kwargs.get("diff_maxabs", None) is not None:
+        diff_maxabs = kwargs.get("diff_maxabs", None)
+
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
