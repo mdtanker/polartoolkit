@@ -1,13 +1,13 @@
 # Gallery
 
 ## Maps
-[Basic map](basic_map.ipynb)                            | [Add additional PyGMT methods](extend_pygmt.ipynb)
+[Basic map](basic_map.ipynb)                            | [Use with PyGMT](extend_pygmt.ipynb)
 :------------------------------------------------------:|:-------------------------------------------------------:
 ![](outputs/basic_map.png)                              | ![](outputs/extend_pygmt.png)
 
-[Define projection](setting_projection.ipynb)           | [3D stack](3D_stack.ipynb) 
+[Define projection](setting_projection.ipynb)           | [3D stack](3D_stack.ipynb)
 :------------------------------------------------------:|:-------------------------------------------------------:
-![](outputs/setting_projection.png)                     | ![](outputs/3D_stack.png) 
+![](outputs/setting_projection.png)                     | ![](outputs/3D_stack.png)
 
 [Create subplots](subplots.ipynb)                       | [Subplot layout](subplot_layout.ipynb)
 :------------------------------------------------------:|:-------------------------------------------------------:
@@ -21,7 +21,7 @@
 
 [Add data to profile](profile_with_data.ipynb)          |
 :-------------------------------------------------------:
-![](outputs/profile_with_data.png) 
+![](outputs/profile_with_data.png)
 
 
 ## Utils

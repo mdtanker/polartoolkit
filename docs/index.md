@@ -13,14 +13,14 @@ Functions to automate Antarctic data visualization
 <a href="https://zenodo.org/badge/latestdoi/475677039"><img src="https://zenodo.org/badge/475677039.svg?style=flat-square" alt="Zenodo DOI"></a>
 <a href="https://antarctic-plots.readthedocs.io/en/latest/index.html"><img src="https://img.shields.io/badge/jupyter-book-orange?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAMAAAAVHr4VAAAAXVBMVEX////v7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/v7+/zdybv7+/zdybv7+/v7+/zdybv7+/zdybv7+/zdyaSmqV2AAAAHXRSTlMAEBAgIDAwQEBQUGBgcHCAgJCQoLCwwMDQ4ODw8MDkUIUAAADJSURBVHjaddAFkgNBCAXQP+7uAvc/5tLFVseYF8crUB0560r/5gwvjYYm8gq8QJoyIJNwlnUH0WEnART6YSezV6c5tjOTaoKdfGXtnclFlEBEXVd8JzG4pa/LDql9Jff/ZCC/h2zSqF5bzf4vqkgNwEzeClUd8uMadLE6OnhBFsES5niQh2BOYUqZsfGdmrmbN+TMvPROHUOkde8sEs6Bnr0tDDf2Roj6fmVfubuGyttejCeLc+xFm+NLuLnJeFAyl3gS932MF/wBoukfUcwI05kAAAAASUVORK5CYII=" alt="Jupyter Book"></a>
  </p>
- 
+
  <p align="center">
  <a href=LICENSE><img src="https://img.shields.io/pypi/l/antarctic-plots?style=flat-square" alt="license"></a>
  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/static/v1?label=code style&message=black&color=black&style=flat-square"></a>
 <a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
-<a href="https://codecov.io/gh/mdtanker/antarctic_plots" ><img src="https://codecov.io/gh/mdtanker/antarctic_plots/branch/main/graph/badge.svg?token=LNTFTGRRFU"/> 
+<a href="https://codecov.io/gh/mdtanker/antarctic_plots" ><img src="https://codecov.io/gh/mdtanker/antarctic_plots/branch/main/graph/badge.svg?token=LNTFTGRRFU"/>
  </p>
- 
+
 ![](cover_fig.png)
 
 ## Disclaimer
@@ -28,16 +28,16 @@ Functions to automate Antarctic data visualization
 <p align="center">
 🚨 **This package is in early stages of design and implementation.** 🚨
  </p>
- 
+
 I welcome any feedback, ideas, or contributions! Please contact us on the [Github discussions page](https://github.com/mdtanker/antarctic_plots/discussions) or submit an [issue on Github](https://github.com/mdtanker/antarctic_plots/issues) for problems or feature ideas.
 
 ## About
 
-The **Antarctic-plots** python package provides some basic tools for creating maps and plots specific to Antarctica. It includes code to download common continent-wide datasets (i.e. Bedmap2, AntGG, ADMAP), and visualize them in a variety of ways, including cross sections and maps. 
+The **Antarctic-plots** python package provides some basic tools to help in conducting Antarctic research. You can use it to download common datasets (i.e. BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica, and visualize data with multiple methods. 
 
 Check out our [Documentation](https://antarctic-plots.readthedocs.io/en/latest/) for instructions on installing and using the package.
 
-Feel free to use, share, modify, and [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html) to this project. I've mostly made this for personal usage so expect significant changes. Hopefully I'll implement more tests and Gallery examples soon. 
+Feel free to use, share, modify, and [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html) to this project. I've mostly made this for personal usage so expect significant changes. Hopefully I'll implement more tests and Gallery examples soon.
 
 ## Project goals
 

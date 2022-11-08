@@ -86,18 +86,22 @@ def basemap(
         )
 
     # add lat long grid lines
-    if kwargs.get("grid_lines", True) is True:
+    if kwargs.get("gridlines", True) is True:
         add_gridlines(
             fig,
-            region,
-            proj_latlon,
-            x_annots=kwargs.get("x_annots", 30),
-            y_annots=kwargs.get("y_annots", 4),
+            region=region,
+            projection=proj_latlon,
+            x_spacing=kwargs.get("x_spacing", None),
+            y_spacing=kwargs.get("y_spacing", None),
         )
 
     # add inset map to show figure location
     if kwargs.get("inset", False) is True:
-        add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
+        add_inset(
+            fig,
+            fig_width,
+            inset_pos=kwargs.get("inset_pos", "TL"),
+        )
 
     # add scalebar
     if kwargs.get("scalebar", False) is True:
@@ -174,7 +178,7 @@ def plot_grd(
     fig : pygmt.Figure()
         if adding subplots, set the first returned figure to a variable, and add that
         variable as the kwargs 'fig' to subsequent calls to plot_grd.
-    grid_lines : bool
+    gridlines : bool
         choose to plot lat/long grid lines, by default is False
     inset : bool
         choose to plot inset map showing figure location, by default is False
@@ -225,7 +229,7 @@ def plot_grd(
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
-    grid_lines = kwargs.get("grid_lines", False)
+    gridlines = kwargs.get("gridlines", False)
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
@@ -336,7 +340,10 @@ def plot_grd(
         fig.colorbar(
             cmap=True,
             position=f"jBC+w{fig_width*.8}c+jTC+h+o0c/.2c+e",
-            frame=f"xaf+l{kwargs.get('cbar_label',' ')}",
+            frame=[
+                f"xaf+l{kwargs.get('cbar_label',' ')}",
+                f"y+l{kwargs.get('cbar_unit',' ')}",
+            ],
         )
 
     # plot groundingline and coastlines
@@ -363,18 +370,22 @@ def plot_grd(
         add_box(fig, show_region)
 
     # add lat long grid lines
-    if grid_lines is True:
+    if gridlines is True:
         add_gridlines(
             fig,
-            region,
-            proj_latlon,
-            x_annots=kwargs.get("x_annots", 30),
-            y_annots=kwargs.get("y_annots", 4),
+            region=region,
+            projection=proj_latlon,
+            x_spacing=kwargs.get("x_spacing", None),
+            y_spacing=kwargs.get("y_spacing", None),
         )
 
     # add inset map to show figure location
     if inset is True:
-        add_inset(fig, region, fig_width, kwargs.get("inset_pos", "TL"))
+        add_inset(
+            fig,
+            fig_width,
+            inset_pos=kwargs.get("inset_pos", "TL"),
+        )
 
     # add scalebar
     if scalebar is True:
@@ -438,61 +449,89 @@ def add_coast(
 
 def add_gridlines(
     fig: pygmt.figure,
-    region: Union[str or np.ndarray],
-    projection: str,
-    x_annots: int = 30,
-    y_annots: int = 4,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
+    **kwargs,
 ):
     """
-    add lat lon grid lines and annotations to a figure.
+    add lat lon grid lines and annotations to a figure. Use kwargs x_spacing and
+    y_spacing to customize the interval of gridlines and annotations.
 
     Parameters
     ----------
     fig : PyGMT.figure instance
-    region : np.ndarray
+    region : Union[str or np.ndarray], optional
         region for the figure
-    projection : str
-        GMT projection string in lat lon
-    x_annots : int, optional
-        interval for longitude lines in degrees, by default 30
-    y_annots : int, optional
-        interval for latitude lines in degrees, by default 4
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
+
     """
+
+    x_spacing = kwargs.get("x_spacing", None)
+    y_spacing = kwargs.get("y_spacing", None)
+
+    if x_spacing is None:
+        x_frames = ["xag", "xa"]
+    else:
+        x_frames = [
+            f"xa{x_spacing}g{x_spacing/2}",
+            f"xa{x_spacing}",
+        ]
+
+    if y_spacing is None:
+        y_frames = ["yag", "ya"]
+    else:
+        y_frames = [
+            f"ya{y_spacing}g{y_spacing/2}",
+            f"ya{y_spacing}",
+        ]
+
     with pygmt.config(
-        MAP_ANNOT_OFFSET_PRIMARY="-2p",
+        MAP_ANNOT_OFFSET_PRIMARY=kwargs.get(
+            "MAP_ANNOT_OFFSET_PRIMARY", "20p"
+        ),  # move annotations in/out radially
+        MAP_ANNOT_MIN_ANGLE=0,
         MAP_FRAME_TYPE="inside",
-        MAP_ANNOT_OBLIQUE=0,
+        MAP_ANNOT_OBLIQUE=0,  # rotate relative to lines
         FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
-        MAP_GRID_PEN_PRIMARY="gray",
+        MAP_GRID_PEN_PRIMARY="auto,gray",
         MAP_TICK_LENGTH_PRIMARY="-5p",
-        MAP_TICK_PEN_PRIMARY="thinnest,gray",
-        FORMAT_GEO_MAP="dddF",
-        MAP_POLAR_CAP="90/90",
+        MAP_TICK_PEN_PRIMARY="auto,gray",
+        # FORMAT_GEO_MAP="dddF",
+        # MAP_POLAR_CAP="90/90",
     ):
+        # plot semi-transparent lines and annotations with black font and white shadow
         fig.basemap(
             projection=projection,
             region=region,
             frame=[
                 "NSWE",
-                f"xa{x_annots}g{x_annots/2}",
-                f"ya{y_annots}g{y_annots/2}",
+                x_frames[0],
+                y_frames[0],
             ],
             transparency=50,
             verbose="q",
         )
+        # re-plot annotations with no transparency
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
             fig.basemap(
                 projection=projection,
                 region=region,
-                frame=["NSWE", f"xa{x_annots}", f"ya{y_annots}"],
+                frame=[
+                    "NSWE",
+                    x_frames[0],
+                    y_frames[0],
+                ],
                 verbose="q",
             )
 
 
 def add_inset(
     fig: pygmt.figure,
-    region: Union[str or np.ndarray],
     fig_width: Union[int, float],
+    region: Union[str or np.ndarray] = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
     inset_reg: list = [-2800e3, 2800e3, -2800e3, 2800e3],
@@ -504,10 +543,11 @@ def add_inset(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    region : np.ndarray
-        region for the figure
     fig_width : float or int
-        width of figure in cm
+        width of figure in cm, if you didn't explicitly set this in creating the figure
+        find the value with utils.set_proj()
+    region : Union[str or np.ndarray], optional
+        region for the figure
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
     inset_width : float, optional
@@ -518,6 +558,11 @@ def add_inset(
     coast_pen = kwargs.get("coast_pen", "0.2,black")
 
     inset_map = f"X{fig_width*inset_width}c"
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = lib.extract_region()
 
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
@@ -553,7 +598,10 @@ def add_inset(
 
 
 def add_scalebar(
-    fig: pygmt.figure, region: Union[str or np.ndarray], projection: str, **kwargs
+    fig: pygmt.figure,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
+    **kwargs,
 ):
     """
     add lat lon grid lines and annotations to a figure.
@@ -561,16 +609,23 @@ def add_scalebar(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    region : np.ndarray
+    region : np.ndarray, optional
         region for the figure
-    projection : str
-        GMT projection string in lat lon
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
 
     """
     font_color = kwargs.get("font_color", "black")
     scale_length = kwargs.get("scale_length")
     length_perc = kwargs.get("length_perc", 0.25)
     position = kwargs.get("position", "n.5/.05")
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = lib.extract_region()
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))
@@ -709,15 +764,36 @@ def interactive_map(
 
 
 def subplots(
-    grid_dict: dict,
+    grids: list,
     region: Union[str or np.ndarray] = None,
     dims: tuple = None,
     **kwargs,
 ):
-    # if no define region, get from first grid in dictionary
+    """
+    Plot a series of grids as individual suplots. This will automatically configure the
+    layout to be closest to a square. Add any parameters from `plot_grd()` here as
+    keyword arguments for further customization.
+
+    Parameters
+    ----------
+    grids : list
+        list of xr.DataArray's to be plotted
+    region : Union[str or np.ndarray], optional
+        choose to subset the grids to a specified region, by default None
+    dims : tuple, optional
+        customize the subplot dimensions (# rows, # columns), by default will use
+        `utils.square_subplots()` to make a square(~ish) layout.
+
+    Returns
+    -------
+    PyGMT.Figure()
+        Returns a figure object, which can be used by other PyGMT plotting functions.
+
+    """
+    # if no define region, get from first grid in list
     if region is None:
         try:
-            region = utils.get_grid_info(list(grid_dict.values()[0]))[1]
+            region = utils.get_grid_info(grids[0])[1]
         except Exception:  # (ValueError, pygmt.exceptions.GMTInvalidInput):
             # raise
             print("grid region can't be extracted, using antarctic region.")
@@ -725,7 +801,7 @@ def subplots(
 
     # get square dimensions for subplot
     if dims is None:
-        subplot_dimensions = utils.square_subplots(len(grid_dict.items()))
+        subplot_dimensions = utils.square_subplots(len(grids))
     else:
         subplot_dimensions = dims
 
@@ -734,6 +810,7 @@ def subplots(
         region, kwargs.get("fig_height", 15)
     )
 
+    # initialize figure
     fig = pygmt.Figure()
 
     with fig.subplot(
@@ -742,18 +819,48 @@ def subplots(
         subsize=(fig_width, fig_height),
         frame=kwargs.get("frame", "f"),
         clearance=kwargs.get("clearance", None),
-        margins=kwargs.get("margins", None),
-        title=kwargs.get("subplot_title", None),
+        title=kwargs.get("fig_title", None),
+        margins=kwargs.get("margins", "0.5c"),
         autolabel=kwargs.get("autolabel"),
     ):
-        for i, (k, v) in enumerate(grid_dict.items()):
+        for i, j in enumerate(grids):
             with fig.set_panel(panel=i):
+
+                # if list of cmaps provided, use them
+                if kwargs.get("cmaps", None) is not None:
+                    cmap = kwargs.get("cmaps", None)[i]
+                # if not, use viridis
+                else:
+                    cmap = "viridis"
+
+                # if list of titles provided, use them
+                if kwargs.get("subplot_titles", None) is not None:
+                    sub_title = kwargs.get("subplot_titles", None)[i]
+                else:
+                    sub_title = None
+
+                # if list of colorbar labels provided, use them
+                if kwargs.get("cbar_labels", None) is not None:
+                    cbar_label = kwargs.get("cbar_labels", None)[i]
+                else:
+                    cbar_label = " "
+
+                # if list of colorbar units provided, use them
+                if kwargs.get("cbar_units", None) is not None:
+                    cbar_unit = kwargs.get("cbar_units", None)[i]
+                else:
+                    cbar_unit = " "
+
                 # plot the grids
                 plot_grd(
-                    v["grid"],
+                    j,
                     fig=fig,
                     origin_shift="no_shift",
                     region=region,
+                    cmap=cmap,
+                    title=sub_title,
+                    cbar_label=cbar_label,
+                    cbar_unit=cbar_unit,
                     **kwargs,
                 )
     return fig

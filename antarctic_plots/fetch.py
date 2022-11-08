@@ -1059,7 +1059,7 @@ def IBCSO(
 
 def bedmachine(
     layer: str,
-    reference: str = "geoid",
+    reference: str = "eigen-6c4",
     plot: bool = False,
     info: bool = False,
     region=None,
@@ -1075,8 +1075,11 @@ def bedmachine(
     Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
-    Surface and ice thickness are in ice equivalents. Actually snow surface is from
-    REMA (Howat et al. 2019), and has had firn thickness removed from it to get
+    Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add the
+    geoid grid. use `reference='ellipsoid'` to include this conversion in the fetch call
+
+    Surface and ice thickness are in ice equivalents. Actual snow surface is from
+    REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
     Bedmachine Surface.
 
     To get snow surface: surface+firn
@@ -1092,8 +1095,8 @@ def bedmachine(
         'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed',
         'source'; 'icebase' will give results of surface-thickness
     reference : str
-        choose whether heights are referenced to 'geoid' (EIGEN-6C4) or 'ellipsoid'
-        (WGS84), by default is 'geoid'
+        choose whether heights are referenced to 'eigen-6c4' geoid or the 'ellipsoid'
+        (WGS84), by default is eigen-6c4'
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1184,6 +1187,8 @@ def bedmachine(
         raise ValueError("invalid layer string")
 
     if reference == "ellipsoid" and layer != "thickness":
+        print("converting to be reference to the WGS84 ellipsoid")
+
         geoid = xr.load_dataset(path)["geoid"]
         resampled_geoid = resample_grid(
             geoid,
@@ -1198,7 +1203,7 @@ def bedmachine(
 
         final_grid = resampled + resampled_geoid
 
-    elif reference not in ["ellipsoid", "geoid"]:
+    elif reference not in ["ellipsoid", "eigen-6c4"]:
         raise ValueError("invalid reference string")
 
     else:
@@ -1323,7 +1328,7 @@ def bedmap_points(
 
 def bedmap2(
     layer: str,
-    reference: str = "geoid",
+    reference: str = "eigen-gl04c",
     plot: bool = False,
     info: bool = False,
     region=None,
@@ -1333,10 +1338,23 @@ def bedmap2(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Load bedmap2 data. All grids are by default referenced to the g104c geoid. Use the
-    'reference' parameter to convert to the ellipsoid.
-    Note, nan's in surface grid are set to 0.
-    from https://doi.org/10.5194/tc-7-375-2013.
+    Load bedmap2 data as xarray.DataArrays
+    from Fretwell et a. 2022: BEDMAP2 - Ice thickness, bed and surface elevation for
+    Antarctica - gridding products (Version 1.0) [Data set]. NERC EDS UK Polar Data
+    Centre.
+    DOI: https://doi.org/10.5285/FA5D606C-DC95-47EE-9016-7A82E446F2F2
+    accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=fa5d606c-dc95-47ee-9016-7a82e446f2f2. # noqa
+
+    All grids are by default referenced to the EIGEN-GL04C geoid. Use the
+    reference='ellipsoid' to convert to the WGS-84 ellipsoid or reference='eigen-6c4' to
+    convert to the EIGEN-6c4 geoid.
+
+    Unlike Bedmachine data, Bedmap2 surface and icethickness contain NaN's over the
+    ocean, instead of 0's. To fill these NaN's with 0's, set `fill_nans=True`.
+    Note, this only makes since if the reference is the geoid, therefore, if
+    `reference='ellipsoid` and `fill_nans=True`, the nan's will be filled before
+    converting the results to the geoid (just for surface, since thickness isn't
+    relative to anything).
 
     Parameters
     ----------
@@ -1346,8 +1364,8 @@ def bedmap2(
         "lakemask_vostok", "rockmask", "surface", "thickness",
         "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
     reference : str
-        choose whether heights are referenced to 'geoid' (g104c) or 'ellipsoid'
-        (WGS84), by default is 'geoid'
+        choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
+        ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
     plot : bool, optional
         choose to plot grid, by default False
     info : bool, optional
@@ -1356,30 +1374,58 @@ def bedmap2(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
+    fill_nans : bool, optional,
+        choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
+        to reference to the geoid, will fill nan's before conversion, by default is
+        False
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
     """
-    # Declare initial grid values,
-    # use utils.get_grid_info(xr.load_dataarray(file).squeeze())
+
+    # download url
+    url = (
+        "https://ramadda.data.bas.ac.uk/repository/entry/show/Polar+Data+Centre/"
+        "DOI/BEDMAP2+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica"
+        "+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016"
+        "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
+    )
+
+    # Declare initial grid values, of .nc files not .tiff files
+    # use utils.get_grid_info(xr.load_dataset(file).band_data
     # several of the layers have different values
     if layer == "lakemask_vostok":
-        initial_region = [1189500, 1470500, -401500, -291500]
+        initial_region = [1190000.0, 1470000.0, -402000.0, -291000.0]
         initial_spacing = 1e3
-        initial_registration = "p"
+        initial_registration = "g"
 
     elif layer == "thickness_uncertainty_5km":
-        initial_region = [-3401500, 3403500, -3397500, 3397500]
+        initial_region = [-3399000.0, 3401000.0, -3400000.0, 3400000.0]
         initial_spacing = 5e3
-        initial_registration = "p"
+        initial_registration = "g"
+
+    elif layer in [
+        "bed",
+        "coverage",
+        "grounded_bed_uncertainty",
+        "icemask_grounded_and_shelves",
+        "rockmask",
+        "surface",
+        "thickness",
+        "gl04c_geiod_to_WGS84",
+        "icebase",
+    ]:
+        initial_region = [-3333000, 3333000, -3333000, 3333000]
+        initial_spacing = 1e3
+        initial_registration = "g"
 
     else:
-        # y lims are differnt if inputting fname straight to utils.get_grid_info()
-        initial_region = [-3333500, 3333500, -3332500, 3332500]
-        initial_spacing = 1e3
-        initial_registration = "p"
+        raise ValueError("invalid layer string")
 
     if region is None:
         region = initial_region
@@ -1388,46 +1434,66 @@ def bedmap2(
     if registration is None:
         registration = initial_registration
 
-    # retrieve the specified layer file
-    path = pooch.retrieve(
-        url="https://secure.antarctica.ac.uk/data/bedmap2/bedmap2_tiff.zip",
-        fname="bedmap2_tiff.zip",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-        known_hash=None,
-        processor=pooch.Unzip(),
-        progressbar=True,
-    )
+    def preprocessing(fname, action, pooch2):
+        "Unzip the folder, convert the tiffs to compressed .zarr files"
+        # extract each layer to it's own folder
+        if layer == "gl04c_geiod_to_WGS84":
+            member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
+        else:
+            member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
+        fname = pooch.Unzip(extract_dir=f"bedmap2_{layer}", members=member,)(
+            fname, action, pooch2
+        )[0]
+        # get the path to the layer's tif file
+        fname = Path(fname)
+
+        # Rename to the file to ***.zarr
+        fname_processed = fname.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            grid = xr.load_dataarray(fname).squeeze().drop_vars(["band", "spatial_ref"])
+            grid = grid.to_dataset(name=layer)
+
+            # Save to disk
+            grid.to_zarr(fname_processed)
+
+        return str(fname_processed)
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
-        fname = [p for p in path if p.endswith("surface.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        surface = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
+        # set layer variable so pooch retrieves correct file
+        layer = "surface"
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
         )
+        # load zarr as a dataarray
+        surface = xr.open_zarr(fname)[layer]
 
-        fname = [p for p in path if p.endswith("thickness.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        thickness = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
+        layer = "thickness"
+        # set layer variable so pooch retrieves correct file
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
         )
+        # load zarr as a dataarray
+        thickness = xr.open_zarr(fname)[layer]
 
-        # this changes the registration from pixel to gridline
-        resampled = surface - thickness
+        # calculate icebase with the resampled surface and thickness
+        grid = surface - thickness
+
+        # reset layer variable
+        layer = "icebase"
 
     elif layer in [
         "bed",
@@ -1441,65 +1507,97 @@ def bedmap2(
         "thickness_uncertainty_5km",
         "gl04c_geiod_to_WGS84",
     ]:
-
-        fname = [p for p in path if p.endswith(f"{layer}.tif")][0]
-        grid = xr.load_dataarray(fname).squeeze()
-        resampled = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
+        # download/unzip all files, retrieve the specified layer file and convert to
+        # .zarr
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap2_tiff.zip",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            known_hash=None,
+            processor=preprocessing,
+            progressbar=True,
         )
+        # load zarr as a dataarray
+        grid = xr.open_zarr(fname)[layer]
 
     else:
         raise ValueError("invalid layer string")
 
-    # change layer elevation to be relative to the ellipsoid instead of the geoid
-    if reference == "ellipsoid" and layer in [
-        "surface",
-        "icebase",
-        "bed",
-    ]:
-        geoid_file = [p for p in path if p.endswith("gl04c_geiod_to_WGS84.tif")][0]
-        geoid = xr.load_dataarray(geoid_file).squeeze()
-        resampled_geoid = resample_grid(
-            geoid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
-
-        final_grid = resampled + resampled_geoid
-        # geoid.close()
-        # resampled_geoid.close()
-
-    elif reference not in ["ellipsoid", "geoid"]:
-        raise ValueError("invalid reference string")
-
-    else:
-        final_grid = resampled
-
-    # replace nans with 0's
+    # replace nans with 0's in surface or thickness grids
     if fill_nans is True:
-        if layer in ["surface", "thickness", "icebase"]:
+        if layer in ["surface", "thickness"]:
             # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
             # this changes the registration from pixel to gridline
-            final_grid = final_grid.fillna(0)
+            grid = grid.fillna(0)
+
+    # change layer elevation to be relative to different reference frames.
+    if layer in ["surface", "icebase", "bed"]:
+        if reference == "ellipsoid":
+            print("converting to be referenced to the WGS84 ellipsoid")
+            # set layer variable so pooch retrieves the geoid convertion file
+            layer = "gl04c_geiod_to_WGS84"
+            fname = pooch.retrieve(
+                url=url,
+                fname="bedmap2_tiff.zip",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                known_hash=None,
+                processor=preprocessing,
+                progressbar=True,
+            )
+            # load zarr as a dataarray
+            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
+
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+        elif reference == "eigen-6c4":
+            print("converting to be referenced to the EIGEN-6C4")
+            # set layer variable so pooch retrieves the geoid convertion file
+            layer = "gl04c_geiod_to_WGS84"
+            fname = pooch.retrieve(
+                url=url,
+                fname="bedmap2_tiff.zip",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                known_hash=None,
+                processor=preprocessing,
+                progressbar=True,
+            )
+            # load zarr as a dataarray
+            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
+
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+
+            # get a grid of EIGEN geoid values matching the user's input
+            eigen_correction = geoid(
+                spacing=initial_spacing,
+                region=initial_region,
+                registration=initial_registration,
+            )
+            # convert from ellipsoid back to eigen geoid
+            grid = grid - eigen_correction
+        elif reference == "eigen-gl04c":
+            pass
+        else:
+            raise ValueError("invalid reference string")
+
+    # resample grid to users input
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
 
     if plot is True:
-        final_grid.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(final_grid))
+        print(pygmt.grdinfo(resampled))
 
-    return final_grid
+    return resampled
 
 
 def REMA(
@@ -1511,9 +1609,9 @@ def REMA(
     registration=None,
 ) -> xr.DataArray:
     """
-    Load the REMA surface elevation data. The data are in EPSG
-    3031 and reference to the WGS84 ellipsoid. To convert the data to be reference to
-    the geoid, add a geoid model, which you can get from fetch.geoid().
+    Load the REMA surface elevation data. The data are in EPSG3031 and reference to the
+    WGS84 ellipsoid. To convert the data to be geoid-referenced, subtract a geoid model,
+    which you can get from fetch.geoid().
 
     Choose between 1km or 500m resolutions with parameter `version`.
 
@@ -1543,14 +1641,28 @@ def REMA(
 
     if version == 500:
         # found with utils.get_grid_info(grid)
-        initial_region = [-2700500.0, 2750500.0, -2500000.0, 3342000.0]
+        initial_region = [-2700250.0, 2750250.0, -2500250.0, 3342250.0]
         initial_spacing = 500
-        initial_registration = "p"
+        initial_registration = "g"
+        # url and file name for download
+        url = (
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic"
+            "/_500m_v2.0_filled_cop30.tar.gz"
+        )
+        fname = "rema_mosaic_500m_v2.0_filled_cop30.tar.gz"
+        members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
     elif version == 1e3:
         # found with utils.get_grid_info(grid)
-        initial_region = [-2701000.0, 2751000.0, -2500000.0, 3342000.0]
+        initial_region = [-2700500.0, 2750500.0, -2500500.0, 3342500.0]
         initial_spacing = 1e3
-        initial_registration = "p"
+        initial_registration = "g"
+        # url and file name for download
+        url = (
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic"
+            "/_1km_v2.0_filled_polarDEM90.tar.gz"
+        )
+        fname = "rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz"
+        members = ["rema_mosaic_1km_v2.0_filled_polarDEM90_dem.tif"]
     else:
         raise ValueError("invalid version")
 
@@ -1561,30 +1673,43 @@ def REMA(
     if registration is None:
         registration = initial_registration
 
-    if version == 500:
-        path = pooch.retrieve(
-            url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_500m_v2.0_filled_cop30.tar.gz",  # noqa
-            fname="rema_mosaic_500m_v2.0_filled_cop30.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-            known_hash=None,
-            progressbar=True,
-            processor=pooch.Untar(),
-        )
-    elif version == 1e3:
-        path = pooch.retrieve(
-            url="https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",  # noqa
-            fname="rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
-            known_hash=None,
-            progressbar=True,
-            processor=pooch.Untar(),
-        )
-    else:
-        raise ValueError("invalid version")
+    def preprocessing(fname, action, pooch2):
+        "Untar the folder, convert the tiffs to compressed .zarr files"
+        # extract the files and get the surface grid
+        path = pooch.Untar(members=members)(fname, action, pooch2)[0]
+        # fname = [p for p in path if p.endswith("dem.tif")]#[0]
+        tiff_file = Path(path)
+        # Rename to the file to ***.zarr
+        fname_processed = tiff_file.with_suffix(".zarr")
 
-    fname = [p for p in path if p.endswith("dem.tif")][0]
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            with xr.open_dataarray(tiff_file).squeeze().drop_vars(
+                ["band", "spatial_ref"]
+            ) as grid:
+                grid = grid.to_dataset(name="surface")
+                # Save to disk
+                grid.to_zarr(fname_processed)
+                grid.close()
 
-    grid = xr.load_dataarray(fname).squeeze()
+        # delete the unzipped file
+        # os.remove(fname)
+
+        return str(fname_processed)
+
+    # download/untar file convert to .zarr and return the path
+    zarr_file = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography/REMA",
+        known_hash=None,
+        progressbar=True,
+        processor=preprocessing,
+    )
+
+    # load zarr as a dataarray
+    grid = xr.open_zarr(zarr_file)["surface"]
 
     resampled = resample_grid(
         grid,
@@ -2036,8 +2161,13 @@ def geoid(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid height derived from the EIGEN-6C4 spherical
+    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 spherical
     harmonic model of Earth's gravity field. Originally at 10 arc-min resolution.
+    Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
+    To convert a topographic grid which is referenced to the ellipsoid to be referenced
+    to the geoid, add this grid.
+    To convert a topographic grid which is referenced to the geoid to be reference to the
+    ellipsoid, subtract this grid.
 
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin # noqa
