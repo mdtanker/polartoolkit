@@ -68,7 +68,7 @@ def create_profile(
         raise ValueError(f"Invalid method type. Expected one of {methods}")
     if method == "points":
         if num is None:
-            num = 100
+            num = 1000
         if any(a is None for a in [start, stop]):
             raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
