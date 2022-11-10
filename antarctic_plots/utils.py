@@ -778,11 +778,11 @@ def grd_compare(
     # get individual grid min/max values (and masked values if shapefile is provided)
     grid1_cpt_lims = get_min_max(grid1, shp_mask)
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
-    diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask))
 
     # if kwarg supplied, reset diff_maxabs
-    if kwargs.get("diff_maxabs", None) is not None:
-        diff_maxabs = kwargs.get("diff_maxabs", None)
+    diff_maxabs = kwargs.get("diff_maxabs", vd.maxabs(get_min_max(dif, shp_mask)))
+
+    diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -807,12 +807,12 @@ def grd_compare(
             )
             fig = maps.plot_grd(
                 dif,
-                cmap=kwargs.get("diff_cmap", "polar"),
+                cmap=kwargs.get("diff_cmap", "balance+h0"),
                 region=region,
                 coast=coast,
                 origin_shift=origin_shift,
                 cbar_label="difference",
-                cpt_lims=(-diff_maxabs, diff_maxabs),
+                cpt_lims=diff_lims,
                 fig=fig,
                 title=kwargs.get("title", "Comparing Grids"),
                 inset=kwargs.get("inset", True),
@@ -1172,7 +1172,7 @@ def square_subplots(n: int):
         grid would be represented as ``(3, 3)``, because there are 2 rows
         of length 3.
     """
-    SPECIAL_CASES = {3: (2, 1), 5: (2, 3)}
+    SPECIAL_CASES = {1: (1, 1), 2: (1, 2), 3: (2, 2), 5: (2, 3)}
     if n in SPECIAL_CASES:
         return SPECIAL_CASES[n]
 
@@ -1440,3 +1440,19 @@ def grdblend(
                 args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
                 lib.call_module(module="grdblend", args=args)
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
+
+
+def get_fig_width(figure):
+    with pygmt.clib.Session() as session:
+        with pygmt.helpers.GMTTempFile() as tmpfile:
+            session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
+            map_width = tmpfile.read().strip()
+    return float(map_width)
+
+
+def get_fig_height(figure):
+    with pygmt.clib.Session() as session:
+        with pygmt.helpers.GMTTempFile() as tmpfile:
+            session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
+            map_height = tmpfile.read().strip()
+    return float(map_height)

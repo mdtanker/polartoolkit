@@ -1134,31 +1134,9 @@ def bedmachine(
     )
 
     if layer == "icebase":
-        grid = xr.load_dataset(path)["surface"]
-        surface = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
-
-        grid = xr.load_dataset(path)["thickness"]
-        thickness = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
-
-        resampled = surface - thickness
+        surface = xr.load_dataset(path)["surface"]
+        thickness = xr.load_dataset(path)["thickness"]
+        grid = surface - thickness
 
     elif layer in [
         "surface",
@@ -1172,49 +1150,49 @@ def bedmachine(
         "source",
     ]:
         grid = xr.load_dataset(path)[layer]
-        resampled = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
 
     else:
         raise ValueError("invalid layer string")
 
-    if reference == "ellipsoid" and layer != "thickness":
-        print("converting to be reference to the WGS84 ellipsoid")
+    if layer in ["surface", "icebase", "bed"]:
+        if reference == "ellipsoid":
+            print("converting to be reference to the WGS84 ellipsoid")
+            geoid = xr.load_dataset(path)["geoid"]
+            resampled_geoid = resample_grid(
+                geoid,
+                initial_spacing=initial_spacing,
+                initial_region=initial_region,
+                initial_registration=initial_registration,
+                spacing=spacing,
+                region=region,
+                registration=registration,
+                **kwargs,
+            )
+            # convert to the ellipsoid
+            grid = grid + resampled_geoid
+        elif reference == "eigen-6c4":
+            pass
+        else:
+            raise ValueError("invalid reference string")
 
-        geoid = xr.load_dataset(path)["geoid"]
-        resampled_geoid = resample_grid(
-            geoid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
-
-        final_grid = resampled + resampled_geoid
-
-    elif reference not in ["ellipsoid", "eigen-6c4"]:
-        raise ValueError("invalid reference string")
-
-    else:
-        final_grid = resampled
+    # resample grid to users input
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
 
     if plot is True:
-        final_grid.plot(robust=True)
+        resampled.plot(robust=True)
     if info is True:
-        print(pygmt.grdinfo(final_grid))
+        print(pygmt.grdinfo(resampled))
 
-    return final_grid
+    return resampled
 
 
 def bedmap_points(
@@ -1572,6 +1550,7 @@ def bedmap2(
                 spacing=initial_spacing,
                 region=initial_region,
                 registration=initial_registration,
+                **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
             grid = grid - eigen_correction
@@ -2245,6 +2224,7 @@ def geoid(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     if plot is True:
