@@ -227,6 +227,8 @@ def plot_grd(
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
     cpt_lims = kwargs.get("cpt_lims", None)
+    if cpt_lims is not None:
+        zmin, zmax = cpt_lims
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
     gridlines = kwargs.get("gridlines", False)
@@ -234,6 +236,7 @@ def plot_grd(
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
+    fig_width = kwargs.get("fig_width", None)
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
 
@@ -278,11 +281,14 @@ def plot_grd(
         )
         colorbar = False
     elif grd2cpt is True:
+        if cpt_lims is None:
+            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
         pygmt.grd2cpt(
             cmap=cmap,
             grid=grid,
             region=cmap_region,
             background=True,
+            limit=(zmin, zmax),
             continuous=kwargs.get("continuous", True),
             color_model=kwargs.get("color_model", "R"),
             categorical=kwargs.get("categorical", False),
@@ -291,9 +297,10 @@ def plot_grd(
         )
     elif cpt_lims is not None:
         try:
+            # zmin, zmax = cpt_lims
             pygmt.makecpt(
                 cmap=cmap,
-                series=cpt_lims,
+                series=(zmin, zmax),
                 background=True,
                 continuous=kwargs.get("continuous", False),
                 color_model=kwargs.get("color_model", "R"),
@@ -345,15 +352,26 @@ def plot_grd(
         verbose="q",
     )
 
+    cmap_region = kwargs.get("cmap_region", region)
+
     # display colorbar
-    if colorbar is True:
-        fig.colorbar(
-            cmap=True,
-            position=f"jBC+w{fig_width*.8}c+jTC+h+o0c/.2c+e",
-            frame=[
-                f"xaf+l{kwargs.get('cbar_label',' ')}",
-                f"y+l{kwargs.get('cbar_unit',' ')}",
-            ],
+    if kwargs.get("colorbar", True) is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        cbar_kwargs = {kw: kwargs[kw] for kw in kwargs if kw not in [
+            "cpt_lims",
+            "fig_width",
+            "hist",
+            "grid",
+            "fig",
+
+            ]}
+        add_colorbar(
+            fig,
+            hist=kwargs.get('hist', False),
+            grid=grid,
+            cpt_lims=[zmin, zmax],
+            fig_width=fig_width,
+            **cbar_kwargs,
         )
 
     # plot groundingline and coastlines
@@ -415,6 +433,141 @@ def plot_grd(
 
     return fig
 
+def add_colorbar(
+    fig: pygmt.figure,
+    hist: bool = False,
+    cpt_lims: list = None,
+    **kwargs,
+):
+    """
+    Add a colorbar and optionally a histogram based on the last cmap used by PyGMT.
+
+    Parameters
+    ----------
+    fig : pygmt.figure
+        pygmt figure instance to add to
+    hist : bool, optional
+        choose whether to add a colorbar histogram, by default False
+    cpt_lims : list, optional
+        cpt lims to use for the colorbar histogram, must match those used to create the
+        colormap. If not supplied, will attempt to get values from kwargs `grid`, by default None
+    """
+    # get the current figure width
+    fig_width = utils.get_fig_width(fig)
+
+    # set colorbar width as percentage of total figure width
+    cbar_width_perc = kwargs.get('cbar_width_perc', 0.8)
+
+    # if plotting a histogram add 1cm of spacing instead of .2cm
+    if hist is True:
+        cbar_yoffset = kwargs.get('cbar_yoffset', 1)
+    else:
+        cbar_yoffset = kwargs.get('cbar_yoffset', .2)
+
+    # add colorbar
+    fig.colorbar(
+        cmap=True,
+        position=f"jBC+w{fig_width*cbar_width_perc}c+jTC+h+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e",
+        frame=[
+            f"xaf+l{kwargs.get('cbar_label',' ')}",
+            f"y+l{kwargs.get('cbar_unit',' ')}",
+        ],
+    )
+
+    # add histogram to colorbar
+    # Note, depending on data and hist_type, you may need to manually set kwarg
+    # `hist_ymax` to an appropiate value
+    if hist is True:
+        # get limits used for cmap
+        grid = kwargs.get('grid', None)
+        if cpt_lims is not None:
+            zmin, zmax = cpt_lims
+        elif grid is None:
+            raise ValueError("Must provide either cpt_lims or grid to set min/max for"
+                " histogram")
+        else:
+            warnings.warn("getting max/min values from grid, if cpt_lims were used to "
+                "create the colorscale, histogram will not properly align with colorbar!")
+            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+
+        # get grid's data for histogram
+        data = pygmt.grd2xyz(grid=grid)
+        data = data.z[data.z.between(zmin, zmax)]
+
+        # set bin width
+        series=kwargs.get('hist_series', '100+n') # append +n to get total number of bins
+
+        # set hist type
+        hist_type=kwargs.get('hist_type', 0)
+
+        # get max bin height value
+        if str(series).endswith('+n'):
+            # if series gives number of bins, not width:
+            if hist_type == 0:
+                # if histogram type is counts
+                bins = np.histogram(
+                    data,
+                    bins=int(float((series[:-2]))),
+                )[0]
+                max_bin_height = bins.max()
+            elif hist_type == 1:
+                # if histogram type is frequency percent
+                bins = np.histogram(
+                    data,
+                    density=True,
+                    bins=int(float((series[:-2]))),
+                )[0]
+                max_bin_height = bins.max()/bins.sum() * 100
+        else:
+            # if series gives bin widths, not number of bins:
+            if hist_type == 0:
+                # if histogram type is counts
+                bins = np.histogram(
+                    data,
+                    bins=range(int(min(data)), int(max(data)) + series, series),
+                )[0]
+                max_bin_height = bins.max()
+            elif hist_type == 1:
+                # if histogram type is frequency percent
+                bins = np.histogram(
+                    data,
+                    density=True,
+                    bins=range(int(min(data)), int(max(data)) + series, series),
+                )[0]
+                max_bin_height = bins.max()/bins.sum() * 100
+
+        # define histogram region
+        hist_reg = [
+            zmin,
+            zmax,
+            kwargs.get('hist_ymin', 0),
+            kwargs.get('hist_ymax', max_bin_height),
+        ]
+
+        # shift figure to line up with top left of cbar
+        xshift = kwargs.get('cbar_xoffset', 0) + ((1-cbar_width_perc)*fig_width)/2
+        fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+
+        # plot histograms above colorbar
+        fig.histogram(
+            data=data,
+            projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
+            region=hist_reg,
+            frame=kwargs.get('hist_frame', False),
+            cmap=kwargs.get('hist_cmap', True),
+            fill=kwargs.get('hist_fill', None),
+            pen=kwargs.get('hist_pen', 'default'),
+            barwidth=kwargs.get('hist_barwidth', None),
+            center=kwargs.get('hist_center', False),
+            distribution=kwargs.get('hist_distribution', False),
+            cumulative=kwargs.get('hist_cumulative', False),
+            stairs=kwargs.get('hist_stairs', False),
+            # horizontal=kwargs.get('hist_horizontal', False),
+            series=series, #width of bin in data units
+            histtype=hist_type,
+        )
+        # shift figure back
+        fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
 
 def add_coast(
     fig: pygmt.figure,
