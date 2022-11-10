@@ -17,7 +17,7 @@ import verde as vd
 if TYPE_CHECKING:
     import xarray as xr
 
-from antarctic_plots import fetch, maps, regions, utils
+from antarctic_plots import fetch, maps, utils
 
 try:
     import ipyleaflet
@@ -102,22 +102,18 @@ def create_profile(
         try:
             if num is not None:
                 df = coordinates.set_index("dist")
-                # print(df.describe())
                 dist_resampled = np.linspace(
                     coordinates.dist.min(),
                     coordinates.dist.max(),
                     num,
                     dtype=float,
                 )
-                # print(dist_resampled)
                 df1 = (
                     df.reindex(df.index.union(dist_resampled))
                     .interpolate("cubic")  # cubic needs at least 4 points
                     .reset_index()
                 )
-                # print(df1.describe())
                 df2 = df1[df1.dist.isin(dist_resampled)]
-                # print(df2.describe())
             else:
                 df2 = coordinates
         except ValueError:
@@ -160,7 +156,7 @@ def sample_grids(
     # drop name column if it already exists
     try:
         df.drop(columns=name, inplace=True)
-    except:
+    except KeyError:
         pass
 
     df1 = df.copy()
@@ -169,7 +165,7 @@ def sample_grids(
     df1.reset_index(inplace=True)
 
     # get points to sample at
-    points = df1[['x','y']].copy()
+    points = df1[["x", "y"]].copy()
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
@@ -192,7 +188,7 @@ def sample_grids(
     df1[name] = sampled[name]
 
     # reset index to previous
-    df1.set_index('index', inplace=True)
+    df1.set_index("index", inplace=True)
 
     # reset index name to be same as originals
     df1.index.name = df.index.name
@@ -299,14 +295,14 @@ def default_layers(version, region=None) -> dict:
         Nested dictionary of earth layers and attributes
     """
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", fill_nans=True)#, region=region)
-        icebase = fetch.bedmap2("icebase", fill_nans=True)#, region=region)
-        bed = fetch.bedmap2("bed")#, region=region)
+        surface = fetch.bedmap2("surface", fill_nans=True)  # , region=region)
+        icebase = fetch.bedmap2("icebase", fill_nans=True)  # , region=region)
+        bed = fetch.bedmap2("bed")  # , region=region)
 
     elif version == "bedmachine":
-        surface = fetch.bedmachine("surface")#, region=region)
-        icebase = fetch.bedmachine("icebase")#, region=region)
-        bed = fetch.bedmachine("bed")#, region=region)
+        surface = fetch.bedmachine("surface")  # , region=region)
+        icebase = fetch.bedmachine("icebase")  # , region=region)
+        bed = fetch.bedmachine("bed")  # , region=region)
 
     layer_names = [
         "surface",
@@ -712,7 +708,6 @@ def plot_profile(
         if inset is True:
             maps.add_inset(
                 fig,
-                map_width,
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
