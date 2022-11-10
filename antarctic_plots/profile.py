@@ -376,7 +376,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
-    layers_version="bedmachine",
+    layers_version="bedmap2",
     fig_height: float = 9,
     fig_width: float = 14,
     **kwargs,
