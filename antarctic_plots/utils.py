@@ -1445,8 +1445,8 @@ def get_fig_width(figure):
     with pygmt.clib.Session() as session:
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
-            map_height = tmpfile.read().strip()
-    return float(map_height)
+            map_width = tmpfile.read().strip()
+    return float(map_width)
 
 def get_fig_height(figure):
     with pygmt.clib.Session() as session:
