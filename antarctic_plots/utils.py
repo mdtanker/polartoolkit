@@ -1172,7 +1172,7 @@ def square_subplots(n: int):
         grid would be represented as ``(3, 3)``, because there are 2 rows
         of length 3.
     """
-    SPECIAL_CASES = {1: (1, 1), 2: (1, 2), 3: (1, 2), 5: (2, 3)}
+    SPECIAL_CASES = {1: (1, 1), 2: (1, 2), 3: (2, 2), 5: (2, 3)}
     if n in SPECIAL_CASES:
         return SPECIAL_CASES[n]
 
