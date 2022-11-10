@@ -239,7 +239,7 @@ def plot_grd(
     fig_width = kwargs.get("fig_width", None)
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
-
+    colorbar = kwargs.get("colorbar", True)
     # set figure projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if fig_width is None:
@@ -355,19 +355,23 @@ def plot_grd(
     cmap_region = kwargs.get("cmap_region", region)
 
     # display colorbar
-    if kwargs.get("colorbar", True) is True:
+    if colorbar is True:
         # removed duplicate kwargs before passing to add_colorbar
-        cbar_kwargs = {kw: kwargs[kw] for kw in kwargs if kw not in [
-            "cpt_lims",
-            "fig_width",
-            "hist",
-            "grid",
-            "fig",
-
-            ]}
+        cbar_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "cpt_lims",
+                "fig_width",
+                "hist",
+                "grid",
+                "fig",
+            ]
+        }
         add_colorbar(
             fig,
-            hist=kwargs.get('hist', False),
+            hist=kwargs.get("hist", False),
             grid=grid,
             cpt_lims=[zmin, zmax],
             fig_width=fig_width,
@@ -433,6 +437,7 @@ def plot_grd(
 
     return fig
 
+
 def add_colorbar(
     fig: pygmt.figure,
     hist: bool = False,
@@ -450,24 +455,28 @@ def add_colorbar(
         choose whether to add a colorbar histogram, by default False
     cpt_lims : list, optional
         cpt lims to use for the colorbar histogram, must match those used to create the
-        colormap. If not supplied, will attempt to get values from kwargs `grid`, by default None
+        colormap. If not supplied, will attempt to get values from kwargs `grid`, by
+        default None
     """
     # get the current figure width
     fig_width = utils.get_fig_width(fig)
 
     # set colorbar width as percentage of total figure width
-    cbar_width_perc = kwargs.get('cbar_width_perc', 0.8)
+    cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
     # if plotting a histogram add 1cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get('cbar_yoffset', 1)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 1)
     else:
-        cbar_yoffset = kwargs.get('cbar_yoffset', .2)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
     # add colorbar
     fig.colorbar(
         cmap=True,
-        position=f"jBC+w{fig_width*cbar_width_perc}c+jTC+h+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e",
+        position=(
+            f"jBC+w{fig_width*cbar_width_perc}c+jTC+h",
+            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e",
+        ),
         frame=[
             f"xaf+l{kwargs.get('cbar_label',' ')}",
             f"y+l{kwargs.get('cbar_unit',' ')}",
@@ -479,15 +488,18 @@ def add_colorbar(
     # `hist_ymax` to an appropiate value
     if hist is True:
         # get limits used for cmap
-        grid = kwargs.get('grid', None)
+        grid = kwargs.get("grid", None)
         if cpt_lims is not None:
             zmin, zmax = cpt_lims
         elif grid is None:
-            raise ValueError("Must provide either cpt_lims or grid to set min/max for"
-                " histogram")
+            raise ValueError(
+                "Must provide either cpt_lims or grid to set min/max for" " histogram"
+            )
         else:
-            warnings.warn("getting max/min values from grid, if cpt_lims were used to "
-                "create the colorscale, histogram will not properly align with colorbar!")
+            warnings.warn(
+                "getting max/min values from grid, if cpt_lims were used to create the "
+                "colorscale, histogram will not properly align with colorbar!"
+            )
             zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
 
         # get grid's data for histogram
@@ -495,13 +507,15 @@ def add_colorbar(
         data = data.z[data.z.between(zmin, zmax)]
 
         # set bin width
-        series=kwargs.get('hist_series', '100+n') # append +n to get total number of bins
+        series = kwargs.get(
+            "hist_series", "100+n"
+        )  # append +n to get total number of bins
 
         # set hist type
-        hist_type=kwargs.get('hist_type', 0)
+        hist_type = kwargs.get("hist_type", 0)
 
         # get max bin height value
-        if str(series).endswith('+n'):
+        if str(series).endswith("+n"):
             # if series gives number of bins, not width:
             if hist_type == 0:
                 # if histogram type is counts
@@ -517,7 +531,7 @@ def add_colorbar(
                     density=True,
                     bins=int(float((series[:-2]))),
                 )[0]
-                max_bin_height = bins.max()/bins.sum() * 100
+                max_bin_height = bins.max() / bins.sum() * 100
         else:
             # if series gives bin widths, not number of bins:
             if hist_type == 0:
@@ -534,18 +548,18 @@ def add_colorbar(
                     density=True,
                     bins=range(int(min(data)), int(max(data)) + series, series),
                 )[0]
-                max_bin_height = bins.max()/bins.sum() * 100
+                max_bin_height = bins.max() / bins.sum() * 100
 
         # define histogram region
         hist_reg = [
             zmin,
             zmax,
-            kwargs.get('hist_ymin', 0),
-            kwargs.get('hist_ymax', max_bin_height),
+            kwargs.get("hist_ymin", 0),
+            kwargs.get("hist_ymax", max_bin_height),
         ]
 
         # shift figure to line up with top left of cbar
-        xshift = kwargs.get('cbar_xoffset', 0) + ((1-cbar_width_perc)*fig_width)/2
+        xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
         fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
 
         # plot histograms above colorbar
@@ -553,21 +567,22 @@ def add_colorbar(
             data=data,
             projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
             region=hist_reg,
-            frame=kwargs.get('hist_frame', False),
-            cmap=kwargs.get('hist_cmap', True),
-            fill=kwargs.get('hist_fill', None),
-            pen=kwargs.get('hist_pen', 'default'),
-            barwidth=kwargs.get('hist_barwidth', None),
-            center=kwargs.get('hist_center', False),
-            distribution=kwargs.get('hist_distribution', False),
-            cumulative=kwargs.get('hist_cumulative', False),
-            stairs=kwargs.get('hist_stairs', False),
+            frame=kwargs.get("hist_frame", False),
+            cmap=kwargs.get("hist_cmap", True),
+            fill=kwargs.get("hist_fill", None),
+            pen=kwargs.get("hist_pen", "default"),
+            barwidth=kwargs.get("hist_barwidth", None),
+            center=kwargs.get("hist_center", False),
+            distribution=kwargs.get("hist_distribution", False),
+            cumulative=kwargs.get("hist_cumulative", False),
+            stairs=kwargs.get("hist_stairs", False),
             # horizontal=kwargs.get('hist_horizontal', False),
-            series=series, #width of bin in data units
+            series=series,  # width of bin in data units
             histtype=hist_type,
         )
         # shift figure back
         fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+
 
 def add_coast(
     fig: pygmt.figure,
@@ -968,7 +983,7 @@ def subplots(
     # set subplot projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if kwargs.get("fig_width", None) is None:
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=kwargs.get("fig_height", 15),
         )
@@ -977,7 +992,7 @@ def subplots(
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=kwargs.get("fig_width", None),
-    )
+        )
 
     # initialize figure
     fig = pygmt.Figure()

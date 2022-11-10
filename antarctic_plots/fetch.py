@@ -1177,15 +1177,15 @@ def bedmachine(
 
     # resample grid to users input
     resampled = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
 
     if plot is True:
         resampled.plot(robust=True)

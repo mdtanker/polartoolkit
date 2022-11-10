@@ -782,7 +782,7 @@ def grd_compare(
     # if kwarg supplied, reset diff_maxabs
     diff_maxabs = kwargs.get("diff_maxabs", vd.maxabs(get_min_max(dif, shp_mask)))
 
-    diff_lims = kwargs.get('diff_lims', (-diff_maxabs, diff_maxabs))
+    diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -1441,12 +1441,14 @@ def grdblend(
                 lib.call_module(module="grdblend", args=args)
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
 
+
 def get_fig_width(figure):
     with pygmt.clib.Session() as session:
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
             map_width = tmpfile.read().strip()
     return float(map_width)
+
 
 def get_fig_height(figure):
     with pygmt.clib.Session() as session:
