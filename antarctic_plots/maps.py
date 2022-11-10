@@ -235,11 +235,21 @@ def plot_grd(
     title = kwargs.get("title", None)
     fig_height = kwargs.get("fig_height", 15)
     scalebar = kwargs.get("scalebar", False)
-    colorbar = kwargs.get("colorbar", True)
     reverse_cpt = kwargs.get("reverse_cpt", False)
 
-    # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
+    # set figure projection and size from input region and figure dimensions
+    # by default use figure height to set projection
+    if fig_width is None:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_height=fig_height,
+        )
+    # if fig_width is set, use it to set projection
+    else:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_width=fig_width,
+        )
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -802,9 +812,18 @@ def subplots(
     else:
         subplot_dimensions = dims
 
-    # get subplot size
+    # set subplot projection and size from input region and figure dimensions
+    # by default use figure height to set projection
+    if kwargs.get("fig_width", None) is None:
     proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-        region, kwargs.get("fig_height", 15)
+            region,
+            fig_height=kwargs.get("fig_height", 15),
+        )
+    # if fig_width is set, use it to set projection
+    else:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_width=kwargs.get("fig_width", None),
     )
 
     # initialize figure
@@ -906,6 +925,7 @@ def plot_3d(
         _description_
     """
     fig_height = kwargs.get("fig_height", 15)
+    fig_width = kwargs.get("fig_width", None)
 
     # if plot region not specified, try to pull from grid info
     if region is None:
@@ -916,9 +936,19 @@ def plot_3d(
             print("first grids' region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
-    # set figure projection and size from input region
-    proj, proj_latlon, fig_width, fig_height = utils.set_proj(region, fig_height)
-
+    # set figure projection and size from input region and figure dimensions
+    # by default use figure height to set projection
+    if fig_width is None:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_height=fig_height,
+        )
+    # if fig_width is set, use it to set projection
+    else:
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_width=fig_width,
+        )
     # set vertical limits
     region = region + vlims
 
