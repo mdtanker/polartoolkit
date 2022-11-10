@@ -474,8 +474,8 @@ def add_colorbar(
     fig.colorbar(
         cmap=True,
         position=(
-            f"jBC+w{fig_width*cbar_width_perc}c+jTC+h",
-            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e",
+            f"jBC+w{fig_width*cbar_width_perc}c+jTC+h"
+            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
         ),
         frame=[
             f"xaf+l{kwargs.get('cbar_label',' ')}",
