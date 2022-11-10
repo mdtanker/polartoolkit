@@ -290,23 +290,23 @@ def default_layers(version, region=None) -> dict:
     version : str
         choose between 'bedmap2' and 'bedmachine' layers
 
+    region : str or list[int], optional
+       region of Antarctic to load, by default is data's original region.
+
     Returns
     -------
     dict[dict]
         Nested dictionary of earth layers and attributes
     """
-    if region is None:
-        region = regions.antarctica
-
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region, fill_nans=True)
-        icebase = fetch.bedmap2("icebase", region=region, fill_nans=True)
-        bed = fetch.bedmap2("bed", region=region)
+        surface = fetch.bedmap2("surface", fill_nans=True)#, region=region)
+        icebase = fetch.bedmap2("icebase", fill_nans=True)#, region=region)
+        bed = fetch.bedmap2("bed")#, region=region)
 
     elif version == "bedmachine":
-        surface = fetch.bedmachine("surface", region=region)
-        icebase = fetch.bedmachine("icebase", region=region)
-        bed = fetch.bedmachine("bed", region=region)
+        surface = fetch.bedmachine("surface")#, region=region)
+        icebase = fetch.bedmachine("icebase")#, region=region)
+        bed = fetch.bedmachine("bed")#, region=region)
 
     layer_names = [
         "surface",
@@ -334,16 +334,13 @@ def default_data(region=None) -> dict:
     Parameters
     ----------
     region : str or list[int], optional
-       region of Antarctic to load, by default is entire Antarctic region.
+       region of Antarctic to load, by default is data's original region.
 
     Returns
     -------
     dict[dict]
         Nested dictionary of data and attributes
     """
-    if region is None:
-        region = regions.antarctica
-
     mag = fetch.magnetics(
         version="admap1",
         # region=region,
