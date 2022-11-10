@@ -1440,3 +1440,17 @@ def grdblend(
                 args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
                 lib.call_module(module="grdblend", args=args)
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
+
+def get_fig_width(figure):
+    with pygmt.clib.Session() as session:
+        with pygmt.helpers.GMTTempFile() as tmpfile:
+            session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
+            map_height = tmpfile.read().strip()
+    return float(map_height)
+
+def get_fig_height(figure):
+    with pygmt.clib.Session() as session:
+        with pygmt.helpers.GMTTempFile() as tmpfile:
+            session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
+            map_height = tmpfile.read().strip()
+    return float(map_height)

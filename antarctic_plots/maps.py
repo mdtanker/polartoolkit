@@ -383,7 +383,6 @@ def plot_grd(
     if inset is True:
         add_inset(
             fig,
-            fig_width,
             inset_pos=kwargs.get("inset_pos", "TL"),
         )
 
@@ -530,7 +529,6 @@ def add_gridlines(
 
 def add_inset(
     fig: pygmt.figure,
-    fig_width: Union[int, float],
     region: Union[str or np.ndarray] = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
@@ -543,9 +541,6 @@ def add_inset(
     Parameters
     ----------
     fig : PyGMT.figure instance
-    fig_width : float or int
-        width of figure in cm, if you didn't explicitly set this in creating the figure
-        find the value with utils.set_proj()
     region : Union[str or np.ndarray], optional
         region for the figure
     inset_pos : str, optional
@@ -556,6 +551,8 @@ def add_inset(
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
     coast_pen = kwargs.get("coast_pen", "0.2,black")
+
+    fig_width = utils.get_fig_width(fig)
 
     inset_map = f"X{fig_width*inset_width}c"
 
