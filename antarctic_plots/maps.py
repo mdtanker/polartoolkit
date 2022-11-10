@@ -738,6 +738,7 @@ def add_inset(
     if region is None:
         with pygmt.clib.Session() as lib:
             region = lib.extract_region()
+            assert len(region) == 4
 
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
@@ -801,6 +802,7 @@ def add_scalebar(
     if region is None:
         with pygmt.clib.Session() as lib:
             region = lib.extract_region()
+            assert len(region) == 4
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))
