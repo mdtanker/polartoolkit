@@ -136,7 +136,8 @@ def create_profile(
 def sample_grids(
     df: pd.DataFrame,
     grid: Union[str or xr.DataArray],
-    name: str = None,
+    name: str,
+    **kwargs,
 ):
     """
     Sample data at every point along a line
@@ -147,28 +148,59 @@ def sample_grids(
         Dataframe containing columns 'x', 'y'
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
-    name : str, optional
-        Name for sampled column, by default is str(grid)
+    name : str,
+        Name for sampled column
 
     Returns
     -------
     pd.DataFrame
         Dataframe with new column (name) of sample values from (grid)
     """
-    if name is None:
-        name = grid
+
+    # drop name column if it already exists
+    try:
+        df.drop(columns=name, inplace=True)
+    except:
+        pass
+
+    df1 = df.copy()
+
+    # reset the index
+    df1.reset_index(inplace=True)
+
+    # get points to sample at
+    points = df1[['x','y']].copy()
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
-        points=df[["x", "y"]],
+        points=points,
         grid=grid,
-        newcolname=str(name),
+        newcolname=name,
     )
 
-    # add sampled data to dataframe
-    df[name] = (sampled)[name]
+    # add sampled data to dataframe as a new series
+    # pygmt seems to slightly shift the x, y values so pandas doesnt recognize them as
+    # identifcal to merge on. Need to set tolerance to >0.
+    # df[name] = pd.merge_asof(
+    #     df.sort_values('x'),
+    #     sampled[['x',name]].sort_values('x'),
+    #     on='x',
+    #     direction='nearest',
+    #     tolerance=kwargs.get('tolerance',1),
+    #     )[name]
 
-    return df
+    df1[name] = sampled[name]
+
+    # reset index to previous
+    df1.set_index('index', inplace=True)
+
+    # reset index name to be same as originals
+    df1.index.name = df.index.name
+
+    # check that dataframe is identical to orignal except for new column
+    pd.testing.assert_frame_equal(df1.drop(columns=name), df)
+
+    return df1
 
 
 def fill_nans(df):
@@ -433,18 +465,20 @@ def plot_profile(
             data_dict = default_data(region=vd.get_region((points.x, points.y)))
 
     # sample cross-section layers from grids
+    df_layers = points.copy()
     for k, v in layers_dict.items():
-        df_layers = sample_grids(points, v["grid"], name=v["name"])
+        df_layers = sample_grids(df_layers, v["grid"], name=k)
 
     # fill layers with above layer's values
     if kwargs.get("fillnans", True) is True:
         df_layers = fill_nans(df_layers)
 
     # sample data grids
+    df_data = points.copy()
     if data_dict is not None:
         points = points[["x", "y", "dist"]].copy()
         for k, v in data_dict.items():
-            df_data = sample_grids(points, v["grid"], name=v["name"])
+            df_data = sample_grids(df_data, v["grid"], name=k)
 
     # shorten profiles
     if kwargs.get("clip") is True:
