@@ -778,11 +778,11 @@ def grd_compare(
     # get individual grid min/max values (and masked values if shapefile is provided)
     grid1_cpt_lims = get_min_max(grid1, shp_mask)
     grid2_cpt_lims = get_min_max(grid2, shp_mask)
-    diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask))
 
     # if kwarg supplied, reset diff_maxabs
-    if kwargs.get("diff_maxabs", None) is not None:
-        diff_maxabs = kwargs.get("diff_maxabs", None)
+    diff_maxabs = kwargs.get("diff_maxabs", vd.maxabs(get_min_max(dif, shp_mask)))
+
+    diff_lims = kwargs.get('diff_lims', (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -807,12 +807,12 @@ def grd_compare(
             )
             fig = maps.plot_grd(
                 dif,
-                cmap=kwargs.get("diff_cmap", "polar"),
+                cmap=kwargs.get("diff_cmap", "balance+h0"),
                 region=region,
                 coast=coast,
                 origin_shift=origin_shift,
                 cbar_label="difference",
-                cpt_lims=(-diff_maxabs, diff_maxabs),
+                cpt_lims=diff_lims,
                 fig=fig,
                 title=kwargs.get("title", "Comparing Grids"),
                 inset=kwargs.get("inset", True),
