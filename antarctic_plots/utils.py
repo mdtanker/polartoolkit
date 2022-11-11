@@ -627,7 +627,6 @@ def grd_trend(
                 a.set_aspect("equal")
 
         elif plot_type == "pygmt":
-            fig_height = kwargs.get("fig_height", 10)
             cmap = kwargs.get("cmap", "plasma")
             coast = kwargs.get("coast", True)
             inset = kwargs.get("inset", True)
@@ -644,7 +643,7 @@ def grd_trend(
                 grd2cpt=True,
                 coast=coast,
                 cbar_label=detrended_label,
-                **kwargs
+                **kwargs,
             )
 
             fig = maps.plot_grd(
@@ -657,7 +656,7 @@ def grd_trend(
                 inset=inset,
                 inset_pos=inset_pos,
                 origin_shift=origin_shift,
-                **kwargs
+                **kwargs,
             )
 
             fig = maps.plot_grd(
@@ -669,7 +668,7 @@ def grd_trend(
                 cbar_label=input_label,
                 title=title,
                 origin_shift=origin_shift,
-                **kwargs
+                **kwargs,
             )
 
             fig.show()

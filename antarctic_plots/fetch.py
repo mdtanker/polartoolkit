@@ -218,7 +218,7 @@ def ice_vel(
     Data part of https://doi.org/10.1029/2019GL083826
 
     Units are in m/yr
-    
+
     Parameters
     ----------
     plot : bool, optional
