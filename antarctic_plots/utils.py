@@ -1319,6 +1319,7 @@ def polygon_to_region(polygon: list):
 def mask_from_polygon(
     polygon: list,
     invert: bool = False,
+    drop_nans: bool = False,
     grid: Union[str, xr.DataArray] = None,
     region: list = None,
     spacing: int = None,
@@ -1332,13 +1333,15 @@ def mask_from_polygon(
     polygon : list
        list of polygon vertices
     invert : bool, optional
-        _description_, by default False
+        reverse the sense of masking, by default False
+    drop_nans : bool, optional
+        drop nans after masking, by default False
     grid : Union[str, xr.DataArray], optional
-        _description_, by default None
+        grid to mask, by default None
     region : list, optional
-        _description_, by default None
+        region to create a grid if none is supplied, by default None
     spacing : int, optional
-        _description_, by default None
+        spacing to create a grid if none is supplied, by default None
 
     Returns
     -------
@@ -1384,7 +1387,9 @@ def mask_from_polygon(
         inverse = inverse.where(inverse != 0)
         masked = inverse * ds.z
 
-    masked = masked.where(masked.notnull() is True, drop=True)
+    # drop nans
+    if drop_nans is True:
+        masked = masked.where(masked.notnull() == 1, drop=True)
 
     return masked
 
