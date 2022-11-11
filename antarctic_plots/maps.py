@@ -99,7 +99,6 @@ def basemap(
     if kwargs.get("inset", False) is True:
         add_inset(
             fig,
-            fig_width,
             inset_pos=kwargs.get("inset_pos", "TL"),
         )
 
@@ -728,7 +727,6 @@ def add_inset(
     inset_reg : list, optional
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
-    coast_pen = kwargs.get("coast_pen", "0.2,black")
 
     fig_width = utils.get_fig_width(fig)
 
@@ -738,6 +736,7 @@ def add_inset(
     if region is None:
         with pygmt.clib.Session() as lib:
             region = lib.extract_region()
+            assert len(region) == 4
 
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
@@ -751,24 +750,12 @@ def add_inset(
             color="skyblue",
         )
         fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen=coast_pen)
+        fig.plot(data=fetch.groundingline(), pen=kwargs.get("coast_pen", "0.2,black"))
 
-        fig.plot(
-            x=[
-                region[0],
-                region[0],
-                region[1],
-                region[1],
-                region[0],
-            ],
-            y=[
-                region[2],
-                region[3],
-                region[3],
-                region[2],
-                region[2],
-            ],
-            pen="1p,black",
+        add_box(
+            fig,
+            box=region,
+            pen=kwargs.get("box_pen", "1p,black"),
         )
 
 
@@ -801,6 +788,7 @@ def add_scalebar(
     if region is None:
         with pygmt.clib.Session() as lib:
             region = lib.extract_region()
+            assert len(region) == 4
 
     def round_to_1(x):
         return round(x, -int(floor(log10(abs(x)))))

@@ -17,7 +17,7 @@ import verde as vd
 if TYPE_CHECKING:
     import xarray as xr
 
-from antarctic_plots import fetch, maps, regions, utils
+from antarctic_plots import fetch, maps, utils
 
 try:
     import ipyleaflet
@@ -68,7 +68,7 @@ def create_profile(
         raise ValueError(f"Invalid method type. Expected one of {methods}")
     if method == "points":
         if num is None:
-            num = 100
+            num = 1000
         if any(a is None for a in [start, stop]):
             raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
@@ -102,22 +102,18 @@ def create_profile(
         try:
             if num is not None:
                 df = coordinates.set_index("dist")
-                # print(df.describe())
                 dist_resampled = np.linspace(
                     coordinates.dist.min(),
                     coordinates.dist.max(),
                     num,
                     dtype=float,
                 )
-                # print(dist_resampled)
                 df1 = (
                     df.reindex(df.index.union(dist_resampled))
                     .interpolate("cubic")  # cubic needs at least 4 points
                     .reset_index()
                 )
-                # print(df1.describe())
                 df2 = df1[df1.dist.isin(dist_resampled)]
-                # print(df2.describe())
             else:
                 df2 = coordinates
         except ValueError:
@@ -136,7 +132,8 @@ def create_profile(
 def sample_grids(
     df: pd.DataFrame,
     grid: Union[str or xr.DataArray],
-    name: str = None,
+    name: str,
+    **kwargs,
 ):
     """
     Sample data at every point along a line
@@ -147,28 +144,59 @@ def sample_grids(
         Dataframe containing columns 'x', 'y'
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
-    name : str, optional
-        Name for sampled column, by default is str(grid)
+    name : str,
+        Name for sampled column
 
     Returns
     -------
     pd.DataFrame
         Dataframe with new column (name) of sample values from (grid)
     """
-    if name is None:
-        name = grid
+
+    # drop name column if it already exists
+    try:
+        df.drop(columns=name, inplace=True)
+    except KeyError:
+        pass
+
+    df1 = df.copy()
+
+    # reset the index
+    df1.reset_index(inplace=True)
+
+    # get points to sample at
+    points = df1[["x", "y"]].copy()
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
-        points=df[["x", "y"]],
+        points=points,
         grid=grid,
-        newcolname=str(name),
+        newcolname=name,
     )
 
-    # add sampled data to dataframe
-    df[name] = (sampled)[name]
+    # add sampled data to dataframe as a new series
+    # pygmt seems to slightly shift the x, y values so pandas doesnt recognize them as
+    # identifcal to merge on. Need to set tolerance to >0.
+    # df[name] = pd.merge_asof(
+    #     df.sort_values('x'),
+    #     sampled[['x',name]].sort_values('x'),
+    #     on='x',
+    #     direction='nearest',
+    #     tolerance=kwargs.get('tolerance',1),
+    #     )[name]
 
-    return df
+    df1[name] = sampled[name]
+
+    # reset index to previous
+    df1.set_index("index", inplace=True)
+
+    # reset index name to be same as originals
+    df1.index.name = df.index.name
+
+    # check that dataframe is identical to orignal except for new column
+    pd.testing.assert_frame_equal(df1.drop(columns=name), df)
+
+    return df1
 
 
 def fill_nans(df):
@@ -258,23 +286,23 @@ def default_layers(version, region=None) -> dict:
     version : str
         choose between 'bedmap2' and 'bedmachine' layers
 
+    region : str or list[int], optional
+       region of Antarctic to load, by default is data's original region.
+
     Returns
     -------
     dict[dict]
         Nested dictionary of earth layers and attributes
     """
-    if region is None:
-        region = regions.antarctica
-
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", region=region, fill_nans=True)
-        icebase = fetch.bedmap2("icebase", region=region, fill_nans=True)
-        bed = fetch.bedmap2("bed", region=region)
+        surface = fetch.bedmap2("surface", fill_nans=True)  # , region=region)
+        icebase = fetch.bedmap2("icebase", fill_nans=True)  # , region=region)
+        bed = fetch.bedmap2("bed")  # , region=region)
 
     elif version == "bedmachine":
-        surface = fetch.bedmachine("surface", region=region)
-        icebase = fetch.bedmachine("icebase", region=region)
-        bed = fetch.bedmachine("bed", region=region)
+        surface = fetch.bedmachine("surface")  # , region=region)
+        icebase = fetch.bedmachine("icebase")  # , region=region)
+        bed = fetch.bedmachine("bed")  # , region=region)
 
     layer_names = [
         "surface",
@@ -302,16 +330,13 @@ def default_data(region=None) -> dict:
     Parameters
     ----------
     region : str or list[int], optional
-       region of Antarctic to load, by default is entire Antarctic region.
+       region of Antarctic to load, by default is data's original region.
 
     Returns
     -------
     dict[dict]
         Nested dictionary of data and attributes
     """
-    if region is None:
-        region = regions.antarctica
-
     mag = fetch.magnetics(
         version="admap1",
         # region=region,
@@ -347,7 +372,7 @@ def plot_profile(
     layers_dict: dict = None,
     data_dict: dict = None,
     add_map: bool = False,
-    layers_version="bedmachine",
+    layers_version="bedmap2",
     fig_height: float = 9,
     fig_width: float = 14,
     **kwargs,
@@ -433,18 +458,20 @@ def plot_profile(
             data_dict = default_data(region=vd.get_region((points.x, points.y)))
 
     # sample cross-section layers from grids
+    df_layers = points.copy()
     for k, v in layers_dict.items():
-        df_layers = sample_grids(points, v["grid"], name=v["name"])
+        df_layers = sample_grids(df_layers, v["grid"], name=k)
 
     # fill layers with above layer's values
     if kwargs.get("fillnans", True) is True:
         df_layers = fill_nans(df_layers)
 
     # sample data grids
+    df_data = points.copy()
     if data_dict is not None:
         points = points[["x", "y", "dist"]].copy()
         for k, v in data_dict.items():
-            df_data = sample_grids(points, v["grid"], name=v["name"])
+            df_data = sample_grids(df_data, v["grid"], name=k)
 
     # shorten profiles
     if kwargs.get("clip") is True:
@@ -681,7 +708,6 @@ def plot_profile(
         if inset is True:
             maps.add_inset(
                 fig,
-                map_width,
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
