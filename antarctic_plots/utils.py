@@ -559,10 +559,17 @@ def grd_trend(
         returns xr.DataArrays of the fitted surface, and the detrended grid.
     """
 
+    # convert grid to a dataframe
     df = vd.grid_to_table(da).astype("float64")
     df.dropna(inplace=True)
+
+    # define a trend
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
+
+    # fit a trend to the grid of degree: deg
     df["fit"] = trend.predict((df[coords[0]], df[coords[1]]))
+
+    # remove the trend from the data
     df["detrend"] = df[coords[2]] - df.fit
 
     info = get_grid_info(da)
@@ -620,7 +627,7 @@ def grd_trend(
                 a.set_aspect("equal")
 
         elif plot_type == "pygmt":
-            fig_height = kwargs.get("fig_height", None)
+            fig_height = kwargs.get("fig_height", 10)
             cmap = kwargs.get("cmap", "plasma")
             coast = kwargs.get("coast", True)
             inset = kwargs.get("inset", True)
@@ -633,17 +640,16 @@ def grd_trend(
 
             fig = maps.plot_grd(
                 detrend,
-                fig_height=fig_height,
                 cmap=cmap,
                 grd2cpt=True,
                 coast=coast,
                 cbar_label=detrended_label,
+                **kwargs
             )
 
             fig = maps.plot_grd(
                 fit,
                 fig=fig,
-                fig_height=fig_height,
                 cmap=cmap,
                 grd2cpt=True,
                 coast=coast,
@@ -651,18 +657,19 @@ def grd_trend(
                 inset=inset,
                 inset_pos=inset_pos,
                 origin_shift=origin_shift,
+                **kwargs
             )
 
             fig = maps.plot_grd(
                 da,
                 fig=fig,
-                fig_height=fig_height,
                 cmap=cmap,
                 grd2cpt=True,
                 coast=coast,
                 cbar_label=input_label,
                 title=title,
                 origin_shift=origin_shift,
+                **kwargs
             )
 
             fig.show()
