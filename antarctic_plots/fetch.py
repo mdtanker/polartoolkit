@@ -210,9 +210,15 @@ def ice_vel(
 ) -> xr.DataArray:
     """
     MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1:
-    https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
+    from Mouginot, Rignot, and Scheuchl 2019. MEaSUREs Phase-Based Antarctica Ice
+    Velocity Map, Version 1. Boulder, Colorado USA. NASA National Snow and Ice Data
+    Center Distributed Active Archive Center.
+    https://doi.org/10.5067/PZ3NJ5RXRH10.
+    accessed from https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
     Data part of https://doi.org/10.1029/2019GL083826
 
+    Units are in m/yr
+    
     Parameters
     ----------
     plot : bool, optional
