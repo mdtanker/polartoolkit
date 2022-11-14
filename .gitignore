@@ -13,6 +13,9 @@ __pycache__/
 .eggs/
 dist/
 
+# Sample shapefiles
+data/
+
 # Large data files
 data/ADMAP_2B_2017_R9_BAS_.tif
 
