@@ -1512,9 +1512,9 @@ def bedmap2(
     else:
         raise ValueError("invalid layer string")
 
-    # replace nans with 0's in surface or thickness grids
+    # replace nans with 0's in surface, thickness or icebase grids
     if fill_nans is True:
-        if layer in ["surface", "thickness"]:
+        if layer in ["surface", "thickness", "icebase"]:
             # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
             # this changes the registration from pixel to gridline
             grid = grid.fillna(0)
