@@ -58,7 +58,7 @@ def get_grid_info(grid):
             grid = grid.squeeze()
 
     try:
-        spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
+        spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
     except Exception:  # pygmt.exceptions.GMTInvalidInput:
         print("grid spacing can't be extracted")
         spacing = None
@@ -97,7 +97,7 @@ def get_grid_info(grid):
         print("grid registration can't be extracted")
         registration = None
 
-    return float(spacing), region, float(zmin), float(zmax), registration
+    return spacing, region, zmin, zmax, registration
 
 
 def dd2dms(dd: float):
