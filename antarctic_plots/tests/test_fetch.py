@@ -644,15 +644,33 @@ def test_bedmap2_reference():
     assert surface_6c4 + eigen_6c4 == pytest.approx(surface_ellipsoid, rel=0.1)
 
 
-def test_bedmap2_fill_nans():
-    grid = fetch.bedmap2(layer="surface")
-    filled_grid = fetch.bedmap2(layer="surface", fill_nans=True)
-    assert np.nanmean(grid) == pytest.approx(1964.5349, rel=0.1)
-    assert np.nanmean(filled_grid) == pytest.approx(602.32306, rel=0.1)
+test = [
+    (
+        dict(layer="surface"),
+        [1964.5349, 602.32306],
+    ),
+    (
+        dict(layer="thickness"),
+        [1926.642, 590.70514],
+    ),
+    (
+        dict(layer="icebase"),
+        [37.89277, 11.617859],
+    ),
+]
+
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_bedmap2_fill_nans(test_input, expected):
+    grid = fetch.bedmap2(**test_input)
+    filled_grid = fetch.bedmap2(**test_input, fill_nans=True)
+    assert np.nanmean(grid) == pytest.approx(expected[0], rel=0.1)
+    assert np.nanmean(filled_grid) == pytest.approx(expected[1], rel=0.1)
 
 
 # grid = fetch.bedmap2(layer="surface")
 # utils.get_grid_info(grid)
+# np.nanmean(grid)
 
 # %% Bedmap points
 
