@@ -58,7 +58,7 @@ def get_grid_info(grid):
             grid = grid.squeeze()
 
     try:
-        spacing = pygmt.grdinfo(grid, per_column="n", o=7)[:-1]
+        spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
     except Exception:  # pygmt.exceptions.GMTInvalidInput:
         print("grid spacing can't be extracted")
         spacing = None
@@ -1418,7 +1418,7 @@ def change_reg(grid):
     return f_out
 
 
-def grdblend(
+def grd_blend(
     grid1: xr.DataArray,
     grid2: xr.DataArray,
     **kwargs,
@@ -1439,17 +1439,17 @@ def grdblend(
     xr.DataArray
         returns a blended dataarray.
     """
-    with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-        with pygmt.clib.Session() as lib:
+    with pygmt.clib.Session() as session:
+        with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
             # store the input grids in a virtual files so GMT can read it from
             # dataarrays
-            file_context1 = lib.virtualfile_from_grid(grid1)
-            file_context2 = lib.virtualfile_from_grid(grid2)
+            file_context1 = session.virtualfile_from_grid(grid1)
+            file_context2 = session.virtualfile_from_grid(grid2)
             with file_context1 as infile1, file_context2 as infile2:
                 # if (outgrid := kwargs.get("G")) is None:
                 #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
                 args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
-                lib.call_module(module="grdblend", args=args)
+                session.call_module(module="grdblend", args=args)
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
 
 
@@ -1467,3 +1467,29 @@ def get_fig_height(figure):
             session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
             map_height = tmpfile.read().strip()
     return float(map_height)
+
+
+def GMT_str_to_list(region: list):
+    return "".join([str(x) + "/" for x in region])[:-1]
+
+
+def grd_mask(
+    df,
+    spacing,
+    region,
+    clobber="o",
+    values="0/0/1",
+    radius="0c",
+):
+    with pygmt.clib.Session() as ses:
+        # store the input grid in a virtual file so GMT can read it from a dataarray
+        with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
+            # send the output to a file so that we can read it
+            with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
+                args = (
+                    f"{f_in} -I{spacing} -R{str(GMT_str_to_list(region))}",
+                    f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
+                )
+                ses.call_module("grdmask", args)
+                f_out = pygmt.load_dataarray(tmpfile.name)
+    return f_out

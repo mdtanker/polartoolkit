@@ -11,7 +11,7 @@ Any kind of help would be much appreciated. Here are a few ways to contribute:
 * 🔍 Fixing typos and improving to the documentation
 * 💡 Writing code for everyone to use
 
-If you get stuck at any point you can create an issue on GitHub (look for the Issues tab in the repository). 
+If you get stuck at any point you can create an issue on GitHub (look for the Issues tab in the repository).
 
 For more information on contributing to open source projects,
 [GitHub's own guide](https://guides.github.com/activities/contributing-to-open-source/)
@@ -93,8 +93,8 @@ hesitate to ask questions in the [Github discussions page](https://github.com/md
 * Aaron Meurer's [tutorial on the git workflow](http://www.asmeurer.com/git-workflow/)
 * [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
 
-If you're new to working with git, GitHub, and the Unix Shell, we recommend 
-starting with the [Software Carpentry](https://software-carpentry.org/) lessons, 
+If you're new to working with git, GitHub, and the Unix Shell, we recommend
+starting with the [Software Carpentry](https://software-carpentry.org/) lessons,
 which are available in English and Spanish:
 
 * :gb: [Version Control with Git](http://swcarpentry.github.io/git-novice/) / :es: [Control de
@@ -110,6 +110,8 @@ Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install 
 The file is `requirements.txt` which defines the packages need to use and develop the package.
 
 Run the following to create a conda/mamba env "antarctic_plots_dev":
+
+> **Note:** first run `mamba deactivate` to exit whichever environment you're currently in.
 
     make new_env
 
@@ -134,14 +136,14 @@ think about it.
 Black loosely follows the [PEP8](http://pep8.org) guide but with a few differences.
 Regardless, you won't have to worry about formatting the code yourself.
 Before committing, run the following to automatically format your code:
-    
+
     make format
 
 Some formatting changes can't be applied automatically. Running the following to see these.
 
     make check
 
-Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it. 
+Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it.
 
 #### Docstrings
 
@@ -161,7 +163,7 @@ Automated testing helps ensure that our code is as free of bugs as it can be.
 It also lets us know immediately if a change we make breaks any other part of the code.
 
 All of our test code and data are stored in the `tests` subpackage.
-We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests. 
+We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests.
 
 Please write tests for your code so that we can be sure that it won't break any of the
 existing functionality.
@@ -207,7 +209,7 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 This will run the `.ipynb` files, and convert them to markdown to be included in the docs.
 Check for returned errors and open `index.html` in docs/_build/html/ to view the docs.
 
-#### Automatically build the docs 
+#### Automatically build the docs
 
 Add, commit, and push all changes to Github in a Pull Request, and `RTD` should automatically build the docs.
 
@@ -238,7 +240,7 @@ Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
 [post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
 
-## Release a new version 
+## Release a new version
 
 This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
 
@@ -269,10 +271,10 @@ Run a few gallery examples to make sure this env works, then its read to publish
 
     make publish
 
- Now push the changes to Github and make a release with the matching version number. 
+ Now push the changes to Github and make a release with the matching version number.
 
 ## Update the dependencies
-The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`. 
+The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`.
 
 To update or add dependencies, use the below commands:
 
@@ -293,13 +295,13 @@ To completely reset Poetry, and reinstall based on the updated .toml file:
 
 This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
 
-Then run through the commands at the top of this page again to update the conda environement which is based on the requirements.txt file.
+Then run through the commands at the top of this page again to update the conda environment which is based on the requirements.txt file.
 
 If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
 
 ## Set up the binder configuration
 
-To run this pacakge online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
+To run this package online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
 
     make binder_yml
 
@@ -309,4 +311,4 @@ This will create an environment with the core dependencies, and export it to a .
   - pip:
     - -e ..
 ```
-Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement. 
+Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement.
