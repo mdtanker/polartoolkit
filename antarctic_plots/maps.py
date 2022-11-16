@@ -492,12 +492,10 @@ def add_colorbar(
     if hist is True:
         # get limits used for cmap
         grid = kwargs.get("grid", None)
+        if grid is None:
+            raise ValueError("if hist is True, grid must be provided.")
         if cpt_lims is not None:
             zmin, zmax = cpt_lims
-        elif grid is None:
-            raise ValueError(
-                "Must provide either cpt_lims or grid to set min/max for" " histogram"
-            )
         else:
             warnings.warn(
                 "getting max/min values from grid, if cpt_lims were used to create the "
@@ -506,59 +504,48 @@ def add_colorbar(
             zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
 
         # get grid's data for histogram
-        data = pygmt.grd2xyz(grid=grid)
-        data = data.z[data.z.between(zmin, zmax)]
+        df = vd.grid_to_table(grid)
+        df2= df.iloc[:,-1:].squeeze()
 
-        # set bin width
-        series = kwargs.get(
-            "hist_series", "100+n"
-        )  # append +n to get total number of bins
+        data = df2[df2.between(zmin, zmax)]
+
+        # set bin width, by default calculates to give 100 bins
+        data_min = min(data)
+        data_max = max(data)
+
+        bin_width = kwargs.get("hist_bin_width", (data_max-data_min)/100)
 
         # set hist type
         hist_type = kwargs.get("hist_type", 0)
 
-        # get max bin height value
-        if str(series).endswith("+n"):
-            # if series gives number of bins, not width:
-            if hist_type == 0:
-                # if histogram type is counts
-                bins = np.histogram(
-                    data,
-                    bins=int(float((series[:-2]))),
-                )[0]
-                max_bin_height = bins.max()
-            elif hist_type == 1:
-                # if histogram type is frequency percent
-                bins = np.histogram(
-                    data,
-                    density=True,
-                    bins=int(float((series[:-2]))),
-                )[0]
-                max_bin_height = bins.max() / bins.sum() * 100
-        else:
-            # if series gives bin widths, not number of bins:
-            if hist_type == 0:
-                # if histogram type is counts
-                bins = np.histogram(
-                    data,
-                    bins=range(int(min(data)), int(max(data)) + series, series),
-                )[0]
-                max_bin_height = bins.max()
-            elif hist_type == 1:
-                # if histogram type is frequency percent
-                bins = np.histogram(
-                    data,
-                    density=True,
-                    bins=range(int(min(data)), int(max(data)) + series, series),
-                )[0]
-                max_bin_height = bins.max() / bins.sum() * 100
+        if hist_type == 0:
+            # if histogram type is counts
+            bins = np.histogram(
+                data,
+                bins=range(
+                    int(data_min),
+                    int(data_max) + int(bin_width),
+                    int(bin_width)),
+            )[0]
+            max_bin_height = bins.max()
+        elif hist_type == 1:
+            # if histogram type is frequency percent
+            bins = np.histogram(
+                data,
+                density=True,
+                bins=range(
+                    int(data_min),
+                    int(data_max) + int(bin_width),
+                    int(bin_width)),
+            )[0]
+            max_bin_height = bins.max() / bins.sum() * 100
 
         # define histogram region
         hist_reg = [
             zmin,
             zmax,
             kwargs.get("hist_ymin", 0),
-            kwargs.get("hist_ymax", max_bin_height),
+            kwargs.get("hist_ymax", max_bin_height*1.1),
         ]
 
         # shift figure to line up with top left of cbar
@@ -578,9 +565,10 @@ def add_colorbar(
             center=kwargs.get("hist_center", False),
             distribution=kwargs.get("hist_distribution", False),
             cumulative=kwargs.get("hist_cumulative", False),
+            extreme=kwargs.get("hist_extreme", "b"),
             stairs=kwargs.get("hist_stairs", False),
             # horizontal=kwargs.get('hist_horizontal', False),
-            series=series,  # width of bin in data units
+            series=f"{zmin}/{zmax}/{bin_width}",
             histtype=hist_type,
         )
         # shift figure back
