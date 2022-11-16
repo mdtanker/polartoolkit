@@ -426,7 +426,10 @@ def basement(
     Offshore and sub-Ross Ice Shelf basement topography.
     from Tankersley et al. 2022:
     https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
+    accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238
     offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
+
+    Elevations are referenced to WGS84 (? need to check this!)
 
     Parameters
     ----------
