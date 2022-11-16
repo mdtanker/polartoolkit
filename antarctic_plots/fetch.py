@@ -390,28 +390,73 @@ def imagery() -> xr.DataArray:
     return image
 
 
-def groundingline() -> str:
+def groundingline(
+    version : str ='depoorter-2013',
+) -> str:
     """
-    Load the file path of a groundingline shapefile
-    Antarctic groundingline shape file, from
-    https://doi.pangaea.de/10.1594/PANGAEA.819147
+    Load the file path of two versions of groundingline shapefiles
+
+    version = "depoorter-2013"
+    from https://doi.pangaea.de/10.1594/PANGAEA.819147
     Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
+
+    version = "measures-v2"
+    from Mouginot, J., B. Scheuchl, and E. Rignot. (2017). MEaSUREs Antarctic Boundaries
+    for IPY 2007-2009 from Satellite Radar, Version 2 [Data Set]. Boulder, Colorado USA.
+    NASA National Snow and Ice Data Center Distributed Active Archive Center.
+    https://doi.org/10.5067/AXE4121732AD.
+    accessed at https://nsidc.org/data/nsidc-0709/versions/2
+
+    Parameters
+    ----------
+    version : str, optional
+        choose which version to retrieve, by default "depoorter-2013"
 
     Returns
     -------
     str
         file path
     """
-    path = pooch.retrieve(
-        url="https://doi.pangaea.de/10013/epic.42133.d001",
-        fname="groundingline_depoorter_2013.d001",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",
-        known_hash=None,
-        processor=pooch.Unzip(),
-        progressbar=True,
-    )
-    file = [p for p in path if p.endswith(".shp")][0]
-    return file
+    if version == "depoorter-2013":
+        path = pooch.retrieve(
+            url="https://doi.pangaea.de/10013/epic.42133.d001",
+            fname="groundingline_depoorter_2013.d001",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/depoorter-2013",
+            known_hash=None,
+            processor=pooch.Unzip(),
+            progressbar=True,
+        )
+        fname = [p for p in path if p.endswith(".shp")][0]
+
+    elif version == "measures-v2":
+        registry={
+                "GroundingLine_Antarctica_v02.dbf": None,
+                "GroundingLine_Antarctica_v02.prj": None,
+                "GroundingLine_Antarctica_v02.shp": None,
+                "GroundingLine_Antarctica_v02.shx": None,
+                "GroundingLine_Antarctica_v02.xml": None,
+
+            }
+        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
+        POOCH = pooch.create(
+            path=path,
+            base_url=base_url,
+            # The registry specifies the files that can be fetched
+            registry=registry,
+        )
+
+        for k, v in registry.items():
+            POOCH.fetch(
+                fname = k,
+                downloader=EarthDataDownloader(),
+                progressbar=True,
+            )
+        # pick the requested file
+        fname = glob.glob(f"{path}/GroundingLine*.shp")[0]
+
+
+    return fname
 
 
 def basement(
