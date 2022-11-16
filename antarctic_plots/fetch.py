@@ -456,7 +456,8 @@ def groundingline(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/GroundingLine*.shp")[0]
-
+    else:
+        raise ValueError("invalid version string")
 
     return fname
 
@@ -476,7 +477,7 @@ def measures_boundaries(
     ----------
     version : str,
         choose which file to retrieve from the following list:
-        "coastline", "basins_antarctica", basins_IMBIE", "iceboundaries", "iceshelf",
+        "coastline", "basins_antarctica", "basins_IMBIE", "iceboundaries", "iceshelf",
         "mask"
 
     Returns
@@ -511,7 +512,14 @@ def measures_boundaries(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/{version}*.shp")[0]
-    else:
+    elif version in [
+        "coastline",
+        "basins_antarctica",
+        "basins_IMBIE",
+        "iceboundaries",
+        "iceshelf",
+        "mask",
+    ]:
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
         registry={
             "Basins_Antarctica_v02.dbf": None,
@@ -555,6 +563,8 @@ def measures_boundaries(
             fname = glob.glob(f"{path}/{version}*.tif")[0]
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]
+    else:
+        raise ValueError("invalid version string")
 
     return fname
 
