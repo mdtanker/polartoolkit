@@ -1441,7 +1441,12 @@ def bedmap2(
             grid = grid.to_dataset(name=layer)
 
             # Save to disk
-            grid.to_zarr(fname_processed)
+            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+            grid.to_zarr(
+                fname_processed,
+                encoding={layer: {"compressor": compressor}},
+                )
+
 
         return str(fname_processed)
 
@@ -1674,8 +1679,13 @@ def REMA(
                 ["band", "spatial_ref"]
             ) as grid:
                 grid = grid.to_dataset(name="surface")
+
                 # Save to disk
-                grid.to_zarr(fname_processed)
+                compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+                grid.to_zarr(
+                    fname_processed,
+                    encoding={"surface": {"compressor": compressor}},
+                    )
                 grid.close()
 
         # delete the unzipped file
