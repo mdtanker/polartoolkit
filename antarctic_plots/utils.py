@@ -1468,23 +1468,28 @@ def get_fig_height(figure):
             map_height = tmpfile.read().strip()
     return float(map_height)
 
+
 def GMT_str_to_list(region: list):
-    return "".join([str(x)+"/" for x in region])[:-1]
+    return "".join([str(x) + "/" for x in region])[:-1]
+
 
 def grd_mask(
     df,
     spacing,
     region,
-    clobber='o',
-    values='0/0/1',
-    radius='0c',
-    ):
+    clobber="o",
+    values="0/0/1",
+    radius="0c",
+):
     with pygmt.clib.Session() as ses:
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
             # send the output to a file so that we can read it
             with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-                args = f"{f_in} -I{spacing} -R{str(GMT_str_to_list(region))} -C{clobber} -N{values} -S{radius} -G{tmpfile.name}"
+                args = (
+                    f"{f_in} -I{spacing} -R{str(GMT_str_to_list(region))}",
+                    f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
+                )
                 ses.call_module("grdmask", args)
                 f_out = pygmt.load_dataarray(tmpfile.name)
     return f_out

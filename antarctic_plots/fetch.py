@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     import numpy as np
 
+import glob
+
 import geopandas as gpd
 import pandas as pd
 import pooch
@@ -24,7 +26,6 @@ import verde as vd
 import xarray as xr
 import zarr
 from pyproj import Transformer
-import glob
 
 from antarctic_plots import fetch, maps, regions, utils
 
@@ -393,7 +394,7 @@ def imagery() -> xr.DataArray:
 
 
 def groundingline(
-    version : str ='depoorter-2013',
+    version: str = "depoorter-2013",
 ) -> str:
     """
     Load the file path of two versions of groundingline shapefiles
@@ -431,14 +432,13 @@ def groundingline(
         fname = [p for p in path if p.endswith(".shp")][0]
 
     elif version == "measures-v2":
-        registry={
-                "GroundingLine_Antarctica_v02.dbf": None,
-                "GroundingLine_Antarctica_v02.prj": None,
-                "GroundingLine_Antarctica_v02.shp": None,
-                "GroundingLine_Antarctica_v02.shx": None,
-                "GroundingLine_Antarctica_v02.xml": None,
-
-            }
+        registry = {
+            "GroundingLine_Antarctica_v02.dbf": None,
+            "GroundingLine_Antarctica_v02.prj": None,
+            "GroundingLine_Antarctica_v02.shp": None,
+            "GroundingLine_Antarctica_v02.shx": None,
+            "GroundingLine_Antarctica_v02.xml": None,
+        }
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
         path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
         POOCH = pooch.create(
@@ -450,7 +450,7 @@ def groundingline(
 
         for k, v in registry.items():
             POOCH.fetch(
-                fname = k,
+                fname=k,
                 downloader=EarthDataDownloader(),
                 progressbar=True,
             )
@@ -461,8 +461,9 @@ def groundingline(
 
     return fname
 
+
 def measures_boundaries(
-    version : str,
+    version: str,
 ) -> str:
     """
     Load various files from the MEaSUREs Antarctic Boundaries for IPY 2007-2009
@@ -491,13 +492,13 @@ def measures_boundaries(
     # coastline shapefile is in a different directory
     if version == "coastline":
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
-        registry={
-                "Coastline_Antarctica_v02.dbf": None,
-                "Coastline_Antarctica_v02.prj": None,
-                "Coastline_Antarctica_v02.shp": None,
-                "Coastline_Antarctica_v02.shx": None,
-                "Coastline_Antarctica_v02.xml": None,
-            }
+        registry = {
+            "Coastline_Antarctica_v02.dbf": None,
+            "Coastline_Antarctica_v02.prj": None,
+            "Coastline_Antarctica_v02.shp": None,
+            "Coastline_Antarctica_v02.shx": None,
+            "Coastline_Antarctica_v02.xml": None,
+        }
         POOCH = pooch.create(
             path=path,
             base_url=base_url,
@@ -506,7 +507,7 @@ def measures_boundaries(
         )
         for k, v in registry.items():
             POOCH.fetch(
-                fname = k,
+                fname=k,
                 downloader=EarthDataDownloader(),
                 progressbar=True,
             )
@@ -521,7 +522,7 @@ def measures_boundaries(
         "mask",
     ]:
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
-        registry={
+        registry = {
             "Basins_Antarctica_v02.dbf": None,
             "Basins_Antarctica_v02.prj": None,
             "Basins_Antarctica_v02.shp": None,
@@ -554,12 +555,12 @@ def measures_boundaries(
         )
         for k, v in registry.items():
             POOCH.fetch(
-                fname = k,
+                fname=k,
                 downloader=EarthDataDownloader(),
                 progressbar=True,
             )
         # pick the requested file
-        if version == 'mask':
+        if version == "mask":
             fname = glob.glob(f"{path}/{version}*.tif")[0]
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]
@@ -567,6 +568,7 @@ def measures_boundaries(
         raise ValueError("invalid version string")
 
     return fname
+
 
 def basement(
     plot: bool = False,
@@ -1288,7 +1290,7 @@ def bedmachine(
         registration = initial_registration
 
     # download url
-    url= (
+    url = (
         "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/"
         "BedMachineAntarctica_2020-07-15_v02.nc"
     )
@@ -1611,8 +1613,7 @@ def bedmap2(
             grid.to_zarr(
                 fname_processed,
                 encoding={layer: {"compressor": compressor}},
-                )
-
+            )
 
         return str(fname_processed)
 
@@ -1851,7 +1852,7 @@ def REMA(
                 grid.to_zarr(
                     fname_processed,
                     encoding={"surface": {"compressor": compressor}},
-                    )
+                )
                 grid.close()
 
         # delete the unzipped file
