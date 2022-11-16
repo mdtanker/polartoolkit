@@ -86,7 +86,7 @@ def basemap(
         )
 
     # add lat long grid lines
-    if kwargs.get("gridlines", True) is True:
+    if kwargs.get("gridlines", False) is True:
         add_gridlines(
             fig,
             region=region,
