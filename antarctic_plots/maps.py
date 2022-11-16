@@ -16,6 +16,10 @@ import pandas as pd
 import pygmt
 import pyogrio
 import xarray as xr
+from cartopy import crs
+import pyogrio
+import geoviews as gv
+import verde as vd
 
 from antarctic_plots import fetch, regions, utils
 
@@ -1204,3 +1208,222 @@ def plot_3d(
             fig.shift_origin(yshift=f"{kwargs.get('zshifts')[i]}c")
 
     return fig
+
+
+def interactive_data(
+    coast : bool = True,
+    grid : xr.DataArray = None,
+    grid_cmap : str = 'inferno',
+    points : pd.DataFrame = None,
+    points_z : str = None,
+    points_color : str = 'red',
+    points_cmap : str = 'viridis',
+    **kwargs,
+    ):
+    """
+    plot points or grids on an interactive map using GeoViews
+
+    Parameters
+    ----------
+    coast : bool, optional
+        choose whether to plot Antarctic coastline data, by default True
+    grid : xr.DataArray, optional
+        display a grid on the map, by default None
+    grid_cmap : str, optional
+        colormap to use for the grid, by default 'inferno'
+    points : pd.DataFrame, optional
+        points to display on the map, must have columns 'x' and 'y', by default None
+    points_z : str, optional
+        name of column to color points by, by default None
+    points_color : str, optional
+        if no `points_z` supplied, color to use for all points, by default 'red'
+    points_cmap : str, optional
+        colormap to use for the points, by default 'viridis'
+
+    Example
+    -------
+
+
+
+
+image = maps.interactive_data(
+    grid = bedmap2_bed,
+    points = point_data,
+    points_z = 'z_ellipsoidal',
+    )
+
+image
+    >>> from antarctic_plots import maps, regions, fetch
+    ...
+    >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
+    >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
+    ...
+    >>> image = maps.interactive_data(
+    ... grid = bedmap2_bed,
+    ... points = GHF_point_data[['x','y','GHF']],
+    ... points_z = 'GHF',
+    ... )
+    >>> image
+
+    Returns
+    -------
+    holoviews.Overlay
+        holoview/geoviews map instance
+    """
+
+    # set the plot style
+    gv.extension('bokeh')
+
+    # initialize figure with coastline
+    coast = gv.Path(
+        pyogrio.read_dataframe(fetch.groundingline()),
+        crs=crs.SouthPolarStereo(),
+    )
+    # set projection, and change groundingline attributes
+    coast.opts(
+        projection=crs.SouthPolarStereo(),
+        color=kwargs.get('coast_color', 'black'),
+        data_aspect=1,
+        )
+
+    figure = coast
+
+    # display grid
+    if grid is not None:
+        # turn grid into geoviews dataset
+        dataset = gv.Dataset(
+            grid,
+            [grid.dims[1], grid.dims[0]],
+            crs=crs.SouthPolarStereo(),
+        )
+        # turn geoviews dataset into image
+        gv_grid = dataset.to(gv.Image)
+
+        # change options
+        gv_grid.opts(
+            cmap=grid_cmap,
+            colorbar=True,
+            tools=['hover']
+            )
+
+        # add to figure
+        figure = figure * gv_grid
+
+    # display points
+    if points is not None:
+        gv_points = geoviews_points(
+            points = points,
+            points_z = points_z,
+            points_color = points_color,
+            points_cmap = points_cmap,
+            **kwargs,
+            )
+        # if len(points.columns) < 3:
+        #     # if only 2 cols are given, give points a constant color
+        #     # turn points into geoviews dataset
+        #     gv_points = gv.Points(
+        #         points,
+        #         crs=crs.SouthPolarStereo(),
+        #         )
+
+        #     # change options
+        #     gv_points.opts(
+        #         color=points_color,
+        #         cmap=points_cmap,
+        #         colorbar=True,
+        #         colorbar_position='top',
+        #         tools=['hover'],
+        #         marker=kwargs.get('marker', 'circle'),
+        #         alpha=kwargs.get('alpha', 1),
+        #         size= kwargs.get('size', 4),
+        #         )
+
+        # else:
+        #     # if more than 2 columns, color points by third column
+        #     # turn points into geoviews dataset
+        #     gv_points = gv.Points(
+        #         data = points,
+        #         vdims = [points_z],
+        #         crs = crs.SouthPolarStereo(),
+        #         )
+
+        #     # change options
+        #     gv_points.opts(
+        #         color=points_z,
+        #         cmap=points_cmap,
+        #         colorbar=True,
+        #         colorbar_position='top',
+        #         tools=['hover'],
+        #         marker=kwargs.get('marker', 'circle'),
+        #         alpha=kwargs.get('alpha', 1),
+        #         size= kwargs.get('size', 4),
+        #         )
+
+        # add to figure
+        figure = figure * gv_points
+
+    # optionally plot coast again, so it's on top
+    if coast is True:
+        figure = figure * coast
+
+    # trying to get datashader to auto scale colormap based on current map extent
+    # from holoviews.operation.datashader import regrid
+    # from holoviews.operation.datashader import rasterize
+
+    return figure
+
+def geoviews_points(
+    points : pd.DataFrame = None,
+    points_z : str = None,
+    points_color : str = 'red',
+    points_cmap : str = 'viridis',
+    **kwargs,
+    ):
+
+    if len(points.columns) < 3:
+        # if only 2 cols are given, give points a constant color
+        # turn points into geoviews dataset
+        gv_points = gv.Points(
+            points,
+            crs=crs.SouthPolarStereo(),
+            )
+
+        # change options
+        gv_points.opts(
+            color=points_color,
+            cmap=points_cmap,
+            colorbar=True,
+            colorbar_position='top',
+            tools=['hover'],
+            marker=kwargs.get('marker', 'circle'),
+            alpha=kwargs.get('alpha', 1),
+            size= kwargs.get('size', 4),
+            )
+
+    else:
+        # if more than 2 columns, color points by third column
+        # turn points into geoviews dataset
+        gv_points = gv.Points(
+            data = points,
+            vdims = [points_z],
+            crs = crs.SouthPolarStereo(),
+            )
+
+        # change options
+        gv_points.opts(
+            color=points_z,
+            cmap=points_cmap,
+            colorbar=True,
+            colorbar_position='top',
+            tools=['hover'],
+            marker=kwargs.get('marker', 'circle'),
+            alpha=kwargs.get('alpha', 1),
+            size= kwargs.get('size', 4),
+            )
+
+    gv_points.opts(
+        projection=crs.SouthPolarStereo(),
+        data_aspect=1,
+        )
+
+    return gv_points
