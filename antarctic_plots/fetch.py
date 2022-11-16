@@ -22,7 +22,9 @@ import pyogrio
 import requests
 import verde as vd
 import xarray as xr
+import zarr
 from pyproj import Transformer
+import glob
 
 from antarctic_plots import fetch, maps, regions, utils
 
@@ -458,6 +460,103 @@ def groundingline(
 
     return fname
 
+def measures_boundaries(
+    version : str,
+) -> str:
+    """
+    Load various files from the MEaSUREs Antarctic Boundaries for IPY 2007-2009
+
+    from Mouginot, J., B. Scheuchl, and E. Rignot. (2017). MEaSUREs Antarctic Boundaries
+    for IPY 2007-2009 from Satellite Radar, Version 2 [Data Set]. Boulder, Colorado USA.
+    NASA National Snow and Ice Data Center Distributed Active Archive Center.
+    https://doi.org/10.5067/AXE4121732AD.
+    accessed at https://nsidc.org/data/nsidc-0709/versions/2
+
+    Parameters
+    ----------
+    version : str,
+        choose which file to retrieve from the following list:
+        "coastline", "basins_antarctica", basins_IMBIE", "iceboundaries", "iceshelf",
+        "mask"
+
+    Returns
+    -------
+    str
+        file path
+    """
+    # path to store the downloaded files
+    path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
+
+    # coastline shapefile is in a different directory
+    if version == "coastline":
+        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
+        registry={
+                "Coastline_Antarctica_v02.dbf": None,
+                "Coastline_Antarctica_v02.prj": None,
+                "Coastline_Antarctica_v02.shp": None,
+                "Coastline_Antarctica_v02.shx": None,
+                "Coastline_Antarctica_v02.xml": None,
+            }
+        POOCH = pooch.create(
+            path=path,
+            base_url=base_url,
+            # The registry specifies the files that can be fetched
+            registry=registry,
+        )
+        for k, v in registry.items():
+            POOCH.fetch(
+                fname = k,
+                downloader=EarthDataDownloader(),
+                progressbar=True,
+            )
+        # pick the requested file
+        fname = glob.glob(f"{path}/{version}*.shp")[0]
+    else:
+        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        registry={
+            "Basins_Antarctica_v02.dbf": None,
+            "Basins_Antarctica_v02.prj": None,
+            "Basins_Antarctica_v02.shp": None,
+            "Basins_Antarctica_v02.shx": None,
+            "Basins_Antarctica_v02.xml": None,
+            "Basins_IMBIE_Antarctica_v02.dbf": None,
+            "Basins_IMBIE_Antarctica_v02.prj": None,
+            "Basins_IMBIE_Antarctica_v02.shp": None,
+            "Basins_IMBIE_Antarctica_v02.shx": None,
+            "Basins_IMBIE_Antarctica_v02.xml": None,
+            "IceBoundaries_Antarctica_v02.dbf": None,
+            "IceBoundaries_Antarctica_v02.prj": None,
+            "IceBoundaries_Antarctica_v02.shp": None,
+            "IceBoundaries_Antarctica_v02.shx": None,
+            "IceBoundaries_Antarctica_v02.xml": None,
+            "IceShelf_Antarctica_v02.dbf": None,
+            "IceShelf_Antarctica_v02.prj": None,
+            "IceShelf_Antarctica_v02.shp": None,
+            "IceShelf_Antarctica_v02.shx": None,
+            "IceShelf_Antarctica_v02.xml": None,
+            "Mask_Antarctica_v02.bmp": None,
+            "Mask_Antarctica_v02.tif": None,
+            "Mask_Antarctica_v02.xml": None,
+        }
+        POOCH = pooch.create(
+            path=path,
+            base_url=base_url,
+            # The registry specifies the files that can be fetched
+            registry=registry,
+        )
+        for k, v in registry.items():
+            POOCH.fetch(
+                fname = k,
+                downloader=EarthDataDownloader(),
+                progressbar=True,
+            )
+        # pick the requested file
+        if version == 'mask':
+            fname = glob.glob(f"{path}/{version}*.tif")[0]
+        else:
+            fname = glob.glob(f"{path}/{version}*.shp")[0]
+
+    return fname
 
 def basement(
     plot: bool = False,
