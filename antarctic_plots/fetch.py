@@ -1130,8 +1130,14 @@ def bedmachine(
     if registration is None:
         registration = initial_registration
 
+    # download url
+    url= (
+        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/"
+        "BedMachineAntarctica_2020-07-15_v02.nc"
+    )
+
     path = pooch.retrieve(
-        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/BedMachineAntarctica_2020-07-15_v02.nc",  # noqa
+        url=url,
         fname="bedmachine.nc",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         downloader=EarthDataDownloader(),
@@ -1139,9 +1145,11 @@ def bedmachine(
         progressbar=True,
     )
 
+    # calculate icebase as surface-thickness
     if layer == "icebase":
         surface = xr.load_dataset(path)["surface"]
         thickness = xr.load_dataset(path)["thickness"]
+
         grid = surface - thickness
 
     elif layer in [
@@ -1160,6 +1168,7 @@ def bedmachine(
     else:
         raise ValueError("invalid layer string")
 
+    # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
             print("converting to be reference to the WGS84 ellipsoid")
