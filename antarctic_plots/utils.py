@@ -97,7 +97,7 @@ def get_grid_info(grid):
         print("grid registration can't be extracted")
         registration = None
 
-    return spacing, region, zmin, zmax, registration
+    return float(spacing), region, float(zmin), float(zmax), registration
 
 
 def dd2dms(dd: float):
