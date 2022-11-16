@@ -1467,3 +1467,7 @@ def get_fig_height(figure):
             session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
             map_height = tmpfile.read().strip()
     return float(map_height)
+
+def GMT_str_to_list(region: list):
+    return "".join([str(x)+"/" for x in region])[:-1]
+
