@@ -35,6 +35,10 @@ def basemap(
     origin_shift: str = "initialize",
     **kwargs,
 ):
+    # if region not set, use antarctic region
+    if region is None:
+        region=regions.antarctica
+
     # set figure projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if fig_width is None:
