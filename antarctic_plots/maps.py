@@ -367,8 +367,33 @@ def plot_grd(
         shading=kwargs.get("shading", None),
         verbose="q",
     )
+    else:
+        # display grid
+        fig.grdimage(
+            grid=grid,
+            cmap=True,
+            projection=proj,
+            region=region,
+            nan_transparent=True,
+            frame=kwargs.get("frame"),
+            shading=kwargs.get("shading", None),
+            verbose="q",
+        )
 
     cmap_region = kwargs.get("cmap_region", region)
+
+    # add datapoints
+    if points is not None:
+        fig.plot(
+            x=points.x,
+            y=points.y,
+            style="c.2c",
+            color="black",
+        )
+
+    # add box showing region
+    if show_region is not None:
+        add_box(fig, show_region)
 
     # display colorbar
     if colorbar is True:
@@ -403,19 +428,6 @@ def plot_grd(
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
         )
-
-    # add datapoints
-    if points is not None:
-        fig.plot(
-            x=points.x,
-            y=points.y,
-            style="c.2c",
-            color="black",
-        )
-
-    # add box showing region
-    if show_region is not None:
-        add_box(fig, show_region)
 
     # add lat long grid lines
     if gridlines is True:
