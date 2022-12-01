@@ -104,9 +104,19 @@ def basemap(
 
     # add inset map to show figure location
     if kwargs.get("inset", False) is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        new_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "fig",
+            ]
+        }
         add_inset(
             fig,
-            inset_pos=kwargs.get("inset_pos", "TL"),
+            # inset_pos=kwargs.get("inset_pos", "TL"),
+            **new_kwargs,
         )
 
     # add scalebar
@@ -419,9 +429,19 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        new_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "fig",
+            ]
+        }
         add_inset(
             fig,
-            inset_pos=kwargs.get("inset_pos", "TL"),
+            # inset_pos=kwargs.get("inset_pos", "TL"),
+            **new_kwargs,
         )
 
     # add scalebar
