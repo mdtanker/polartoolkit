@@ -8,8 +8,8 @@
 
 from typing import TYPE_CHECKING, Union
 
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pygmt
@@ -771,7 +771,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
-        verbose=kwargs.get("verbose", "w")
+        verbose=kwargs.get("verbose", "w"),
     )
 
     grid2 = fetch.resample_grid(
@@ -779,7 +779,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
-        verbose=kwargs.get("verbose", "w")
+        verbose=kwargs.get("verbose", "w"),
     )
 
     dif = grid1 - grid2
@@ -796,7 +796,6 @@ def grd_compare(
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
-
 
     if plot is True:
 
@@ -865,8 +864,8 @@ def grd_compare(
             fig, ax = plt.subplots(
                 nrows=nrows,
                 ncols=ncols,
-                figsize=(sub_width*ncols, sub_width*nrows),
-                )
+                figsize=(sub_width * ncols, sub_width * nrows),
+            )
 
             grid1.plot(
                 ax=ax[0],
@@ -930,7 +929,8 @@ def grd_compare(
                             height=(show_region[3] - show_region[2]),
                             linewidth=1,
                             fill=False,
-                        ))
+                        )
+                    )
 
     return (dif, grid1, grid2)
 
@@ -1243,7 +1243,7 @@ def square_subplots(n: int):
         7: (3, 3),
         8: (3, 3),
         9: (3, 3),
-        }
+    }
     if n in SPECIAL_CASES:
         return SPECIAL_CASES[n]
 

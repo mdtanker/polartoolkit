@@ -568,10 +568,7 @@ def add_colorbar(
 
         if hist_type == 0:
             # if histogram type is counts
-            bins = np.histogram(
-                data,
-                bins=bins
-            )[0]
+            bins = np.histogram(data, bins=bins)[0]
             max_bin_height = bins.max()
         elif hist_type == 1:
             # if histogram type is frequency percent
@@ -785,7 +782,9 @@ def add_inset(
             color="skyblue",
         )
         fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black"))
+        fig.plot(
+            data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black")
+        )
 
         add_box(
             fig,
