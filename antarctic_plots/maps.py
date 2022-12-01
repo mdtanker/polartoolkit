@@ -763,12 +763,12 @@ def add_inset(
             color="skyblue",
         )
         fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen=kwargs.get("coast_pen", "0.2,black"))
+        fig.plot(data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black"))
 
         add_box(
             fig,
             box=region,
-            pen=kwargs.get("box_pen", "1p,black"),
+            pen=kwargs.get("inset_box_pen", "1p,black"),
         )
 
 
