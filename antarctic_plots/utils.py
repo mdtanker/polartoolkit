@@ -9,6 +9,7 @@
 from typing import TYPE_CHECKING, Union
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pygmt
@@ -770,6 +771,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
+        verbose=kwargs.get("verbose", "w")
     )
 
     grid2 = fetch.resample_grid(
@@ -777,6 +779,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
+        verbose=kwargs.get("verbose", "w")
     )
 
     dif = grid1 - grid2
@@ -794,13 +797,14 @@ def grd_compare(
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
+
     if plot is True:
+
         if plot_type == "pygmt":
-            cmap = kwargs.get("cmap", "viridis")
             fig_height = kwargs.get("fig_height", 10)
             coast = kwargs.get("coast", True)
             origin_shift = kwargs.get("origin_shift", "xshift")
-
+            cmap = kwargs.get("cmap", "viridis")
             fig = maps.plot_grd(
                 grid1,
                 cmap=cmap,
@@ -809,8 +813,17 @@ def grd_compare(
                 cbar_label=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
-                # **kwargs,
+                **kwargs,
             )
+
+            new_kwargs = {
+                kw: kwargs[kw]
+                for kw in kwargs
+                if kw
+                not in [
+                    "inset",
+                ]
+            }
             fig = maps.plot_grd(
                 dif,
                 cmap=kwargs.get("diff_cmap", "balance+h0"),
@@ -824,7 +837,7 @@ def grd_compare(
                 inset=kwargs.get("inset", True),
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 fig_height=fig_height,
-                # **kwargs,
+                **new_kwargs,
             )
             fig = maps.plot_grd(
                 grid2,
@@ -836,7 +849,7 @@ def grd_compare(
                 cbar_label=kwargs.get("grid2_name", "grid 2"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
-                # **kwargs,
+                **kwargs,
             )
 
             fig.show()
@@ -844,38 +857,80 @@ def grd_compare(
         elif plot_type == "xarray":
             if kwargs.get("robust", False) is True:
                 vmin, vmax = None, None
+            cmap = kwargs.get("cmap", "viridis")
 
-            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+            sub_width = 5
+            nrows, ncols = 1, 3
+            # setup subplot figure
+            fig, ax = plt.subplots(
+                nrows=nrows,
+                ncols=ncols,
+                figsize=(sub_width*ncols, sub_width*nrows),
+                )
+
             grid1.plot(
                 ax=ax[0],
-                cmap="viridis",
+                cmap=cmap,
                 vmin=vmin,
                 vmax=vmax,
                 robust=True,
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
             )
-            grid2.plot(
-                ax=ax[1],
-                cmap="viridis",
-                vmin=vmin,
-                vmax=vmax,
-                robust=True,
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-            )
+            ax[0].set_title(kwargs.get("grid1_name", "grid 1"))
+
             dif.plot(
-                ax=ax[2],
-                vmin=-diff_maxabs,
-                vmax=diff_maxabs,
+                ax=ax[1],
+                vmin=diff_lims[0],
+                vmax=diff_lims[1],
                 robust=True,
-                cmap="RdBu_r",
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+                cmap=kwargs.get("diff_cmap", "RdBu_r"),
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
             )
+            ax[1].set_title(kwargs.get("title", "Comparing Grids"))
+
+            grid2.plot(
+                ax=ax[2],
+                cmap=cmap,
+                vmin=vmin,
+                vmax=vmax,
+                robust=True,
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
+            )
+            ax[2].set_title(kwargs.get("grid2_name", "grid 2"))
+
             for a in ax:
                 a.set_xticklabels([])
                 a.set_yticklabels([])
                 a.set_xlabel("")
                 a.set_ylabel("")
                 a.set_aspect("equal")
+                if kwargs.get("points", None) is not None:
+                    a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")
+                if kwargs.get("show_region", None) is not None:
+                    show_region = kwargs.get("show_region", None)
+                    a.add_patch(
+                        mpl.patches.Rectangle(
+                            xy=(show_region[0], show_region[2]),
+                            width=(show_region[1] - show_region[0]),
+                            height=(show_region[3] - show_region[2]),
+                            linewidth=1,
+                            fill=False,
+                        ))
 
     return (dif, grid1, grid2)
 
@@ -1178,7 +1233,17 @@ def square_subplots(n: int):
         grid would be represented as ``(3, 3)``, because there are 2 rows
         of length 3.
     """
-    SPECIAL_CASES = {1: (1, 1), 2: (1, 2), 3: (2, 2), 5: (2, 3)}
+    SPECIAL_CASES = {
+        1: (1, 1),
+        2: (1, 2),
+        3: (2, 2),
+        4: (2, 2),
+        5: (2, 3),
+        6: (2, 3),
+        7: (3, 3),
+        8: (3, 3),
+        9: (3, 3),
+        }
     if n in SPECIAL_CASES:
         return SPECIAL_CASES[n]
 

@@ -356,17 +356,18 @@ def plot_grd(
                 verbose="e",
             )
 
-    # display grid
-    fig.grdimage(
-        grid=grid,
-        cmap=True,
-        projection=proj,
-        region=region,
-        nan_transparent=True,
-        frame=[f"+g{kwargs.get('background', 'white')}"],
-        shading=kwargs.get("shading", None),
-        verbose="q",
-    )
+    if kwargs.get("frame", None) is None:
+        # display grid
+        fig.grdimage(
+            grid=grid,
+            cmap=True,
+            projection=proj,
+            region=region,
+            nan_transparent=True,
+            frame=[f"+g{kwargs.get('background', 'white')}"],
+            shading=kwargs.get("shading", None),
+            verbose="q",
+        )
     else:
         # display grid
         fig.grdimage(
@@ -769,7 +770,7 @@ def add_inset(
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = lib.extract_region()
+            region = list(lib.extract_region())
             assert len(region) == 4
 
     with fig.inset(
@@ -821,7 +822,7 @@ def add_scalebar(
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = lib.extract_region()
+            region = list(lib.extract_region())
             assert len(region) == 4
 
     def round_to_1(x):
