@@ -502,9 +502,9 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
-    # if plotting a histogram add 1cm of spacing instead of .2cm
+    # if plotting a histogram add 3cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 1)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 3)
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
@@ -525,8 +525,15 @@ def add_colorbar(
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropiate value
     if hist is True:
-        # get limits used for cmap
+        # get grid to use
         grid = kwargs.get("grid", None)
+
+        # clip grid to plot region
+        with pygmt.clib.Session() as lib:
+            region = list(lib.extract_region())
+            assert len(region) == 4
+        grid = fetch.resample_grid(grid, region=region)
+
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
         if cpt_lims is not None:
@@ -542,13 +549,18 @@ def add_colorbar(
         df = vd.grid_to_table(grid)
         df2 = df.iloc[:, -1:].squeeze()
 
+        # subset between cbar min and max
         data = df2[df2.between(zmin, zmax)]
 
-        # set bin width, by default calculates to give 100 bins
-        data_min = min(data)
-        data_max = max(data)
+        bin_width = kwargs.get("hist_bin_width", None)
+        bin_num = kwargs.get("hist_bin_num", 100)
 
-        bin_width = kwargs.get("hist_bin_width", (data_max - data_min) / 100)
+        if bin_width is not None:
+            # if bin width is set, will plot x amount of bins of width=bin_width
+            bins = np.arange(zmin, zmax, step=bin_width)
+        else:
+            # if bin width isn't set, will plot bin_num of bins, by default = 100
+            bins, bin_width = np.linspace(zmin, zmax, num=bin_num, retstep=True)
 
         # set hist type
         hist_type = kwargs.get("hist_type", 0)
@@ -557,9 +569,7 @@ def add_colorbar(
             # if histogram type is counts
             bins = np.histogram(
                 data,
-                bins=range(
-                    int(data_min), int(data_max) + int(bin_width), int(bin_width)
-                ),
+                bins=bins
             )[0]
             max_bin_height = bins.max()
         elif hist_type == 1:
@@ -567,9 +577,7 @@ def add_colorbar(
             bins = np.histogram(
                 data,
                 density=True,
-                bins=range(
-                    int(data_min), int(data_max) + int(bin_width), int(bin_width)
-                ),
+                bins=bins,
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
 
@@ -604,6 +612,7 @@ def add_colorbar(
             series=f"{zmin}/{zmax}/{bin_width}",
             histtype=hist_type,
         )
+
         # shift figure back
         fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
 
