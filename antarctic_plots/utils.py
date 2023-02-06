@@ -804,25 +804,36 @@ def grd_compare(
             coast = kwargs.get("coast", True)
             origin_shift = kwargs.get("origin_shift", "xshift")
             cmap = kwargs.get("cmap", "viridis")
-            fig = maps.plot_grd(
-                grid1,
-                cmap=cmap,
-                region=region,
-                coast=True,
-                cbar_label=kwargs.get("grid1_name", "grid 1"),
-                cpt_lims=(vmin, vmax),
-                fig_height=fig_height,
-                **kwargs,
-            )
 
             new_kwargs = {
                 kw: kwargs[kw]
                 for kw in kwargs
                 if kw
                 not in [
+                    "cmap",
+                    "region",
+                    "coast"
+                    "title",
+                    "cpt_lims",
+                    "fig_height",
                     "inset",
+                    "cbar_label",
+                    "inset_pos",
                 ]
             }
+
+            if 'title' in new_kwargs: del new_kwargs['title']
+
+            fig = maps.plot_grd(
+                grid1,
+                cmap=cmap,
+                region=region,
+                coast=True,
+                title=kwargs.get("grid1_name", "grid 1"),
+                cpt_lims=(vmin, vmax),
+                fig_height=fig_height,
+                **new_kwargs,
+            )
             fig = maps.plot_grd(
                 dif,
                 cmap=kwargs.get("diff_cmap", "balance+h0"),
@@ -845,10 +856,10 @@ def grd_compare(
                 coast=coast,
                 origin_shift=origin_shift,
                 fig=fig,
-                cbar_label=kwargs.get("grid2_name", "grid 2"),
+                title=kwargs.get("grid2_name", "grid 2"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
-                **kwargs,
+                **new_kwargs,
             )
 
             fig.show()

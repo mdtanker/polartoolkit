@@ -164,8 +164,9 @@ def sample_grids(
     # reset the index
     df1.reset_index(inplace=True)
 
+    x, y = kwargs.get("coord_names", ("x","y"))
     # get points to sample at
-    points = df1[["x", "y"]].copy()
+    points = df1[[x, y]].copy()
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
@@ -538,6 +539,12 @@ def plot_profile(
                         "xag",
                     ]
 
+                if len(data_dict)<=1:
+                    frame = [
+                            "neSW",
+                            "ag",
+                        ]
+
                 # set region for data
                 data_reg = [
                     df_data.dist.min(),
@@ -549,7 +556,7 @@ def plot_profile(
                 fig.plot(
                     region=data_reg,
                     projection=data_projection,
-                    frame=frame,
+                    frame=kwargs.get("frame", frame),
                     x=df_data.dist,
                     y=df_data[k],
                     pen=f"2p,{v['color']}",
@@ -820,10 +827,16 @@ def plot_data(
                 "xag",
             ]
 
+    if len(data_dict)<=1:
+        frame = [
+                "neSW",
+                "ag",
+            ]
+
         fig.plot(
             region=region_data,
             projection=data_projection,
-            frame=frame,
+            frame=kwargs.get("frame", frame),
             x=df_data.dist,
             y=df_data[k],
             pen=f"{pen_width},{v['color']}",
