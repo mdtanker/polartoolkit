@@ -798,7 +798,6 @@ def grd_compare(
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
     if plot is True:
-
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 10)
             coast = kwargs.get("coast", True)
@@ -812,7 +811,7 @@ def grd_compare(
                 not in [
                     "cmap",
                     "region",
-                    "coast"
+                    "coast",
                     "title",
                     "cpt_lims",
                     "fig_height",
@@ -821,8 +820,6 @@ def grd_compare(
                     "inset_pos",
                 ]
             }
-
-            if 'title' in new_kwargs: del new_kwargs['title']
 
             fig = maps.plot_grd(
                 grid1,

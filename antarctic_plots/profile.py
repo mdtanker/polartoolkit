@@ -164,7 +164,7 @@ def sample_grids(
     # reset the index
     df1.reset_index(inplace=True)
 
-    x, y = kwargs.get("coord_names", ("x","y"))
+    x, y = kwargs.get("coord_names", ("x", "y"))
     # get points to sample at
     points = df1[[x, y]].copy()
 
@@ -539,11 +539,11 @@ def plot_profile(
                         "xag",
                     ]
 
-                if len(data_dict)<=1:
+                if len(data_dict) <= 1:
                     frame = [
-                            "neSW",
-                            "ag",
-                        ]
+                        "neSW",
+                        "ag",
+                    ]
 
                 # set region for data
                 data_reg = [
@@ -768,14 +768,19 @@ def plot_data(
     path: str
         Filename for saving image, by default is None.
     """
-    points = create_profile(method, **kwargs)
     fig_height = kwargs.get("fig_height", 5)
     fig_width = kwargs.get("fig_width", 10)
     pen_width = kwargs.get("pen_width", "1.5p")
 
+    # create dataframe of points
+    points = create_profile(method, **kwargs)
+
     points = points[["x", "y", "dist"]].copy()
+    df_data = points.copy()
+
+    # sample data grids
     for k, v in data_dict.items():
-        df_data = sample_grids(points, v["grid"], name=v["name"])
+        df_data = sample_grids(df_data, v["grid"], name=k)
 
     # shorten profiles
     if kwargs.get("clip") is True:
@@ -791,50 +796,50 @@ def plot_data(
     if kwargs.get("share_yaxis", False) is True:
         data_min = df_data[df_data.columns[3:]].min().min()
         data_max = df_data[df_data.columns[3:]].max().max()
+
         # add space above and below top and bottom of graph
         y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-        # set region for data
-        region_data = [
-            df_data.dist.min(),
-            df_data.dist.max(),
-            data_min - y_buffer,
-            data_max + y_buffer,
-        ]
+
         # set frame
         frame = [
             "neSW",
             "ag",
         ]
 
+    # set projection for data graph
     data_projection = f"X{fig_width}c/{fig_height}c"
 
     for k, v in data_dict.items():
+        # if using individual y-axes for data, get individual max/mins
         if kwargs.get("share_yaxis", False) is False:
-            # if using individual y-axes for data, get individual max/mins
             data_min = df_data[k].min()
             data_max = df_data[k].max()
+
             # add space above and below top and bottom of graph
             y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-            region_data = [
-                df_data.dist.min(),
-                df_data.dist.max(),
-                data_min - y_buffer,
-                data_max + y_buffer,
-            ]
+
             # turn off frame tick labels
             frame = [
                 "neSw",
                 "xag",
             ]
 
-    if len(data_dict)<=1:
-        frame = [
+        if len(data_dict) <= 1:
+            frame = [
                 "neSW",
                 "ag",
             ]
 
+        # set region for data
+        data_reg = [
+            df_data.dist.min(),
+            df_data.dist.max(),
+            data_min - y_buffer,
+            data_max + y_buffer,
+        ]
+
         fig.plot(
-            region=region_data,
+            region=data_reg,
             projection=data_projection,
             frame=kwargs.get("frame", frame),
             x=df_data.dist,

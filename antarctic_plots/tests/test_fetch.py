@@ -203,6 +203,7 @@ def test_resample_grid(test_input, expected):
 # resampled = fetch.resample_grid(grid, **test_input)
 # utils.get_grid_info(resampled)
 
+
 # %% ice_vel
 @pytest.mark.slow
 @pytest.mark.earthdata

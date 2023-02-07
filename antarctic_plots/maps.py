@@ -324,7 +324,7 @@ def plot_grd(
                 reverse=reverse_cpt,
                 verbose="e",
             )
-        except (pygmt.exceptions.GMTCLibError):
+        except pygmt.exceptions.GMTCLibError:
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -1031,7 +1031,6 @@ def subplots(
     ):
         for i, j in enumerate(grids):
             with fig.set_panel(panel=i):
-
                 # if list of cmaps provided, use them
                 if kwargs.get("cmaps", None) is not None:
                     cmap = kwargs.get("cmaps", None)[i]
@@ -1414,7 +1413,6 @@ def geoviews_points(
     points_cmap: str = "viridis",
     **kwargs,
 ):
-
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color
         # turn points into geoviews dataset

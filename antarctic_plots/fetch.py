@@ -41,7 +41,6 @@ def resample_grid(
     verbose="w",
     **kwargs,
 ):
-
     # if initial values not given, extract from supplied grid
     if initial_spacing is None:
         initial_spacing = float(utils.get_grid_info(grid)[0])
@@ -1593,7 +1592,10 @@ def bedmap2(
             member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
         else:
             member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
-        fname = pooch.Unzip(extract_dir=f"bedmap2_{layer}", members=member,)(
+        fname = pooch.Unzip(
+            extract_dir=f"bedmap2_{layer}",
+            members=member,
+        )(
             fname, action, pooch2
         )[0]
         # get the path to the layer's tif file
@@ -2145,7 +2147,6 @@ def gravity(
         )
 
     elif version == "eigen":
-
         initial_region = [-3330000.0, 3330000.0, -3330000.0, 3330000.0]
         initial_spacing = 5e3
         initial_registration = "g"
