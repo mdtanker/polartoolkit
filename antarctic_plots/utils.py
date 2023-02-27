@@ -17,13 +17,18 @@ import pyogrio
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-
+import rioxarray
 from antarctic_plots import fetch, maps
 
 if TYPE_CHECKING:
     import geopandas as gpd
 # import seaborn as sns
 
+
+# function to give RMSE of data
+def RMSE(data):
+    return np.sqrt(np.nanmedian(data**2).item())
+    # return np.sqrt(np.nanmean(data**2).item())
 
 def get_grid_info(grid):
     """
@@ -707,6 +712,8 @@ def grd_compare(
         use xarray robust color lims instead of min and max, by default is False.
     region : Union[str, np.ndarray]
         choose a specific region to compare.
+    rmse_in_title: bool
+        add the RMSE to the title, by default is True.
     Returns
     -------
     list
@@ -726,12 +733,12 @@ def grd_compare(
         da1 = pygmt.grdcut(
             da1,
             region=region,
-            verbose="e",
+            verbose=kwargs.get("verbose", "e"),
         )
         da2 = pygmt.grdcut(
             da2,
             region=region,
-            verbose="e",
+            verbose=kwargs.get("verbose", "e"),
         )
 
     # get minimum grid spacing of both grids
@@ -771,7 +778,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
-        verbose=kwargs.get("verbose", "w"),
+        verbose=kwargs.get("verbose", "e"),
     )
 
     grid2 = fetch.resample_grid(
@@ -779,7 +786,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
-        verbose=kwargs.get("verbose", "w"),
+        verbose=kwargs.get("verbose", "e"),
     )
 
     dif = grid1 - grid2
@@ -798,11 +805,16 @@ def grd_compare(
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
     if plot is True:
+        title = kwargs.get("title", "Comparing Grids")
+        if kwargs.get("rmse_in_title", True) is True:
+            title+=f", RMSE: {round(RMSE(dif),kwargs.get('RMSE_decimals', 2))}"
+
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 10)
             coast = kwargs.get("coast", True)
             origin_shift = kwargs.get("origin_shift", "xshift")
             cmap = kwargs.get("cmap", "viridis")
+            subplot_labels = kwargs.get("subplot_labels", False)
 
             new_kwargs = {
                 kw: kwargs[kw]
@@ -816,8 +828,17 @@ def grd_compare(
                     "cpt_lims",
                     "fig_height",
                     "inset",
-                    "cbar_label",
                     "inset_pos",
+                ]
+            }
+
+            diff_kwargs = {
+                kw: new_kwargs[kw]
+                for kw in new_kwargs
+                if kw
+                not in [
+                    "reverse_cpt",
+                    "cbar_label",
                 ]
             }
 
@@ -825,12 +846,21 @@ def grd_compare(
                 grid1,
                 cmap=cmap,
                 region=region,
-                coast=True,
+                coast=coast,
                 title=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
                 **new_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position='TL',
+                    justify='BL',
+                    text = "a)",
+                    font = kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset = 'j0/.3',
+                    no_clip=True,
+                )
             fig = maps.plot_grd(
                 dif,
                 cmap=kwargs.get("diff_cmap", "balance+h0"),
@@ -840,12 +870,21 @@ def grd_compare(
                 cbar_label="difference",
                 cpt_lims=diff_lims,
                 fig=fig,
-                title=kwargs.get("title", "Comparing Grids"),
+                title=title,
                 inset=kwargs.get("inset", True),
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 fig_height=fig_height,
-                **new_kwargs,
+                **diff_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position='TL',
+                    justify='BL',
+                    text = "b)",
+                    font = kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset = 'j0/.3',
+                    no_clip=True,
+                )
             fig = maps.plot_grd(
                 grid2,
                 cmap=cmap,
@@ -858,6 +897,15 @@ def grd_compare(
                 fig_height=fig_height,
                 **new_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position='TL',
+                    justify='BL',
+                    text = "c)",
+                    font = kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset = 'j0/.3',
+                    no_clip=True,
+                )
 
             fig.show()
 
@@ -903,7 +951,8 @@ def grd_compare(
                     "pad": 0.04,
                 },
             )
-            ax[1].set_title(kwargs.get("title", "Comparing Grids"))
+
+            ax[1].set_title(title)
 
             grid2.plot(
                 ax=ax[2],

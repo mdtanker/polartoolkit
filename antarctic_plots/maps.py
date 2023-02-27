@@ -289,7 +289,9 @@ def plot_grd(
         fig = kwargs.get("fig")
 
     # set cmap
-    if image is True:
+    if cmap is True:
+        pass
+    elif image is True:
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
@@ -313,7 +315,6 @@ def plot_grd(
         )
     elif cpt_lims is not None:
         try:
-            # zmin, zmax = cpt_lims
             pygmt.makecpt(
                 cmap=cmap,
                 series=(zmin, zmax),
@@ -388,37 +389,13 @@ def plot_grd(
         fig.plot(
             x=points.x,
             y=points.y,
-            style="c.2c",
+            style=kwargs.get("points_style","c.2c"),
             color="black",
         )
 
     # add box showing region
     if show_region is not None:
         add_box(fig, show_region)
-
-    # display colorbar
-    if colorbar is True:
-        # removed duplicate kwargs before passing to add_colorbar
-        cbar_kwargs = {
-            kw: kwargs[kw]
-            for kw in kwargs
-            if kw
-            not in [
-                "cpt_lims",
-                "fig_width",
-                "hist",
-                "grid",
-                "fig",
-            ]
-        }
-        add_colorbar(
-            fig,
-            hist=kwargs.get("hist", False),
-            grid=grid,
-            cpt_lims=[zmin, zmax],
-            fig_width=fig_width,
-            **cbar_kwargs,
-        )
 
     # plot groundingline and coastlines
     if coast is True:
@@ -468,11 +445,37 @@ def plot_grd(
             length_perc=kwargs.get("length_perc", 0.25),
             position=kwargs.get("position", "n.5/.05"),
         )
+
+    # display colorbar
+    if colorbar is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        cbar_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "cpt_lims",
+                "fig_width",
+                "hist",
+                "grid",
+                "fig",
+            ]
+        }
+        add_colorbar(
+            fig,
+            hist=kwargs.get("hist", False),
+            grid=grid,
+            cpt_lims=[zmin, zmax],
+            fig_width=fig_width,
+            **cbar_kwargs,
+        )
+
     # reset region and projection
     if title is None:
         fig.basemap(region=region, projection=proj, frame="wesn")
     else:
-        fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
+        with pygmt.config(FONT_TITLE=kwargs.get('title_font', "auto")):
+            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
 
     return fig
 

@@ -10,6 +10,7 @@ import shutil
 from getpass import getpass
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
+from dotenv import load_dotenv
 
 if TYPE_CHECKING:
     import numpy as np
@@ -112,7 +113,8 @@ def resample_grid(
         )
 
     else:
-        print("returning grid with new region and/or registration, same spacing")
+        if verbose == "w":
+            print("returning grid with new region and/or registration, same spacing")
 
         cut = pygmt.grdcut(
             grid=grid,
@@ -477,8 +479,8 @@ def measures_boundaries(
     ----------
     version : str,
         choose which file to retrieve from the following list:
-        "coastline", "basins_antarctica", "basins_IMBIE", "iceboundaries", "iceshelf",
-        "mask"
+        "Coastline", "Basins_Antarctica", "Basins_IMBIE", "IceBoundaries", "IceShelf",
+        "Mask"
 
     Returns
     -------
@@ -489,7 +491,7 @@ def measures_boundaries(
     path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
 
     # coastline shapefile is in a different directory
-    if version == "coastline":
+    if version == "Coastline":
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
         registry = {
             "Coastline_Antarctica_v02.dbf": None,
@@ -513,12 +515,11 @@ def measures_boundaries(
         # pick the requested file
         fname = glob.glob(f"{path}/{version}*.shp")[0]
     elif version in [
-        "coastline",
-        "basins_antarctica",
-        "basins_IMBIE",
-        "iceboundaries",
-        "iceshelf",
-        "mask",
+        "Basins_Antarctica",
+        "Basins_IMBIE",
+        "IceBoundaries",
+        "IceShelf",
+        "Mask",
     ]:
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
         registry = {
@@ -559,7 +560,7 @@ def measures_boundaries(
                 progressbar=True,
             )
         # pick the requested file
-        if version == "mask":
+        if version == "Mask":
             fname = glob.glob(f"{path}/{version}*.tif")[0]
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]
@@ -1607,7 +1608,10 @@ def bedmap2(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load data
-            grid = xr.load_dataarray(fname).squeeze().drop_vars(["band", "spatial_ref"])
+            grid = xr.load_dataarray(
+                fname,
+                engine="rasterio",
+                ).squeeze().drop_vars(["band", "spatial_ref"])
             grid = grid.to_dataset(name=layer)
 
             # Save to disk
@@ -1805,8 +1809,8 @@ def REMA(
         initial_registration = "g"
         # url and file name for download
         url = (
-            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic"
-            "/_500m_v2.0_filled_cop30.tar.gz"
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_"
+            "500m_v2.0_filled_cop30.tar.gz"
         )
         fname = "rema_mosaic_500m_v2.0_filled_cop30.tar.gz"
         members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
@@ -1817,11 +1821,11 @@ def REMA(
         initial_registration = "g"
         # url and file name for download
         url = (
-            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic"
-            "/_1km_v2.0_filled_polarDEM90.tar.gz"
+            "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_"
+            "1km_v2.0_filled_cop30.tar.gz"
         )
-        fname = "rema_mosaic_1km_v2.0_filled_polarDEM90.tar.gz"
-        members = ["rema_mosaic_1km_v2.0_filled_polarDEM90_dem.tif"]
+        fname = "rema_mosaic_1km_v2.0_filled_cop30.tar.gz"
+        members = ["rema_mosaic_1km_v2.0_filled_cop30_dem.tif"]
     else:
         raise ValueError("invalid version")
 
