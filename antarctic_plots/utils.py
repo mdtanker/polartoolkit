@@ -14,10 +14,11 @@ import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
+import rioxarray  # noqa
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
-import rioxarray
+
 from antarctic_plots import fetch, maps
 
 if TYPE_CHECKING:
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
 def RMSE(data):
     return np.sqrt(np.nanmedian(data**2).item())
     # return np.sqrt(np.nanmean(data**2).item())
+
 
 def get_grid_info(grid):
     """
@@ -807,7 +809,7 @@ def grd_compare(
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
-            title+=f", RMSE: {round(RMSE(dif),kwargs.get('RMSE_decimals', 2))}"
+            title += f", RMSE: {round(RMSE(dif),kwargs.get('RMSE_decimals', 2))}"
 
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 10)
@@ -854,11 +856,11 @@ def grd_compare(
             )
             if subplot_labels is True:
                 fig.text(
-                    position='TL',
-                    justify='BL',
-                    text = "a)",
-                    font = kwargs.get("label_font", "26p,Helvetica,black"),
-                    offset = 'j0/.3',
+                    position="TL",
+                    justify="BL",
+                    text="a)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -878,11 +880,11 @@ def grd_compare(
             )
             if subplot_labels is True:
                 fig.text(
-                    position='TL',
-                    justify='BL',
-                    text = "b)",
-                    font = kwargs.get("label_font", "26p,Helvetica,black"),
-                    offset = 'j0/.3',
+                    position="TL",
+                    justify="BL",
+                    text="b)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -899,11 +901,11 @@ def grd_compare(
             )
             if subplot_labels is True:
                 fig.text(
-                    position='TL',
-                    justify='BL',
-                    text = "c)",
-                    font = kwargs.get("label_font", "26p,Helvetica,black"),
-                    offset = 'j0/.3',
+                    position="TL",
+                    justify="BL",
+                    text="c)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
                     no_clip=True,
                 )
 

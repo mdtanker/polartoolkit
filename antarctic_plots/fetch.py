@@ -10,6 +10,7 @@ import shutil
 from getpass import getpass
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
+
 from dotenv import load_dotenv
 
 if TYPE_CHECKING:
@@ -29,6 +30,8 @@ import zarr
 from pyproj import Transformer
 
 from antarctic_plots import fetch, maps, regions, utils
+
+load_dotenv()
 
 
 def resample_grid(
@@ -1608,10 +1611,14 @@ def bedmap2(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load data
-            grid = xr.load_dataarray(
-                fname,
-                engine="rasterio",
-                ).squeeze().drop_vars(["band", "spatial_ref"])
+            grid = (
+                xr.load_dataarray(
+                    fname,
+                    engine="rasterio",
+                )
+                .squeeze()
+                .drop_vars(["band", "spatial_ref"])
+            )
             grid = grid.to_dataset(name=layer)
 
             # Save to disk

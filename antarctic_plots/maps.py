@@ -389,7 +389,7 @@ def plot_grd(
         fig.plot(
             x=points.x,
             y=points.y,
-            style=kwargs.get("points_style","c.2c"),
+            style=kwargs.get("points_style", "c.2c"),
             color="black",
         )
 
@@ -474,7 +474,7 @@ def plot_grd(
     if title is None:
         fig.basemap(region=region, projection=proj, frame="wesn")
     else:
-        with pygmt.config(FONT_TITLE=kwargs.get('title_font', "auto")):
+        with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
             fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
 
     return fig
