@@ -19,6 +19,32 @@ help:
 #
 #
 # main
+mamba_install:
+	mamba create --name antarctic_plots --yes \
+	python \
+  	mamba \
+  	pip \
+  	poetry \
+  	pygmt \
+  	geopandas \
+  	geoviews \
+  	pandas \
+  	pooch \
+  	verde \
+  	xarray \
+  	pyproj \
+  	matplotlib \
+  	pyogrio \
+  	rioxarray \
+  	scipy \
+  	numpy \
+  	openpyxl \
+  	ipykernel \
+  	jupyterlab  \
+
+mamba_yml:
+	mamba env export --name antarctic_plots --from-history --no-build > environment.yml
+
 install:
 	pip install -e .
 
@@ -26,7 +52,7 @@ delete_env:
 	mamba remove --name antarctic_plots_dev --all --yes
 
 new_env: delete_env
-	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 geoviews=1.9.5
+	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 geoviews=1.9.5 --force
 
 install_reqs:
 	pip install --no-deps --requirement requirements.txt

@@ -8,19 +8,40 @@
 
 import warnings
 from math import floor, log10
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
-import geopandas as gpd
-import geoviews as gv
+if TYPE_CHECKING:
+    import geopandas as gpd
+
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
 import xarray as xr
-from cartopy import crs
 
 from antarctic_plots import fetch, regions, utils
+
+try:
+    import geopandas as gpd
+except ImportError:
+    _has_geopandas = False
+else:
+    _has_geopandas = True
+
+try:
+    import geoviews as gv
+except ImportError:
+    _has_geoviews = False
+else:
+    _has_geoviews = True
+
+try:
+    from cartopy import crs
+except ImportError:
+    _has_cartopy = False
+else:
+    _has_cartopy = True
 
 try:
     import ipyleaflet
@@ -230,6 +251,7 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Int64Index")
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
+    # get region from grid or use supplied region
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
@@ -238,7 +260,57 @@ def plot_grd(
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
-    # print(f"plot region is: {region}")
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
+        fig = pygmt.Figure()
+        fig_height = kwargs.get("fig_height", 15)
+        fig_width = kwargs.get("fig_width", None)
+        # set figure projection and size from input region and figure dimensions
+        # by default use figure height to set projection
+        if fig_width is None:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+        # if fig_width is set, use it to set projection
+        else:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_width=fig_width,
+            )
+    else:
+        fig = kwargs.get("fig")
+
+        if origin_shift == "xshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+            fig.shift_origin(
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
+            )
+        elif origin_shift == "yshift":
+            fig_width = kwargs.get("fig_width", utils.get_fig_width(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_width=fig_width,
+            )
+            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+        elif origin_shift == "both_shift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+            fig.shift_origin(
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+                yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+            )
+        elif origin_shift == "no_shift":
+            pass
+        else:
+            raise ValueError("invalid string for origin shift")
 
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
@@ -251,42 +323,9 @@ def plot_grd(
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
-    fig_height = kwargs.get("fig_height", 15)
-    fig_width = kwargs.get("fig_width", None)
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
-    # set figure projection and size from input region and figure dimensions
-    # by default use figure height to set projection
-    if fig_width is None:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_height=fig_height,
-        )
-    # if fig_width is set, use it to set projection
-    else:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_width=fig_width,
-        )
-
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-    elif origin_shift == "xshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
-    elif origin_shift == "yshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
-    elif origin_shift == "both_shift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(
-            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
-            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
-        )
-    elif origin_shift == "no_shift":
-        fig = kwargs.get("fig")
 
     # set cmap
     if cmap is True:
@@ -901,6 +940,9 @@ def interactive_map(
         raise ImportError(
             "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
         )
+    if not _has_geopandas:
+        raise ImportError("geopandas is required for this function")
+
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
         height=kwargs.get("height", None),
@@ -1311,6 +1353,11 @@ def interactive_data(
             holoview/geoviews map instance
     """
 
+    if not _has_geoviews:
+        raise ImportError("geoviews is required for this function")
+    if not _has_cartopy:
+        raise ImportError("cartopy is required for this function")
+
     # set the plot style
     gv.extension("bokeh")
 
@@ -1416,6 +1463,11 @@ def geoviews_points(
     points_cmap: str = "viridis",
     **kwargs,
 ):
+    if not _has_geoviews:
+        raise ImportError("geoviews is required for this function")
+    if not _has_cartopy:
+        raise ImportError("cartopy is required for this function")
+
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color
         # turn points into geoviews dataset

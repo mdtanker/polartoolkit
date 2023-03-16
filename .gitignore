@@ -13,11 +13,11 @@ __pycache__/
 .eggs/
 dist/
 
-# Sample shapefiles
-data/
+# version file
+antarctic_plots/_version.py
 
-# Large data files
-data/ADMAP_2B_2017_R9_BAS_.tif
+# Sample shapefiles
+data/*
 
 testing.ipynb
 testing2.ipynb
@@ -27,3 +27,4 @@ testing2.ipynb
 tmp*
 
 *.env
+

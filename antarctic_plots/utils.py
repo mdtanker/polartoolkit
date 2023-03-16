@@ -6,7 +6,7 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Callable, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -23,7 +23,13 @@ from antarctic_plots import fetch, maps
 
 if TYPE_CHECKING:
     import geopandas as gpd
-# import seaborn as sns
+
+try:
+    import seaborn as sns
+except ImportError:
+    _has_seaborn = False
+else:
+    _has_seaborn = True
 
 
 # function to give RMSE of data
@@ -363,6 +369,45 @@ def points_inside_region(
     return df_inside
 
 
+def block_reduce(
+    df: pd.DataFrame,
+    reduction: Callable,
+    input_coord_names: list = ["x", "y"],
+    input_data_names: list = None,
+    **kwargs,
+):
+    # define verde reducer function
+    reducer = vd.BlockReduce(reduction, **kwargs)
+
+    # if no data names provided, use all columns
+    if input_data_names is None:
+        input_data_names = list(df.columns.drop(input_coord_names))
+
+    # get tuples of pd.Series
+    input_coords = tuple([df[col] for col in input_coord_names])
+    input_data = tuple([df[col] for col in input_data_names])
+
+    # apply reduction
+    coordinates, data = reducer.filter(
+        coordinates=input_coords,
+        data=input_data,
+    )
+
+    # add reduced coordinates to a dictionary
+    coord_cols = {k: v for k, v in zip(input_coord_names, coordinates)}
+
+    # add reduced data to a dictionary
+    if len(input_data_names) < 2:
+        data_cols = {input_data_names[0]: data}
+    else:
+        data_cols = {k: v for k, v in zip(input_data_names, data)}
+
+    # merge dicts and create dataframe
+    df_reduced = pd.DataFrame(data=coord_cols | data_cols)
+
+    return df_reduced
+
+
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
     invert: bool = True,
@@ -373,6 +418,7 @@ def mask_from_shp(
     masked: bool = False,
     crs: str = "epsg:3031",
     pixel_register=True,
+    input_coord_names=("x", "y"),
 ):
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -425,11 +471,22 @@ def mask_from_shp(
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
-        xds = xr_grid.rio.write_crs(crs)
+        xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
+            input_coord_names[0], input_coord_names[1]
+        )
     elif grid_file is not None:
-        xds = xr.load_dataarray(grid_file).rio.write_crs(crs)
+        xds = (
+            xr.load_dataarray(grid_file)
+            .rio.write_crs(crs)
+            .rio.set_spatial_dims(input_coord_names[0], input_coord_names[1])
+        )
 
-    masked_grd = xds.rio.clip(shp.geometry, xds.rio.crs, drop=False, invert=invert)
+    masked_grd = xds.rio.clip(
+        shp.geometry,
+        xds.rio.crs,
+        drop=False,
+        invert=invert,
+    )
     mask_grd = np.isfinite(masked_grd)
 
     if masked is True:
@@ -1056,10 +1113,8 @@ def raps(
     spacing : float
         grid spacing if input is not a grid
     """
-    try:
-        import seaborn as sns
-    except ImportError:
-        print("package `seaborn` not installed")
+    if not _has_seaborn:
+        raise ImportError("seaborn is required for this function.")
 
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
@@ -1169,10 +1224,10 @@ def coherency(grids: list, label: str, **kwargs):
     spacing : float
         grid spacing if input is pd.DataFrame
     """
-    try:
-        import seaborn as sns
-    except ImportError:
-        print("package `seaborn` not installed")
+
+    if not _has_seaborn:
+        raise ImportError("seaborn is required for this function.")
+
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 

@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 import glob
 
-import geopandas as gpd
 import pandas as pd
 import pooch
 import pygmt
@@ -972,10 +971,10 @@ def IBCSO_coverage(
     )
 
     # extract the geometries which are within the supplied region
-    data = gpd.read_file(
+    data = pyogrio.read_dataframe(
         path,
         layer="IBCSO_coverage",
-        bbox=utils.GMT_reg_to_bounding_box(region),
+        bbox=tuple(utils.GMT_reg_to_bounding_box(region)),
     )
 
     # expand from multipoint/mulitpolygon to point/polygon

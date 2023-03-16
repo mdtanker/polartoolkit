@@ -173,6 +173,8 @@ def sample_grids(
         points=points,
         grid=grid,
         newcolname=name,
+        radius=kwargs.get("radius", None),
+        no_skip=kwargs.get("no_skip", False),
     )
 
     # add sampled data to dataframe as a new series
