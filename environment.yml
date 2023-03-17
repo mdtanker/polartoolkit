@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.10
+  - python>=3.8
   - pip
   # Build
   - build
@@ -28,6 +28,7 @@ dependencies:
   - pygmt
   - geopandas
   - zarr
+  - python-dotenv
   # Optional requirements
   - geoviews
   - cartopy
@@ -45,7 +46,7 @@ dependencies:
   - sphinx-gallery
   - jupyter-book
   - nbconvert
+  - ipykernel
   - pip:
-    - python-dotenv
     - Flake8-pyproject
 

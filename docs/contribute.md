@@ -32,7 +32,7 @@ contributions.
   - [Testing your code](#testing-your-code)
   - [Documentation](#documentation)
   - [Code Review](#code-review)
-* [Release a New Version](#release-a-new-version)
+* [Publish a new release](#release-a-new-version)
 * [Update the Dependencies](#update-the-dependencies)
 * [Set up Binder](#set-up-the-binder-configuration)
 
@@ -105,27 +105,27 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 
 ### Setting up your environment
 
-Antarctic-Plots uses `Poetry` as a package manager, which uses `pip` to install packages. Two of the dependencies, `PyGMT` and `GeoPandas`, need to be installed with `conda` since they contain C packages. To navigate this issue, we install `PyGMT` and `Geopandas` independently, then export the `Poetry` env to a file, and use that to add the remaining dependencies.
+To get the latest version clone the github repo:
 
-The file is `requirements.txt` which defines the packages need to use and develop the package.
+  git clone https://github.com/mdtanker/antarctic_plots.git
 
-Run the following to create a conda/mamba env "antarctic_plots_dev":
+Change into the directory:
 
-> **Note:** first run `mamba deactivate` to exit whichever environment you're currently in.
+  cd antarctic_plots
 
-    make new_env
+Run the following command to make a new environment and install the package dependencies:
 
-> **Note:** `mamba` and `conda` are interchangable in all these commands.
+  make conda_install
 
-Activate it with:
+Activate the environement:
 
-    conda activate antarctic_plots_dev
+  conda activate antarctic_plots
 
-Install the necessary packages:
+Install your local version:
 
-    make install_reqs
+  make install
 
-This environment contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
+This environment now contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 > **Note:** You'll need to activate the environment every time you start a new terminal.
 
@@ -240,11 +240,16 @@ Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
 [post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
 
-## Release a new version
+## Publish a new release
 
 This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
 
-Follow all the above instructions for building the docs
+Follow all the above instructions for formating and building the docs
+
+### PyPI (pip)
+Manually increment the version in antarctic_plots/__init__.py:
+
+  version = "X.Y.Z"
 
 Build the package locally into the /dist folder:
 
@@ -253,6 +258,8 @@ Build the package locally into the /dist folder:
 Upload the dist files to Test PyPI:
 
     make test_publish
+
+This should automatically find the TestPyPI username and token from a `.pypirc` file in your home directory.
 
 Make a new environment and activate it:
 
@@ -263,43 +270,28 @@ Make a new environment and activate it:
 
     pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ antarctic-plots==******
 
-Run a few gallery examples to make sure this env works, then its read to publish to the real PyPI:
+Run a few gallery examples to make sure this env works, then its ready to publish to the real PyPI:
 
     make publish
 
- Now push the changes to Github and make a release with the matching version number.
+Now push the changes to Github and make a release with the matching version number.
+
+### Conda-Forge
+Once the new version is on PyPI, we can update the conda-forge feedstock. 
 
 ## Update the dependencies
-The package uses `Poetry` (v.1.1.14) to handle dependencies, build, and publish. Unfortunately, due to `PyGMT` relying on the C package `GMT`, poetry can't install `PyGMT`. This is the same with `GeoPandas` relying on `GDAL`.
 
-To update or add dependencies, use the below commands:
+To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI.
 
-    poetry add <PACKAGE> --lock
-
-or if the package is only for development/documentation
-
-    poetry add <PACKAGE> --group dev --lock
-
-Replace <PACKAGE> with package name, and optionally set the version with the following formats, as defined [here](https://python-poetry.org/docs/dependency-specification/):
-
-    PACKAGE==2.1 (exactly 2.1)
-    PACKAGE@^2.1 (>=2.1.0 <3.0.0)
-
-To completely reset Poetry, and reinstall based on the updated .toml file:
-
-    make poetry_env_dev
-
-This solves the dependencies for the packages listed in pyproject.toml, adds the versions to a .lock file, install them in a poetry virtual environment, and exports the resulting environment to a requirements.txt file.
-
-Then run through the commands at the top of this page again to update the conda environment which is based on the requirements.txt file.
+After release a new version on PyPI, we will create a new release on conda-forge, and the new dependencies should automatically be included there.
 
 If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
 
 ## Set up the binder configuration
 
-To run this package online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command. If you've added a dependency with poetry, you'll need to add it to the end of the Makefile command.
+To run this package online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command.
 
-    make binder_yml
+    make binder_env
 
 This will create an environment with the core dependencies, and export it to a .yml. Open this file and add the following at the bottom of the list of dependencies:
 ```
