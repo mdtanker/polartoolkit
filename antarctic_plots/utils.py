@@ -6,13 +6,15 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Callable, Union
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
+import rioxarray  # noqa
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
@@ -21,7 +23,19 @@ from antarctic_plots import fetch, maps
 
 if TYPE_CHECKING:
     import geopandas as gpd
-# import seaborn as sns
+
+try:
+    import seaborn as sns
+except ImportError:
+    _has_seaborn = False
+else:
+    _has_seaborn = True
+
+
+# function to give RMSE of data
+def RMSE(data):
+    return np.sqrt(np.nanmedian(data**2).item())
+    # return np.sqrt(np.nanmean(data**2).item())
 
 
 def get_grid_info(grid):
@@ -355,6 +369,45 @@ def points_inside_region(
     return df_inside
 
 
+def block_reduce(
+    df: pd.DataFrame,
+    reduction: Callable,
+    input_coord_names: list = ["x", "y"],
+    input_data_names: list = None,
+    **kwargs,
+):
+    # define verde reducer function
+    reducer = vd.BlockReduce(reduction, **kwargs)
+
+    # if no data names provided, use all columns
+    if input_data_names is None:
+        input_data_names = list(df.columns.drop(input_coord_names))
+
+    # get tuples of pd.Series
+    input_coords = tuple([df[col] for col in input_coord_names])
+    input_data = tuple([df[col] for col in input_data_names])
+
+    # apply reduction
+    coordinates, data = reducer.filter(
+        coordinates=input_coords,
+        data=input_data,
+    )
+
+    # add reduced coordinates to a dictionary
+    coord_cols = {k: v for k, v in zip(input_coord_names, coordinates)}
+
+    # add reduced data to a dictionary
+    if len(input_data_names) < 2:
+        data_cols = {input_data_names[0]: data}
+    else:
+        data_cols = {k: v for k, v in zip(input_data_names, data)}
+
+    # merge dicts and create dataframe
+    df_reduced = pd.DataFrame(data=coord_cols | data_cols)
+
+    return df_reduced
+
+
 def mask_from_shp(
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
     invert: bool = True,
@@ -365,6 +418,7 @@ def mask_from_shp(
     masked: bool = False,
     crs: str = "epsg:3031",
     pixel_register=True,
+    input_coord_names=("x", "y"),
 ):
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -417,11 +471,22 @@ def mask_from_shp(
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
-        xds = xr_grid.rio.write_crs(crs)
+        xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
+            input_coord_names[0], input_coord_names[1]
+        )
     elif grid_file is not None:
-        xds = xr.load_dataarray(grid_file).rio.write_crs(crs)
+        xds = (
+            xr.load_dataarray(grid_file)
+            .rio.write_crs(crs)
+            .rio.set_spatial_dims(input_coord_names[0], input_coord_names[1])
+        )
 
-    masked_grd = xds.rio.clip(shp.geometry, xds.rio.crs, drop=False, invert=invert)
+    masked_grd = xds.rio.clip(
+        shp.geometry,
+        xds.rio.crs,
+        drop=False,
+        invert=invert,
+    )
     mask_grd = np.isfinite(masked_grd)
 
     if masked is True:
@@ -706,6 +771,8 @@ def grd_compare(
         use xarray robust color lims instead of min and max, by default is False.
     region : Union[str, np.ndarray]
         choose a specific region to compare.
+    rmse_in_title: bool
+        add the RMSE to the title, by default is True.
     Returns
     -------
     list
@@ -725,12 +792,12 @@ def grd_compare(
         da1 = pygmt.grdcut(
             da1,
             region=region,
-            verbose="e",
+            verbose=kwargs.get("verbose", "e"),
         )
         da2 = pygmt.grdcut(
             da2,
             region=region,
-            verbose="e",
+            verbose=kwargs.get("verbose", "e"),
         )
 
     # get minimum grid spacing of both grids
@@ -770,6 +837,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
+        verbose=kwargs.get("verbose", "e"),
     )
 
     grid2 = fetch.resample_grid(
@@ -777,6 +845,7 @@ def grd_compare(
         spacing=min_spacing,
         region=sub_region,
         registration=registration,
+        verbose=kwargs.get("verbose", "e"),
     )
 
     dif = grid1 - grid2
@@ -795,22 +864,62 @@ def grd_compare(
     vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
     if plot is True:
+        title = kwargs.get("title", "Comparing Grids")
+        if kwargs.get("rmse_in_title", True) is True:
+            title += f", RMSE: {round(RMSE(dif),kwargs.get('RMSE_decimals', 2))}"
+
         if plot_type == "pygmt":
-            cmap = kwargs.get("cmap", "viridis")
             fig_height = kwargs.get("fig_height", 10)
             coast = kwargs.get("coast", True)
             origin_shift = kwargs.get("origin_shift", "xshift")
+            cmap = kwargs.get("cmap", "viridis")
+            subplot_labels = kwargs.get("subplot_labels", False)
+
+            new_kwargs = {
+                kw: kwargs[kw]
+                for kw in kwargs
+                if kw
+                not in [
+                    "cmap",
+                    "region",
+                    "coast",
+                    "title",
+                    "cpt_lims",
+                    "fig_height",
+                    "inset",
+                    "inset_pos",
+                ]
+            }
+
+            diff_kwargs = {
+                kw: new_kwargs[kw]
+                for kw in new_kwargs
+                if kw
+                not in [
+                    "reverse_cpt",
+                    "cbar_label",
+                ]
+            }
 
             fig = maps.plot_grd(
                 grid1,
                 cmap=cmap,
                 region=region,
-                coast=True,
-                cbar_label=kwargs.get("grid1_name", "grid 1"),
+                coast=coast,
+                title=kwargs.get("grid1_name", "grid 1"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
-                # **kwargs,
+                **new_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position="TL",
+                    justify="BL",
+                    text="a)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
+                    no_clip=True,
+                )
             fig = maps.plot_grd(
                 dif,
                 cmap=kwargs.get("diff_cmap", "balance+h0"),
@@ -820,12 +929,21 @@ def grd_compare(
                 cbar_label="difference",
                 cpt_lims=diff_lims,
                 fig=fig,
-                title=kwargs.get("title", "Comparing Grids"),
+                title=title,
                 inset=kwargs.get("inset", True),
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 fig_height=fig_height,
-                # **kwargs,
+                **diff_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position="TL",
+                    justify="BL",
+                    text="b)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
+                    no_clip=True,
+                )
             fig = maps.plot_grd(
                 grid2,
                 cmap=cmap,
@@ -833,49 +951,102 @@ def grd_compare(
                 coast=coast,
                 origin_shift=origin_shift,
                 fig=fig,
-                cbar_label=kwargs.get("grid2_name", "grid 2"),
+                title=kwargs.get("grid2_name", "grid 2"),
                 cpt_lims=(vmin, vmax),
                 fig_height=fig_height,
-                # **kwargs,
+                **new_kwargs,
             )
+            if subplot_labels is True:
+                fig.text(
+                    position="TL",
+                    justify="BL",
+                    text="c)",
+                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    offset="j0/.3",
+                    no_clip=True,
+                )
 
             fig.show()
 
         elif plot_type == "xarray":
             if kwargs.get("robust", False) is True:
                 vmin, vmax = None, None
+            cmap = kwargs.get("cmap", "viridis")
 
-            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
+            sub_width = 5
+            nrows, ncols = 1, 3
+            # setup subplot figure
+            fig, ax = plt.subplots(
+                nrows=nrows,
+                ncols=ncols,
+                figsize=(sub_width * ncols, sub_width * nrows),
+            )
+
             grid1.plot(
                 ax=ax[0],
-                cmap="viridis",
+                cmap=cmap,
                 vmin=vmin,
                 vmax=vmax,
                 robust=True,
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
             )
-            grid2.plot(
-                ax=ax[1],
-                cmap="viridis",
-                vmin=vmin,
-                vmax=vmax,
-                robust=True,
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-            )
+            ax[0].set_title(kwargs.get("grid1_name", "grid 1"))
+
             dif.plot(
-                ax=ax[2],
-                vmin=-diff_maxabs,
-                vmax=diff_maxabs,
+                ax=ax[1],
+                vmin=diff_lims[0],
+                vmax=diff_lims[1],
                 robust=True,
-                cmap="RdBu_r",
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
+                cmap=kwargs.get("diff_cmap", "RdBu_r"),
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
             )
+
+            ax[1].set_title(title)
+
+            grid2.plot(
+                ax=ax[2],
+                cmap=cmap,
+                vmin=vmin,
+                vmax=vmax,
+                robust=True,
+                cbar_kwargs={
+                    "orientation": "horizontal",
+                    "anchor": (1, 1),
+                    "fraction": 0.05,
+                    "pad": 0.04,
+                },
+            )
+            ax[2].set_title(kwargs.get("grid2_name", "grid 2"))
+
             for a in ax:
                 a.set_xticklabels([])
                 a.set_yticklabels([])
                 a.set_xlabel("")
                 a.set_ylabel("")
                 a.set_aspect("equal")
+                if kwargs.get("points", None) is not None:
+                    a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")
+                if kwargs.get("show_region", None) is not None:
+                    show_region = kwargs.get("show_region", None)
+                    a.add_patch(
+                        mpl.patches.Rectangle(
+                            xy=(show_region[0], show_region[2]),
+                            width=(show_region[1] - show_region[0]),
+                            height=(show_region[3] - show_region[2]),
+                            linewidth=1,
+                            fill=False,
+                        )
+                    )
 
     return (dif, grid1, grid2)
 
@@ -942,10 +1113,8 @@ def raps(
     spacing : float
         grid spacing if input is not a grid
     """
-    try:
-        import seaborn as sns
-    except ImportError:
-        print("package `seaborn` not installed")
+    if not _has_seaborn:
+        raise ImportError("seaborn is required for this function.")
 
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
@@ -1055,10 +1224,10 @@ def coherency(grids: list, label: str, **kwargs):
     spacing : float
         grid spacing if input is pd.DataFrame
     """
-    try:
-        import seaborn as sns
-    except ImportError:
-        print("package `seaborn` not installed")
+
+    if not _has_seaborn:
+        raise ImportError("seaborn is required for this function.")
+
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
@@ -1178,7 +1347,17 @@ def square_subplots(n: int):
         grid would be represented as ``(3, 3)``, because there are 2 rows
         of length 3.
     """
-    SPECIAL_CASES = {1: (1, 1), 2: (1, 2), 3: (2, 2), 5: (2, 3)}
+    SPECIAL_CASES = {
+        1: (1, 1),
+        2: (1, 2),
+        3: (2, 2),
+        4: (2, 2),
+        5: (2, 3),
+        6: (2, 3),
+        7: (3, 3),
+        8: (3, 3),
+        9: (3, 3),
+    }
     if n in SPECIAL_CASES:
         return SPECIAL_CASES[n]
 

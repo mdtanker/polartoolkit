@@ -19,6 +19,32 @@ help:
 #
 #
 # main
+mamba_install:
+	mamba create --name antarctic_plots --yes \
+	python \
+  	mamba \
+  	pip \
+  	poetry \
+  	pygmt \
+  	geopandas \
+  	geoviews \
+  	pandas \
+  	pooch \
+  	verde \
+  	xarray \
+  	pyproj \
+  	matplotlib \
+  	pyogrio \
+  	rioxarray \
+  	scipy \
+  	numpy \
+  	openpyxl \
+  	ipykernel \
+  	jupyterlab  \
+
+mamba_yml:
+	mamba env export --name antarctic_plots --from-history --no-build > environment.yml
+
 install:
 	pip install -e .
 
@@ -26,7 +52,7 @@ delete_env:
 	mamba remove --name antarctic_plots_dev --all --yes
 
 new_env: delete_env
-	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 geoviews=1.9.5
+	mamba create --name antarctic_plots_dev --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0 geoviews=1.9.5 --force
 
 install_reqs:
 	pip install --no-deps --requirement requirements.txt
@@ -43,10 +69,7 @@ poetry_env_dev: remove_poetry
 	poetry export -f requirements.txt --output requirements.txt --with dev
 
 # test_pypi
-delete_test_pypi_env:
-	mamba remove --name antarctic_plots_test_pypi --all --yes
-
-test_pypi_env: delete_test_pypi_env
+test_pypi_env:
 	mamba create --name antarctic_plots_test_pypi --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
 
 # binder
@@ -136,11 +159,12 @@ build_docs:
 #
 #
 #
-package:
-	poetry build
+build:
+	python -m build
 
 test_publish:
-	poetry publish --build -r test-pypi
+	twine upload -r testpypi dist/*
 
 publish:
 	poetry publish --build
+

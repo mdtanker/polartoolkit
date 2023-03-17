@@ -1,0 +1,51 @@
+name: antarctic_plots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  # Build
+  - build
+  - setuptools>=61.0
+  - setuptools_scm>=6.2
+  - twine
+  # Run-time
+  - pandas
+  - openpyxl
+  - pooch
+  - tqdm
+  - verde
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - pyproj
+  - matplotlib
+  - pyogrio
+  - rioxarray
+  - scipy
+  - numpy
+  - pygmt
+  - geopandas
+  - zarr
+  # Optional requirements
+  - geoviews
+  - cartopy
+  - ipyleaflet
+  - seaborn
+  # Developement requirements
+  - pytest
+  - pytest-cov
+  - flake8
+  - isort
+  - black
+  - tokenize-rt
+  - ipython
+  - nbsphinx
+  - sphinx-gallery
+  - jupyter-book
+  - nbconvert
+  - pip:
+    - python-dotenv
+    - Flake8-pyproject
+

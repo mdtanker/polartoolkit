@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### 💫 Highlights
+* Added rioxarray as dependency
+* Added `utils.mask_from_shp` gallery example
+
+### 🚀 Features
+
+#### New module `Maps`
+
+#### New datasets in `Fetch`
+
+#### New functions in `Utils`
+
+### 📖 Documentation
+
+### ⛔ Maintenance
+
+### 🧑‍🤝‍🧑 Contributors
+
+[@mdtanker](https://github.com/mdtanker)
+
+---
+
 ## Release v0.0.4 
 
 ### 💫 Highlights
@@ -36,7 +60,7 @@
 * Added tutorial for modules `fetch` and `region`
 
 ### ⛔ Maintenance
-
+* Closed [Issue #6](https://github.com/mdtanker/antarctic_plots/issues/6): Create gallery examples
 * Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9): Code formating
 * Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13): Specify dependency version
 * Closed [Issue #15](https://github.com/mdtanker/antarctic_plots/issues/15): Add inset map of Antarctica

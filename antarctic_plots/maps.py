@@ -8,19 +8,31 @@
 
 import warnings
 from math import floor, log10
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import geopandas as gpd
-import geoviews as gv
+
 import numpy as np
 import pandas as pd
 import pygmt
-import pyogrio
 import verde as vd
 import xarray as xr
-from cartopy import crs
 
 from antarctic_plots import fetch, regions, utils
+
+try:
+    import geoviews as gv
+except ImportError:
+    _has_geoviews = False
+else:
+    _has_geoviews = True
+
+try:
+    from cartopy import crs
+except ImportError:
+    _has_cartopy = False
+else:
+    _has_cartopy = True
 
 try:
     import ipyleaflet
@@ -104,9 +116,19 @@ def basemap(
 
     # add inset map to show figure location
     if kwargs.get("inset", False) is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        new_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "fig",
+            ]
+        }
         add_inset(
             fig,
-            inset_pos=kwargs.get("inset_pos", "TL"),
+            # inset_pos=kwargs.get("inset_pos", "TL"),
+            **new_kwargs,
         )
 
     # add scalebar
@@ -220,6 +242,7 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Int64Index")
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
+    # get region from grid or use supplied region
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
@@ -228,7 +251,61 @@ def plot_grd(
             print("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
-    # print(f"plot region is: {region}")
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
+        fig = pygmt.Figure()
+        fig_height = kwargs.get("fig_height", 15)
+        fig_width = kwargs.get("fig_width", None)
+        # set figure projection and size from input region and figure dimensions
+        # by default use figure height to set projection
+        if fig_width is None:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+        # if fig_width is set, use it to set projection
+        else:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_width=fig_width,
+            )
+    else:
+        fig = kwargs.get("fig")
+
+        if origin_shift == "xshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+            fig.shift_origin(
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
+            )
+        elif origin_shift == "yshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+        elif origin_shift == "both_shift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+            )
+            fig.shift_origin(
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+                yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+            )
+        elif origin_shift == "no_shift":
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=kwargs.get("fig_height", 15),
+            )
+
+        else:
+            raise ValueError("invalid string for origin shift")
 
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
@@ -241,45 +318,14 @@ def plot_grd(
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
-    fig_height = kwargs.get("fig_height", 15)
-    fig_width = kwargs.get("fig_width", None)
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
-    # set figure projection and size from input region and figure dimensions
-    # by default use figure height to set projection
-    if fig_width is None:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_height=fig_height,
-        )
-    # if fig_width is set, use it to set projection
-    else:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_width=fig_width,
-        )
-
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-    elif origin_shift == "xshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
-    elif origin_shift == "yshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
-    elif origin_shift == "both_shift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(
-            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
-            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
-        )
-    elif origin_shift == "no_shift":
-        fig = kwargs.get("fig")
 
     # set cmap
-    if image is True:
+    if cmap is True:
+        pass
+    elif image is True:
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
@@ -303,7 +349,6 @@ def plot_grd(
         )
     elif cpt_lims is not None:
         try:
-            # zmin, zmax = cpt_lims
             pygmt.makecpt(
                 cmap=cmap,
                 series=(zmin, zmax),
@@ -314,7 +359,7 @@ def plot_grd(
                 reverse=reverse_cpt,
                 verbose="e",
             )
-        except (pygmt.exceptions.GMTCLibError):
+        except pygmt.exceptions.GMTCLibError:
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -346,19 +391,94 @@ def plot_grd(
                 verbose="e",
             )
 
-    # display grid
-    fig.grdimage(
-        grid=grid,
-        cmap=True,
-        projection=proj,
-        region=region,
-        nan_transparent=True,
-        frame=[f"+g{kwargs.get('background', 'white')}"],
-        shading=kwargs.get("shading", None),
-        verbose="q",
-    )
+    if kwargs.get("frame", None) is None:
+        # display grid
+        fig.grdimage(
+            grid=grid,
+            cmap=True,
+            projection=proj,
+            region=region,
+            nan_transparent=True,
+            frame=[f"+g{kwargs.get('background', 'white')}"],
+            shading=kwargs.get("shading", None),
+            verbose="q",
+        )
+    else:
+        # display grid
+        fig.grdimage(
+            grid=grid,
+            cmap=True,
+            projection=proj,
+            region=region,
+            nan_transparent=True,
+            frame=kwargs.get("frame"),
+            shading=kwargs.get("shading", None),
+            verbose="q",
+        )
 
     cmap_region = kwargs.get("cmap_region", region)
+
+    # add datapoints
+    if points is not None:
+        fig.plot(
+            x=points.x,
+            y=points.y,
+            style=kwargs.get("points_style", "c.2c"),
+            fill="black",
+        )
+
+    # add box showing region
+    if show_region is not None:
+        add_box(fig, show_region)
+
+    # plot groundingline and coastlines
+    if coast is True:
+        add_coast(
+            fig,
+            region,
+            proj,
+            pen=kwargs.get("coast_pen", None),
+            no_coast=kwargs.get("no_coast", False),
+        )
+
+    # add lat long grid lines
+    if gridlines is True:
+        add_gridlines(
+            fig,
+            region=region,
+            projection=proj_latlon,
+            x_spacing=kwargs.get("x_spacing", None),
+            y_spacing=kwargs.get("y_spacing", None),
+        )
+
+    # add inset map to show figure location
+    if inset is True:
+        # removed duplicate kwargs before passing to add_colorbar
+        new_kwargs = {
+            kw: kwargs[kw]
+            for kw in kwargs
+            if kw
+            not in [
+                "fig",
+            ]
+        }
+        add_inset(
+            fig,
+            # inset_pos=kwargs.get("inset_pos", "TL"),
+            **new_kwargs,
+        )
+
+    # add scalebar
+    if scalebar is True:
+        add_scalebar(
+            fig,
+            region,
+            proj_latlon,
+            font_color=kwargs.get("font_color", "black"),
+            scale_length=kwargs.get("scale_length"),
+            length_perc=kwargs.get("length_perc", 0.25),
+            position=kwargs.get("position", "n.5/.05"),
+        )
 
     # display colorbar
     if colorbar is True:
@@ -384,62 +504,12 @@ def plot_grd(
             **cbar_kwargs,
         )
 
-    # plot groundingline and coastlines
-    if coast is True:
-        add_coast(
-            fig,
-            region,
-            proj,
-            pen=kwargs.get("coast_pen", None),
-            no_coast=kwargs.get("no_coast", False),
-        )
-
-    # add datapoints
-    if points is not None:
-        fig.plot(
-            x=points.x,
-            y=points.y,
-            style="c.2c",
-            color="black",
-        )
-
-    # add box showing region
-    if show_region is not None:
-        add_box(fig, show_region)
-
-    # add lat long grid lines
-    if gridlines is True:
-        add_gridlines(
-            fig,
-            region=region,
-            projection=proj_latlon,
-            x_spacing=kwargs.get("x_spacing", None),
-            y_spacing=kwargs.get("y_spacing", None),
-        )
-
-    # add inset map to show figure location
-    if inset is True:
-        add_inset(
-            fig,
-            inset_pos=kwargs.get("inset_pos", "TL"),
-        )
-
-    # add scalebar
-    if scalebar is True:
-        add_scalebar(
-            fig,
-            region,
-            proj_latlon,
-            font_color=kwargs.get("font_color", "black"),
-            scale_length=kwargs.get("scale_length"),
-            length_perc=kwargs.get("length_perc", 0.25),
-            position=kwargs.get("position", "n.5/.05"),
-        )
     # reset region and projection
     if title is None:
         fig.basemap(region=region, projection=proj, frame="wesn")
     else:
-        fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
+        with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
+            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
 
     return fig
 
@@ -470,9 +540,9 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
-    # if plotting a histogram add 1cm of spacing instead of .2cm
+    # if plotting a histogram add 3cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 1)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 3)
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
@@ -493,8 +563,15 @@ def add_colorbar(
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropiate value
     if hist is True:
-        # get limits used for cmap
+        # get grid to use
         grid = kwargs.get("grid", None)
+
+        # clip grid to plot region
+        with pygmt.clib.Session() as lib:
+            region = list(lib.extract_region())
+            assert len(region) == 4
+        grid = fetch.resample_grid(grid, region=region)
+
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
         if cpt_lims is not None:
@@ -510,34 +587,32 @@ def add_colorbar(
         df = vd.grid_to_table(grid)
         df2 = df.iloc[:, -1:].squeeze()
 
+        # subset between cbar min and max
         data = df2[df2.between(zmin, zmax)]
 
-        # set bin width, by default calculates to give 100 bins
-        data_min = min(data)
-        data_max = max(data)
+        bin_width = kwargs.get("hist_bin_width", None)
+        bin_num = kwargs.get("hist_bin_num", 100)
 
-        bin_width = kwargs.get("hist_bin_width", (data_max - data_min) / 100)
+        if bin_width is not None:
+            # if bin width is set, will plot x amount of bins of width=bin_width
+            bins = np.arange(zmin, zmax, step=bin_width)
+        else:
+            # if bin width isn't set, will plot bin_num of bins, by default = 100
+            bins, bin_width = np.linspace(zmin, zmax, num=bin_num, retstep=True)
 
         # set hist type
         hist_type = kwargs.get("hist_type", 0)
 
         if hist_type == 0:
             # if histogram type is counts
-            bins = np.histogram(
-                data,
-                bins=range(
-                    int(data_min), int(data_max) + int(bin_width), int(bin_width)
-                ),
-            )[0]
+            bins = np.histogram(data, bins=bins)[0]
             max_bin_height = bins.max()
         elif hist_type == 1:
             # if histogram type is frequency percent
             bins = np.histogram(
                 data,
                 density=True,
-                bins=range(
-                    int(data_min), int(data_max) + int(bin_width), int(bin_width)
-                ),
+                bins=bins,
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
 
@@ -572,6 +647,7 @@ def add_colorbar(
             series=f"{zmin}/{zmax}/{bin_width}",
             histtype=hist_type,
         )
+
         # shift figure back
         fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
 
@@ -601,7 +677,7 @@ def add_coast(
     if pen is None:
         pen = "0.6p,black"
 
-    gdf = pyogrio.read_dataframe(fetch.groundingline())
+    gdf = gpd.read_file(fetch.groundingline())
 
     if no_coast is False:
         data = gdf
@@ -728,27 +804,29 @@ def add_inset(
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = lib.extract_region()
+            region = list(lib.extract_region())
             assert len(region) == 4
 
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
         verbose="q",
     ):
-        gdf = pyogrio.read_dataframe(fetch.groundingline())
+        gdf = gpd.read_file(fetch.groundingline())
         fig.plot(
             projection=inset_map,
             region=inset_reg,
             data=gdf[gdf.Id_text == "Ice shelf"],
-            color="skyblue",
+            fill="skyblue",
         )
-        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
-        fig.plot(data=fetch.groundingline(), pen=kwargs.get("coast_pen", "0.2,black"))
+        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], fill="grey")
+        fig.plot(
+            data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black")
+        )
 
         add_box(
             fig,
             box=region,
-            pen=kwargs.get("box_pen", "1p,black"),
+            pen=kwargs.get("inset_box_pen", "1p,black"),
         )
 
 
@@ -780,7 +858,7 @@ def add_scalebar(
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = lib.extract_region()
+            region = list(lib.extract_region())
             assert len(region) == 4
 
     def round_to_1(x):
@@ -857,6 +935,7 @@ def interactive_map(
         raise ImportError(
             "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
         )
+
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
         height=kwargs.get("height", None),
@@ -990,7 +1069,6 @@ def subplots(
     ):
         for i, j in enumerate(grids):
             with fig.set_panel(panel=i):
-
                 # if list of cmaps provided, use them
                 if kwargs.get("cmaps", None) is not None:
                     cmap = kwargs.get("cmaps", None)[i]
@@ -1020,6 +1098,7 @@ def subplots(
                 plot_grd(
                     j,
                     fig=fig,
+                    fig_height=fig_height,
                     origin_shift="no_shift",
                     region=region,
                     cmap=cmap,
@@ -1268,12 +1347,17 @@ def interactive_data(
             holoview/geoviews map instance
     """
 
+    if not _has_geoviews:
+        raise ImportError("geoviews is required for this function")
+    if not _has_cartopy:
+        raise ImportError("cartopy is required for this function")
+
     # set the plot style
     gv.extension("bokeh")
 
     # initialize figure with coastline
     coast = gv.Path(
-        pyogrio.read_dataframe(fetch.groundingline()),
+        gpd.read_file(fetch.groundingline()),
         crs=crs.SouthPolarStereo(),
     )
     # set projection, and change groundingline attributes
@@ -1373,6 +1457,10 @@ def geoviews_points(
     points_cmap: str = "viridis",
     **kwargs,
 ):
+    if not _has_geoviews:
+        raise ImportError("geoviews is required for this function")
+    if not _has_cartopy:
+        raise ImportError("cartopy is required for this function")
 
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color

@@ -1,44 +1,71 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "antarctic_plots"
-version = "0.0.4.2"
+dynamic = ["version"]
+# version = "0.0.4.3.1"
 description = "Functions to automate Antarctic data visualization"
-readme = "README.md" 
-authors = ["mdtanker <matt.d.tankersley@gmail.com>"]
-license = "MIT"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Matthew Tankersley", email = "matt.d.tankersley@gmail.com"},
+]
+keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
+
+dependencies = [
+    "pandas[excel]", # includes openpyxl and others
+    "pooch[progress]", # includes tqdm
+    "verde",
+    "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
+    "pyproj",
+    "matplotlib",
+    "pyogrio",
+    "rioxarray",
+    "scipy",
+    "numpy",
+    "pygmt",
+    "geopandas",
+    "zarr",
+    "python-dotenv",
+    "pip",
+]
+
+[project.optional-dependencies]
+interactive = [
+    "geoviews",
+    "cartopy",
+    "ipyleaflet",
+]
+viz = [
+    "seaborn",
+]
+
+dev = [
+    "pytest",
+    "pytest-cov",
+    "flake8",
+    "isort",
+    "Flake8-pyproject",
+    "black[jupyter]", # includes ipython, tokenize-rt
+    "nbsphinx",
+    "sphinx-gallery",
+    "jupyter-book",
+    "nbconvert",
+]
+
+[project.urls]
 homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
 repository = "https://github.com/mdtanker/antarctic_plots"
 documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
-keywords = ["antarctica", "plotting", "pygmt", "cross-section", "bedmap", "bedmachine"]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<3.10"
-pandas = "^1.4.3"
-pooch = {extras = ["progress"], version = "^1.6.0"}
-verde = "^1.7.0"
-xarray = {extras = ["io"], version = "^2022.6.0"}
-pyproj = "^3.3.1"
-matplotlib = "^3.5.3"
-pyogrio = "^0.4.1"
-rioxarray = "^0.12.0"
-scipy = ">=1.7.1"
-numpy = "^1.23.3"
-openpyxl = "^3.0.10"
+[tool.setuptools]
+packages = ["antarctic_plots"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.1.2"
-flake8 = "^4.0.1"
-isort = "^5.10.1"
-Flake8-pyproject = "^0.9.0"
-black = {extras = ["jupyter"], version = "^22.6.0"}
-nbsphinx = "^0.8.9"
-sphinx-gallery = "^0.11.1"
-jupyter-book = "^0.13.1"
-nbconvert = "6.5.3"
-pytest-cov = "^4.0.0"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools_scm]
+write_to = "antarctic_plots/_version.py"
 
 [tool.flake8]
 max-line-length = 88
