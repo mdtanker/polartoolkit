@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=61.0", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "antarctic_plots"
 dynamic = ["version"]
+# version = "0.0.4.3.1"
 description = "Functions to automate Antarctic data visualization"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -15,10 +16,10 @@ authors = [
 keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
 
 dependencies = [
-    "pandas",
-    "pooch[progress]",
+    "pandas[excel]", # includes openpyxl and others
+    "pooch[progress]", # includes tqdm
     "verde",
-    "xarray[io]",
+    "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "pyproj",
     "matplotlib",
     "pyogrio",
@@ -26,10 +27,9 @@ dependencies = [
     "scipy",
     "numpy",
     "pygmt",
-    #"geopandas",
+    "geopandas",
     "zarr",
     "python-dotenv",
-    "openpyxl",
     "pip",
 ]
 
@@ -49,7 +49,7 @@ dev = [
     "flake8",
     "isort",
     "Flake8-pyproject",
-    "black[jupyter]",
+    "black[jupyter]", # includes ipython, tokenize-rt
     "nbsphinx",
     "sphinx-gallery",
     "jupyter-book",

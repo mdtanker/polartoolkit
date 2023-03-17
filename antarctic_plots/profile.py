@@ -584,7 +584,7 @@ def plot_profile(
             y=df_layers[k],
             # close the polygons,
             close="+yb",
-            color=v["color"],
+            fill=v["color"],
             frame=["nSew", "a"],
         )
 
@@ -710,7 +710,7 @@ def plot_profile(
                 y=map_points.y,
                 style=kwargs.get("map_points_style", "x.15c"),
                 pen=kwargs.get("map_points_pen", ".2p,blue"),
-                color=kwargs.get("map_points_color", "blue"),
+                fill=kwargs.get("map_points_color", "blue"),
             )
 
         # add inset map

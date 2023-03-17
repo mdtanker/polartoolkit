@@ -1,5 +1,5 @@
 # Locally built docs
-docs/_build/
+docs/_build*
 
 # Compiled python modules and checkpoints
 __pycache__/
@@ -27,4 +27,3 @@ testing2.ipynb
 tmp*
 
 *.env
-

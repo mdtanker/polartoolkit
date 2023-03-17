@@ -246,17 +246,13 @@ This will almost always be done by the developers, but as a guide for them, here
 
 Follow all the above instructions for building the docs
 
-Increase the version number in `pyproject.toml`
+Build the package locally into the /dist folder:
 
-Recreate the poetry environment without the dev packages:
+  make build
 
-    make poetry_env
-
-Then run the following:
+Upload the dist files to Test PyPI:
 
     make test_publish
-
-This will both build the dist files, and upload to TestPyPI.
 
 Make a new environment and activate it:
 

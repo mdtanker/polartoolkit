@@ -10,24 +10,15 @@ import warnings
 from math import floor, log10
 from typing import TYPE_CHECKING, Union
 
-if TYPE_CHECKING:
-    import geopandas as gpd
+import geopandas as gpd
 
 import numpy as np
 import pandas as pd
 import pygmt
-import pyogrio
 import verde as vd
 import xarray as xr
 
 from antarctic_plots import fetch, regions, utils
-
-try:
-    import geopandas as gpd
-except ImportError:
-    _has_geopandas = False
-else:
-    _has_geopandas = True
 
 try:
     import geoviews as gv
@@ -291,10 +282,10 @@ def plot_grd(
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
             )
         elif origin_shift == "yshift":
-            fig_width = kwargs.get("fig_width", utils.get_fig_width(fig))
+            fig_height = kwargs.get("fig_height", utils.get_fig_height(fig))
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
-                fig_width=fig_width,
+                fig_height=fig_height,
             )
             fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
         elif origin_shift == "both_shift":
@@ -308,7 +299,11 @@ def plot_grd(
                 yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
             )
         elif origin_shift == "no_shift":
-            pass
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=kwargs.get("fig_height", 15),
+            )
+
         else:
             raise ValueError("invalid string for origin shift")
 
@@ -429,7 +424,7 @@ def plot_grd(
             x=points.x,
             y=points.y,
             style=kwargs.get("points_style", "c.2c"),
-            color="black",
+            fill="black",
         )
 
     # add box showing region
@@ -682,7 +677,7 @@ def add_coast(
     if pen is None:
         pen = "0.6p,black"
 
-    gdf = pyogrio.read_dataframe(fetch.groundingline())
+    gdf = gpd.read_file(fetch.groundingline())
 
     if no_coast is False:
         data = gdf
@@ -816,14 +811,14 @@ def add_inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
         verbose="q",
     ):
-        gdf = pyogrio.read_dataframe(fetch.groundingline())
+        gdf = gpd.read_file(fetch.groundingline())
         fig.plot(
             projection=inset_map,
             region=inset_reg,
             data=gdf[gdf.Id_text == "Ice shelf"],
-            color="skyblue",
+            fill="skyblue",
         )
-        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], color="grey")
+        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], fill="grey")
         fig.plot(
             data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black")
         )
@@ -940,8 +935,6 @@ def interactive_map(
         raise ImportError(
             "ipyleaflet is required to plot an interactive map. Install with `mamba install ipyleaflet`."  # noqa
         )
-    if not _has_geopandas:
-        raise ImportError("geopandas is required for this function")
 
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
@@ -1105,6 +1098,7 @@ def subplots(
                 plot_grd(
                     j,
                     fig=fig,
+                    fig_height=fig_height,
                     origin_shift="no_shift",
                     region=region,
                     cmap=cmap,
@@ -1363,7 +1357,7 @@ def interactive_data(
 
     # initialize figure with coastline
     coast = gv.Path(
-        pyogrio.read_dataframe(fetch.groundingline()),
+        gpd.read_file(fetch.groundingline()),
         crs=crs.SouthPolarStereo(),
     )
     # set projection, and change groundingline attributes

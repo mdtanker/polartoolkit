@@ -69,10 +69,7 @@ poetry_env_dev: remove_poetry
 	poetry export -f requirements.txt --output requirements.txt --with dev
 
 # test_pypi
-delete_test_pypi_env:
-	mamba remove --name antarctic_plots_test_pypi --all --yes
-
-test_pypi_env: delete_test_pypi_env
+test_pypi_env:
 	mamba create --name antarctic_plots_test_pypi --yes python=3.9 pygmt=0.7.0 geopandas=0.11.0
 
 # binder
@@ -162,11 +159,12 @@ build_docs:
 #
 #
 #
-package:
-	poetry build
+build:
+	python -m build
 
 test_publish:
-	poetry publish --build -r test-pypi
+	twine upload -r testpypi dist/*
 
 publish:
 	poetry publish --build
+
