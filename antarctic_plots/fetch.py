@@ -213,6 +213,7 @@ def ice_vel(
     region=None,
     spacing=None,
     registration=None,
+    **kwargs,
 ) -> xr.DataArray:
     """
     MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1:
@@ -318,6 +319,7 @@ def ice_vel(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     if plot is True:
