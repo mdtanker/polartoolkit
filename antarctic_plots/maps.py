@@ -8,10 +8,9 @@
 
 import warnings
 from math import floor, log10
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 import geopandas as gpd
-
 import numpy as np
 import pandas as pd
 import pygmt
@@ -515,7 +514,7 @@ def plot_grd(
 
 
 def add_colorbar(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     hist: bool = False,
     cpt_lims: list = None,
     **kwargs,
@@ -525,7 +524,7 @@ def add_colorbar(
 
     Parameters
     ----------
-    fig : pygmt.figure
+    fig : pygmt.Figure
         pygmt figure instance to add to
     hist : bool, optional
         choose whether to add a colorbar histogram, by default False
@@ -653,7 +652,7 @@ def add_colorbar(
 
 
 def add_coast(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     region: Union[str or np.ndarray] = None,
     projection: str = None,
     no_coast: bool = False,
@@ -664,7 +663,7 @@ def add_coast(
 
     Parameters
     ----------
-    fig : pygmt.figure
+    fig : pygmt.Figure
     region : Union[str or np.ndarray], optional
         region for the figure, by default is last used by PyGMT
     projection : str, optional
@@ -693,7 +692,7 @@ def add_coast(
 
 
 def add_gridlines(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     region: Union[str or np.ndarray] = None,
     projection: str = None,
     **kwargs,
@@ -704,7 +703,7 @@ def add_gridlines(
 
     Parameters
     ----------
-    fig : PyGMT.figure instance
+    fig : pygmt.Figure instance
     region : Union[str or np.ndarray], optional
         region for the figure
     projection : str, optional
@@ -774,7 +773,7 @@ def add_gridlines(
 
 
 def add_inset(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     region: Union[str or np.ndarray] = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
@@ -786,7 +785,7 @@ def add_inset(
 
     Parameters
     ----------
-    fig : PyGMT.figure instance
+    fig : pygmt.Figure instance
     region : Union[str or np.ndarray], optional
         region for the figure
     inset_pos : str, optional
@@ -831,7 +830,7 @@ def add_inset(
 
 
 def add_scalebar(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     region: Union[str or np.ndarray] = None,
     projection: str = None,
     **kwargs,
@@ -841,7 +840,7 @@ def add_scalebar(
 
     Parameters
     ----------
-    fig : PyGMT.figure instance
+    fig : pygmt.Figure instance
     region : np.ndarray, optional
         region for the figure
     projection : str, optional
@@ -882,7 +881,7 @@ def add_scalebar(
 
 
 def add_box(
-    fig: pygmt.figure,
+    fig: pygmt.Figure,
     box: Union[list or np.ndarray],
     pen="2p,black",
 ):
@@ -891,7 +890,7 @@ def add_box(
 
     Parameters
     ----------
-    fig : pygmt.figure
+    fig : pygmt.Figure
         Figure to plot on
     box : Union[list or np.ndarray]
         region in EPSG3031 in format [e,w,n,s] in meters
