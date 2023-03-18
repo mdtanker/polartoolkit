@@ -277,7 +277,26 @@ Run a few gallery examples to make sure this env works, then its ready to publis
 Now push the changes to Github and make a release with the matching version number.
 
 ### Conda-Forge
-Once the new version is on PyPI, we can update the conda-forge feedstock. 
+Once the new version is on PyPI, we can update the conda-forge feedstock.
+
+Fork the [conda-forge antarctic-plots feedstock](https://github.com/conda-forge/antarctic-plots-feedstock) and checkout a new branch
+
+    git clone https://github.com/conda-forge/antarctic-plots-feedstock
+
+    git checkout -b update
+
+
+Increase either the version number or the build number in `meta.yaml`.
+
+Push the changes to GitHub
+
+    git add .
+
+    git commit -m "updating antarctic-plots"
+
+    git push origin update
+
+Open a PR on GitHub with the new branch.
 
 ## Update the dependencies
 
