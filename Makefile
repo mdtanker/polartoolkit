@@ -19,7 +19,7 @@ help:
 #
 #
 install:
-	pip install -e .
+	pip install -e ".[dev]"
 
 # install with conda
 conda_install:
@@ -106,7 +106,7 @@ build_docs:
 #
 #
 #
-build: 
+build:
 	build
 
 test_publish:
