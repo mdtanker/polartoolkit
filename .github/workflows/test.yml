@@ -68,7 +68,7 @@ jobs:
       # Install dependencies from conda-forge
       - name: Install dependencies
         run: |
-          mamba install pytest=7.2.3 pytest-cov=4.0.0
+          mamba install pytest=7.2.2 pytest-cov=4.0.0
 
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
