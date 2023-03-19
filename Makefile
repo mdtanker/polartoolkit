@@ -107,7 +107,7 @@ build_docs:
 #
 #
 build:
-	build
+	python -m build
 
 test_publish:
 	twine upload -r testpypi dist/*
