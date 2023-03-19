@@ -18,7 +18,7 @@ dependencies = [
     "pandas",
     "openpyxl",
     "pooch[progress]", # includes tqdm
-    "verde",
+    "verde @ git+https://github.com/fatiando/verde", # remove this git version with next verde release
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "pyproj",
     "matplotlib",
