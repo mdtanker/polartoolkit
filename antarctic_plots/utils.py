@@ -139,8 +139,8 @@ def dd2dms(dd: float):
 
 def region_to_df(input, names=["x", "y"], reverse=False):
     """
-    Convert region bounds  in [e, w, n, s] (GMT format) to pandas dataframe with coordinates of
-    region corners
+    Convert region bounds  in [e, w, n, s] (GMT format) to pandas dataframe with
+    coordinates of region corners
 
     Parameters
     ----------
@@ -264,12 +264,12 @@ def latlon_to_epsg3031(
         df_new = list(transformer.transform(ll[0], ll[1]))
 
     if reg is True:
-            df_new = [
-                df_new[output[0]].min(),
-                df_new[output[0]].max(),
-                df_new[output[1]].min(),
-                df_new[output[1]].max(),
-            ]
+        df_new = [
+            df_new[output[0]].min(),
+            df_new[output[0]].max(),
+            df_new[output[1]].min(),
+            df_new[output[1]].max(),
+        ]
 
     return df_new
 
@@ -346,17 +346,15 @@ def points_inside_region(
     df1 = df.copy()
 
     # make column of booleans for whether row is within the region
-    df1["inside"] = vd.inside(
-        coordinates=(df1[names[0]], df1[names[1]]),
-        region=region)
+    df1["inside"] = vd.inside(coordinates=(df1[names[0]], df1[names[1]]), region=region)
 
     if reverse is True:
         # subset if False
-        df_result = df1.loc[df1.inside == False].copy()
+        df_result = df1.loc[df1.inside == False].copy()  # noqa 712
 
     else:
         # subset if True
-        df_result = df1.loc[df1.inside == True].copy()
+        df_result = df1.loc[df1.inside == True].copy()  # noqa 712
 
     # drop the column 'inside'
     df_result.drop(columns="inside", inplace=True)

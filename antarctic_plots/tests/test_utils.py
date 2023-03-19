@@ -8,11 +8,11 @@
 """
 Tests for utils module.
 """
-#%%
+# %%
 import numpy as np
-import verde as vd
 import pandas as pd
 import pytest
+import verde as vd
 
 from antarctic_plots import regions, utils
 
@@ -57,7 +57,7 @@ def test_get_grid_info():
 
     info = utils.get_grid_info(grid.misfit)
 
-    assert info == (100.0, [-100.0, 100.0, 200.0, 400.0], 40000.0, 160000.0, 'g')
+    assert info == (100.0, [-100.0, 100.0, 200.0, 400.0], 40000.0, 160000.0, "g")
 
 
 def test_dd2dms():
@@ -82,8 +82,21 @@ def test_region_to_df():
     df = utils.region_to_df(reg)
 
     expected = pd.DataFrame(
-        {"x":[ -680000.,470000.,-680000.,470000.,],
-         "y":[ -1420000.,-1420000.,-310000.,-310000.,]})
+        {
+            "x": [
+                -680000.0,
+                470000.0,
+                -680000.0,
+                470000.0,
+            ],
+            "y": [
+                -1420000.0,
+                -1420000.0,
+                -310000.0,
+                -310000.0,
+            ],
+        }
+    )
 
     pd.testing.assert_frame_equal(df, expected)
 
@@ -102,10 +115,11 @@ def test_region_xy_to_ll():
     reg_ll = utils.region_xy_to_ll(reg_xy, dms=True)
 
     assert reg_ll == [
-        '-154:24:41.35269126086496',
-        '161:41:10.261402247124352',
-        '-84:49:17.300473876937758',
-        '-75:34:58.96941344602965']
+        "-154:24:41.35269126086496",
+        "161:41:10.261402247124352",
+        "-84:49:17.300473876937758",
+        "-75:34:58.96941344602965",
+    ]
 
     reg_ll = utils.region_xy_to_ll(reg_xy)
 
@@ -113,7 +127,8 @@ def test_region_xy_to_ll():
         -154.41148685868356,
         161.6861837228464,
         -84.8214723538547,
-        -75.58304705929056]
+        -75.58304705929056,
+    ]
 
 
 def test_region_to_bounding_box():
@@ -127,23 +142,38 @@ def test_region_to_bounding_box():
 
     assert box == [-680000.0, -1420000.0, 470000.0, -310000.0]
 
+
 def test_latlon_to_epsg3031():
     """
     test the latlon_to_epsg3031 function
     """
 
-    df_ll = pd.DataFrame({
-        "lat" : [-75.583047, -76.296586, -83.129754, -84.82147],
-        "lon" : [-154.411487, 161.686184, -114.507405, 123.407825],
-    })
+    df_ll = pd.DataFrame(
+        {
+            "lat": [-75.583047, -76.296586, -83.129754, -84.82147],
+            "lon": [-154.411487, 161.686184, -114.507405, 123.407825],
+        }
+    )
 
     df_xy = utils.latlon_to_epsg3031(df_ll)
 
-    expected = pd.DataFrame({
-        "x" : [-680000.,470000.,-680000.,470000.,],
-        "y" : [-1420000.,-1420000.,-310000.,-310000.,],
-    })
-    pd.testing.assert_frame_equal(df_xy[['x','y']], expected)
+    expected = pd.DataFrame(
+        {
+            "x": [
+                -680000.0,
+                470000.0,
+                -680000.0,
+                470000.0,
+            ],
+            "y": [
+                -1420000.0,
+                -1420000.0,
+                -310000.0,
+                -310000.0,
+            ],
+        }
+    )
+    pd.testing.assert_frame_equal(df_xy[["x", "y"]], expected)
 
 
 def test_latlon_to_epsg3031_region():
@@ -151,14 +181,17 @@ def test_latlon_to_epsg3031_region():
     test the latlon_to_epsg3031 function output a region
     """
 
-    df_ll = pd.DataFrame({
-        "lat" : [-75.583047, -76.296586, -83.129754, -84.82147],
-        "lon" : [-154.411487, 161.686184, -114.507405, 123.407825],
-    })
+    df_ll = pd.DataFrame(
+        {
+            "lat": [-75.583047, -76.296586, -83.129754, -84.82147],
+            "lon": [-154.411487, 161.686184, -114.507405, 123.407825],
+        }
+    )
 
     reg = utils.latlon_to_epsg3031(df_ll, reg=True)
 
     assert reg == pytest.approx(regions.ross_ice_shelf, abs=10)
+
 
 test_latlon_to_epsg3031_region()
 
@@ -172,12 +205,24 @@ def test_epsg3031_to_latlon():
 
     df_ll = utils.epsg3031_to_latlon(df_xy)
 
-    expected = pd.DataFrame({
-        "x" : [-680000.,470000.,-680000.,470000.,],
-        "y" : [-1420000.,-1420000.,-310000.,-310000.,],
-        "lat" : [-75.583047, -76.296586, -83.129754, -84.82147],
-        "lon" : [-154.411487, 161.686184, -114.507405, 123.407825],
-    })
+    expected = pd.DataFrame(
+        {
+            "x": [
+                -680000.0,
+                470000.0,
+                -680000.0,
+                470000.0,
+            ],
+            "y": [
+                -1420000.0,
+                -1420000.0,
+                -310000.0,
+                -310000.0,
+            ],
+            "lat": [-75.583047, -76.296586, -83.129754, -84.82147],
+            "lon": [-154.411487, 161.686184, -114.507405, 123.407825],
+        }
+    )
     pd.testing.assert_frame_equal(df_ll, expected)
 
 
@@ -198,10 +243,12 @@ def test_points_inside_region():
     test the points_inside_region function
     """
     # first point is inside, second is outside
-    df = pd.DataFrame({
-        "x" : [-50e3, 0],
-        "y" : [-1000e3, 0],
-    })
+    df = pd.DataFrame(
+        {
+            "x": [-50e3, 0],
+            "y": [-1000e3, 0],
+        }
+    )
 
     assert len(df) == 2
 
