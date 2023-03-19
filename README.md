@@ -11,19 +11,38 @@
  </p>
 
 <p align="center">
-<a href="https://pypi.org/project/antarctic-plots/"><img src="https://img.shields.io/pypi/v/antarctic-plots?style=flat-square" alt="Latest version on PyPI"></a>
-<a href="https://pypi.org/project/antarctic-plots/"><img src="https://img.shields.io/pypi/pyversions/antarctic-plots?style=flat-square" alt="Compatible Python versions."></a>
-<a href="https://zenodo.org/badge/latestdoi/475677039"><img src="https://zenodo.org/badge/475677039.svg?style=flat-square" alt="Zenodo DOI"></a>
-<a href="https://antarctic-plots.readthedocs.io/en/latest/index.html"><img src="https://img.shields.io/badge/jupyter-book-orange?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAMAAAAVHr4VAAAAXVBMVEX////v7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/zdybv7+/v7+/zdybv7+/zdybv7+/v7+/zdybv7+/zdybv7+/zdyaSmqV2AAAAHXRSTlMAEBAgIDAwQEBQUGBgcHCAgJCQoLCwwMDQ4ODw8MDkUIUAAADJSURBVHjaddAFkgNBCAXQP+7uAvc/5tLFVseYF8crUB0560r/5gwvjYYm8gq8QJoyIJNwlnUH0WEnART6YSezV6c5tjOTaoKdfGXtnclFlEBEXVd8JzG4pa/LDql9Jff/ZCC/h2zSqF5bzf4vqkgNwEzeClUd8uMadLE6OnhBFsES5niQh2BOYUqZsfGdmrmbN+TMvPROHUOkde8sEs6Bnr0tDDf2Roj6fmVfubuGyttejCeLc+xFm+NLuLnJeFAyl3gS932MF/wBoukfUcwI05kAAAAASUVORK5CYII=" alt="Jupyter Book"></a>
+<a href="https://pypi.python.org/pypi/antarctic-plots">
+<img
+src="https://img.shields.io/pypi/v/antarctic-plots?style=flat-square"
+alt="Latest version on PyPI"
+/>
+</a>
+<a href="https://github.com/conda-forge/antarctic-plots-feedstock">
+<img
+src="https://img.shields.io/conda/vn/conda-forge/antarctic-plots.svg?style=flat-square"
+alt="Latest version on conda-forge"
+/>
+</a>
+<a href="https://codecov.io/gh/mdtanker/antarctic_plots">
+<img
+src="https://img.shields.io/codecov/c/github/mdtanker/antarctic_plots/main.svg?style=flat-square"
+alt="Test coverage status"
+/>
+
+<p align="center">
+<a href="https://pypi.org/project/antarctic-plots/">
+<img src="https://img.shields.io/pypi/pyversions/antarctic-plots?style=flat-square"
+alt="Compatible Python versions."
+/>
+</a>
+<a href="https://zenodo.org/badge/latestdoi/475677039">
+<img src="https://zenodo.org/badge/475677039.svg?style=flat-square"
+alt="Zenodo DOI"
+/>
+</a>
+<a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
  </p>
 
- <p align="center">
- <a href=LICENSE><img src="https://img.shields.io/pypi/l/antarctic-plots?style=flat-square" alt="license"></a>
- <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/static/v1?label=code style&message=black&color=black&style=flat-square"></a>
-<a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
-<a href="https://codecov.io/gh/mdtanker/antarctic_plots" ><img src="https://codecov.io/gh/mdtanker/antarctic_plots/branch/main/graph/badge.svg?token=LNTFTGRRFU"/>
- </a>
- </p>
 
 ![](docs/cover_fig.png)
 

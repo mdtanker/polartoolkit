@@ -8,31 +8,39 @@ This Binder environment can also be accessed by clicking the Binder icon in any 
 
 ## Install package
 
-This package and most of it's dependencies can be installed with a simple call to `pip`, but since `PyGMT` requires `GMT` and `GeoPandas` require `GDAL`, both of which are C packages, neither can be installed via pip successfully. The below instructions should successfully install antarctic-plots, and all the dependencies:
+### Conda / Mamba
+The easiest way to install this package and it's dependencies is with conda or mamba into a new virtual environement:
+
+    mamba create --name antarctic_plots --yes --force antarctic-plots
+
+Activate the environemnt:
+
+    conda activate antarctic_plots
+
+### Pip
+Instead, you can use pip to install antarctic-plots, but first you need to install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and `Cartopy` all rely on C packages, which can only be install with conda/mamba and not with pip. ere I use mamba, but conda will work as well, just replace any `mamba` with `conda`:
+
+Create a new virtual environement:
+
+    mamba create --name antarctic_plots --yes --force pygmt geopandas cartopy
+
+Pip install antarctic-plots
+
+    mamba activate antarctic_plots
+    pip install antarctic_plots
 
 If you don't have Python set up on your computer, I recommend setting up python with Miniconda. See the install instructions [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
-Here I use mamba to install packages, but conda should work as well:
+### Development version
+You can use pip, with the above created environemnt, to install the lastest source from Github:
 
-## Create an environment:
+    pip install git+https://github.com/mdtanker/antarctic_plots.git
 
-    mamba create --name antarctic_plots python=3.9 pygmt=0.7.0 geopandas=0.11.0
-    mamba activate antarctic_plots
-
-## Option 1) Install the PyPI package:
-
-    pip install antarctic-plots
-
-## Option 2) Install the dev version:
+Or you can clone the repository and install:
 
     git clone https://github.com/mdtanker/antarctic_plots.git
     cd antarctic_plots
-
-Install the package and PyGMT/GeoPandas:
-
-    make install
-
-Test the install by running any of the {doc}`gallery/gallery` examples.
+    pip install .
 
 ## Common errors
 
@@ -46,7 +54,7 @@ If you get errors related to the PyProj EPSG database, try the following:
 
 or
 
-    conda remove --force pyproj -y
+    mamba remove --force pyproj -y
     pip install pyproj --force-reinstall
 
 If you get an error related to traitlets run the following command as discussed [here](https://github.com/microsoft/vscode-jupyter/issues/5689#issuecomment-829538285):

@@ -137,99 +137,10 @@ def dd2dms(dd: float):
     return f"{int(degrees)}:{int(minutes)}:{seconds}"
 
 
-def latlon_to_epsg3031(
-    df,
-    reg: bool = False,
-    input=["lon", "lat"],
-    output=["x", "y"],
-):
+def region_to_df(input, names=["x", "y"], reverse=False):
     """
-    Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
-    Polar Stereographic in meters.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        input dataframe with latitude and longitude columns
-    reg : bool, optional
-        if true, returns a GMT formatted region string, by default False
-    input : list, optional
-        set names for input columns, by default ["lon", "lat"]
-    output : list, optional
-        set names for output columns, by default ["x", "y"]
-
-    Returns
-    -------
-    pd.DataFrame or np.ndarray
-        Updated dataframe with new easting and northing columns or np.ndarray in format
-        [e, w, n, s]
-    """
-    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-
-    if isinstance(df, list):
-        ll = df.copy()
-        df = list(transformer.transform(ll[0], ll[1]))
-    else:
-        df[output[0]], df[output[1]] = transformer.transform(
-            df[input[1]].tolist(), df[input[0]].tolist()
-        )
-        if reg is True:
-            df = [
-                df[output[0]].min(),
-                df[output[0]].max(),
-                df[output[1]].max(),
-                df[output[1]].min(),
-            ]
-    return df
-
-
-def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
-    """
-    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
-    EPSG:4326 WGS84 in decimal degrees.
-
-    Parameters
-    ----------
-    df : pd.DataFrame or list
-        input dataframe with easting and northing columns, or list [x,y]
-    reg : bool, optional
-        if true, returns a GMT formatted region string, by default False
-    input : list, optional
-        set names for input columns, by default ["x", "y"]
-    output : list, optional
-        set names for output columns, by default ["lon", "lat"]
-
-    Returns
-    -------
-    pd.DataFrame or np.ndarray
-        Updated dataframe with new latitude and longitude columns, np.ndarray in
-        format [e, w, n, s], or list in format [lat, lon]
-    """
-
-    transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
-
-    df_out = df.copy()
-
-    if isinstance(df, list):
-        df_out = list(transformer.transform(df_out[0], df_out[1]))
-    else:
-        df_out[output[1]], df_out[output[0]] = transformer.transform(
-            df_out[input[0]].tolist(), df_out[input[1]].tolist()
-        )
-        if reg is True:
-            df_out = [
-                df_out[output[0]].min(),
-                df_out[output[0]].max(),
-                df_out[output[1]].min(),
-                df_out[output[1]].max(),
-            ]
-    return df_out
-
-
-def reg_str_to_df(input, names=["x", "y"], reverse=False):
-    """
-    Convert GMT region string [e, w, n, s] to pandas dataframe with coordinates of
-    region corners
+    Convert region bounds  in [e, w, n, s] (GMT format) to pandas dataframe with
+    coordinates of region corners
 
     Parameters
     ----------
@@ -264,33 +175,33 @@ def reg_str_to_df(input, names=["x", "y"], reverse=False):
     return df
 
 
-def GMT_reg_xy_to_ll(input, decimal_degree=False):
+def region_xy_to_ll(input, dms=False):
     """
-    Convert GMT region string [e, w, n, s] in EPSG:3031 to deg:min:sec
+    Convert GMT region string [e, w, n, s] in EPSG:3031 to lat / lon
 
     Parameters
     ----------
     input : np.ndarray
         Array of 4 strings in GMT format; [e, w, n, s] in meters
-    decimal_degrees: bool, False
-        if True, will return results as decimal degrees instead of deg:min:sec
+    dms: bool, False
+        if True, will return results as deg:min:sec iinstead of decimal degrees
 
     Returns
     -------
     np.ndarray
         Array of 4 strings in GMT format; [e, w, n, s] in lat, lon
     """
-    df = reg_str_to_df(input)
+    df = region_to_df(input)
     df_proj = epsg3031_to_latlon(df, reg=True)
 
-    if decimal_degree is False:
+    if dms is True:
         output = [dd2dms(x) for x in df_proj]
-    elif decimal_degree is True:
+    else:
         output = df_proj
     return output
 
 
-def GMT_reg_to_bounding_box(input):
+def region_to_bounding_box(input):
     """
     Convert GMT region string [e, w, n, s] to bounding box format used for icepyx:
     [ lower left longitude,
@@ -314,30 +225,103 @@ def GMT_reg_to_bounding_box(input):
     return [input[0], input[2], input[1], input[3]]
 
 
-def region_to_bounding_box(input):
+def latlon_to_epsg3031(
+    df,
+    reg: bool = False,
+    input=["lon", "lat"],
+    output=["x", "y"],
+):
     """
-    Convert regions in format [e,w,n,s] in EPSG:3031 meters to format
-    [ll lon, ll lat, ur lon, ur lat] to be used as a bounding box in icepyx.
+    Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
+    Polar Stereographic in meters.
 
     Parameters
     ----------
-    input : np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s] in meters
+    df : pd.DataFrame
+        input dataframe with latitude and longitude columns
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input : list, optional
+        set names for input columns, by default ["lon", "lat"]
+    output : list, optional
+        set names for output columns, by default ["x", "y"]
 
     Returns
     -------
-    np.ndarray
-        Array of 4 strings in bounding box format.
+    pd.DataFrame or np.ndarray
+        Updated dataframe with new easting and northing columns or np.ndarray in format
+        [e, w, n, s]
     """
-    reg_ll = GMT_reg_xy_to_ll(input, decimal_degree=True)
-    box = GMT_reg_to_bounding_box(reg_ll)
-    return box
+    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+
+    if isinstance(df, pd.DataFrame):
+        df_new = df.copy()
+        df_new[output[0]], df_new[output[1]] = transformer.transform(
+            df_new[input[1]].tolist(), df_new[input[0]].tolist()
+        )
+    else:
+        ll = df.copy()
+        df_new = list(transformer.transform(ll[0], ll[1]))
+
+    if reg is True:
+        df_new = [
+            df_new[output[0]].min(),
+            df_new[output[0]].max(),
+            df_new[output[1]].min(),
+            df_new[output[1]].max(),
+        ]
+
+    return df_new
+
+
+def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
+    """
+    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+    EPSG:4326 WGS84 in decimal degrees.
+
+    Parameters
+    ----------
+    df : pd.DataFrame or list
+        input dataframe with easting and northing columns, or list [x,y]
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input : list, optional
+        set names for input columns, by default ["x", "y"]
+    output : list, optional
+        set names for output columns, by default ["lon", "lat"]
+
+    Returns
+    -------
+    pd.DataFrame or np.ndarray
+        Updated dataframe with new latitude and longitude columns, np.ndarray in
+        format [e, w, n, s], or list in format [lat, lon]
+    """
+
+    transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
+
+    df_out = df.copy()
+
+    if isinstance(df, pd.DataFrame):
+        df_out[output[1]], df_out[output[0]] = transformer.transform(
+            df_out[input[0]].tolist(), df_out[input[1]].tolist()
+        )
+        if reg is True:
+            df_out = [
+                df_out[output[0]].min(),
+                df_out[output[0]].max(),
+                df_out[output[1]].min(),
+                df_out[output[1]].max(),
+            ]
+    else:
+        df_out = list(transformer.transform(df_out[0], df_out[1]))
+    return df_out
 
 
 def points_inside_region(
     df: pd.DataFrame,
     region: list,
     names: list = ["x", "y"],
+    reverse: bool = False,
 ):
     """
     return a subset of a dataframe which is within a region
@@ -348,6 +332,10 @@ def points_inside_region(
         dataframe with columns 'x','y' to use for defining if within region
     region : list
         GMT region string to use as bounds for new subset dataframe
+    names : list, optional
+        list of column names to use for x and y coordinates, by default ["x", "y"]
+    reverse : bool, optional
+        if True, will return points outside the region, by default False
 
     Returns
     -------
@@ -360,13 +348,18 @@ def points_inside_region(
     # make column of booleans for whether row is within the region
     df1["inside"] = vd.inside(coordinates=(df1[names[0]], df1[names[1]]), region=region)
 
-    # subset if True
-    df_inside = df1.loc[df1.inside == True].copy()  # noqa
+    if reverse is True:
+        # subset if False
+        df_result = df1.loc[df1.inside == False].copy()  # noqa 712
+
+    else:
+        # subset if True
+        df_result = df1.loc[df1.inside == True].copy()  # noqa 712
 
     # drop the column 'inside'
-    df_inside.drop(columns="inside", inplace=True)
+    df_result.drop(columns="inside", inplace=True)
 
-    return df_inside
+    return df_result
 
 
 def block_reduce(

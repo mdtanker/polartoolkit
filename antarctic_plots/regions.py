@@ -92,8 +92,8 @@ def combine_regions(
     list
         Bounding region of the 2 supplied regions.
     """
-    coords1 = utils.reg_str_to_df(region1)
-    coords2 = utils.reg_str_to_df(region2)
+    coords1 = utils.region_to_df(region1)
+    coords2 = utils.region_to_df(region2)
     coords_combined = pd.concat((coords1, coords2))
     region = vd.get_region((coords_combined.x, coords_combined.y))
 

@@ -21,11 +21,10 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
+from dotenv import load_dotenv
 from geopandas.testing import assert_geodataframe_equal
 
 from antarctic_plots import fetch, regions, utils
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -344,6 +343,7 @@ def test_sediment_thickness(test_input, expected):
 
 # %% IBCSO coverage data
 
+
 def test_IBCSO_coverage():
     # collect a few points
     points, polygons = fetch.IBCSO_coverage(
@@ -358,13 +358,13 @@ def test_IBCSO_coverage():
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
             ],
-            "dataset_tid": [12, 12, 12],
-            "weight": [10, 10, 10],
+            "dataset_tid": np.array([12, 12, 12]).astype("int32"),
+            "weight": np.array([10, 10, 10]).astype("int32"),
             "x": [-300114.000, -324498.000, -240709.000],
             "y": [-810976.000, -747471.000, -736104.000],
         },
         index=[1, 0, 0],
-        dtype="int32"
+        dtype="int32",
     )
     expected = (
         gpd.GeoDataFrame(
@@ -416,7 +416,7 @@ test = [
             spacing=500,
         ),
         (
-            "500",
+            500,
             [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
             -6321.07080078,
             4723.67041016,

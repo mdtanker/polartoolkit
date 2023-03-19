@@ -5,7 +5,6 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "antarctic_plots"
 dynamic = ["version"]
-# version = "0.0.4.3.1"
 description = "Functions to automate Antarctic data visualization"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -14,11 +13,25 @@ authors = [
     {name = "Matthew Tankersley", email = "matt.d.tankersley@gmail.com"},
 ]
 keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
-
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
 dependencies = [
-    "pandas[excel]", # includes openpyxl and others
+    "pandas",
+    "openpyxl",
     "pooch[progress]", # includes tqdm
-    "verde",
+    "verde", #@ git+https://github.com/fatiando/verde.git@0a4478ad8bfaa5ca80753b09b37417cc1935624e", # remove this git version with next verde release
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "pyproj",
     "matplotlib",
@@ -54,18 +67,23 @@ dev = [
     "sphinx-gallery",
     "jupyter-book",
     "nbconvert",
+    "ipykernel",
 ]
 
 [project.urls]
-homepage = "https://antarctic-plots.readthedocs.io/en/latest/installation.html"
+homepage = "https://antarctic-plots.readthedocs.io/en/latest/index.html"
 repository = "https://github.com/mdtanker/antarctic_plots"
 documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
 
 [tool.setuptools]
 packages = ["antarctic_plots"]
 
-[tool.setuptools_scm]
-write_to = "antarctic_plots/_version.py"
+[tool.setuptools.dynamic]
+version = {attr = "antarctic_plots.__version__"}
+
+#[tool.setuptools_scm]
+#write_to = "antarctic_plots/_version.py"
+#version_scheme= "post-release"
 
 [tool.flake8]
 max-line-length = 88
