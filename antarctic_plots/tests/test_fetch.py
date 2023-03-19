@@ -203,6 +203,7 @@ def test_resample_grid(test_input, expected):
 
 
 # %% ice_vel
+@pytest.mark.fetch
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -218,6 +219,7 @@ def test_ice_vel_lowres():
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
+@pytest.mark.fetch
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -238,7 +240,7 @@ def test_ice_vel_highres():
 
 # %% modis_moa
 
-
+@pytest.mark.fetch
 @pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
@@ -261,7 +263,7 @@ def test_modis_moa():
 
 # %% imagery
 
-
+@pytest.mark.fetch
 @pytest.mark.slow
 def test_imagery():
     grid = fetch.imagery()
@@ -280,7 +282,7 @@ def test_imagery():
 
 # %% basement
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 def test_basement():
     grid = fetch.basement()
@@ -331,7 +333,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_sediment_thickness(test_input, expected):
     grid = fetch.sediment_thickness(test_input)
@@ -343,7 +345,7 @@ def test_sediment_thickness(test_input, expected):
 
 # %% IBCSO coverage data
 
-
+@pytest.mark.fetch
 def test_IBCSO_coverage():
     # collect a few points
     points, polygons = fetch.IBCSO_coverage(
@@ -438,7 +440,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_IBCSO(test_input, expected):
     grid = fetch.IBCSO(**test_input)
@@ -503,7 +505,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.parametrize("test_input,expected", test)
@@ -511,7 +513,7 @@ def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
 def test_bedmachine_reference():
@@ -597,13 +599,13 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2(test_input, expected):
     grid = fetch.bedmap2(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.fetch
 def test_bedmap2_reference():
     # fetch variations of grids and reference models
     region = [-101e3, -100e3, -51e3, -50e3]
@@ -659,7 +661,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2_fill_nans(test_input, expected):
     grid = fetch.bedmap2(**test_input)
@@ -696,7 +698,7 @@ def test_bedmap_points():
 
 # %% deepbedmap
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.slow
 def test_deepbedmap():
@@ -750,7 +752,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gravity(test_input, expected):
@@ -763,7 +765,7 @@ def test_gravity(test_input, expected):
 
 # %% ROSETTA gravity
 
-
+@pytest.mark.fetch
 def test_ROSETTA_gravity():
     df = fetch.ROSETTA_gravity()
     expected = [
@@ -798,7 +800,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_magnetics(test_input, expected):
@@ -854,14 +856,14 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
@@ -907,7 +909,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
@@ -943,7 +945,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_crustal_thickness(test_input, expected):
@@ -979,7 +981,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_moho(test_input, expected):
@@ -1005,7 +1007,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_geoid(test_input, expected):
     grid = fetch.geoid(test_input)
@@ -1060,7 +1062,7 @@ test = [
     ),
 ]
 
-
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_REMA(test_input, expected):
     grid = fetch.REMA(**test_input)
