@@ -84,8 +84,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: actions/checkout@master
         uses: codecov/codecov-action@v3
-          with:
-            files: .coverage.xml # optional
-            #name: codecov-umbrella # optional
-            fail_ci_if_error: false # optional (default = false)
-            verbose: false # optional (default = false)
+        with:
+          files: .coverage.xml # optional
+          #name: codecov-umbrella # optional
+          fail_ci_if_error: false # optional (default = false)
+          verbose: false # optional (default = false)
