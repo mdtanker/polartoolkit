@@ -27,3 +27,4 @@ dependencies:
   - python-dotenv # caused issues with download
   # testing
   - pytest
+  - pytest-cov
