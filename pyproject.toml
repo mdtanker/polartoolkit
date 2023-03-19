@@ -13,7 +13,21 @@ authors = [
     {name = "Matthew Tankersley", email = "matt.d.tankersley@gmail.com"},
 ]
 keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
-
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
 dependencies = [
     "pandas",
     "openpyxl",
