@@ -303,6 +303,8 @@ Push the changes to GitHub
 
 Open a PR on GitHub with the new branch.
 
+Once the new version is on conda, update the binder .yml file, as below.
+
 ## Update the dependencies
 
 To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI.
@@ -313,14 +315,12 @@ If you add a dependency necessary for using the package, make sure to include it
 
 ## Set up the binder configuration
 
-To run this package online, Read the Docs will automatically create a Binder instance. It will use the configuration file `/binder/environment.yml`. This file is made by running the below Make command.
+To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `/binder/environment.yml`. This file reflects the latest release on Conda-Forge. Update it with the following commands.
+
+    make conda install
+
+    conda activate antarctic_plots
 
     make binder_env
 
-This will create an environment with the core dependencies, and export it to a .yml. Open this file and add the following at the bottom of the list of dependencies:
-```
-  - pip
-  - pip:
-    - -e ..
-```
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement.
