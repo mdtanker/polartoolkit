@@ -26,4 +26,6 @@ testing2.ipynb
 
 tmp*
 
+.coverage
+
 *.env
