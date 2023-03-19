@@ -78,13 +78,13 @@ jobs:
       - name: Run tests with pytest
         shell: bash -l {0}
         run: |
-          python -m pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
+          python -m pytest --cov . --cov-report xml:/.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
 
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: .coverage.xml # optional
+          files: /.cov/.coverage.xml # optional
           #name: codecov-umbrella # optional
           fail_ci_if_error: false # optional (default = false)
           verbose: false # optional (default = false)
