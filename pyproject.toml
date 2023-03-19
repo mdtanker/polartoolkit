@@ -26,20 +26,19 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     "pandas",
     "openpyxl",
     "pooch[progress]", # includes tqdm
-    "verde", # @ git+ssh://git@github.com/fatiando/verde", # remove this git version with next verde release
+    "verde@ git+https://github.com/fatiando/verde.git@0a4478ad8bfaa5ca80753b09b37417cc1935624e", # remove this git version with next verde release
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "pyproj",
     "matplotlib",
     "pyogrio",
     "rioxarray",
     "scipy",
-    "numpy<=1.20",
+    "numpy",
     "pygmt",
     "geopandas",
     "zarr",

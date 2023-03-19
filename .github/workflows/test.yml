@@ -32,7 +32,7 @@ jobs:
           - dependencies: oldest
             python: "3.8"
           - dependencies: latest
-            python: "3.11"
+            python: "3.10"
     env:
       REQUIREMENTS: env/requirements-build.txt env/requirements-tests.txt
       # Used to tag codecov submissions
