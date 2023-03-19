@@ -24,6 +24,6 @@ dependencies:
   - pygmt
   - geopandas
   - zarr
-  - python-dotenv
+  - python-dotenv # caused issues with download
   # testing
   - pytest
