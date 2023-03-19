@@ -82,4 +82,10 @@ jobs:
 
       # Upload coverage report to codecov
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3.1.1
+        uses: actions/checkout@master
+        uses: codecov/codecov-action@v3
+          with:
+            files: .coverage.xml # optional
+            #name: codecov-umbrella # optional
+            fail_ci_if_error: false # optional (default = false)
+            verbose: false # optional (default = false)
