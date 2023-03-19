@@ -28,13 +28,10 @@ jobs:
         dependencies:
           - oldest
           - latest
-          - optional
         include:
           - dependencies: oldest
-            python: "3.7"
+            python: "3.8"
           - dependencies: latest
-            python: "3.10"
-          - dependencies: optional
             python: "3.10"
     env:
       REQUIREMENTS: env/requirements-build.txt env/requirements-tests.txt
@@ -58,7 +55,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2.1.1
         with:
           activate-environment: antarctic_plots
-          environment-file: env/environment.yml
+          environment-file: env/env_test.yml
           python-version: ${{ matrix.python }}
           channels: conda-forge,nodefaults
           channel-priority: strict

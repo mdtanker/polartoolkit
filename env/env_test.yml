@@ -1,1 +1,27 @@
 # Requirements for running the Github Action: test
+# only need run-time dependencies
+name: antarctic_plots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  # Run-time
+  - pandas
+  - openpyxl
+  - pooch
+  - tqdm
+  - verde
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - pyproj
+  - matplotlib
+  - pyogrio
+  - rioxarray
+  - scipy
+  - numpy
+  - pygmt
+  - geopandas
+  - zarr
+  - python-dotenv
