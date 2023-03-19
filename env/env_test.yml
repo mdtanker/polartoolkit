@@ -25,3 +25,5 @@ dependencies:
   - geopandas
   - zarr
   - python-dotenv
+  # testing
+  - pytest
