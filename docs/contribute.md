@@ -279,14 +279,19 @@ Now push the changes to Github and make a release with the matching version numb
 ### Conda-Forge
 Once the new version is on PyPI, we can update the conda-forge feedstock.
 
-Fork the [conda-forge antarctic-plots feedstock](https://github.com/conda-forge/antarctic-plots-feedstock) and checkout a new branch
+Fork the [conda-forge antarctic-plots feedstock](https://github.com/conda-forge/antarctic-plots-feedstock) on github:
 
-    git clone https://github.com/conda-forge/antarctic-plots-feedstock
+Clone the fork and checkout a new branch
+
+    git clone https://github.com/mdtanker/antarctic-plots-feedstock
 
     git checkout -b update
 
+Update the `meta.yaml` with the new PyPI version with `grayskull`
 
-Increase either the version number or the build number in `meta.yaml`.
+  grayskull pypi antarctic-plots
+
+Copy the new contents into the old `meta.yaml` file.
 
 Push the changes to GitHub
 
