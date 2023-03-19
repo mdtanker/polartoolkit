@@ -881,7 +881,7 @@ def sediment_thickness(
 
                 # clip to antarctica
                 grid = grid.rio.clip_box(
-                    *utils.GMT_reg_to_bounding_box(initial_region),
+                    *utils.region_to_bounding_box(initial_region),
                     crs="EPSG:3031",
                 )
 
@@ -976,14 +976,14 @@ def IBCSO_coverage(
     data = pyogrio.read_dataframe(
         path,
         layer="IBCSO_coverage",
-        bbox=tuple(utils.GMT_reg_to_bounding_box(region)),
+        bbox=tuple(utils.region_to_bounding_box(region)),
     )
 
     # expand from multipoint/mulitpolygon to point/polygon
     data_coords = data.explode(index_parts=False)
 
     # extract the single points/polygons within region
-    data_subset = data_coords.clip(mask=utils.GMT_reg_to_bounding_box(region))
+    data_subset = data_coords.clip(mask=utils.region_to_bounding_box(region))
 
     # seperate points and polygons
     points = data_subset[data_subset.geometry.type == "Point"]
