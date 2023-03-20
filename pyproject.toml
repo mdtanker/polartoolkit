@@ -59,6 +59,7 @@ viz = [
 dev = [
     "pytest",
     "pytest-cov",
+    "coverage[toml]", # for coveralls
     "flake8",
     "isort",
     "Flake8-pyproject",
@@ -94,6 +95,7 @@ omit = [
     "*/tests/*",
     "**/__init__.py"
     ]
+relative_files = true
 
 [tool.pytest.ini_options]
 markers = [
