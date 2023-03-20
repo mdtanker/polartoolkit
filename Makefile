@@ -2,7 +2,7 @@
 PROJECT=antarctic_plots
 STYLE_CHECK_FILES= $(PROJECT) docs tools
 TESTDIR=tmp-test-dir-with-unique-name
-PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
+PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v -m "not earthdata and not issue and not fetch" --pyargs
 
 help:
 	@echo "Commands:"
@@ -41,7 +41,7 @@ binder_env:
 test:
 	# Run a tmp folder to make sure the tests are run on the installed version
 	mkdir -p $(TESTDIR)
-	cd $(TESTDIR); pytest $(PYTEST_ARGS) $(PROJECT)
+	cd $(TESTDIR); python -m pytest $(PYTEST_ARGS) $(PROJECT)
 	cp $(TESTDIR)/.coverage* .
 	rm -rvf $(TESTDIR)
 

@@ -73,8 +73,7 @@ jobs:
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
         # shell: bash -l {0}
-        run: |
-          mamba list
+        run: mamba list
 
       # # Run tests and create coverage report: currently excluding tests which need an earthdata login
       # # -m "not slow" excludes tests marked as 'slow'
@@ -96,8 +95,7 @@ jobs:
 
       - name: Run the tests
         # shell: bash -l {0}
-        run: |
-          make test
+        run: make test
 
       - name: Convert coverage report to XML for codecov
         # shell: bash -l {0}
