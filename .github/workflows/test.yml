@@ -85,7 +85,7 @@ jobs:
         # shell: bash -el {0}
         run: |
           mkdir -p .cov
-          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
+          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
