@@ -3,20 +3,30 @@
 ## Unreleased
 
 ### 💫 Highlights
-* Added rioxarray as dependency
-* Added `utils.mask_from_shp` gallery example
 
 ### 🚀 Features
 
-#### New module `Maps`
-
 #### New datasets in `Fetch`
 
-#### New functions in `Utils`
+#### New functions in `---`
 
 ### 📖 Documentation
 
 ### ⛔ Maintenance
+
+### 🧑‍🤝‍🧑 Contributors
+
+---
+
+## Release v0.0.6
+
+### 💫 Highlights
+* Switched from Poetry to Setuptools
+* Can install with conda
+* Eased the dependecy constraints
+
+### ⛔ Maintenance
+* renamed various util functions
 
 ### 🧑‍🤝‍🧑 Contributors
 
