@@ -1,7 +1,6 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
 STYLE_CHECK_FILES= $(PROJECT) docs tools
-TESTDIR=.cov
 PYTEST_ARGS=--cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch"
 
 help:
@@ -38,13 +37,10 @@ binder_env:
 #
 #
 #
+# Run a tmp folder to make sure the tests are run on the installed version
 test:
-	# Run a tmp folder to make sure the tests are run on the installed version
-	mkdir -p $(TESTDIR)
-#	cd $(TESTDIR);
+	mkdir -p .cov
 	python -m pytest $(PYTEST_ARGS)
-#cp $(TESTDIR)/.coverage* .
-#rm -rvf $(TESTDIR)
 
 test_fast:
 	pytest --cov=. -rs -m "not slow"
