@@ -53,7 +53,7 @@ jobs:
     steps:
       # Checkout current git repository
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -62,7 +62,7 @@ jobs:
 
       # Install Mambaforge with conda-forge dependencies
       - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v2.1.1
+        uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: antarctic_plots
           environment-file: env/env_test.yml
@@ -77,12 +77,10 @@ jobs:
 
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
-        # shell: bash -el {0}
         run: mamba list
 
       - name: Run the tests
         continue-on-error: true
-        # shell: bash -el {0}
         run: |
           mkdir -p .cov
           pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue"
