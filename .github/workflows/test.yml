@@ -3,8 +3,13 @@
 
 name: Tests
 
-on: [pull_request, push]
-
+on:
+ workflow_dispatch:
+ push:
+   branches:
+     - main
+ pull_request:
+   
 # cancel any currently running workflows in this same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -69,18 +74,21 @@ jobs:
           mamba-version: "*"
           use-mamba: true
           auto-activate-base: false
-
-      # Show installed pkg information for postmortem diagnostic
+      
+      - name: Install packages for testing and reporting
+        run: mamba install pytest pytest-cov coveralls
+        
       - name: List installed packages
-        # shell: bash -el {0}
         run: mamba list
 
       - name: Run the tests
         continue-on-error: true
-        # shell: bash -el {0}
         run: |
           mkdir -p .cov
-          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
+          pytest --cov . --cov-config=pyproject.toml \
+            -m "not earthdata and not issue and not fetch" \
+            --cov-report xml:.cov/coverage.xml \
+            --cov-report lcov:.cov/coverage.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -90,3 +98,9 @@ jobs:
           # It does sometimes but shouldn't be the reason for running
           # everything again unless something else is broken.
           fail_ci_if_error: false
+      
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@mv2
+        with:
+          path-to-lcov: .cv/coverage.info
+    
