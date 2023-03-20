@@ -72,7 +72,7 @@ jobs:
 
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
-        shell: bash -l {0}
+        # shell: bash -l {0}
         run: |
           mamba list
 
@@ -95,14 +95,17 @@ jobs:
       #     verbose: false # optional (default = false)
 
       - name: Run the tests
+        # shell: bash -l {0}
         run: |
           make test
 
       - name: Convert coverage report to XML for codecov
+        # shell: bash -l {0}
         run: coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        # shell: bash -l {0}
         with:
           file: ./coverage.xml
           # Don't mark the job as failed if the upload fails for some reason.
