@@ -59,7 +59,6 @@ viz = [
 dev = [
     "pytest",
     "pytest-cov",
-    "coverage[toml]", # for coveralls
     "flake8",
     "isort",
     "Flake8-pyproject",
