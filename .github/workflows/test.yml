@@ -97,13 +97,14 @@ jobs:
         shell: bash -el {0}
         run: |
           mkdir -p .cov
-          python -m pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch"
+          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
 
       - name: Convert coverage report to XML for codecov
         shell: bash -el {0}
         run: |
           cd .cov
           coverage xml
+          cd ..
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
