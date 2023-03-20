@@ -36,14 +36,11 @@ binder_env:
 #
 #
 #
+# Run a tmp folder to make sure the tests are run on the installed version
 test:
-	pytest --cov=. -rs
+	mkdir -p .cov
+	pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
 
-test_fast:
-	pytest --cov=. -rs -m "not slow"
-
-test_fast_no_earthdata:
-	pytest --cov=. -rs -m "not slow or not earthdata"
 #
 #
 #

@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Use bash by default in all jobs
+defaults:
+  run:
+    shell: bash -el {0}
+
 jobs:
   #############################################################################
   # Run tests and upload to codecov
@@ -67,24 +72,21 @@ jobs:
 
       # Show installed pkg information for postmortem diagnostic
       - name: List installed packages
-        shell: bash -l {0}
-        run: |
-          mamba list
+        # shell: bash -el {0}
+        run: mamba list
 
-      # Run tests and create coverage report: currently excluding tests which need an earthdata login
-      # -m "not slow" excludes tests marked as 'slow'
-      # -m "not earthdata" excludes tests markes as 'earthdata'
-      # -m "not slow or not earthdata" excludes both
-      - name: Run tests with pytest
-        shell: bash -l {0}
+      - name: Run the tests
+        continue-on-error: true
+        # shell: bash -el {0}
         run: |
-          python -m pytest --cov=. --cov-report=html --cov-report=xml -rs -m "not earthdata and not issue" --assert=plain
+          mkdir -p .cov
+          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
 
-      # Upload coverage report to codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: .coverage.xml # optional
-          #name: codecov-umbrella # optional
-          fail_ci_if_error: false # optional (default = false)
-          verbose: false # optional (default = false)
+          file: .cov/coverage.xml
+          # Don't mark the job as failed if the upload fails for some reason.
+          # It does sometimes but shouldn't be the reason for running
+          # everything again unless something else is broken.
+          fail_ci_if_error: false

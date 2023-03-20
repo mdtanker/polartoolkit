@@ -6,7 +6,7 @@ dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
   - affine=2.4.0
-  - antarctic-plots=0.0.5
+  - antarctic-plots=0.0.6
   - arrow-cpp=11.0.0
   - asciitree=0.3.3
   - attrs=22.2.0
@@ -73,7 +73,7 @@ dependencies:
   - gdal=3.6.3
   - geopandas=0.12.2
   - geopandas-base=0.12.2
-  - geos=3.11.1
+  - geos=3.11.2
   - geotiff=1.7.1
   - gettext=0.21.1
   - gflags=2.2.2
@@ -127,6 +127,7 @@ dependencies:
   - libnetcdf=4.9.1
   - libnghttp2=1.52.0
   - libnsl=2.0.0
+  - libnuma=2.0.16
   - libopenblas=0.3.21
   - libpng=1.6.39
   - libpq=15.2
@@ -223,6 +224,7 @@ dependencies:
   - typing_extensions=4.5.0
   - tzcode=2022g
   - tzdata=2022g
+  - ucx=1.14.0
   - urllib3=1.26.15
   - verde=1.7.0
   - wheel=0.40.0
@@ -246,6 +248,4 @@ dependencies:
   - zict=2.2.0
   - zlib=1.2.13
   - zstd=1.5.2
-  - pip:
-    - -e ..
 prefix: /home/tankerma/miniconda/envs/antarctic_plots

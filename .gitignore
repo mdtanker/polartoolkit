@@ -22,8 +22,10 @@ data/*
 testing.ipynb
 testing2.ipynb
 
-.coverage*
+.cov/
 
 tmp*
+
+.coverage
 
 *.env
