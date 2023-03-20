@@ -3,7 +3,12 @@
 
 name: Tests
 
-on: [pull_request, push]
+on:
+ workflow_dispatch:
+ push:
+   branches:
+     - main
+ pull_request:
 
 # cancel any currently running workflows in this same PR
 concurrency:
