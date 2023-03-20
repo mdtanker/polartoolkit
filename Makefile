@@ -1,6 +1,8 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
 STYLE_CHECK_FILES= $(PROJECT) docs tools
+TESTDIR=tmp-test-dir-with-unique-name
+PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -v --pyargs
 
 help:
 	@echo "Commands:"
@@ -37,7 +39,11 @@ binder_env:
 #
 #
 test:
-	pytest --cov=. -rs
+	# Run a tmp folder to make sure the tests are run on the installed version
+	mkdir -p $(TESTDIR)
+	cd $(TESTDIR); pytest $(PYTEST_ARGS) $(PROJECT)
+	cp $(TESTDIR)/.coverage* .
+	rm -rvf $(TESTDIR)
 
 test_fast:
 	pytest --cov=. -rs -m "not slow"

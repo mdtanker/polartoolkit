@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Use bash by default in all jobs
+defaults:
+  run:
+    shell: bash
+
 jobs:
   #############################################################################
   # Run tests and upload to codecov
@@ -71,20 +76,36 @@ jobs:
         run: |
           mamba list
 
-      # Run tests and create coverage report: currently excluding tests which need an earthdata login
-      # -m "not slow" excludes tests marked as 'slow'
-      # -m "not earthdata" excludes tests markes as 'earthdata'
-      # -m "not slow or not earthdata" excludes both
-      - name: Run tests with pytest
-        shell: bash -l {0}
-        run: |
-          python -m pytest --cov . --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
+      # # Run tests and create coverage report: currently excluding tests which need an earthdata login
+      # # -m "not slow" excludes tests marked as 'slow'
+      # # -m "not earthdata" excludes tests markes as 'earthdata'
+      # # -m "not slow or not earthdata" excludes both
+      # - name: Run tests with pytest
+      #   shell: bash -l {0}
+      #   run: |
+      #     python -m pytest --cov . --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
 
-      # Upload coverage report to codecov
+      # # Upload coverage report to codecov
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     files: .cov/.coverage.xml # optional
+      #     #name: codecov-umbrella # optional
+      #     fail_ci_if_error: false # optional (default = false)
+      #     verbose: false # optional (default = false)
+
+      - name: Run the tests
+        run: |
+          make test
+
+      - name: Convert coverage report to XML for codecov
+        run: coverage xml
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: /.cov/.coverage.xml # optional
-          #name: codecov-umbrella # optional
-          fail_ci_if_error: false # optional (default = false)
-          verbose: false # optional (default = false)
+          file: ./coverage.xml
+          # Don't mark the job as failed if the upload fails for some reason.
+          # It does sometimes but shouldn't be the reason for running
+          # everything again unless something else is broken.
+          fail_ci_if_error: false
