@@ -14,6 +14,7 @@
 ### 📖 Documentation
 
 ### ⛔ Maintenance
+* new URL for fetching ADMAP1 magnetic data
 
 ### 🧑‍🤝‍🧑 Contributors
 

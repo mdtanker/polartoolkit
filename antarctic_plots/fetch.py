@@ -2597,7 +2597,7 @@ def magnetics(
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="https://admap.kongju.ac.kr/admapdata/ant_new.zip",
+            url="http://admap.kopri.re.kr/admapdata/ant_new.zip",
             fname="admap1.zip",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
             known_hash=None,
