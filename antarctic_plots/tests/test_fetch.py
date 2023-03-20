@@ -676,7 +676,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 
 # %% Bedmap points
 
-
+@pytest.mark.fetch
 def test_bedmap_points():
     df = fetch.bedmap_points(version="bedmap1")
     expected = [
@@ -1027,7 +1027,7 @@ expected = (
     "g",
 )
 
-
+@pytest.mark.fetch
 def test_etopo():
     grid = fetch.etopo()
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
