@@ -41,12 +41,6 @@ test:
 	mkdir -p .cov
 	pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
 
-
-test_fast:
-	pytest --cov=. -rs -m "not slow"
-
-test_fast_no_earthdata:
-	pytest --cov=. -rs -m "not slow or not earthdata"
 #
 #
 #

@@ -179,10 +179,6 @@ Run the tests and calculate test coverage using:
 
     make test
 
-You can choose to exclude the slow tests:
-
-    make test_fast
-
 To run a specific test by name:
 
     pytest --cov=. -k "test_name"
