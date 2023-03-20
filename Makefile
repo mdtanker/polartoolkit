@@ -2,7 +2,7 @@
 PROJECT=antarctic_plots
 STYLE_CHECK_FILES= $(PROJECT) docs tools
 TESTDIR=.cov
-PYTEST_ARGS=--cov-config=../pyproject.tml --cov-report xml:coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain --pyargs
+PYTEST_ARGS=--cov-config=../pyproject.tml --cov-report xml:coverage.xml -rs -m "not earthdata and not issue and not fetch" --pyargs
 
 help:
 	@echo "Commands:"
