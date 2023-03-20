@@ -83,7 +83,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p .cov
-          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue"
+          pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m ""
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

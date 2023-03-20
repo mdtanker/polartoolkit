@@ -910,7 +910,6 @@ test = [
 ]
 
 @pytest.mark.fetch
-@pytest.mark.issue
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
