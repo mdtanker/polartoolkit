@@ -102,5 +102,5 @@ jobs:
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
-          path-to-lcov: .cv/coverage.info
+          path-to-lcov: .cov/coverage.info
     
