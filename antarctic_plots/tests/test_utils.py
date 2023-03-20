@@ -238,7 +238,7 @@ def test_epsg3031_to_latlon_region():
     assert reg == pytest.approx([-154.41, 161.69, -84.82, -75.58], abs=0.01)
 
 
-@pytest.mark.issue
+#@pytest.mark.issue
 def test_points_inside_region():
     """
     test the points_inside_region function

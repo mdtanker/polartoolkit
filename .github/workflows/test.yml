@@ -75,36 +75,11 @@ jobs:
         shell: bash -el {0}
         run: mamba list
 
-      # # Run tests and create coverage report: currently excluding tests which need an earthdata login
-      # # -m "not slow" excludes tests marked as 'slow'
-      # # -m "not earthdata" excludes tests markes as 'earthdata'
-      # # -m "not slow or not earthdata" excludes both
-      # - name: Run tests with pytest
-      #   shell: bash -el {0}
-      #   run: |
-      #     python -m pytest --cov . --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
-
-      # # Upload coverage report to codecov
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: .cov/.coverage.xml # optional
-      #     #name: codecov-umbrella # optional
-      #     fail_ci_if_error: false # optional (default = false)
-      #     verbose: false # optional (default = false)
-
       - name: Run the tests
         shell: bash -el {0}
         run: |
           mkdir -p .cov
           pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
-
-      # - name: Convert coverage report to XML for codecov
-      #   shell: bash -el {0}
-      #   run: |
-      #     cd .cov
-      #     coverage xml
-      #     cd ..
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
