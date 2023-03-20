@@ -1,8 +1,8 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
 STYLE_CHECK_FILES= $(PROJECT) docs tools
-TESTDIR=tmp-test-dir-with-unique-name
-PYTEST_ARGS=--cov=. --cov-report xml:.cov/coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain
+TESTDIR=.cov
+PYTEST_ARGS=--cov-config=../pyproject.tml --cov-report xml:coverage.xml -rs -m "not earthdata and not issue and not fetch" --assert=plain --pyargs
 
 help:
 	@echo "Commands:"
@@ -41,7 +41,7 @@ binder_env:
 test:
 	# Run a tmp folder to make sure the tests are run on the installed version
 	mkdir -p $(TESTDIR)
-	cd $(TESTDIR); python -m pytest $(PYTEST_ARGS)
+	cd $(TESTDIR); python -m pytest $(PYTEST_ARGS) $(PROJECT)
 	cp $(TESTDIR)/.coverage* .
 	rm -rvf $(TESTDIR)
 
