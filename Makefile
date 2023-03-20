@@ -42,8 +42,8 @@ test:
 	# Run a tmp folder to make sure the tests are run on the installed version
 	mkdir -p $(TESTDIR)
 	cd $(TESTDIR); python -m pytest $(PYTEST_ARGS) $(PROJECT)
-	cp $(TESTDIR)/.coverage* .
-	rm -rvf $(TESTDIR)
+#cp $(TESTDIR)/.coverage* .
+#rm -rvf $(TESTDIR)
 
 test_fast:
 	pytest --cov=. -rs -m "not slow"
