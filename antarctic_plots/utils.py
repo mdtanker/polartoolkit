@@ -103,10 +103,14 @@ def get_grid_info(grid):
     except AttributeError:
         print(
             "grid registration not extracted, re-trying with file loaded as xarray grid"
-        )  # noqa
+        )
         grid = xr.load_dataarray(grid)
-        reg = grid.gmt.registration
-        registration = "g" if reg == 0 else "p"
+        try:
+            reg = grid.gmt.registration
+            registration = "g" if reg == 0 else "p"
+        except AttributeError:
+            print("grid registration can't be extracted, setting to 'g'.")
+            registration = "g"
     except Exception:
         print("grid registration can't be extracted")
         registration = None
