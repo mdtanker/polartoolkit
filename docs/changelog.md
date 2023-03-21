@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### 💫 Highlights
+* Dropped support for Python 3.8 in PR #140
 
 ### 🚀 Features
 
@@ -13,6 +14,7 @@
 ### 📖 Documentation
 
 ### ⛔ Maintenance
+* new URL for fetching ADMAP1 magnetic data
 
 ### 🧑‍🤝‍🧑 Contributors
 
@@ -34,7 +36,7 @@
 
 ---
 
-## Release v0.0.4 
+## Release v0.0.4
 
 ### 💫 Highlights
 * New mapping function `antarctic_plots.maps`
@@ -88,14 +90,14 @@
 
 ---
 
-## Release v0.0.3 
+## Release v0.0.3
 
 ### 💫 Highlights
 * Finally succeeded in building the docs!
 
 ### 📖 Documentation
 
-* Added `make build-docs` to execute and overwrite .ipynb to use in docs, since `PyGMT` can't be included in dependencies and therefore RTD's can't execute the .ipynb's. 
+* Added `make build-docs` to execute and overwrite .ipynb to use in docs, since `PyGMT` can't be included in dependencies and therefore RTD's can't execute the .ipynb's.
 
 ### ⛔ Maintenance
 
@@ -107,14 +109,14 @@
 
 ---
 
-## Release v0.0.2 
+## Release v0.0.2
 
 ### 💫 Highlights
-* Created a [website for the documentation!](https://antarctic-plots.readthedocs.io/en/latest/installation.html#) 
+* Created a [website for the documentation!](https://antarctic-plots.readthedocs.io/en/latest/installation.html#)
 
 * Added `NumPy` formatted docstrings to the modules
 
-* Wrote contribution guide, which outlines the unique case of publishing a package with dependencies which need C packages, like `PyGMT` (`GMT`) and `GeoPandas` (`GDAL`). 
+* Wrote contribution guide, which outlines the unique case of publishing a package with dependencies which need C packages, like `PyGMT` (`GMT`) and `GeoPandas` (`GDAL`).
 
 * Added `Tips` for generating shapefiles and picking start/end points
 
@@ -136,7 +138,7 @@
 
 ---
 
-## Release v0.0.1 
+## Release v0.0.1
 
 ### 💫 Highlights
 * also probably should have been published to TestPyPI 🤦♂️
@@ -156,7 +158,7 @@
 ### ⛔ Maintenance
 
 * Looks of issues with the Poetry -> Jupyter-Books -> Read the Docs workflow
-* Poetry / RTD don't like `PyGMT` or `GeoPandas` since they both rely on C packages which can't be installed via pip (`GMT` and `GDAL`). Next release should fix this. 
+* Poetry / RTD don't like `PyGMT` or `GeoPandas` since they both rely on C packages which can't be installed via pip (`GMT` and `GDAL`). Next release should fix this.
 
 
 ### 🧑‍🤝‍🧑 Contributors
@@ -165,7 +167,7 @@
 
 ---
 
-## Release v0.0.0 
+## Release v0.0.0
 
 * 🎉 **First release of Antarctic-plots** 🎉
 

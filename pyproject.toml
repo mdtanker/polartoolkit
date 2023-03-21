@@ -7,7 +7,7 @@ name = "antarctic_plots"
 dynamic = ["version"]
 description = "Functions to automate Antarctic data visualization"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 authors = [
     {name = "Matthew Tankersley", email = "matt.d.tankersley@gmail.com"},
@@ -23,7 +23,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
