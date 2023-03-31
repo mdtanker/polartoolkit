@@ -308,9 +308,8 @@ def plot_grd(
 
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
+    robust = kwargs.get("robust", False)
     cpt_lims = kwargs.get("cpt_lims", None)
-    if cpt_lims is not None:
-        zmin, zmax = cpt_lims
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
     gridlines = kwargs.get("gridlines", False)
@@ -320,11 +319,14 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
+    shp_mask = kwargs.get("shp_mask", None)
 
     # set cmap
     if cmap is True:
+        # use cmap from most recent pygmt session
         pass
     elif image is True:
+        # create a cmap to use with imagery
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
@@ -333,7 +335,9 @@ def plot_grd(
         colorbar = False
     elif grd2cpt is True:
         if cpt_lims is None:
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+        else:
+            zmin, zmax = cpt_lims
         pygmt.grd2cpt(
             cmap=cmap,
             grid=grid,
@@ -347,6 +351,7 @@ def plot_grd(
             verbose="e",
         )
     elif cpt_lims is not None:
+        zmin, zmax = cpt_lims
         try:
             pygmt.makecpt(
                 cmap=cmap,
@@ -370,7 +375,7 @@ def plot_grd(
             )
     else:
         try:
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -569,18 +574,22 @@ def add_colorbar(
         with pygmt.clib.Session() as lib:
             region = list(lib.extract_region())
             assert len(region) == 4
-        grid = fetch.resample_grid(grid, region=region)
+
+        if region != utils.get_grid_info(grid)[1]:
+            grid = fetch.resample_grid(grid, region=region)
 
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
-        if cpt_lims is not None:
-            zmin, zmax = cpt_lims
-        else:
+        if (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
                 "getting max/min values from grid, if cpt_lims were used to create the "
                 "colorscale, histogram will not properly align with colorbar!"
             )
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(
+                grid, kwargs.get("shp_mask", None), robust=kwargs.get("robust", False)
+            )
+        else:
+            zmin, zmax = cpt_lims
 
         # get grid's data for histogram
         df = vd.grid_to_table(grid)

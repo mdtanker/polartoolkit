@@ -468,14 +468,17 @@ def mask_from_shp(
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
+        # get coordinate names
+        original_dims = tuple(xr_grid.sizes.keys())
         xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
-            input_coord_names[0], input_coord_names[1]
+            original_dims[1], original_dims[0]
         )
     elif grid_file is not None:
-        xds = (
-            xr.load_dataarray(grid_file)
-            .rio.write_crs(crs)
-            .rio.set_spatial_dims(input_coord_names[0], input_coord_names[1])
+        grid = xr.load_dataarray(grid_file)
+        # get coordinate names
+        original_dims = tuple(grid.sizes.keys())
+        xds = grid.rio.write_crs(crs).rio.set_spatial_dims(
+            original_dims[1], original_dims[0]
         )
 
     masked_grd = xds.rio.clip(
@@ -491,7 +494,7 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
-    return output
+    return output.drop_vars("spatial_ref")
 
 
 def alter_region(
@@ -743,6 +746,7 @@ def grd_compare(
     da2: Union[xr.DataArray, str],
     plot: bool = False,
     plot_type: str = "pygmt",
+    robust: bool = False,
     **kwargs,
 ):
     """
@@ -797,64 +801,72 @@ def grd_compare(
             verbose=kwargs.get("verbose", "e"),
         )
 
-    # get minimum grid spacing of both grids
+    # extract spacing of both grids
     da1_spacing = float(get_grid_info(da1)[0])
     da2_spacing = float(get_grid_info(da2)[0])
 
-    min_spacing = min(da1_spacing, da2_spacing)
-
-    if da1_spacing != da2_spacing:
-        print(
-            "grid spacings don't match, using smaller spacing",
-            f"({min_spacing}m).",
-        )
-
-    # get inside region of both grids
+    # extract regions of both grids
     da1_reg = get_grid_info(da1)[1]
     da2_reg = get_grid_info(da2)[1]
 
-    e = max(da1_reg[0], da2_reg[0])
-    w = min(da1_reg[1], da2_reg[1])
-    n = max(da1_reg[2], da2_reg[2])
-    s = min(da1_reg[3], da2_reg[3])
-
-    sub_region = [e, w, n, s]
-
-    if da1_reg != da2_reg:
-        print(f"grid regions dont match, using inner region {sub_region}")
-
-    # use registration from first grid, or from kwarg
-    if kwargs.get("registration", None) is None:
-        registration = get_grid_info(da1)[4]
+    # if spacing and region match, no resampling
+    if (da1_spacing == da2_spacing) and (da1_reg == da2_reg):
+        grid1 = da1
+        grid2 = da2
     else:
-        registration = kwargs.get("registration", None)
+        # get minimum grid spacing of both grids
+        if da1_spacing != da2_spacing:
+            spacing = min(da1_spacing, da2_spacing)
+            print(
+                "grid spacings don't match, using smaller spacing",
+                f"({spacing}m).",
+            )
+        else:
+            spacing = da1_spacing
+        # get inside region of both grids
+        if da1_reg != da2_reg:
+            e = max(da1_reg[0], da2_reg[0])
+            w = min(da1_reg[1], da2_reg[1])
+            n = max(da1_reg[2], da2_reg[2])
+            s = min(da1_reg[3], da2_reg[3])
+            region = [e, w, n, s]
+            print(f"grid regions dont match, using inner region {region}")
+        else:
+            region = da1_reg
+        # use registration from first grid, or from kwarg
+        if kwargs.get("registration", None) is None:
+            registration = get_grid_info(da1)[4]
+        else:
+            registration = kwargs.get("registration", None)
+        # resample grids
+        grid1 = fetch.resample_grid(
+            da1,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+            verbose=kwargs.get("verbose", "e"),
+        )
 
-    grid1 = fetch.resample_grid(
-        da1,
-        spacing=min_spacing,
-        region=sub_region,
-        registration=registration,
-        verbose=kwargs.get("verbose", "e"),
-    )
-
-    grid2 = fetch.resample_grid(
-        da2,
-        spacing=min_spacing,
-        region=sub_region,
-        registration=registration,
-        verbose=kwargs.get("verbose", "e"),
-    )
+        grid2 = fetch.resample_grid(
+            da2,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+            verbose=kwargs.get("verbose", "e"),
+        )
 
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(grid1, shp_mask)
-    grid2_cpt_lims = get_min_max(grid2, shp_mask)
+    grid1_cpt_lims = get_min_max(grid1, shp_mask, robust=robust)
+    grid2_cpt_lims = get_min_max(grid2, shp_mask, robust=robust)
 
-    # if kwarg supplied, reset diff_maxabs
-    diff_maxabs = kwargs.get("diff_maxabs", vd.maxabs(get_min_max(dif, shp_mask)))
-
-    diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
+    diff_maxabs = kwargs.get("diff_maxabs", True)
+    if diff_maxabs is False:
+        diff_lims = get_min_max(dif, shp_mask, robust=robust)
+    else:
+        diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust=robust))
+        diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -908,12 +920,13 @@ def grd_compare(
                 fig_height=fig_height,
                 **new_kwargs,
             )
+
             if subplot_labels is True:
                 fig.text(
                     position="TL",
                     justify="BL",
                     text="a)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "18p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
@@ -937,7 +950,7 @@ def grd_compare(
                     position="TL",
                     justify="BL",
                     text="b)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "20p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
@@ -958,7 +971,7 @@ def grd_compare(
                     position="TL",
                     justify="BL",
                     text="c)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "20p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
@@ -966,8 +979,9 @@ def grd_compare(
             fig.show()
 
         elif plot_type == "xarray":
-            if kwargs.get("robust", False) is True:
+            if robust:
                 vmin, vmax = None, None
+                diff_lims = (None, None)
             cmap = kwargs.get("cmap", "viridis")
 
             sub_width = 5
@@ -1410,17 +1424,19 @@ def random_color():
 def get_min_max(
     grid: xr.DataArray,
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame] = None,
+    robust: bool = False,
 ):
     """
-    Get a grids max and min values, optionally just for the region within a shapefile.
-
+    Get a grids max and min values.
     Parameters
     ----------
     grid : xr.DataArray
         grid to get values for
     shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
-
+    robust: bool, optional
+        choose whether to return the 2nd and 98th percentile values, instead of the
+        min/max
     Returns
     -------
     tuple
@@ -1428,11 +1444,17 @@ def get_min_max(
     """
 
     if shapefile is None:
-        v_min, v_max = np.nanmin(grid), np.nanmax(grid)
+        if robust:
+            v_min, v_max = np.nanquantile(grid, [0.02, 0.98])
+        else:
+            v_min, v_max = np.nanmin(grid), np.nanmax(grid)
 
     elif shapefile is not None:
         masked = mask_from_shp(shapefile, xr_grid=grid, masked=True, invert=False)
-        v_min, v_max = np.nanmin(masked), np.nanmax(masked)
+        if robust:
+            v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
+        else:
+            v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 
     return (v_min, v_max)
 
