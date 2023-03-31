@@ -308,9 +308,8 @@ def plot_grd(
 
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
+    robust = kwargs.get("robust", False)
     cpt_lims = kwargs.get("cpt_lims", None)
-    if cpt_lims is not None:
-        zmin, zmax = cpt_lims
     grd2cpt = kwargs.get("grd2cpt", False)
     image = kwargs.get("image", False)
     gridlines = kwargs.get("gridlines", False)
@@ -320,6 +319,7 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
+    shp_mask = kwargs.get("shp_mask",None)
 
     # set cmap
     if cmap is True:
@@ -333,7 +333,7 @@ def plot_grd(
         colorbar = False
     elif grd2cpt is True:
         if cpt_lims is None:
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
         pygmt.grd2cpt(
             cmap=cmap,
             grid=grid,
@@ -370,7 +370,7 @@ def plot_grd(
             )
     else:
         try:
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -580,7 +580,10 @@ def add_colorbar(
                 "getting max/min values from grid, if cpt_lims were used to create the "
                 "colorscale, histogram will not properly align with colorbar!"
             )
-            zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+            zmin, zmax = utils.get_min_max(
+                grid,
+                kwargs.get("shp_mask", None),
+                robust=kwargs.get("robust", False))
 
         # get grid's data for histogram
         df = vd.grid_to_table(grid)
