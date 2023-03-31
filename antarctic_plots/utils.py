@@ -468,14 +468,21 @@ def mask_from_shp(
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
-        xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
-            input_coord_names[0], input_coord_names[1]
+        # get coordinate names
+        original_dims = tuple(xr_grid.sizes.keys())
+        xds = (
+            xr_grid
+            .rio.write_crs(crs)
+            .rio.set_spatial_dims(original_dims[1], original_dims[0])
         )
     elif grid_file is not None:
+        grid = xr.load_dataarray(grid_file)
+        # get coordinate names
+        original_dims = tuple(grid.sizes.keys())
         xds = (
-            xr.load_dataarray(grid_file)
+            grid
             .rio.write_crs(crs)
-            .rio.set_spatial_dims(input_coord_names[0], input_coord_names[1])
+            .rio.set_spatial_dims(original_dims[1], original_dims[0])
         )
 
     masked_grd = xds.rio.clip(
@@ -491,7 +498,7 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
-    return output
+    return output.drop_vars("spatial_ref")
 
 
 def alter_region(
