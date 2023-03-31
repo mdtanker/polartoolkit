@@ -574,13 +574,13 @@ def add_colorbar(
         with pygmt.clib.Session() as lib:
             region = list(lib.extract_region())
             assert len(region) == 4
-        grid = fetch.resample_grid(grid, region=region)
+
+        if region != utils.get_grid_info(grid)[1]:
+            grid = fetch.resample_grid(grid, region=region)
 
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
-        if cpt_lims is not None:
-            zmin, zmax = cpt_lims
-        else:
+        if (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
                 "getting max/min values from grid, if cpt_lims were used to create the "
                 "colorscale, histogram will not properly align with colorbar!"
@@ -589,6 +589,8 @@ def add_colorbar(
                 grid,
                 kwargs.get("shp_mask", None),
                 robust=kwargs.get("robust", False))
+        else:
+            zmin, zmax = cpt_lims
 
         # get grid's data for histogram
         df = vd.grid_to_table(grid)
