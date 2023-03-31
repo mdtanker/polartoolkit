@@ -319,7 +319,7 @@ def plot_grd(
     scalebar = kwargs.get("scalebar", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
-    shp_mask = kwargs.get("shp_mask",None)
+    shp_mask = kwargs.get("shp_mask", None)
 
     # set cmap
     if cmap is True:
@@ -586,9 +586,8 @@ def add_colorbar(
                 "colorscale, histogram will not properly align with colorbar!"
             )
             zmin, zmax = utils.get_min_max(
-                grid,
-                kwargs.get("shp_mask", None),
-                robust=kwargs.get("robust", False))
+                grid, kwargs.get("shp_mask", None), robust=kwargs.get("robust", False)
+            )
         else:
             zmin, zmax = cpt_lims
 

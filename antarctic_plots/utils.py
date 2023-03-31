@@ -470,19 +470,15 @@ def mask_from_shp(
     elif xr_grid is not None:
         # get coordinate names
         original_dims = tuple(xr_grid.sizes.keys())
-        xds = (
-            xr_grid
-            .rio.write_crs(crs)
-            .rio.set_spatial_dims(original_dims[1], original_dims[0])
+        xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
+            original_dims[1], original_dims[0]
         )
     elif grid_file is not None:
         grid = xr.load_dataarray(grid_file)
         # get coordinate names
         original_dims = tuple(grid.sizes.keys())
-        xds = (
-            grid
-            .rio.write_crs(crs)
-            .rio.set_spatial_dims(original_dims[1], original_dims[0])
+        xds = grid.rio.write_crs(crs).rio.set_spatial_dims(
+            original_dims[1], original_dims[0]
         )
 
     masked_grd = xds.rio.clip(
@@ -862,15 +858,14 @@ def grd_compare(
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(grid1, shp_mask, robust = robust)
-    grid2_cpt_lims = get_min_max(grid2, shp_mask, robust = robust)
-
+    grid1_cpt_lims = get_min_max(grid1, shp_mask, robust=robust)
+    grid2_cpt_lims = get_min_max(grid2, shp_mask, robust=robust)
 
     diff_maxabs = kwargs.get("diff_maxabs", True)
     if diff_maxabs is False:
-        diff_lims = get_min_max(dif, shp_mask, robust = robust)
+        diff_lims = get_min_max(dif, shp_mask, robust=robust)
     else:
-        diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust = robust))
+        diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust=robust))
         diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
@@ -1450,14 +1445,14 @@ def get_min_max(
 
     if shapefile is None:
         if robust:
-            v_min, v_max = np.nanquantile(grid, [.02, .98])
+            v_min, v_max = np.nanquantile(grid, [0.02, 0.98])
         else:
             v_min, v_max = np.nanmin(grid), np.nanmax(grid)
 
     elif shapefile is not None:
         masked = mask_from_shp(shapefile, xr_grid=grid, masked=True, invert=False)
         if robust:
-            v_min, v_max = np.nanquantile(masked, [.02, .98])
+            v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
         else:
             v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 

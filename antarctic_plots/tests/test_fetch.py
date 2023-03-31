@@ -240,6 +240,7 @@ def test_ice_vel_highres():
 
 # %% modis_moa
 
+
 @pytest.mark.fetch
 @pytest.mark.slow
 @pytest.mark.earthdata
@@ -263,6 +264,7 @@ def test_modis_moa():
 
 # %% imagery
 
+
 @pytest.mark.fetch
 @pytest.mark.slow
 def test_imagery():
@@ -281,6 +283,7 @@ def test_imagery():
 # utils.get_grid_info(grid)
 
 # %% basement
+
 
 @pytest.mark.fetch
 @pytest.mark.working
@@ -333,6 +336,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_sediment_thickness(test_input, expected):
@@ -344,6 +348,7 @@ def test_sediment_thickness(test_input, expected):
 # utils.get_grid_info(grid)
 
 # %% IBCSO coverage data
+
 
 @pytest.mark.fetch
 def test_IBCSO_coverage():
@@ -440,6 +445,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_IBCSO(test_input, expected):
@@ -505,6 +511,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
@@ -512,6 +519,7 @@ test = [
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.fetch
 @pytest.mark.earthdata
@@ -599,11 +607,13 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2(test_input, expected):
     grid = fetch.bedmap2(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.fetch
 def test_bedmap2_reference():
@@ -661,6 +671,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_bedmap2_fill_nans(test_input, expected):
@@ -675,6 +686,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 # np.nanmean(grid)
 
 # %% Bedmap points
+
 
 @pytest.mark.fetch
 def test_bedmap_points():
@@ -697,6 +709,7 @@ def test_bedmap_points():
 
 
 # %% deepbedmap
+
 
 @pytest.mark.fetch
 @pytest.mark.working
@@ -752,6 +765,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
@@ -764,6 +778,7 @@ def test_gravity(test_input, expected):
 # utils.get_grid_info(grid)
 
 # %% ROSETTA gravity
+
 
 @pytest.mark.fetch
 def test_ROSETTA_gravity():
@@ -799,6 +814,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.fetch
 @pytest.mark.working
@@ -856,12 +872,14 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
 
 @pytest.mark.fetch
 @pytest.mark.working
@@ -909,6 +927,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_gia(test_input, expected):
@@ -943,6 +962,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.fetch
 @pytest.mark.working
@@ -980,6 +1000,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.working
 @pytest.mark.parametrize("test_input,expected", test)
@@ -1006,6 +1027,7 @@ test = [
     ),
 ]
 
+
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_geoid(test_input, expected):
@@ -1025,6 +1047,7 @@ expected = (
     4089.17773438,
     "g",
 )
+
 
 @pytest.mark.fetch
 def test_etopo():
@@ -1060,6 +1083,7 @@ test = [
         ),
     ),
 ]
+
 
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
