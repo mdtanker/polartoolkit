@@ -323,8 +323,10 @@ def plot_grd(
 
     # set cmap
     if cmap is True:
+        # use cmap from most recent pygmt session
         pass
     elif image is True:
+        # create a cmap to use with imagery
         pygmt.makecpt(
             cmap=cmap,
             series="15000/17000/1",
@@ -334,6 +336,8 @@ def plot_grd(
     elif grd2cpt is True:
         if cpt_lims is None:
             zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+        else:
+            zmin, zmax = cpt_lims
         pygmt.grd2cpt(
             cmap=cmap,
             grid=grid,
@@ -347,6 +351,7 @@ def plot_grd(
             verbose="e",
         )
     elif cpt_lims is not None:
+        zmin, zmax = cpt_lims
         try:
             pygmt.makecpt(
                 cmap=cmap,
