@@ -743,6 +743,7 @@ def grd_compare(
     da2: Union[xr.DataArray, str],
     plot: bool = False,
     plot_type: str = "pygmt",
+    robust: bool = False,
     **kwargs,
 ):
     """
@@ -848,13 +849,16 @@ def grd_compare(
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(grid1, shp_mask)
-    grid2_cpt_lims = get_min_max(grid2, shp_mask)
+    grid1_cpt_lims = get_min_max(grid1, shp_mask, robust = robust)
+    grid2_cpt_lims = get_min_max(grid2, shp_mask, robust = robust)
 
-    # if kwarg supplied, reset diff_maxabs
-    diff_maxabs = kwargs.get("diff_maxabs", vd.maxabs(get_min_max(dif, shp_mask)))
 
-    diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
+    diff_maxabs = kwargs.get("diff_maxabs", True)
+    if diff_maxabs is False:
+        diff_lims = get_min_max(dif, shp_mask, robust = robust)
+    else:
+        diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust = robust))
+        diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
     vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -966,8 +970,9 @@ def grd_compare(
             fig.show()
 
         elif plot_type == "xarray":
-            if kwargs.get("robust", False) is True:
+            if robust:
                 vmin, vmax = None, None
+                diff_lims = (None, None)
             cmap = kwargs.get("cmap", "viridis")
 
             sub_width = 5
@@ -1410,17 +1415,19 @@ def random_color():
 def get_min_max(
     grid: xr.DataArray,
     shapefile: Union[str or gpd.geodataframe.GeoDataFrame] = None,
+    robust: bool = False,
 ):
     """
-    Get a grids max and min values, optionally just for the region within a shapefile.
-
+    Get a grids max and min values.
     Parameters
     ----------
     grid : xr.DataArray
         grid to get values for
     shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
-
+    robust: bool, optional
+        choose whether to return the 2nd and 98th percentile values, instead of the
+        min/max
     Returns
     -------
     tuple
@@ -1428,11 +1435,17 @@ def get_min_max(
     """
 
     if shapefile is None:
-        v_min, v_max = np.nanmin(grid), np.nanmax(grid)
+        if robust:
+            v_min, v_max = np.nanquantile(grid, [.02, .98])
+        else:
+            v_min, v_max = np.nanmin(grid), np.nanmax(grid)
 
     elif shapefile is not None:
         masked = mask_from_shp(shapefile, xr_grid=grid, masked=True, invert=False)
-        v_min, v_max = np.nanmin(masked), np.nanmax(masked)
+        if robust:
+            v_min, v_max = np.nanquantile(masked, [.02, .98])
+        else:
+            v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 
     return (v_min, v_max)
 

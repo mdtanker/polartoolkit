@@ -4,6 +4,7 @@
 
 ### 💫 Highlights
 * Dropped support for Python 3.8 in PR #140
+* added `robust` option to get_min_max(), and mapping functions
 
 ### 🚀 Features
 
