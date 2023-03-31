@@ -805,53 +805,59 @@ def grd_compare(
             verbose=kwargs.get("verbose", "e"),
         )
 
-    # get minimum grid spacing of both grids
+    # extract spacing of both grids
     da1_spacing = float(get_grid_info(da1)[0])
     da2_spacing = float(get_grid_info(da2)[0])
 
-    min_spacing = min(da1_spacing, da2_spacing)
-
-    if da1_spacing != da2_spacing:
-        print(
-            "grid spacings don't match, using smaller spacing",
-            f"({min_spacing}m).",
-        )
-
-    # get inside region of both grids
+    # extract regions of both grids
     da1_reg = get_grid_info(da1)[1]
     da2_reg = get_grid_info(da2)[1]
 
-    e = max(da1_reg[0], da2_reg[0])
-    w = min(da1_reg[1], da2_reg[1])
-    n = max(da1_reg[2], da2_reg[2])
-    s = min(da1_reg[3], da2_reg[3])
-
-    sub_region = [e, w, n, s]
-
-    if da1_reg != da2_reg:
-        print(f"grid regions dont match, using inner region {sub_region}")
-
-    # use registration from first grid, or from kwarg
-    if kwargs.get("registration", None) is None:
-        registration = get_grid_info(da1)[4]
+    # if spacing and region match, no resampling
+    if (da1_spacing == da2_spacing) and (da1_reg == da2_reg):
+        grid1 = da1
+        grid2 = da2
     else:
-        registration = kwargs.get("registration", None)
+        # get minimum grid spacing of both grids
+        if da1_spacing != da2_spacing:
+            spacing = min(da1_spacing, da2_spacing)
+            print(
+                "grid spacings don't match, using smaller spacing",
+                f"({spacing}m).",
+            )
+        else:
+            spacing = da1_spacing
+        # get inside region of both grids
+        if da1_reg != da2_reg:
+            e = max(da1_reg[0], da2_reg[0])
+            w = min(da1_reg[1], da2_reg[1])
+            n = max(da1_reg[2], da2_reg[2])
+            s = min(da1_reg[3], da2_reg[3])
+            region = [e, w, n, s]
+            print(f"grid regions dont match, using inner region {region}")
+        else:
+            region = da1_reg
+        # use registration from first grid, or from kwarg
+        if kwargs.get("registration", None) is None:
+            registration = get_grid_info(da1)[4]
+        else:
+            registration = kwargs.get("registration", None)
+        # resample grids
+        grid1 = fetch.resample_grid(
+            da1,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+            verbose=kwargs.get("verbose", "e"),
+        )
 
-    grid1 = fetch.resample_grid(
-        da1,
-        spacing=min_spacing,
-        region=sub_region,
-        registration=registration,
-        verbose=kwargs.get("verbose", "e"),
-    )
-
-    grid2 = fetch.resample_grid(
-        da2,
-        spacing=min_spacing,
-        region=sub_region,
-        registration=registration,
-        verbose=kwargs.get("verbose", "e"),
-    )
+        grid2 = fetch.resample_grid(
+            da2,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+            verbose=kwargs.get("verbose", "e"),
+        )
 
     dif = grid1 - grid2
 
@@ -919,12 +925,13 @@ def grd_compare(
                 fig_height=fig_height,
                 **new_kwargs,
             )
+
             if subplot_labels is True:
                 fig.text(
                     position="TL",
                     justify="BL",
                     text="a)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "18p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
@@ -948,7 +955,7 @@ def grd_compare(
                     position="TL",
                     justify="BL",
                     text="b)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "20p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
@@ -969,7 +976,7 @@ def grd_compare(
                     position="TL",
                     justify="BL",
                     text="c)",
-                    font=kwargs.get("label_font", "26p,Helvetica,black"),
+                    font=kwargs.get("label_font", "20p,Helvetica,black"),
                     offset="j0/.3",
                     no_clip=True,
                 )
