@@ -278,6 +278,91 @@ def mass_change(
 
     return grid
 
+
+def basal_melt(variable="w_b") -> xr.DataArray:
+    """
+    Antarctic ice shelf basal melt rates for 1994–2018 from satellite radar altimetry.
+    from Adusumilli et al. “Interannual Variations in Meltwater Input to the Southern
+    Ocean from Antarctic Ice Shelves.” Nature Geoscience 13, no. 9 (September 2020):
+    616–20. https://doi.org/10.1038/s41561-020-0616-z.
+
+    accessed from http://library.ucsd.edu/dc/object/bb0448974g
+
+    reading files and preprocessing from supplied jupyternotebooks:
+    https://github.com/sioglaciology/ice_shelf_change/blob/master/read_melt_rate_file.ipynb # noqa
+
+    Units are in m/yr
+
+    Parameters
+    ----------
+    variable : str
+        choose which variable to load, either 'w_b' for basal melt rate, 'w_b_interp',
+        for basal melt rate iwth interpolated values, and 'w_b_uncert' for uncertainty
+    Returns
+    -------
+    xr.DataArray
+        Returns a dataarray of basal melt rate values
+    """
+    # This is the path to the processed (magnitude) grid
+    url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
+
+    fname = "ANT_iceshelf_melt_rates_CS2_2010-2018_v0.h5"
+
+    def preprocessing(fname, action, pooch):
+        "Download the .h5 file, save to .zarr and return fname"
+        fname = Path(fname)
+
+        # Rename to the file to ***.zarr
+        fname_processed = fname.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load .h5 file
+            grid = xr.load_dataset(
+                fname,
+                engine="netcdf4",
+                # engine='h5netcdf',
+                # phony_dims='sort',
+            )
+
+            # Remove extra dimension
+            grid = grid.squeeze()
+
+            # Assign variables as coords
+            grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
+
+            # Swap dimensions with coordinate names
+            grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
+
+            # Drop coordinate variables
+            grid = grid.drop_vars(["x", "y"])
+
+            # Save to .zarr file
+            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+            enc = {x: {"compressor": compressor} for x in grid}
+            grid.to_zarr(
+                fname_processed,
+                encoding=enc,
+            )
+
+        return str(fname_processed)
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass/Admusilli_2020",
+        known_hash=None,
+        progressbar=True,
+        processor=preprocessing,
+    )
+
+    grid = xr.open_zarr(
+        path,  # consolidated=False,
+    )[variable]
+
+    return grid
+
+
 def ice_vel(
     plot: bool = False,
     info: bool = False,

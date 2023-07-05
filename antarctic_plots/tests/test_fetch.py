@@ -857,6 +857,27 @@ def test_mass_change(test_input, expected):
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
+# %% basal melt
+
+test = [
+    (
+        "w_b",
+        (
+            500.0,
+            [-2736000.0, 2734000.0, -2374000.0, 2740000.0],
+            -19.8239116669,
+            272.470550537,
+            'g',
+        ),
+    ),
+]
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_basal_melt(test_input, expected):
+    grid = fetch.basal_melt(variable=test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
 # %% ghf
 
 test = [
