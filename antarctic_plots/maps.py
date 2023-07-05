@@ -1192,33 +1192,33 @@ def plot_3d(
     **kwargs,
 ):
     """
-    _summary_
+    create a 3D perspective plot of a list of grids
 
     Parameters
     ----------
     grids : list
-        _description_
+        xarray DataArrays to be plotted in 3D
     cmaps : list
-        _description_
+        list of PyGMT colormap names to use for each grid
     exaggeration : list
-        _description_
+        list of vertical exaggeration factors to use for each grid
     view : list, optional
-        _description_, by default [170, 30]
+        list of azimuth and elevation angles for the view, by default [170, 30]
     vlims : list, optional
-        _description_, by default [-10000, 1000]
+        list of vertical limits for the plot, by default [-10000, 1000]
     region : Union[str or np.ndarray], optional
-        _description_, by default None
+        region for the plot, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
-        _description_, by default None
+        shapefile or geodataframe to clip the grids with, by default None
     cpt_lims : list, optional
-        _description_, by default None
+        list of colorbar limits for each grid, by default None
     colorbar : bool, optional
-        _description_, by default True
+        whether to plot a colorbar, by default True
 
     Returns
     -------
-    _type_
-        _description_
+    PyGMT.Figure()
+        Returns a figure object, which can be used by other PyGMT plotting functions.
     """
     fig_height = kwargs.get("fig_height", 15)
     fig_width = kwargs.get("fig_width", None)
@@ -1264,6 +1264,7 @@ def plot_3d(
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]
+            os.remove("tmp.nc")
         # if provided, mask grid with polygon from interactive map via
         # regions.draw_region
         elif polygon_mask is not None:
@@ -1282,7 +1283,14 @@ def plot_3d(
             )
         else:
             try:
-                zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+                cpt_lims = kwargs.get("cpt_lims", None)
+                if cpt_lims is None:
+                    zmin, zmax = (
+                        utils.get_grid_info(grid)[2],
+                        utils.get_grid_info(grid)[3],
+                    )
+                else:
+                    zmin, zmax = cpt_lims[i]
                 pygmt.makecpt(
                     cmap=cmaps[i],
                     background=True,
@@ -1308,7 +1316,7 @@ def plot_3d(
         # plot as perspective view
         fig.grdview(
             grid=grid,
-            cmap=True,  # cmaps[i],
+            cmap=True,
             projection=proj,
             region=region,
             frame=None,
