@@ -666,6 +666,7 @@ def add_coast(
     projection: str = None,
     no_coast: bool = False,
     pen=None,
+    version="depoorter-2013",
 ):
     """
     add coastline and groundingline to figure.
@@ -685,12 +686,19 @@ def add_coast(
     if pen is None:
         pen = "0.6p,black"
 
-    gdf = gpd.read_file(fetch.groundingline())
-
-    if no_coast is False:
-        data = gdf
-    elif no_coast is True:
-        data = gdf[gdf.Id_text == "Grounded ice or land"]
+    if version == "depoorter-2013":
+        gdf = gpd.read_file(fetch.groundingline(version=version))
+        if no_coast is False:
+            data = gdf
+        elif no_coast is True:
+            data = gdf[gdf.Id_text == "Grounded ice or land"]
+    elif version == "measures-v2":
+        gl = gpd.read_file(fetch.groundingline(version=version))
+        if no_coast is False:
+            coast = gpd.read_file(fetch.measures_boundaries(version="Coastline"))
+            data = pd.concat([gl, coast])
+        elif no_coast is True:
+            data = gpd.read_file(fetch.groundingline(version=version))
 
     fig.plot(
         data,
