@@ -17,7 +17,10 @@ if TYPE_CHECKING:
     import numpy as np
 
 import glob
+import re
+import warnings
 
+import harmonica as hm
 import pandas as pd
 import pooch
 import pygmt
@@ -2826,7 +2829,90 @@ def ROSETTA_magnetics():
     # drop rows with height or mag data
     df.dropna(subset=["H_Ell", "Mag_anomaly"], inplace=True)
     return df
-    return df
+
+
+# def ROSETTA_radar_data(version="basal_melt"):
+#     """
+#     Load ice thickness, basal melt rate, and basal melt rate errors from the
+#     ROSETTA-Ice radar data.
+
+#     from Das et al. (2020). Multi‐decadal basal melt rates and structure of the Ross Ice
+#     Shelf, Antarctica using airborne ice penetrating radar. Journal of Geophysical
+#     Research: Earth Surface, 125 (doi:10.1029/2019JF005241)
+
+#     Accessed from https://www.usap-dc.org/view/dataset/601242
+
+#     or from http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/
+
+#     CURRENTLY NOT WORKING DUE TO RECAPTCHA ON USAP-DC WEBSITE
+
+#     Parameters
+#     ----------
+#     version : str, optional
+
+#     Returns
+#     -------
+#     pd.DataFrame
+#         Returns a dataframe containing the data
+#     """
+
+#     if version == "total_thickness":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/DICE_Total_IceThickness_Das_JGR2020.txt"  # noqa
+#         fname = "DICE_Total_IceThickness_Das_JGR2020.txt"
+#         # known_hash="md5:615463dbf98d7a44ce1d36b0a66f49a3"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(path)
+
+#     elif version == "basal_melt":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/BasalMelt_Das_JGR2020.txt"  # noqa
+#         fname = "BasalMelt_Das_JGR2020.txt"
+#         # known_hash="md5:08c5ae638cb72cf81ac022d58f7df7a9"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(
+#             path,
+#             header=None,
+#             delim_whitespace=True,
+#             names=["lon", "lat", "melt"],
+#         )
+
+#         # re-project to polar stereographic
+#         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+#         df["easting"], df["northing"] = transformer.transform(
+#             df.lat.tolist(), df.lon.tolist()
+#         )
+
+#     elif version == "basal_melt_error":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/ErrorAnalysis_BasalMelt_Das_JGR2020.txt"  # noqa
+#         fname = "ErrorAnalysis_BasalMelt_Das_JGR2020.txt"
+#         # known_hash="md5:23d99479dd6a3d1358b9f3b62c6738c0"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(path)
+
+#     return df
 
 
 def magnetics(
