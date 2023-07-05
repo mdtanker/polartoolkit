@@ -1496,48 +1496,52 @@ def bedmachine(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Load BedMachine data,  from Morlighem et al. 2020:
-    https://doi.org/10.1038/s41561-019-0510-8
+        Load BedMachine v3 data,  from Morlighem et al. 2020:
+        https://doi.org/10.1038/s41561-019-0510-8
 
-    Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/1.
-    Also available from
-    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
+        Cited as: Morlighem, M. 2022. MEaSUREs BedMachine Antarctica, Version 3. [Indicate subset used]. Boulder,
+    Colorado USA. NASA National Snow and Ice Data Center Distributed Active Archive Center.
+    https://doi.org/10.5067/FPSU0V1MWUB6
 
-    Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add the
-    geoid grid. use `reference='ellipsoid'` to include this conversion in the fetch call
+        Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
+        Also available from
+        https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
-    Surface and ice thickness are in ice equivalents. Actual snow surface is from
-    REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
-    Bedmachine Surface.
+        Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add the
+        geoid grid. use `reference='ellipsoid'` to include this conversion in the fetch call
 
-    To get snow surface: surface+firn
-    To get firn and ice thickness: thickness+firn
+        Surface and ice thickness are in ice equivalents. Actual snow surface is from
+        REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
+        Bedmachine Surface.
 
-    Here, icebase will return a grid of surface-thickness
-    This should be the same as snow-surface - (firn and ice thickness)
+        To get snow surface: surface+firn
+        To get firn and ice thickness: thickness+firn
 
-    Parameters
-    ----------
-    layer : str
-        choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed',
-        'source'; 'icebase' will give results of surface-thickness
-    reference : str
-        choose whether heights are referenced to 'eigen-6c4' geoid or the 'ellipsoid'
-        (WGS84), by default is eigen-6c4'
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
-    region : str or np.ndarray, optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
-    spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3
+        Here, icebase will return a grid of surface-thickness
+        This should be the same as snow-surface - (firn and ice thickness)
 
-    Returns
-    -------
-    xr.DataArray
-        Returns a loaded, and optional clip/resampled grid of Bedmachine.
+        Parameters
+        ----------
+        layer : str
+            choose which layer to fetch:
+            'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mapping', 'mask', 'source',
+            'surface', 'thickness'; 'icebase' will give results of surface-thickness
+        reference : str
+            choose whether heights are referenced to 'eigen-6c4' geoid or the 'ellipsoid'
+            (WGS84), by default is eigen-6c4'
+        plot : bool, optional
+            choose to plot grid, by default False
+        info : bool, optional
+            choose to print info on grid, by default False
+        region : str or np.ndarray, optional
+            GMT-format region to clip the loaded grid to, by default doesn't clip
+        spacing : str or int, optional
+            grid spacing to resample the loaded grid to, by default 10e3
+
+        Returns
+        -------
+        xr.DataArray
+            Returns a loaded, and optional clip/resampled grid of Bedmachine.
     """
 
     # found with utils.get_grid_info()
@@ -1554,13 +1558,13 @@ def bedmachine(
 
     # download url
     url = (
-        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/"
-        "BedMachineAntarctica_2020-07-15_v02.nc"
+        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
+        "BedMachineAntarctica-v3.nc"
     )
 
     path = pooch.retrieve(
         url=url,
-        fname="bedmachine.nc",
+        fname="bedmachine_v3.nc",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         downloader=EarthDataDownloader(),
         known_hash=None,
@@ -1575,15 +1579,16 @@ def bedmachine(
         grid = surface - thickness
 
     elif layer in [
-        "surface",
-        "thickness",
         "bed",
+        "dataid",
+        "errbed",
         "firn",
         "geoid",
         "mapping",
         "mask",
-        "errbed",
         "source",
+        "surface",
+        "thickness",
     ]:
         grid = xr.load_dataset(path)[layer]
 
