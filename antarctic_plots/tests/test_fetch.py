@@ -374,7 +374,6 @@ def test_geomap(test_input, expected):
 
 # %% IBCSO coverage data
 
-
 @pytest.mark.fetch
 def test_IBCSO_coverage():
     # collect a few points
@@ -801,6 +800,29 @@ def test_gravity(test_input, expected):
 # grid = fetch.gravity(version='eigen')
 # utils.get_grid_info(grid)
 
+
+# %% ROSETTA radar
+
+
+# @pytest.mark.fetch
+# def test_ROSETTA_radar():
+#     df = fetch.ROSETTA_radar_data()
+#     # expected = [
+#     #     547.0122703054126,
+#     #     -80.63749846487134,
+#     #     -43.287329630685,
+#     #     1448416752.058848,
+#     #     -100568.55304355593,
+#     #     -987321.56515563,
+#     #     789.0193522081788,
+#     #     -0.6843365719042627,
+#     # ]
+#     print(df.describe().iloc[1].tolist())
+#     # assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
+
+
+
+
 # %% ROSETTA magnetics
 
 
@@ -839,9 +861,9 @@ def test_ROSETTA_gravity():
     assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
 
 
-df = fetch.ROSETTA_gravity()
-# get mean values of each column
-df.describe().iloc[1].tolist()
+# df = fetch.ROSETTA_gravity()
+# # get mean values of each column
+# df.describe().iloc[1].tolist()
 
 # %% magnetics
 
@@ -895,6 +917,7 @@ test = [
     ),
 ]
 
+@pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_mass_change(test_input, expected):
     grid = fetch.mass_change(test_input)
@@ -917,6 +940,7 @@ test = [
 ]
 
 @pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
