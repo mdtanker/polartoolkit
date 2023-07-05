@@ -557,8 +557,19 @@ def add_colorbar(
     text_location = kwargs.get("cbar_text_location", None)
 
     # add colorbar
+    with pygmt.config(
+        FONT=kwargs.get("cbar_font", "10p,Helvetica,black"),
+    ):
+        fig.colorbar(
             cmap=kwargs.get("cmap", True),
+            position=(
+                f"jBC+w{fig_width*cbar_width_perc}c+jTC+{orientation}{text_location}"
+                f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
+            ),
+            frame=cbar_frame,
             scale=kwargs.get("cbar_scale", 1),
+            Q=kwargs.get("cbar_log", None),
+        )
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
