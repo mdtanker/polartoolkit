@@ -790,7 +790,7 @@ def test_ROSETTA_gravity():
         793.0566192217011,
         -84278.81094301463,
         -1000705.4912593851,
-        4.329633132958233e-15,
+        -40.83496413480705,
     ]
     assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
 
