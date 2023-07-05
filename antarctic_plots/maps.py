@@ -886,7 +886,47 @@ def add_scalebar(
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
             verbose="e",
-        )
+
+def add_north_arrow(
+    fig: pygmt.Figure,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
+    **kwargs,
+):
+    """
+    add a north arrow to a figure
+
+    Parameters
+    ----------
+    fig : pygmt.Figure instance
+    region : np.ndarray, optional
+        region for the figure
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
+
+    """
+    rose_size = kwargs.get("rose_size", "1c")
+
+    position = kwargs.get("position", "n.5/.05")
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = list(lib.extract_region())
+            assert len(region) == 4
+
+    rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
+
+    fig.basemap(
+        region=region,
+        projection=projection,
+        rose=rose_str,
+        verbose="e",
+        box=kwargs.get("rose_box", False),
+        perspective=kwargs.get("perspective", False),
+    )
 
 
 def add_box(
