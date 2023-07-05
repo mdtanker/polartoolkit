@@ -6,6 +6,7 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
+import os
 import warnings
 from math import floor, log10
 from typing import Union
@@ -116,7 +117,7 @@ def basemap(
 
     # add inset map to show figure location
     if kwargs.get("inset", False) is True:
-        # removed duplicate kwargs before passing to add_colorbar
+        # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
             kw: kwargs[kw]
             for kw in kwargs
@@ -459,7 +460,7 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
-        # removed duplicate kwargs before passing to add_colorbar
+        # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
             kw: kwargs[kw]
             for kw in kwargs
