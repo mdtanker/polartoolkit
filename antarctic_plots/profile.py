@@ -1365,6 +1365,7 @@ def rel_dist(
     pd.DataFrame
         Returns original dataframe with additional column rel_dist
     """
+    df = df.copy()
     if reverse is True:
         df1 = df[::-1].reset_index(drop=True)
     elif reverse is False:
@@ -1398,9 +1399,10 @@ def cum_dist(df: pd.DataFrame, **kwargs):
         Returns orignal dataframe with additional column dist
     """
     reverse = kwargs.get("reverse", False)
-    df = rel_dist(df, reverse=reverse)
-    df["dist"] = df.rel_dist.cumsum()
-    return df
+    df1 = df.copy()
+    df1 = rel_dist(df1, reverse=reverse)
+    df1["dist"] = df1.rel_dist.cumsum()
+    return df1
 
 
 def draw_lines(**kwargs):
