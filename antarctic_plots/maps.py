@@ -845,7 +845,7 @@ def add_scalebar(
     **kwargs,
 ):
     """
-    add lat lon grid lines and annotations to a figure.
+    add a scalebar to a figure.
 
     Parameters
     ----------
@@ -886,6 +886,9 @@ def add_scalebar(
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
             verbose="e",
+            box=kwargs.get("scalebar_box", False),
+        )
+
 
 def add_north_arrow(
     fig: pygmt.Figure,
