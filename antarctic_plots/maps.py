@@ -397,30 +397,18 @@ def plot_grd(
                 verbose="e",
             )
 
-    if kwargs.get("frame", None) is None:
-        # display grid
-        fig.grdimage(
-            grid=grid,
-            cmap=True,
-            projection=proj,
-            region=region,
-            nan_transparent=True,
-            frame=[f"+g{kwargs.get('background', 'white')}"],
-            shading=kwargs.get("shading", None),
-            verbose="q",
-        )
-    else:
-        # display grid
-        fig.grdimage(
-            grid=grid,
-            cmap=True,
-            projection=proj,
-            region=region,
-            nan_transparent=True,
-            frame=kwargs.get("frame"),
-            shading=kwargs.get("shading", None),
-            verbose="q",
-        )
+    # display grid
+    fig.grdimage(
+        grid=grid,
+        cmap=True,
+        projection=proj,
+        region=region,
+        nan_transparent=True,
+        frame=kwargs.get("frame", None),
+        shading=kwargs.get("shading", None),
+        transparency=kwargs.get("transparency", 0),
+        verbose="q",
+    )
 
     cmap_region = kwargs.get("cmap_region", region)
 
