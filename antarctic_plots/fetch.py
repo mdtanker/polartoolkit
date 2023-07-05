@@ -215,6 +215,69 @@ def sample_shp(name: str) -> str:
     return file
 
 
+def mass_change(
+    version: str = "ais_dhdt_floating",
+) -> xr.DataArray:
+    """
+    Ice-sheet height and thickness changes from ICESat to ICESat-2.
+    from Smith et al. “Pervasive Ice Sheet Mass Loss Reflects Competing Ocean and
+    Atmosphere Processes.” Science, April 30, 2020, eaaz5845.
+    https://doi.org/10.1126/science.aaz5845.
+
+    Choose a version of the data to download with the formt: "ais_VERSION_TYPE" where
+    VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
+    content.
+    TYPE is "floating" or "grounded"
+
+    add "_filt" to retrieve a filtered version of the data.
+
+    accessed from https://digital.lib.washington.edu/researchworks/handle/1773/45388
+
+    Units are in m/yr
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a calculated grid of Antarctic ice mass change in meters/year.
+    """
+
+    # This is the path to the processed (magnitude) grid
+    url = (
+        "https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/"
+        "45388/ICESat1_ICESat2_mass_change_updated_2_2021%20%281%29.zip?sequence"
+        "=4&isAllowed=y"
+    )
+
+    zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
+
+    if "dhdt" in version:
+        fname = f"dhdt/{version}.tif"
+    elif "dmdt" in version:
+        fname = f"dmdt/{version}.tif"
+
+    path = pooch.retrieve(
+        url=url,
+        fname=zip_fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass",
+        known_hash=None,
+        progressbar=True,
+        processor=pooch.Unzip(
+            extract_dir="Smith_2020",
+        ),
+    )
+    fname = [p for p in path if p.endswith(fname)][0]
+
+    grid = (
+        xr.load_dataarray(
+            fname,
+            engine="rasterio",
+        )
+        .squeeze()
+        .drop_vars(["band", "spatial_ref"])
+    )
+
+    return grid
+
 def ice_vel(
     plot: bool = False,
     info: bool = False,

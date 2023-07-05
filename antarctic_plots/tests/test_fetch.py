@@ -826,6 +826,37 @@ def test_magnetics(test_input, expected):
 # grid = fetch.magnetics(version='admap1')
 # utils.get_grid_info(grid)
 
+# %% mass change
+
+test = [
+    (
+        "ais_dhdt_floating",
+        (
+            5001.18699879,
+            [-2521652.10412, 2843360.03282, -2229531.47932, 2336552.25058],
+            -9.33203697205,
+            11.7978229523,
+            'p',
+        ),
+    ),
+    (
+        "ais_dmdt_grounded",
+        (
+            5000.0,
+            [-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559],
+            -27.9888286591,
+            1.0233386755,
+            'p',
+        ),
+    ),
+]
+
+@pytest.mark.parametrize("test_input,expected", test)
+def test_mass_change(test_input, expected):
+    grid = fetch.mass_change(test_input)
+    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+
 # %% ghf
 
 test = [
