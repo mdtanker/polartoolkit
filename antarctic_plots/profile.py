@@ -285,7 +285,11 @@ def make_data_dict(
     return data_dict
 
 
-def default_layers(version, region=None) -> dict:
+def default_layers(
+    version,
+    region=None,
+    reference=None,
+) -> dict:
     """
     Fetch default ice surface, ice base, and bed layers.
 
@@ -302,15 +306,20 @@ def default_layers(version, region=None) -> dict:
     dict[dict]
         Nested dictionary of earth layers and attributes
     """
+
     if version == "bedmap2":
-        surface = fetch.bedmap2("surface", fill_nans=True)  # , region=region)
-        icebase = fetch.bedmap2("icebase", fill_nans=True)  # , region=region)
-        bed = fetch.bedmap2("bed")  # , region=region)
+        if reference is None:
+            reference = "eigen-gl04c"
+        surface = fetch.bedmap2("surface", fill_nans=True, reference=reference)
+        icebase = fetch.bedmap2("icebase", fill_nans=True, reference=reference)
+        bed = fetch.bedmap2("bed", reference=reference)
 
     elif version == "bedmachine":
-        surface = fetch.bedmachine("surface")  # , region=region)
-        icebase = fetch.bedmachine("icebase")  # , region=region)
-        bed = fetch.bedmachine("bed")  # , region=region)
+        if reference is None:
+            reference = "eigen-6c4"
+        surface = fetch.bedmachine("surface", reference=reference)
+        icebase = fetch.bedmachine("icebase", reference=reference)
+        bed = fetch.bedmachine("bed", reference=reference)
 
     layer_names = [
         "surface",
