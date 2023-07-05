@@ -938,7 +938,7 @@ def grd_compare(
                     justify="BL",
                     text="a)",
                     font=kwargs.get("label_font", "18p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -962,7 +962,7 @@ def grd_compare(
                     justify="BL",
                     text="b)",
                     font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -983,7 +983,7 @@ def grd_compare(
                     justify="BL",
                     text="c)",
                     font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
 
