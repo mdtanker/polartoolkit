@@ -3188,7 +3188,15 @@ def ghf(
         )
 
         if kwargs.get("points", False) is True:
-            file = [p for p in path if p.endswith("V003.xlsx")][0]
+            url = "https://github.com/RicardaDziadek/Antarctic-GHF-DB/raw/master/ANT_GHF_DB_V004.xlsx"  # noqa
+            file = pooch.retrieve(
+                url=url,
+                fname="ANT_GHF_DB_V004.xlsx",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+                known_hash=None,
+                progressbar=True,
+            )
+
             info = False
             plot = False
             # read the excel file with pandas
