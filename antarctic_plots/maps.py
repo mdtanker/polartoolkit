@@ -828,6 +828,7 @@ def add_inset(
     with fig.inset(
         position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
         verbose="q",
+        box=kwargs.get("inset_box", False),
     ):
         gdf = gpd.read_file(fetch.groundingline())
         fig.plot(
