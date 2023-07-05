@@ -3,12 +3,21 @@
 ## Unreleased
 
 ### 💫 Highlights
-* Dropped support for Python 3.8 in PR #140
+* dropped support for Python 3.8 in PR #140
+* several new datasets!
 * added `robust` option to get_min_max(), and mapping functions
+* lots of new customization options (kwargs) for plotting functions
+* several bug fixes
 
 ### 🚀 Features
 
 #### New datasets in `Fetch`
+* Ice Mass Changes from Smith et al. 2020
+* Basal Melt Rates from Adusumulli et al. 2020
+* Faults and geologic unit shapefiles from GEOMAP (Cox et al. 2023)
+* ADMAP-2 magnetics compilation
+* ROSETTA-Ice airborne magnetics for the Ross Ice Shelf from Tinto et al. 2019
+* BedMachine updated to v3
 
 #### New functions in `---`
 
@@ -16,8 +25,10 @@
 
 ### ⛔ Maintenance
 * new URL for fetching ADMAP1 magnetic data
+* added Harmonica as a dependency for ADMAP-2 geosoft grid conversion
 
 ### 🧑‍🤝‍🧑 Contributors
+[@mdtanker](https://github.com/mdtanker)
 
 ---
 
@@ -32,7 +43,6 @@
 * renamed various util functions
 
 ### 🧑‍🤝‍🧑 Contributors
-
 [@mdtanker](https://github.com/mdtanker)
 
 ---
