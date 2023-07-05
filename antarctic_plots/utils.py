@@ -500,7 +500,12 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
-    return output.drop_vars("spatial_ref")
+    try:
+        output = output.drop_vars("spatial_ref")
+    except ValueError:
+        pass
+
+    return output
 
 
 def alter_region(
