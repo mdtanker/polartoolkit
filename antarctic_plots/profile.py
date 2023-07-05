@@ -141,7 +141,8 @@ def sample_grids(
     Parameters
     ----------
     df : pd.DataFrame
-        Dataframe containing columns 'x', 'y'
+        Dataframe containing columns 'x', 'y', or columns with names defined by kwarg
+        "coor_names".
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
     name : str,
@@ -175,18 +176,9 @@ def sample_grids(
         newcolname=name,
         radius=kwargs.get("radius", None),
         no_skip=kwargs.get("no_skip", False),
+        verbose=kwargs.get("verbose", "w"),
+        interpolation=kwargs.get("interpolation", "c"),
     )
-
-    # add sampled data to dataframe as a new series
-    # pygmt seems to slightly shift the x, y values so pandas doesnt recognize them as
-    # identifcal to merge on. Need to set tolerance to >0.
-    # df[name] = pd.merge_asof(
-    #     df.sort_values('x'),
-    #     sampled[['x',name]].sort_values('x'),
-    #     on='x',
-    #     direction='nearest',
-    #     tolerance=kwargs.get('tolerance',1),
-    #     )[name]
 
     df1[name] = sampled[name]
 
