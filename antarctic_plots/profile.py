@@ -377,10 +377,9 @@ def default_data(region=None) -> dict:
         "red",
         "blue",
     ]
-    data_dict = {
-        j: {"name": data_names[i], "grid": data_grids[i], "color": data_colors[i]}
-        for i, j in enumerate(data_names)
-    }
+
+    data_dict = make_data_dict(data_names, data_grids, data_colors)
+
     return data_dict
 
 
