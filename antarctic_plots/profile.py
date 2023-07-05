@@ -518,20 +518,6 @@ def plot_profile(
     # if there is data to plot as profiles, set region and plot them, if not,
     # make region for x-section fill space
     if data_dict is not None:
-        # if using a shared y-axis for data, get overall max and min values
-        if kwargs.get("share_yaxis", False) is True:
-            data_min = df_data[df_data.columns[3:]].min().min()
-            data_max = df_data[df_data.columns[3:]].max().max()
-
-            # add space above and below top and bottom of graph
-            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
-
-            # set frame
-            frame = [
-                "neSW",
-                "ag",
-            ]
-
         # height of data and layers, plus 0.5cm margin equals total figure height
         data_height = kwargs.get("data_height", 2.5)
         layers_height = fig_height - 0.5 - data_height
@@ -539,91 +525,331 @@ def plot_profile(
         data_projection = f"X{fig_width}c/{data_height}c"
         layers_projection = f"X{fig_width}c/{layers_height}c"
 
-        try:
-            for k, v in data_dict.items():
-                # if using individual y-axes for data, get individual max/mins
-                if kwargs.get("share_yaxis", False) is False:
-                    data_min = df_data[k].min()
-                    data_max = df_data[k].max()
+        # get axes from data dict
+        axes = pd.Series([v["axis"] for k, v in data_dict.items()])
 
-                    # add space above and below top and bottom of graph
-                    y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
+        # for each axis get overall max and min values
+        ax0_min_max = []
+        ax1_min_max = []
+        for k, v in data_dict.items():
+            if v["axis"] == axes.unique()[0]:
+                ax0_min_max.append(utils.get_min_max(df_data[k]))
+            else:
+                ax1_min_max.append(utils.get_min_max(df_data[k]))
 
-                    # turn off frame tick labels
-                    frame = [
-                        "neSw",
-                        "xag",
-                    ]
+        frames = kwargs.get("data_frame", None)
 
-                if len(data_dict) <= 1:
+        if isinstance(frames, (str, type(None))):
+            frames = [frames]
+        elif isinstance(frames, list):
+            if isinstance(frames[0], str):
+                frames = [frames]
+
+        for i, (k, v) in enumerate(data_dict.items()):
+            if v["axis"] == axes.unique()[0]:
+                data_min = np.min([a for (a, b) in ax0_min_max])
+                data_max = np.max([b for (a, b) in ax0_min_max])
+
+                if frames[0] is None:
                     frame = [
                         "neSW",
-                        "ag",
+                        f"xag+l{kwargs.get('data_x_label',' ')}",
+                        f"yag+l{kwargs.get('data_y0_label',' ')}",
                     ]
+                else:
+                    frame = frames[0]
+            else:
+                data_min = [np.min(a) for (a, b) in ax1_min_max][0]
+                data_max = [np.max(b) for (a, b) in ax1_min_max][0]
+                try:
+                    if frames[1] is None:
+                        frame = [
+                            "nEsw",
+                            f"ya+l{kwargs.get('data_y1_label',' ')}",
+                        ]
+                    else:
+                        frame = frames[1]
+                except IndexError:
+                    frame = [
+                        "nEsw",
+                        f"ya+l{kwargs.get('data_y1_label',' ')}",
+                    ]
+            # add space above and below top and bottom of graph
+            y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
 
-                # set region for data
-                data_reg = [
-                    df_data.dist.min(),
-                    df_data.dist.max(),
-                    data_min - y_buffer,
-                    data_max + y_buffer,
-                ]
+            # set region for data
+            data_reg = [
+                df_data.dist.min(),
+                df_data.dist.max(),
+                data_min - y_buffer,
+                data_max + y_buffer,
+            ]
+
+            # plot data
+            if kwargs.get("data_line_cmap", None) is None:
+                # plot data as lines
+                data_pen = kwargs.get("data_pen")
+                if isinstance(data_pen, list):
+                    data_pen = data_pen[i]
+                if data_pen is not None:
+                    pen = data_pen
+                else:
+                    thick = kwargs.get("data_pen_thickness", 1)
+                    if isinstance(thick, (float, int)):
+                        thick = [thick] * len(data_dict.items())
+
+                    color = kwargs.get("data_pen_color", None)
+                    if isinstance(color, list):
+                        color = color[i]
+                    if color is None:
+                        color = v["color"]
+
+                    style = kwargs.get("data_pen_style", None)
+                    if isinstance(style, list):
+                        style = style[i]
+                    if style is None:
+                        style = ""
+                pen = f"{thick[i]}p,{color},{style}"
+
+                data_line_style = kwargs.get("data_line_style", None)
+                if isinstance(data_line_style, list):
+                    data_line_style = data_line_style[i]
 
                 fig.plot(
                     region=data_reg,
                     projection=data_projection,
-                    frame=kwargs.get("frame", frame),
+                    frame=frame,
                     x=df_data.dist,
                     y=df_data[k],
-                    pen=f"2p,{v['color']}",
+                    pen=pen,
+                    style=data_line_style,
                     label=v["name"],
                 )
-            fig.legend(position=kwargs.get("legend_loc", "JBR+jBL+o0c"), box=True)
-            # shift origin up by height of the data profile plus 1/2 cm buffer
-            fig.shift_origin(yshift=f"{data_height+0.5}c")
-            # setup cross-section plot
-            fig.basemap(region=layers_reg, projection=layers_projection, frame=True)
-        except Exception:
-            print("error plotting data profiles")
+                # fig.plot(
+                #     region=data_reg,
+                #     projection=data_projection,
+                #     frame=frame,
+                #     x=df_data.dist,
+                #     y=df_data[k],
+                #     pen = f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,{v['color']}", # noqa
+                #     label = v["name"],
+                # )
+            else:
+                pygmt.makecpt(
+                    cmap=kwargs.get("data_line_cmap"),
+                    series=[
+                        np.min([v["color"] for k, v in data_dict.items()]),
+                        np.max([v["color"] for k, v in data_dict.items()]),
+                    ],
+                )
+
+                fig.plot(
+                    region=data_reg,
+                    projection=data_projection,
+                    frame=frame,
+                    x=df_data.dist,
+                    y=df_data[k],
+                    pen=f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,+z",
+                    label=v["name"],
+                    cmap=True,
+                    zvalue=v["color"],
+                )
+        with pygmt.config(
+            FONT_ANNOT_PRIMARY=kwargs.get("data_legend_font", "10p,Helvetica,black"),
+        ):
+            if kwargs.get("data_legend", True) is True:
+                fig.legend(
+                    position=kwargs.get("data_legend_loc", "JBR+jBL+o0c"),
+                    box=kwargs.get("data_legend_box", False),
+                    S=kwargs.get("data_legend_scale", 1),
+                )
+
+        if kwargs.get("data_line_cmap", None) is not None:
+            fig.colorbar(
+                cmap=True,
+                frame=f"a+l{kwargs.get('data_line_cmap_label', ' ')}",
+                position=f"JMR+o0.5c/0c+w{data_height*.8}c/{data_height*.16}c",
+            )
+
+        # shift origin up by height of the data profile plus 1/2 cm buffer
+        fig.shift_origin(yshift=f"{data_height+0.5}c")
+        # setup cross-section plot
+        fig.basemap(
+            region=layers_reg,
+            projection=layers_projection,
+            frame=kwargs.get("layers_frame", True),
+        )
     else:
         # if no data, make xsection fill space
+        layers_projection = f"X{fig_width}c/{fig_height}c"
         fig.basemap(
-            region=layers_reg, projection=f"X{fig_width}c/{fig_height}c", frame=True
+            region=layers_reg,
+            projection=layers_projection,
+            frame=kwargs.get("layers_frame", True),
         )
+        layers_height = fig_height - 0.5
 
     # plot colored df_layers
     for i, (k, v) in enumerate(layers_dict.items()):
-        fig.plot(
-            x=df_layers.dist,
-            y=df_layers[k],
-            # close the polygons,
-            close="+yb",
-            fill=v["color"],
-            frame=["nSew", "a"],
+        if kwargs.get("fill_layers", True) is True:
+            fig.plot(
+                x=df_layers.dist,
+                y=df_layers[k],
+                # close the polygons,
+                close="+yb",
+                fill=v["color"],
+                frame=kwargs.get("layers_frame", ["nSew", "a"]),
+                transparency=kwargs.get(
+                    "layer_transparency", [0] * len(layers_dict.items())
+                )[i],
+                label=v["name"],
+            )
+            # plot lines between df_layers
+            layers_pen = kwargs.get("layers_pen")
+            if isinstance(layers_pen, list):
+                layers_pen = layers_pen[i]
+            if layers_pen is not None:
+                pen = layers_pen
+            else:
+                thick = kwargs.get("layers_pen_thickness", 1)
+                if isinstance(thick, (float, int)):
+                    thick = [thick] * len(layers_dict.items())
+
+                color = kwargs.get("layers_pen_color", None)
+                if isinstance(color, list):
+                    color = color[i]
+                if color is None:
+                    color = v["color"]
+
+                style = kwargs.get("layers_pen_style", None)
+                if isinstance(style, list):
+                    style = style[i]
+                if style is None:
+                    style = ""
+            pen = f"{thick[i]}p,{color},{style}"
+
+            layers_line_style = kwargs.get("layers_line_style", None)
+            if isinstance(layers_line_style, list):
+                layers_line_style = layers_line_style[i]
+
+            fig.plot(
+                x=df_layers.dist,
+                y=df_layers[k],
+                pen=pen,
+                style=layers_line_style,
+            )
+
+        else:
+            if kwargs.get("layers_line_cmap", None) is None:
+                # get pen properties
+                layers_pen = kwargs.get("layers_pen")
+                if isinstance(layers_pen, list):
+                    layers_pen = layers_pen[i]
+                if layers_pen is not None:
+                    pen = layers_pen
+                else:
+                    thick = kwargs.get("layers_pen_thickness", 1)
+                    if isinstance(thick, (float, int)):
+                        thick = [thick] * len(layers_dict.items())
+
+                    color = kwargs.get("layers_pen_color", None)
+                    if isinstance(color, list):
+                        color = color[i]
+                    if color is None:
+                        color = v["color"]
+
+                    style = kwargs.get("layers_pen_style", None)
+                    if isinstance(style, list):
+                        style = style[i]
+                    if style is None:
+                        style = ""
+                pen = f"{thick[i]}p,{color},{style}"
+
+                fig.plot(
+                    x=df_layers.dist,
+                    y=df_layers[k],
+                    # pen = f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,{v['color']}", # noqa
+                    pen=pen,
+                    frame=kwargs.get("layers_frame", ["nSew", "a"]),
+                    label=v["name"],
+                )
+            else:
+                pygmt.makecpt(
+                    cmap=kwargs.get("layers_line_cmap"),
+                    series=[
+                        np.min([v["color"] for k, v in layers_dict.items()]),
+                        np.max([v["color"] for k, v in layers_dict.items()]),
+                    ],
+                )
+                fig.plot(
+                    x=df_layers.dist,
+                    y=df_layers[k],
+                    pen=f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,+z",  # noqa
+                    frame=kwargs.get("layers_frame", ["nSew", "a"]),
+                    label=v["name"],
+                    cmap=True,
+                    zvalue=v["color"],
+                )
+
+    if kwargs.get("layers_line_cmap", None) is not None:
+        fig.colorbar(
+            cmap=True,
+            frame=f"a+l{kwargs.get('layers_line_cmap_label', ' ')}",
+            position=f"JMR+o0.5c/0c+w{layers_height*.8}c/{layers_height*.16}c",
         )
 
-    # plot lines between df_layers
-    for k, v in layers_dict.items():
-        fig.plot(x=df_layers.dist, y=df_layers[k], pen="1p,black")
+    # add legend of layer names
+    with pygmt.config(
+        FONT_ANNOT_PRIMARY=kwargs.get("layers_legend_font", "10p,Helvetica,black"),
+    ):
+        if kwargs.get("layers_legend", True) is True:
+            fig.legend(
+                position=kwargs.get("layers_legend_loc", "JBR+jBL+o0c"),
+                box=kwargs.get("layers_legend_box", False),
+                S=kwargs.get("layers_legend_scale", 1),
+            )
 
     # plot 'A','B' locations
+    start_end_font = kwargs.get(
+        "start_end_font",
+        "18p,Helvetica,black",
+    )
+    start_end_fill = kwargs.get("start_end_fill", "white")
+    start_end_pen = kwargs.get("start_end_pen", "1p,black")
+
+    x1 = layers_reg[0]
+    x2 = layers_reg[1]
+
+    if kwargs.get("start_end_label_position", "T") == "T":
+        y = layers_reg[3]
+    elif kwargs.get("start_end_label_position", "B") == "B":
+        y = layers_reg[2]
+
     fig.text(
-        x=layers_reg[0],
-        y=layers_reg[3],
-        text="A",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
+        x=x1,
+        y=y,
+        # position="n0/1",
+        # position = kwargs.get("start_label_position", "TL"),
+        text=kwargs.get("start_label", "A"),
+        font=start_end_font,
+        justify=kwargs.get("start_label_justify", "BR"),
+        pen=start_end_pen,
+        fill=start_end_fill,
         no_clip=True,
+        offset=kwargs.get("start_label_offset", "-0.1c/0.1c"),
     )
     fig.text(
-        x=layers_reg[1],
-        y=layers_reg[3],
-        text="B",
-        font="20p,Helvetica,black",
-        justify="CM",
-        fill="white",
+        x=x2,
+        y=y,
+        # position="n1/1",
+        # position = kwargs.get("end_label_position", "TR"),
+        text=kwargs.get("end_label", "B"),
+        font=start_end_font,
+        justify=kwargs.get("end_label_justify", "BL"),
+        pen=start_end_pen,
+        fill=start_end_fill,
         no_clip=True,
+        offset=kwargs.get("end_label_offset", "0.1c/0.1c"),
     )
 
     if add_map is True:
@@ -662,6 +888,7 @@ def plot_profile(
             raise ValueError("invalid subplot_orientation string")
 
         # plot imagery, or supplied grid as background
+        # cant use maps.plot_grd becauseit reset projection
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
@@ -678,6 +905,7 @@ def plot_profile(
                 map_proj,
                 pen=kwargs.get("coast_pen", "1.2p,black"),
                 no_coast=kwargs.get("no_coast", False),
+                version=kwargs.get("coast_version", "depoorter-2013"),
             )
 
         # add lat long grid lines
@@ -696,12 +924,12 @@ def plot_profile(
             region=map_reg,
             x=df_layers.x,
             y=df_layers.y,
-            pen="2p,red",
+            pen=kwargs.get("map_line_pen", "2p,red"),
         )
         fig.text(
             x=df_layers.loc[df_layers.dist.idxmin()].x,
             y=df_layers.loc[df_layers.dist.idxmin()].y,
-            text="A",
+            text=kwargs.get("start_label", "A"),
             fill="white",
             font="12p,Helvetica,black",
             justify="CM",
@@ -710,7 +938,7 @@ def plot_profile(
         fig.text(
             x=df_layers.loc[df_layers.dist.idxmax()].x,
             y=df_layers.loc[df_layers.dist.idxmax()].y,
-            text="B",
+            text=kwargs.get("end_label", "B"),
             fill="white",
             font="12p,Helvetica,black",
             justify="CM",
@@ -737,12 +965,12 @@ def plot_profile(
                 inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
             )
 
-    fig.show()
-
     if kwargs.get("save") is True:
         if kwargs.get("path") is None:
             raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
+
+    return fig, df_layers, df_data
 
 
 def plot_data(
