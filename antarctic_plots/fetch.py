@@ -2778,16 +2778,20 @@ def magnetics(
 ) -> xr.DataArray:
     """
     Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
+    from  Golynsky et al. (2018). New magnetic anomaly map of the Antarctic. Geophysical
+     Research Letters, 45, 6437– 6449. https://doi.org/10.1029/2018GL078153
+
     version='admap1'
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
-    https://admap.kongju.ac.kr/databases.html
+    Accessed from https://admap.kongju.ac.kr/databases.html
 
     version='admap2'
-    ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
-    provide from Sasha Golynsky.
+    ADMAP2 magnetic anomaly compilation of Antarctica.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892723?format=html#download
 
     version='admap2_gdb'
-    Geosoft-specific .gdb abridged files. Accessed from
+    Geosoft-specific .gdb abridged files.
+    Accessed from
     https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
     Parameters
@@ -2845,7 +2849,7 @@ def magnetics(
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
                 df["x"], df["y"] = transformer.transform(
                     df.lat.tolist(), df.lon.tolist()
-                )  # noqa
+                )
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
@@ -2886,19 +2890,56 @@ def magnetics(
             registration,
         )
 
-    # elif version == "admap2":
-    #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
-    #     grd = xr.load_dataarray(path)
-    #     grd = grd.squeeze()
-    #     grd = pygmt.grdfilter(
-    #         grid=grd,
-    #         filter=f"g{spacing}",
-    #         spacing=spacing,
-    #         region=region,
-    #         distance="0",
-    #         nans="r",
-    #         verbose="q",
-    #     )
+    elif version == "admap2":
+        initial_region = [-3423000.0, 3426000.0, -3424500.0, 3426000.0]
+        initial_spacing = 1500
+        initial_registration = "g"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "convert geosoft grd to xarrya dataarray and save it back as a .nc"
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".nc")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # convert to dataarray
+                processed = hm.load_oasis_montaj_grid(fname)
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        url = "https://hs.pangaea.de/mag/airborne/Antarctica/grid/ADMAP_2B_2017.grd"
+        fname = "ADMAP_2B_2017.grd"
+        path = pooch.retrieve(
+            url=url,
+            fname=fname,
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+            known_hash="87db037e0b8c134ec4198f261d85c75c2bd5d144d8358ca37759cf8b87ae8c40",  # noqa
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     elif version == "admap2_gdb":
         plot = False
