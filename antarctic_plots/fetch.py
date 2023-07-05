@@ -44,6 +44,9 @@ def resample_grid(
     verbose="w",
     **kwargs,
 ):
+    # get coordinate names
+    # original_dims = list(grid.sizes.keys())
+
     # if initial values not given, extract from supplied grid
     if initial_spacing is None:
         initial_spacing = float(utils.get_grid_info(grid)[0])
@@ -59,12 +62,6 @@ def resample_grid(
         region = initial_region
     if registration is None:
         registration = initial_registration
-
-    # don't allow regions bigger than original region
-    # if region > initial_region:
-    #     print("requested region is larger than the original, returning the original ",
-    #         f" region:{initial_region}.")
-    #     region=initial_region
 
     # if all specs are same as orginal, return orginal
     rules = [
@@ -137,6 +134,17 @@ def resample_grid(
             extend="",
             verbose=verbose,
         )
+
+    # # reset coordinate names if changed
+    # with warnings.catch_warnings():
+    #     warnings.filterwarnings("ignore", message="rename '")
+    #     resampled = resampled.rename(
+    #         {
+    #             list(resampled.dims)[0]: original_dims[0],
+    #             list(resampled.dims)[1]: original_dims[1],
+    #         }
+    #     )
+
     return resampled
 
 
