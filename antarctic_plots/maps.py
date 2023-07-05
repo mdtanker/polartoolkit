@@ -497,6 +497,7 @@ def plot_grd(
             grid=grid,
             cpt_lims=[zmin, zmax],
             fig_width=fig_width,
+            region=region,
             **cbar_kwargs,
         )
 
