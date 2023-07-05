@@ -101,6 +101,7 @@ def basemap(
             proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
+            version=kwargs.get("coast_version", "depoorter-2013"),
         )
 
     # add lat long grid lines
@@ -443,6 +444,7 @@ def plot_grd(
             proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
+            version=kwargs.get("coast_version", "depoorter-2013"),
         )
 
     # add lat long grid lines
