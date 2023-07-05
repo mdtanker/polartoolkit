@@ -418,7 +418,8 @@ def plot_grd(
             x=points.x,
             y=points.y,
             style=kwargs.get("points_style", "c.2c"),
-            fill="black",
+            fill=kwargs.get("points_fill", "black"),
+            pen=kwargs.get("points_pen", "1p,black"),
         )
 
     # add box showing region
