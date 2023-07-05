@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 import glob
 import re
-import warnings
 
 import harmonica as hm
 import pandas as pd
@@ -2836,8 +2835,8 @@ def ROSETTA_magnetics():
 #     Load ice thickness, basal melt rate, and basal melt rate errors from the
 #     ROSETTA-Ice radar data.
 
-#     from Das et al. (2020). Multi‐decadal basal melt rates and structure of the Ross Ice
-#     Shelf, Antarctica using airborne ice penetrating radar. Journal of Geophysical
+#     from Das et al. (2020). Multi‐decadal basal melt rates and structure of the Ross
+#     Ice Shelf, Antarctica using airborne ice penetrating radar. Journal of Geophysical
 #     Research: Earth Surface, 125 (doi:10.1029/2019JF005241)
 
 #     Accessed from https://www.usap-dc.org/view/dataset/601242

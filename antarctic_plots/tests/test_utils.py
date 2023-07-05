@@ -48,6 +48,7 @@ def test_RMSE():
     # test that the RMSE is correct
     assert rmse == pytest.approx(2.160247, rel=0.0001)
 
+
 def test_RMSE_median():
     """
     test the RMedianSE function

@@ -351,21 +351,17 @@ def test_sediment_thickness(test_input, expected):
 # %% GeoMap data
 
 test = [
-    (
-        "faults", [750, 765]
-    ),
-    (
-        "units", [402, 371]
-    ),
+    ("faults", [750, 765]),
+    ("units", [402, 371]),
 ]
+
 
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
 def test_geomap(test_input, expected):
     # collect a few points
     data = fetch.geomap(
-        version=test_input,
-        region=utils.alter_region(regions.ross_island, zoom=25e3)[0]
+        version=test_input, region=utils.alter_region(regions.ross_island, zoom=25e3)[0]
     )[0:2]
 
     # check if the first 2 object id's match the expected
@@ -373,6 +369,7 @@ def test_geomap(test_input, expected):
 
 
 # %% IBCSO coverage data
+
 
 @pytest.mark.fetch
 def test_IBCSO_coverage():
@@ -821,8 +818,6 @@ def test_gravity(test_input, expected):
 #     # assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
 
 
-
-
 # %% ROSETTA magnetics
 
 
@@ -902,7 +897,7 @@ test = [
             [-2521652.10412, 2843360.03282, -2229531.47932, 2336552.25058],
             -9.33203697205,
             11.7978229523,
-            'p',
+            "p",
         ),
     ),
     (
@@ -912,10 +907,11 @@ test = [
             [-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559],
             -27.9888286591,
             1.0233386755,
-            'p',
+            "p",
         ),
     ),
 ]
+
 
 @pytest.mark.fetch
 @pytest.mark.parametrize("test_input,expected", test)
@@ -934,10 +930,11 @@ test = [
             [-2736000.0, 2734000.0, -2374000.0, 2740000.0],
             -19.8239116669,
             272.470550537,
-            'g',
+            "g",
         ),
     ),
 ]
+
 
 @pytest.mark.parametrize("test_input,expected", test)
 @pytest.mark.fetch
