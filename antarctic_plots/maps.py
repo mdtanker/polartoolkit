@@ -1336,10 +1336,15 @@ def plot_3d(
                 yshift = cbar_yshift[i]
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
+            cbar_labels = kwargs.get("cbar_labels", None)
+            if cbar_labels is None:
+                cbar_label = " "
+            else:
+                cbar_label = cbar_labels[i]
             fig.colorbar(
                 cmap=True,
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
-                frame=f"xaf+l{kwargs.get('cbar_labels',' ')[i]}",
+                frame=f"xaf+l{cbar_label}",
                 perspective=True,
                 box="+gwhite+c3p",
             )
