@@ -657,6 +657,8 @@ def add_colorbar(
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
 
+        assert zmin != zmax, "Grids are all the same value!"
+
         # define histogram region
         hist_reg = [
             zmin,
@@ -667,8 +669,10 @@ def add_colorbar(
 
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
-        fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
-
+        try:
+            fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError:
+            pass
         # plot histograms above colorbar
         fig.histogram(
             data=data,
@@ -690,7 +694,10 @@ def add_colorbar(
         )
 
         # shift figure back
-        fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+        try:
+            fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError:
+            pass
 
 
 def add_coast(
