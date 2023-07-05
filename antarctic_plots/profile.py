@@ -247,7 +247,12 @@ def shorten(df, max_dist=None, min_dist=None, **kwargs):
     return shortened
 
 
-def make_data_dict(names: list, grids: list, colors: list) -> dict:
+def make_data_dict(
+    names: list,
+    grids: list,
+    colors: list,
+    axes: list = None,
+) -> dict:
     """
     Create nested dictionary of data and attributes
 
@@ -259,16 +264,24 @@ def make_data_dict(names: list, grids: list, colors: list) -> dict:
         files or xarray.DataArray's
     colors : list[str]
         colors to plot data
-
+    axes : list[int]
+        y axes to use for each data. By default all data are on axis 0.
     Returns
     -------
     dict[dict]
         Nested dictionaries of grids and attributes
     """
+
     data_dict = {
-        j: {"name": names[i], "grid": grids[i], "color": colors[i]}
+        f"{i}": {
+            "name": names[i],
+            "grid": grids[i],
+            "color": colors[i],
+            "axis": axes[i] if axes is not None else 0,
+        }
         for i, j in enumerate(names)
     }
+
     return data_dict
 
 
