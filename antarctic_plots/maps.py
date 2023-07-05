@@ -547,6 +547,9 @@ def add_colorbar(
     # vertical or horizontal colorbar
     orientation = kwargs.get("cbar_orientation", "h")
 
+    # text location
+    text_location = kwargs.get("cbar_text_location", None)
+
     # add colorbar
     fig.colorbar(
         cmap=True,
