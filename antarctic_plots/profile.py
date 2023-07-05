@@ -466,6 +466,7 @@ def plot_profile(
             layers_dict = default_layers(
                 layers_version,
                 region=vd.get_region((points.x, points.y)),
+                reference=kwargs.get("default_layers_reference", None),
             )
 
     # create default data dictionary
