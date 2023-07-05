@@ -1257,7 +1257,7 @@ def plot_3d(
             surftype="c",
             transparency=transparency,
             # plane='-9000+ggrey',
-            # shading=True, #'grdgradient+a45+ne.5+m-.2'
+            shading=kwargs.get("shading", True),
         )
 
         # display colorbar
