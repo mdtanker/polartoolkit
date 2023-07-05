@@ -2700,10 +2700,12 @@ def geoid(
     return resampled
 
 
-def ROSETTA_gravity(shapefile: bool = False):
+def ROSETTA_gravity(version="gravity"):
     """
-    Load either a shapefile of ROSETTA-ice flightliens, or a dataframe of ROSETTA-Ice
-    airborne gravity data over the Ross Ice Shelf.
+    Load either a shapefile of ROSETTA-ice flightlines, a dataframe of ROSETTA-Ice
+    airborne gravity data over the Ross Ice Shelf, or a dataframe of ROSETTA-Ice density
+    values from the denstiy inversion.
+
     from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
     imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
     https://doi.org/10.1038/s41561‐019‐0370‐2
@@ -2720,20 +2722,19 @@ def ROSETTA_gravity(shapefile: bool = False):
     Height (meters): Height above WGS84 ellipsoid
     x (meters): Polar stereographic projected coordinates true to scale at 71° S
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
-    FAG_levelled (mGal): Levelled free air gravity (centered on 0)
+    FAG_levelled (mGal): Levelled free air gravity
 
     Parameters
     ----------
-    shapefile : bool, optional
-        If true, instead return a shapefile of flight line locations
+    version : str, optional
 
     Returns
     -------
     pd.DataFrame
-        Returns a dataframe containing the gravity data
+        Returns a dataframe containing the gravity, density, or flightline data
     """
 
-    if shapefile is True:
+    if version == "shapefile":
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
             fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
@@ -2747,7 +2748,7 @@ def ROSETTA_gravity(shapefile: bool = False):
 
         # read the file into a geodataframe
         df = pyogrio.read_dataframe(fname)
-    else:
+    elif version == "gravity":
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
             fname="ROSETTA_2019_grav.csv",
@@ -2762,8 +2763,22 @@ def ROSETTA_gravity(shapefile: bool = False):
         df.Line = df.Line.str[1:]
         df["Line"] = pd.to_numeric(df["Line"])
 
-        # center grav data on 0
-        df["FAG_levelled"] -= df.FAG_levelled.mean()
+    elif version == "density":
+        path = pooch.retrieve(
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/Density/rs_2019_density.csv",  # noqa
+            fname="rs_2019_density.csv",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        df = pd.read_csv(path)
+
+        # convert line numbers into float format (L200 -> 200)
+        df.Line = df.Line.str[1:]
+        df["Line"] = pd.to_numeric(df["Line"])
+
+    return df
 
     return df
 
