@@ -543,6 +543,10 @@ def add_colorbar(
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
+
+    # vertical or horizontal colorbar
+    orientation = kwargs.get("cbar_orientation", "h")
+
     # add colorbar
     fig.colorbar(
         cmap=True,
