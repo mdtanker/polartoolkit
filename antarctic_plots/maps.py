@@ -537,9 +537,9 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
-    # if plotting a histogram add 3cm of spacing instead of .2cm
+    # if plotting a histogram add 2cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 3)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 2)
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
