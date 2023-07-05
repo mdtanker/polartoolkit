@@ -12,6 +12,7 @@ dependencies:
   - pooch
   - tqdm
   - verde
+  - harmonica
   - xarray
   - netcdf4
   - h5netcdf
