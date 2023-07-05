@@ -2780,6 +2780,52 @@ def ROSETTA_gravity(version="gravity"):
 
     return df
 
+
+def ROSETTA_magnetics():
+    """
+    Load  a dataframe of ROSETTA-Ice airborne magnetics data over the Ross Ice Shelf
+
+    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
+    https://doi.org/10.1038/s41561‐019‐0370‐2
+    Accessed from https://www.usap-dc.org/view/project/p0010035
+
+    Columns:
+    Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
+    Latitude (degrees): Latitude decimal degrees WGS84
+    Longitude (degrees): Longitude decimal degrees WGS84
+    unixtime (seconds): The number of seconds that have elapsed since midnight
+        (00:00:00 UTC) on January 1st, 1970
+    H_Ell (meters): Height above WGS84 ellipsoid
+    x (meters): Polar stereographic projected coordinates true to scale at 71° S
+    y (meters): Polar stereographic projected coordinates true to scale at 71° S
+    Mag_anomaly (nT): magnetic anomaly
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a dataframe containing the data
+    """
+    url = "http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Magnetics/rs_2019_mag.csv"
+    fname = "rs_2019_mag.csv"
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+        known_hash="6a87e59b86888a2cd669012c6ad49ea5e563d1a9759da574d5a9f9b5aa978b70",
+        progressbar=True,
+    )
+
+    df = pd.read_csv(path)
+
+    # convert line numbers into float format (L200 -> 200)
+    df.Line = df.Line.str[1:]
+    df["Line"] = pd.to_numeric(df["Line"])
+
+    # drop rows with height or mag data
+    df.dropna(subset=["H_Ell", "Mag_anomaly"], inplace=True)
+    return df
     return df
 
 
