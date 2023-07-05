@@ -347,6 +347,31 @@ def test_sediment_thickness(test_input, expected):
 # grid = fetch.sediment_thickness(version='GlobSed')
 # utils.get_grid_info(grid)
 
+
+# %% GeoMap data
+
+test = [
+    (
+        "faults", [750, 765]
+    ),
+    (
+        "units", [402, 371]
+    ),
+]
+
+@pytest.mark.fetch
+@pytest.mark.parametrize("test_input,expected", test)
+def test_geomap(test_input, expected):
+    # collect a few points
+    data = fetch.geomap(
+        version=test_input,
+        region=utils.alter_region(regions.ross_island, zoom=25e3)[0]
+    )[0:2]
+
+    # check if the first 2 object id's match the expected
+    assert data.objectid.values.sort() == expected.sort()
+
+
 # %% IBCSO coverage data
 
 

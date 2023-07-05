@@ -554,6 +554,109 @@ def imagery() -> xr.DataArray:
     return image
 
 
+def geomap(
+    version: str = "faults",
+    region=None,
+):
+    """
+    Data from GeoMAP
+    accessed from https://doi.pangaea.de/10.1594/PANGAEA.951482?format=html#download
+
+    from Cox et al. (2023): A continent-wide detailed geological map dataset of
+    Antarctica. Scientific Data, 10(1), 250, https://doi.org/10.1038/s41597-023-02152-9
+
+    Parameters
+    ----------
+    version : str, optional
+        choose which version to retrieve, "faults", "units", "sources", or "quality",
+        by default "faults"
+    region : list, optional
+        return only data within this region, by default None
+    Returns
+    -------
+    str
+        file path
+    """
+    fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
+    url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"  # noqa
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/geomap",
+        known_hash=None,
+        processor=pooch.Unzip(extract_dir="geomap"),
+        progressbar=True,
+    )
+    fname = "ATA_SCAR_GeoMAP_Geology_v2022_08.gpkg"
+
+    fname = [p for p in path if p.endswith(fname)][0]
+    fname = Path(fname)
+
+    # found layer names with: fiona.listlayers(fname)
+
+    if version == "faults":
+        layer = "ATA_GeoMAP_faults_v2022_08"
+    elif version == "units":
+        layer = "ATA_GeoMAP_geological_units_v2022_08"
+        qml = [
+            p for p in path if p.endswith("ATA geological units - Simple geology.qml")
+        ][0]
+        qml = Path(qml)
+        with open(qml) as f:
+            contents = f.read().replace("\n", "")
+        symbol = re.findall(r'<rule symbol="(.*?)"', contents)
+        SIMPCODE = re.findall(r'filter="SIMPCODE = (.*?)"', contents)
+        simple_geol = pd.DataFrame(
+            dict(
+                SIMPsymbol=symbol,
+                SIMPCODE=SIMPCODE,
+            )
+        )
+
+        symbol_infos = re.findall(r"<symbol name=(.*?)</layer>", contents)
+
+        symbol_names = []
+        symbol_colors = []
+        for i in symbol_infos:
+            symbol_names.append(re.findall(r'"(.*?)"', i)[0])
+            color = re.findall(r'/>          <prop v="(.*?),255" k="color"', i)[0]
+            symbol_colors.append(str(color))
+
+        assert len(symbol) == len(SIMPCODE) == len(symbol_names) == len(symbol_colors)
+
+        colors = pd.DataFrame(
+            dict(
+                SIMPsymbol=symbol_names,
+                SIMPcolor=symbol_colors,
+            ),
+        )
+        unit_symbols = pd.merge(simple_geol, colors)
+        unit_symbols["SIMPCODE"] = unit_symbols.SIMPCODE.astype(int)
+        unit_symbols["SIMPcolor"] = unit_symbols.SIMPcolor.str.replace(",", "/")
+
+    elif version == "sources":
+        layer = "ATA_GeoMAP_sources_v2022_08"
+    elif version == "quality":
+        layer = "ATA_GeoMAP_quality_v2022_08"
+
+    if region is None:
+        data = pyogrio.read_dataframe(fname, layer=layer)
+    else:
+        data = pyogrio.read_dataframe(
+            fname,
+            bbox=tuple(utils.region_to_bounding_box(region)),
+            layer=layer,
+        )
+
+    if version == "units":
+        data = pd.merge(data, unit_symbols)
+        data["SIMPsymbol"] = data.SIMPsymbol.astype(float)
+        data.sort_values("SIMPsymbol", inplace=True)
+
+    return data
+
+
 def groundingline(
     version: str = "depoorter-2013",
 ) -> str:
