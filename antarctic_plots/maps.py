@@ -826,7 +826,10 @@ def add_inset(
             assert len(region) == 4
 
     with fig.inset(
-        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
+        position=(
+            f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c"
+            f"+o{kwargs.get('inset_offset', '0/0')}"
+        ),
         verbose="q",
         box=kwargs.get("inset_box", False),
     ):
