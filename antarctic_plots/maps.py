@@ -89,7 +89,7 @@ def basemap(
     fig.basemap(
         region=region,
         projection=proj,
-        frame=[f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
+        frame=kwargs.get("frame", "nwse+gwhite"),
         verbose="e",
     )
 
