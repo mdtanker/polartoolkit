@@ -515,6 +515,7 @@ def add_colorbar(
     fig: pygmt.Figure,
     hist: bool = False,
     cpt_lims: list = None,
+    cbar_frame=None,
     **kwargs,
 ):
     """
@@ -583,8 +584,32 @@ def add_colorbar(
             region = list(lib.extract_region())
             assert len(region) == 4
 
+        # clip grid to plot region
         if region != utils.get_grid_info(grid)[1]:
-            grid = fetch.resample_grid(grid, region=region)
+            # grid = fetch.resample_grid(grid, region=region)
+            grid_clipped = grid.sel(
+                {
+                    list(grid.sizes.keys())[1]: slice(region[0], region[1]),
+                    list(grid.sizes.keys())[0]: slice(region[2], region[3]),
+                }
+            )
+            # if subplotting, region will be in figure units and grid will be clipped
+            # incorrectly, hacky solution is to check if clipped figure is smaller than
+            # a few data points, if so, use grids full region
+            if len((grid_clipped[list(grid_clipped.sizes.keys())[0]].values)) < 5:
+                reg = kwargs.get("region", None)
+                if reg is None:
+                    raise ValueError(
+                        "Issue with detecting figure region for adding colorbar "
+                        "histogram, please provide region kwarg."
+                    )
+                grid_clipped = grid.sel(
+                    {
+                        list(grid.sizes.keys())[1]: slice(reg[0], reg[1]),
+                        list(grid.sizes.keys())[0]: slice(reg[2], reg[3]),
+                    }
+                )
+            grid = grid_clipped
 
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
