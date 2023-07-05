@@ -33,9 +33,13 @@ else:
 
 
 # function to give RMSE of data
-def RMSE(data):
-    return np.sqrt(np.nanmedian(data**2).item())
-    # return np.sqrt(np.nanmean(data**2).item())
+def RMSE(data, as_median=False):
+    if as_median:
+        rmse = np.sqrt(np.nanmedian(data**2).item())
+    else:
+        rmse = np.sqrt(np.nanmean(data**2).item())
+
+    return rmse
 
 
 def get_grid_info(grid):
