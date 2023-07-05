@@ -557,17 +557,7 @@ def add_colorbar(
     text_location = kwargs.get("cbar_text_location", None)
 
     # add colorbar
-    fig.colorbar(
-        cmap=True,
-        position=(
-            f"jBC+w{fig_width*cbar_width_perc}c+jTC+h"
-            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
-        ),
-        frame=[
-            f"xaf+l{kwargs.get('cbar_label',' ')}",
-            f"y+l{kwargs.get('cbar_unit',' ')}",
-        ],
-    )
+            cmap=kwargs.get("cmap", True),
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
