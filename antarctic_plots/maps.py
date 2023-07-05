@@ -543,6 +543,12 @@ def add_colorbar(
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
+    if cbar_frame is None:
+        cbar_frame = [
+            f"pxaf+l{kwargs.get('cbar_label',' ')}",
+            f"+u{kwargs.get('cbar_unit_annot',' ')}",
+            f"py+l{kwargs.get('cbar_unit',' ')}",
+        ]
 
     # vertical or horizontal colorbar
     orientation = kwargs.get("cbar_orientation", "h")
