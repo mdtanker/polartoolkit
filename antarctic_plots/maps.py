@@ -1053,7 +1053,7 @@ def subplots(
     if kwargs.get("fig_width", None) is None:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
-            fig_height=kwargs.get("fig_height", 15),
+            fig_height=kwargs.pop("fig_height", 15),
         )
     # if fig_width is set, use it to set projection
     else:
@@ -1070,9 +1070,9 @@ def subplots(
         ncols=subplot_dimensions[1],
         subsize=(fig_width, fig_height),
         frame=kwargs.get("frame", "f"),
-        clearance=kwargs.get("clearance", None),
+        clearance=kwargs.get("clearance", None),  # edges of figure
         title=kwargs.get("fig_title", None),
-        margins=kwargs.get("margins", "0.5c"),
+        margins=kwargs.get("margins", "0.5c"),  # between suplots
         autolabel=kwargs.get("autolabel"),
     ):
         for i, j in enumerate(grids):
@@ -1102,6 +1102,12 @@ def subplots(
                 else:
                     cbar_unit = " "
 
+                # if list of cmaps limits provided, use them
+                if kwargs.get("cpt_limits", None) is not None:
+                    cpt_lims = kwargs.get("cpt_limits", None)[i]
+                else:
+                    cpt_lims = None
+
                 # plot the grids
                 plot_grd(
                     j,
@@ -1113,6 +1119,7 @@ def subplots(
                     title=sub_title,
                     cbar_label=cbar_label,
                     cbar_unit=cbar_unit,
+                    cpt_lims=cpt_lims,
                     **kwargs,
                 )
     return fig
