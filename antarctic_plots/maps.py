@@ -558,6 +558,7 @@ def add_colorbar(
 
     # add colorbar
             cmap=kwargs.get("cmap", True),
+            scale=kwargs.get("cbar_scale", 1),
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
