@@ -371,7 +371,6 @@ def test_IBCSO_coverage():
             "y": [-810976.000, -747471.000, -736104.000],
         },
         index=[1, 0, 0],
-        dtype="int32",
     )
     expected = (
         gpd.GeoDataFrame(
