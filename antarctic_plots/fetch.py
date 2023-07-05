@@ -1680,8 +1680,13 @@ def bedmap_points(
     """
 
     if version == "bedmap1":
+        url = (
+            "https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_"
+            "AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-"
+            "0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2"
+        )
         fname = pooch.retrieve(
-            url="https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2",  # noqa
+            url=url,
             fname="BEDMAP1_1966-2000_AIR_BM1.csv",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
             known_hash=None,
@@ -1715,7 +1720,6 @@ def bedmap_points(
 
     elif version == "bedmap2":
         print("fetch bedmap2 point data not implemented yet")
-
     elif version == "bedmap3":
         print("fetch bedmap3 point data not implemented yet")
     else:
@@ -2263,7 +2267,8 @@ def gravity(
     Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/
 
     version='eigen'
-    Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric height.
+    Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
+    (ellipsoidal) height.
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa
 
@@ -3190,7 +3195,9 @@ def ghf(
             except shutil.SameFileError:
                 new_file = file
 
-            grid = xr.load_dataarray(new_file).squeeze()
+            grid = (
+                xr.load_dataarray(new_file).squeeze().drop_vars(["band", "spatial_ref"])
+            )
 
             resampled = resample_grid(
                 grid,
@@ -3364,7 +3371,7 @@ def ghf(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
