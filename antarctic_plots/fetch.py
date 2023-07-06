@@ -2402,7 +2402,7 @@ def gravity(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -3009,7 +3009,7 @@ def magnetics(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -3785,7 +3785,7 @@ def crustal_thickness(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -4001,7 +4001,7 @@ def moho(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -4087,7 +4087,7 @@ def moho(
         #   region='-1560000/1400000/-2400000/560000',
         #   spacing=10e3,
         #   registration='g',
-        #   M='1c',
+        #   maxradius='1c',
         #   outgrid=fname,
         # )
 
