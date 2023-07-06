@@ -307,7 +307,7 @@ To add or update a dependencies, add it to `pyproject.toml` either under `depend
 
 After release a new version on PyPI, we will create a new release on conda-forge, and the new dependencies should automatically be included there.
 
-If you add a dependency necessary for using the package, make sure to include it in the Binder config file. See below.
+If you add a dependency necessary for using the package, make sure to add it to `env/env_test.ylm` and include it in the Binder config file. See below.
 
 ## Set up the binder configuration
 

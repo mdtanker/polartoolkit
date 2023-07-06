@@ -6,6 +6,7 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
+import os
 import warnings
 from math import floor, log10
 from typing import Union
@@ -89,7 +90,7 @@ def basemap(
     fig.basemap(
         region=region,
         projection=proj,
-        frame=[f"nwse+g{kwargs.get('background', 'white')}", "xf100000", "yf100000"],
+        frame=kwargs.get("frame", "nwse+gwhite"),
         verbose="e",
     )
 
@@ -101,6 +102,7 @@ def basemap(
             proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
+            version=kwargs.get("coast_version", "depoorter-2013"),
         )
 
     # add lat long grid lines
@@ -115,7 +117,7 @@ def basemap(
 
     # add inset map to show figure location
     if kwargs.get("inset", False) is True:
-        # removed duplicate kwargs before passing to add_colorbar
+        # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
             kw: kwargs[kw]
             for kw in kwargs
@@ -395,30 +397,18 @@ def plot_grd(
                 verbose="e",
             )
 
-    if kwargs.get("frame", None) is None:
-        # display grid
-        fig.grdimage(
-            grid=grid,
-            cmap=True,
-            projection=proj,
-            region=region,
-            nan_transparent=True,
-            frame=[f"+g{kwargs.get('background', 'white')}"],
-            shading=kwargs.get("shading", None),
-            verbose="q",
-        )
-    else:
-        # display grid
-        fig.grdimage(
-            grid=grid,
-            cmap=True,
-            projection=proj,
-            region=region,
-            nan_transparent=True,
-            frame=kwargs.get("frame"),
-            shading=kwargs.get("shading", None),
-            verbose="q",
-        )
+    # display grid
+    fig.grdimage(
+        grid=grid,
+        cmap=True,
+        projection=proj,
+        region=region,
+        nan_transparent=True,
+        frame=kwargs.get("frame", None),
+        shading=kwargs.get("shading", None),
+        transparency=kwargs.get("transparency", 0),
+        verbose="q",
+    )
 
     cmap_region = kwargs.get("cmap_region", region)
 
@@ -428,7 +418,8 @@ def plot_grd(
             x=points.x,
             y=points.y,
             style=kwargs.get("points_style", "c.2c"),
-            fill="black",
+            fill=kwargs.get("points_fill", "black"),
+            pen=kwargs.get("points_pen", "1p,black"),
         )
 
     # add box showing region
@@ -443,6 +434,7 @@ def plot_grd(
             proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
+            version=kwargs.get("coast_version", "depoorter-2013"),
         )
 
     # add lat long grid lines
@@ -457,7 +449,7 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
-        # removed duplicate kwargs before passing to add_colorbar
+        # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
             kw: kwargs[kw]
             for kw in kwargs
@@ -505,6 +497,7 @@ def plot_grd(
             grid=grid,
             cpt_lims=[zmin, zmax],
             fig_width=fig_width,
+            region=region,
             **cbar_kwargs,
         )
 
@@ -522,6 +515,7 @@ def add_colorbar(
     fig: pygmt.Figure,
     hist: bool = False,
     cpt_lims: list = None,
+    cbar_frame=None,
     **kwargs,
 ):
     """
@@ -544,24 +538,39 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
-    # if plotting a histogram add 3cm of spacing instead of .2cm
+    # if plotting a histogram add 2cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 3)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 2)
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
+    if cbar_frame is None:
+        cbar_frame = [
+            f"pxaf+l{kwargs.get('cbar_label',' ')}",
+            f"+u{kwargs.get('cbar_unit_annot',' ')}",
+            f"py+l{kwargs.get('cbar_unit',' ')}",
+        ]
+
+    # vertical or horizontal colorbar
+    orientation = kwargs.get("cbar_orientation", "h")
+
+    # text location
+    text_location = kwargs.get("cbar_text_location", None)
+
     # add colorbar
-    fig.colorbar(
-        cmap=True,
-        position=(
-            f"jBC+w{fig_width*cbar_width_perc}c+jTC+h"
-            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
-        ),
-        frame=[
-            f"xaf+l{kwargs.get('cbar_label',' ')}",
-            f"y+l{kwargs.get('cbar_unit',' ')}",
-        ],
-    )
+    with pygmt.config(
+        FONT=kwargs.get("cbar_font", "10p,Helvetica,black"),
+    ):
+        fig.colorbar(
+            cmap=kwargs.get("cmap", True),
+            position=(
+                f"jBC+w{fig_width*cbar_width_perc}c+jTC+{orientation}{text_location}"
+                f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
+            ),
+            frame=cbar_frame,
+            scale=kwargs.get("cbar_scale", 1),
+            Q=kwargs.get("cbar_log", None),
+        )
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
@@ -575,8 +584,32 @@ def add_colorbar(
             region = list(lib.extract_region())
             assert len(region) == 4
 
+        # clip grid to plot region
         if region != utils.get_grid_info(grid)[1]:
-            grid = fetch.resample_grid(grid, region=region)
+            # grid = fetch.resample_grid(grid, region=region)
+            grid_clipped = grid.sel(
+                {
+                    list(grid.sizes.keys())[1]: slice(region[0], region[1]),
+                    list(grid.sizes.keys())[0]: slice(region[2], region[3]),
+                }
+            )
+            # if subplotting, region will be in figure units and grid will be clipped
+            # incorrectly, hacky solution is to check if clipped figure is smaller than
+            # a few data points, if so, use grids full region
+            if len((grid_clipped[list(grid_clipped.sizes.keys())[0]].values)) < 5:
+                reg = kwargs.get("region", None)
+                if reg is None:
+                    raise ValueError(
+                        "Issue with detecting figure region for adding colorbar "
+                        "histogram, please provide region kwarg."
+                    )
+                grid_clipped = grid.sel(
+                    {
+                        list(grid.sizes.keys())[1]: slice(reg[0], reg[1]),
+                        list(grid.sizes.keys())[0]: slice(reg[2], reg[3]),
+                    }
+                )
+            grid = grid_clipped
 
         if grid is None:
             raise ValueError("if hist is True, grid must be provided.")
@@ -624,6 +657,8 @@ def add_colorbar(
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
 
+        assert zmin != zmax, "Grids are all the same value!"
+
         # define histogram region
         hist_reg = [
             zmin,
@@ -634,8 +669,10 @@ def add_colorbar(
 
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
-        fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
-
+        try:
+            fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError:
+            pass
         # plot histograms above colorbar
         fig.histogram(
             data=data,
@@ -657,7 +694,10 @@ def add_colorbar(
         )
 
         # shift figure back
-        fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+        try:
+            fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError:
+            pass
 
 
 def add_coast(
@@ -666,6 +706,7 @@ def add_coast(
     projection: str = None,
     no_coast: bool = False,
     pen=None,
+    version="depoorter-2013",
 ):
     """
     add coastline and groundingline to figure.
@@ -685,12 +726,19 @@ def add_coast(
     if pen is None:
         pen = "0.6p,black"
 
-    gdf = gpd.read_file(fetch.groundingline())
-
-    if no_coast is False:
-        data = gdf
-    elif no_coast is True:
-        data = gdf[gdf.Id_text == "Grounded ice or land"]
+    if version == "depoorter-2013":
+        gdf = gpd.read_file(fetch.groundingline(version=version))
+        if no_coast is False:
+            data = gdf
+        elif no_coast is True:
+            data = gdf[gdf.Id_text == "Grounded ice or land"]
+    elif version == "measures-v2":
+        gl = gpd.read_file(fetch.groundingline(version=version))
+        if no_coast is False:
+            coast = gpd.read_file(fetch.measures_boundaries(version="Coastline"))
+            data = pd.concat([gl, coast])
+        elif no_coast is True:
+            data = gpd.read_file(fetch.groundingline(version=version))
 
     fig.plot(
         data,
@@ -816,8 +864,12 @@ def add_inset(
             assert len(region) == 4
 
     with fig.inset(
-        position=f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c",
+        position=(
+            f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c"
+            f"+o{kwargs.get('inset_offset', '0/0')}"
+        ),
         verbose="q",
+        box=kwargs.get("inset_box", False),
     ):
         gdf = gpd.read_file(fetch.groundingline())
         fig.plot(
@@ -845,7 +897,7 @@ def add_scalebar(
     **kwargs,
 ):
     """
-    add lat lon grid lines and annotations to a figure.
+    add a scalebar to a figure.
 
     Parameters
     ----------
@@ -886,7 +938,50 @@ def add_scalebar(
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
             verbose="e",
+            box=kwargs.get("scalebar_box", False),
         )
+
+
+def add_north_arrow(
+    fig: pygmt.Figure,
+    region: Union[str or np.ndarray] = None,
+    projection: str = None,
+    **kwargs,
+):
+    """
+    add a north arrow to a figure
+
+    Parameters
+    ----------
+    fig : pygmt.Figure instance
+    region : np.ndarray, optional
+        region for the figure
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
+
+    """
+    rose_size = kwargs.get("rose_size", "1c")
+
+    position = kwargs.get("position", "n.5/.05")
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = list(lib.extract_region())
+            assert len(region) == 4
+
+    rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
+
+    fig.basemap(
+        region=region,
+        projection=projection,
+        rose=rose_str,
+        verbose="e",
+        box=kwargs.get("rose_box", False),
+        perspective=kwargs.get("perspective", False),
+    )
 
 
 def add_box(
@@ -1053,7 +1148,7 @@ def subplots(
     if kwargs.get("fig_width", None) is None:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
-            fig_height=kwargs.get("fig_height", 15),
+            fig_height=kwargs.pop("fig_height", 15),
         )
     # if fig_width is set, use it to set projection
     else:
@@ -1070,9 +1165,9 @@ def subplots(
         ncols=subplot_dimensions[1],
         subsize=(fig_width, fig_height),
         frame=kwargs.get("frame", "f"),
-        clearance=kwargs.get("clearance", None),
+        clearance=kwargs.get("clearance", None),  # edges of figure
         title=kwargs.get("fig_title", None),
-        margins=kwargs.get("margins", "0.5c"),
+        margins=kwargs.get("margins", "0.5c"),  # between suplots
         autolabel=kwargs.get("autolabel"),
     ):
         for i, j in enumerate(grids):
@@ -1102,6 +1197,12 @@ def subplots(
                 else:
                     cbar_unit = " "
 
+                # if list of cmaps limits provided, use them
+                if kwargs.get("cpt_limits", None) is not None:
+                    cpt_lims = kwargs.get("cpt_limits", None)[i]
+                else:
+                    cpt_lims = None
+
                 # plot the grids
                 plot_grd(
                     j,
@@ -1113,6 +1214,7 @@ def subplots(
                     title=sub_title,
                     cbar_label=cbar_label,
                     cbar_unit=cbar_unit,
+                    cpt_lims=cpt_lims,
                     **kwargs,
                 )
     return fig
@@ -1132,33 +1234,33 @@ def plot_3d(
     **kwargs,
 ):
     """
-    _summary_
+    create a 3D perspective plot of a list of grids
 
     Parameters
     ----------
     grids : list
-        _description_
+        xarray DataArrays to be plotted in 3D
     cmaps : list
-        _description_
+        list of PyGMT colormap names to use for each grid
     exaggeration : list
-        _description_
+        list of vertical exaggeration factors to use for each grid
     view : list, optional
-        _description_, by default [170, 30]
+        list of azimuth and elevation angles for the view, by default [170, 30]
     vlims : list, optional
-        _description_, by default [-10000, 1000]
+        list of vertical limits for the plot, by default [-10000, 1000]
     region : Union[str or np.ndarray], optional
-        _description_, by default None
+        region for the plot, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
-        _description_, by default None
+        shapefile or geodataframe to clip the grids with, by default None
     cpt_lims : list, optional
-        _description_, by default None
+        list of colorbar limits for each grid, by default None
     colorbar : bool, optional
-        _description_, by default True
+        whether to plot a colorbar, by default True
 
     Returns
     -------
-    _type_
-        _description_
+    PyGMT.Figure()
+        Returns a figure object, which can be used by other PyGMT plotting functions.
     """
     fig_height = kwargs.get("fig_height", 15)
     fig_width = kwargs.get("fig_width", None)
@@ -1204,6 +1306,7 @@ def plot_3d(
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]
+            os.remove("tmp.nc")
         # if provided, mask grid with polygon from interactive map via
         # regions.draw_region
         elif polygon_mask is not None:
@@ -1222,7 +1325,14 @@ def plot_3d(
             )
         else:
             try:
-                zmin, zmax = utils.get_grid_info(grid)[2], utils.get_grid_info(grid)[3]
+                cpt_lims = kwargs.get("cpt_lims", None)
+                if cpt_lims is None:
+                    zmin, zmax = (
+                        utils.get_grid_info(grid)[2],
+                        utils.get_grid_info(grid)[3],
+                    )
+                else:
+                    zmin, zmax = cpt_lims[i]
                 pygmt.makecpt(
                     cmap=cmaps[i],
                     background=True,
@@ -1248,7 +1358,7 @@ def plot_3d(
         # plot as perspective view
         fig.grdview(
             grid=grid,
-            cmap=True,  # cmaps[i],
+            cmap=True,
             projection=proj,
             region=region,
             frame=None,
@@ -1257,7 +1367,7 @@ def plot_3d(
             surftype="c",
             transparency=transparency,
             # plane='-9000+ggrey',
-            # shading=True, #'grdgradient+a45+ne.5+m-.2'
+            shading=kwargs.get("shading", True),
         )
 
         # display colorbar
@@ -1276,10 +1386,15 @@ def plot_3d(
                 yshift = cbar_yshift[i]
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
+            cbar_labels = kwargs.get("cbar_labels", None)
+            if cbar_labels is None:
+                cbar_label = " "
+            else:
+                cbar_label = cbar_labels[i]
             fig.colorbar(
                 cmap=True,
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
-                frame=f"xaf+l{kwargs.get('cbar_labels',' ')[i]}",
+                frame=f"xaf+l{cbar_label}",
                 perspective=True,
                 box="+gwhite+c3p",
             )

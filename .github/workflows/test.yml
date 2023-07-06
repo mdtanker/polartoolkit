@@ -92,4 +92,4 @@ jobs:
           # Don't mark the job as failed if the upload fails for some reason.
           # It does sometimes but shouldn't be the reason for running
           # everything again unless something else is broken.
-          fail_ci_if_error: false
+          # fail_ci_if_error: false

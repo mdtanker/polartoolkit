@@ -17,7 +17,9 @@ if TYPE_CHECKING:
     import numpy as np
 
 import glob
+import re
 
+import harmonica as hm
 import pandas as pd
 import pooch
 import pygmt
@@ -44,6 +46,9 @@ def resample_grid(
     verbose="w",
     **kwargs,
 ):
+    # get coordinate names
+    # original_dims = list(grid.sizes.keys())
+
     # if initial values not given, extract from supplied grid
     if initial_spacing is None:
         initial_spacing = float(utils.get_grid_info(grid)[0])
@@ -59,12 +64,6 @@ def resample_grid(
         region = initial_region
     if registration is None:
         registration = initial_registration
-
-    # don't allow regions bigger than original region
-    # if region > initial_region:
-    #     print("requested region is larger than the original, returning the original ",
-    #         f" region:{initial_region}.")
-    #     region=initial_region
 
     # if all specs are same as orginal, return orginal
     rules = [
@@ -137,6 +136,17 @@ def resample_grid(
             extend="",
             verbose=verbose,
         )
+
+    # # reset coordinate names if changed
+    # with warnings.catch_warnings():
+    #     warnings.filterwarnings("ignore", message="rename '")
+    #     resampled = resampled.rename(
+    #         {
+    #             list(resampled.dims)[0]: original_dims[0],
+    #             list(resampled.dims)[1]: original_dims[1],
+    #         }
+    #     )
+
     return resampled
 
 
@@ -205,6 +215,154 @@ def sample_shp(name: str) -> str:
     )
     file = [p for p in path if p.endswith(".shp")][0]
     return file
+
+
+def mass_change(
+    version: str = "ais_dhdt_floating",
+) -> xr.DataArray:
+    """
+    Ice-sheet height and thickness changes from ICESat to ICESat-2.
+    from Smith et al. “Pervasive Ice Sheet Mass Loss Reflects Competing Ocean and
+    Atmosphere Processes.” Science, April 30, 2020, eaaz5845.
+    https://doi.org/10.1126/science.aaz5845.
+
+    Choose a version of the data to download with the formt: "ais_VERSION_TYPE" where
+    VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
+    content.
+    TYPE is "floating" or "grounded"
+
+    add "_filt" to retrieve a filtered version of the data.
+
+    accessed from https://digital.lib.washington.edu/researchworks/handle/1773/45388
+
+    Units are in m/yr
+
+    Returns
+    -------
+    xr.DataArray
+        Returns a calculated grid of Antarctic ice mass change in meters/year.
+    """
+
+    # This is the path to the processed (magnitude) grid
+    url = (
+        "https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/"
+        "45388/ICESat1_ICESat2_mass_change_updated_2_2021%20%281%29.zip?sequence"
+        "=4&isAllowed=y"
+    )
+
+    zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
+
+    if "dhdt" in version:
+        fname = f"dhdt/{version}.tif"
+    elif "dmdt" in version:
+        fname = f"dmdt/{version}.tif"
+
+    path = pooch.retrieve(
+        url=url,
+        fname=zip_fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass",
+        known_hash=None,
+        progressbar=True,
+        processor=pooch.Unzip(
+            extract_dir="Smith_2020",
+        ),
+    )
+    fname = [p for p in path if p.endswith(fname)][0]
+
+    grid = (
+        xr.load_dataarray(
+            fname,
+            engine="rasterio",
+        )
+        .squeeze()
+        .drop_vars(["band", "spatial_ref"])
+    )
+
+    return grid
+
+
+def basal_melt(variable="w_b") -> xr.DataArray:
+    """
+    Antarctic ice shelf basal melt rates for 1994–2018 from satellite radar altimetry.
+    from Adusumilli et al. “Interannual Variations in Meltwater Input to the Southern
+    Ocean from Antarctic Ice Shelves.” Nature Geoscience 13, no. 9 (September 2020):
+    616–20. https://doi.org/10.1038/s41561-020-0616-z.
+
+    accessed from http://library.ucsd.edu/dc/object/bb0448974g
+
+    reading files and preprocessing from supplied jupyternotebooks:
+    https://github.com/sioglaciology/ice_shelf_change/blob/master/read_melt_rate_file.ipynb # noqa
+
+    Units are in m/yr
+
+    Parameters
+    ----------
+    variable : str
+        choose which variable to load, either 'w_b' for basal melt rate, 'w_b_interp',
+        for basal melt rate iwth interpolated values, and 'w_b_uncert' for uncertainty
+    Returns
+    -------
+    xr.DataArray
+        Returns a dataarray of basal melt rate values
+    """
+    # This is the path to the processed (magnitude) grid
+    url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
+
+    fname = "ANT_iceshelf_melt_rates_CS2_2010-2018_v0.h5"
+
+    def preprocessing(fname, action, pooch):
+        "Download the .h5 file, save to .zarr and return fname"
+        fname = Path(fname)
+
+        # Rename to the file to ***.zarr
+        fname_processed = fname.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load .h5 file
+            grid = xr.load_dataset(
+                fname,
+                engine="netcdf4",
+                # engine='h5netcdf',
+                # phony_dims='sort',
+            )
+
+            # Remove extra dimension
+            grid = grid.squeeze()
+
+            # Assign variables as coords
+            grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
+
+            # Swap dimensions with coordinate names
+            grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
+
+            # Drop coordinate variables
+            grid = grid.drop_vars(["x", "y"])
+
+            # Save to .zarr file
+            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+            enc = {x: {"compressor": compressor} for x in grid}
+            grid.to_zarr(
+                fname_processed,
+                encoding=enc,
+            )
+
+        return str(fname_processed)
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass/Admusilli_2020",
+        known_hash=None,
+        progressbar=True,
+        processor=preprocessing,
+    )
+
+    grid = xr.open_zarr(
+        path,  # consolidated=False,
+    )[variable]
+
+    return grid
 
 
 def ice_vel(
@@ -396,6 +554,109 @@ def imagery() -> xr.DataArray:
     image = [p for p in path if p.endswith(".tif")][0]
 
     return image
+
+
+def geomap(
+    version: str = "faults",
+    region=None,
+):
+    """
+    Data from GeoMAP
+    accessed from https://doi.pangaea.de/10.1594/PANGAEA.951482?format=html#download
+
+    from Cox et al. (2023): A continent-wide detailed geological map dataset of
+    Antarctica. Scientific Data, 10(1), 250, https://doi.org/10.1038/s41597-023-02152-9
+
+    Parameters
+    ----------
+    version : str, optional
+        choose which version to retrieve, "faults", "units", "sources", or "quality",
+        by default "faults"
+    region : list, optional
+        return only data within this region, by default None
+    Returns
+    -------
+    str
+        file path
+    """
+    fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
+    url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"  # noqa
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/geomap",
+        known_hash=None,
+        processor=pooch.Unzip(extract_dir="geomap"),
+        progressbar=True,
+    )
+    fname = "ATA_SCAR_GeoMAP_Geology_v2022_08.gpkg"
+
+    fname = [p for p in path if p.endswith(fname)][0]
+    fname = Path(fname)
+
+    # found layer names with: fiona.listlayers(fname)
+
+    if version == "faults":
+        layer = "ATA_GeoMAP_faults_v2022_08"
+    elif version == "units":
+        layer = "ATA_GeoMAP_geological_units_v2022_08"
+        qml = [
+            p for p in path if p.endswith("ATA geological units - Simple geology.qml")
+        ][0]
+        qml = Path(qml)
+        with open(qml) as f:
+            contents = f.read().replace("\n", "")
+        symbol = re.findall(r'<rule symbol="(.*?)"', contents)
+        SIMPCODE = re.findall(r'filter="SIMPCODE = (.*?)"', contents)
+        simple_geol = pd.DataFrame(
+            dict(
+                SIMPsymbol=symbol,
+                SIMPCODE=SIMPCODE,
+            )
+        )
+
+        symbol_infos = re.findall(r"<symbol name=(.*?)</layer>", contents)
+
+        symbol_names = []
+        symbol_colors = []
+        for i in symbol_infos:
+            symbol_names.append(re.findall(r'"(.*?)"', i)[0])
+            color = re.findall(r'/>          <prop v="(.*?),255" k="color"', i)[0]
+            symbol_colors.append(str(color))
+
+        assert len(symbol) == len(SIMPCODE) == len(symbol_names) == len(symbol_colors)
+
+        colors = pd.DataFrame(
+            dict(
+                SIMPsymbol=symbol_names,
+                SIMPcolor=symbol_colors,
+            ),
+        )
+        unit_symbols = pd.merge(simple_geol, colors)
+        unit_symbols["SIMPCODE"] = unit_symbols.SIMPCODE.astype(int)
+        unit_symbols["SIMPcolor"] = unit_symbols.SIMPcolor.str.replace(",", "/")
+
+    elif version == "sources":
+        layer = "ATA_GeoMAP_sources_v2022_08"
+    elif version == "quality":
+        layer = "ATA_GeoMAP_quality_v2022_08"
+
+    if region is None:
+        data = pyogrio.read_dataframe(fname, layer=layer)
+    else:
+        data = pyogrio.read_dataframe(
+            fname,
+            bbox=tuple(utils.region_to_bounding_box(region)),
+            layer=layer,
+        )
+
+    if version == "units":
+        data = pd.merge(data, unit_symbols)
+        data["SIMPsymbol"] = data.SIMPsymbol.astype(float)
+        data.sort_values("SIMPsymbol", inplace=True)
+
+    return data
 
 
 def groundingline(
@@ -1237,48 +1498,52 @@ def bedmachine(
     **kwargs,
 ) -> xr.DataArray:
     """
-    Load BedMachine data,  from Morlighem et al. 2020:
-    https://doi.org/10.1038/s41561-019-0510-8
+        Load BedMachine v3 data,  from Morlighem et al. 2020:
+        https://doi.org/10.1038/s41561-019-0510-8
 
-    Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/1.
-    Also available from
-    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
+        Cited as: Morlighem, M. 2022. MEaSUREs BedMachine Antarctica, Version 3. [Indicate subset used]. Boulder,
+    Colorado USA. NASA National Snow and Ice Data Center Distributed Active Archive Center.
+    https://doi.org/10.5067/FPSU0V1MWUB6
 
-    Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add the
-    geoid grid. use `reference='ellipsoid'` to include this conversion in the fetch call
+        Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
+        Also available from
+        https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb # noqa
 
-    Surface and ice thickness are in ice equivalents. Actual snow surface is from
-    REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
-    Bedmachine Surface.
+        Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add the
+        geoid grid. use `reference='ellipsoid'` to include this conversion in the fetch call
 
-    To get snow surface: surface+firn
-    To get firn and ice thickness: thickness+firn
+        Surface and ice thickness are in ice equivalents. Actual snow surface is from
+        REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
+        Bedmachine Surface.
 
-    Here, icebase will return a grid of surface-thickness
-    This should be the same as snow-surface - (firn and ice thickness)
+        To get snow surface: surface+firn
+        To get firn and ice thickness: thickness+firn
 
-    Parameters
-    ----------
-    layer : str
-        choose which layer to fetch:
-        'surface', 'thickness', 'bed', 'firn', 'geoid', 'mapping', 'mask', 'errbed',
-        'source'; 'icebase' will give results of surface-thickness
-    reference : str
-        choose whether heights are referenced to 'eigen-6c4' geoid or the 'ellipsoid'
-        (WGS84), by default is eigen-6c4'
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
-    region : str or np.ndarray, optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
-    spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3
+        Here, icebase will return a grid of surface-thickness
+        This should be the same as snow-surface - (firn and ice thickness)
 
-    Returns
-    -------
-    xr.DataArray
-        Returns a loaded, and optional clip/resampled grid of Bedmachine.
+        Parameters
+        ----------
+        layer : str
+            choose which layer to fetch:
+            'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mapping', 'mask', 'source',
+            'surface', 'thickness'; 'icebase' will give results of surface-thickness
+        reference : str
+            choose whether heights are referenced to 'eigen-6c4' geoid or the 'ellipsoid'
+            (WGS84), by default is eigen-6c4'
+        plot : bool, optional
+            choose to plot grid, by default False
+        info : bool, optional
+            choose to print info on grid, by default False
+        region : str or np.ndarray, optional
+            GMT-format region to clip the loaded grid to, by default doesn't clip
+        spacing : str or int, optional
+            grid spacing to resample the loaded grid to, by default 10e3
+
+        Returns
+        -------
+        xr.DataArray
+            Returns a loaded, and optional clip/resampled grid of Bedmachine.
     """
 
     # found with utils.get_grid_info()
@@ -1295,13 +1560,13 @@ def bedmachine(
 
     # download url
     url = (
-        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.002/1970.01.01/"
-        "BedMachineAntarctica_2020-07-15_v02.nc"
+        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
+        "BedMachineAntarctica-v3.nc"
     )
 
     path = pooch.retrieve(
         url=url,
-        fname="bedmachine.nc",
+        fname="bedmachine_v3.nc",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
         downloader=EarthDataDownloader(),
         known_hash=None,
@@ -1316,15 +1581,16 @@ def bedmachine(
         grid = surface - thickness
 
     elif layer in [
-        "surface",
-        "thickness",
         "bed",
+        "dataid",
+        "errbed",
         "firn",
         "geoid",
         "mapping",
         "mask",
-        "errbed",
         "source",
+        "surface",
+        "thickness",
     ]:
         grid = xr.load_dataset(path)[layer]
 
@@ -1416,8 +1682,13 @@ def bedmap_points(
     """
 
     if version == "bedmap1":
+        url = (
+            "https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_"
+            "AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-"
+            "0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2"
+        )
         fname = pooch.retrieve(
-            url="https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-0ce230f46029%3AL0JFRE1BUDFfMTk2Ni0yMDAwX0FJUl9CTTEuY3N2",  # noqa
+            url=url,
             fname="BEDMAP1_1966-2000_AIR_BM1.csv",
             path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
             known_hash=None,
@@ -1451,7 +1722,6 @@ def bedmap_points(
 
     elif version == "bedmap2":
         print("fetch bedmap2 point data not implemented yet")
-
     elif version == "bedmap3":
         print("fetch bedmap3 point data not implemented yet")
     else:
@@ -1999,7 +2269,8 @@ def gravity(
     Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/
 
     version='eigen'
-    Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric height.
+    Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
+    (ellipsoidal) height.
     orignally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa
 
@@ -2131,7 +2402,7 @@ def gravity(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -2431,10 +2702,12 @@ def geoid(
     return resampled
 
 
-def ROSETTA_gravity(shapefile: bool = False):
+def ROSETTA_gravity(version="gravity"):
     """
-    Load either a shapefile of ROSETTA-ice flightliens, or a dataframe of ROSETTA-Ice
-    airborne gravity data over the Ross Ice Shelf.
+    Load either a shapefile of ROSETTA-ice flightlines, a dataframe of ROSETTA-Ice
+    airborne gravity data over the Ross Ice Shelf, or a dataframe of ROSETTA-Ice density
+    values from the denstiy inversion.
+
     from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
     imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
     https://doi.org/10.1038/s41561‐019‐0370‐2
@@ -2451,20 +2724,19 @@ def ROSETTA_gravity(shapefile: bool = False):
     Height (meters): Height above WGS84 ellipsoid
     x (meters): Polar stereographic projected coordinates true to scale at 71° S
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
-    FAG_levelled (mGal): Levelled free air gravity (centered on 0)
+    FAG_levelled (mGal): Levelled free air gravity
 
     Parameters
     ----------
-    shapefile : bool, optional
-        If true, instead return a shapefile of flight line locations
+    version : str, optional
 
     Returns
     -------
     pd.DataFrame
-        Returns a dataframe containing the gravity data
+        Returns a dataframe containing the gravity, density, or flightline data
     """
 
-    if shapefile is True:
+    if version == "shapefile":
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",  # noqa
             fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
@@ -2478,7 +2750,7 @@ def ROSETTA_gravity(shapefile: bool = False):
 
         # read the file into a geodataframe
         df = pyogrio.read_dataframe(fname)
-    else:
+    elif version == "gravity":
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",  # noqa
             fname="ROSETTA_2019_grav.csv",
@@ -2493,10 +2765,153 @@ def ROSETTA_gravity(shapefile: bool = False):
         df.Line = df.Line.str[1:]
         df["Line"] = pd.to_numeric(df["Line"])
 
-        # center grav data on 0
-        df["FAG_levelled"] -= df.FAG_levelled.mean()
+    elif version == "density":
+        path = pooch.retrieve(
+            url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/Density/rs_2019_density.csv",  # noqa
+            fname="rs_2019_density.csv",
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        df = pd.read_csv(path)
+
+        # convert line numbers into float format (L200 -> 200)
+        df.Line = df.Line.str[1:]
+        df["Line"] = pd.to_numeric(df["Line"])
 
     return df
+
+
+def ROSETTA_magnetics():
+    """
+    Load  a dataframe of ROSETTA-Ice airborne magnetics data over the Ross Ice Shelf
+
+    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441– 449.
+    https://doi.org/10.1038/s41561‐019‐0370‐2
+    Accessed from https://www.usap-dc.org/view/project/p0010035
+
+    Columns:
+    Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
+    Latitude (degrees): Latitude decimal degrees WGS84
+    Longitude (degrees): Longitude decimal degrees WGS84
+    unixtime (seconds): The number of seconds that have elapsed since midnight
+        (00:00:00 UTC) on January 1st, 1970
+    H_Ell (meters): Height above WGS84 ellipsoid
+    x (meters): Polar stereographic projected coordinates true to scale at 71° S
+    y (meters): Polar stereographic projected coordinates true to scale at 71° S
+    Mag_anomaly (nT): magnetic anomaly
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a dataframe containing the data
+    """
+    url = "http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Magnetics/rs_2019_mag.csv"
+    fname = "rs_2019_mag.csv"
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+        known_hash="6a87e59b86888a2cd669012c6ad49ea5e563d1a9759da574d5a9f9b5aa978b70",
+        progressbar=True,
+    )
+
+    df = pd.read_csv(path)
+
+    # convert line numbers into float format (L200 -> 200)
+    df.Line = df.Line.str[1:]
+    df["Line"] = pd.to_numeric(df["Line"])
+
+    # drop rows with height or mag data
+    df.dropna(subset=["H_Ell", "Mag_anomaly"], inplace=True)
+    return df
+
+
+# def ROSETTA_radar_data(version="basal_melt"):
+#     """
+#     Load ice thickness, basal melt rate, and basal melt rate errors from the
+#     ROSETTA-Ice radar data.
+
+#     from Das et al. (2020). Multi‐decadal basal melt rates and structure of the Ross
+#     Ice Shelf, Antarctica using airborne ice penetrating radar. Journal of Geophysical
+#     Research: Earth Surface, 125 (doi:10.1029/2019JF005241)
+
+#     Accessed from https://www.usap-dc.org/view/dataset/601242
+
+#     or from http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/
+
+#     CURRENTLY NOT WORKING DUE TO RECAPTCHA ON USAP-DC WEBSITE
+
+#     Parameters
+#     ----------
+#     version : str, optional
+
+#     Returns
+#     -------
+#     pd.DataFrame
+#         Returns a dataframe containing the data
+#     """
+
+#     if version == "total_thickness":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/DICE_Total_IceThickness_Das_JGR2020.txt"  # noqa
+#         fname = "DICE_Total_IceThickness_Das_JGR2020.txt"
+#         # known_hash="md5:615463dbf98d7a44ce1d36b0a66f49a3"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(path)
+
+#     elif version == "basal_melt":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/BasalMelt_Das_JGR2020.txt"  # noqa
+#         fname = "BasalMelt_Das_JGR2020.txt"
+#         # known_hash="md5:08c5ae638cb72cf81ac022d58f7df7a9"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(
+#             path,
+#             header=None,
+#             delim_whitespace=True,
+#             names=["lon", "lat", "melt"],
+#         )
+
+#         # re-project to polar stereographic
+#         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+#         df["easting"], df["northing"] = transformer.transform(
+#             df.lat.tolist(), df.lon.tolist()
+#         )
+
+#     elif version == "basal_melt_error":
+#         url = "https://www.usap-dc.org/dataset/usap-dc/601242/2020-01-10T17:37:09.5Z/ErrorAnalysis_BasalMelt_Das_JGR2020.txt"  # noqa
+#         fname = "ErrorAnalysis_BasalMelt_Das_JGR2020.txt"
+#         # known_hash="md5:23d99479dd6a3d1358b9f3b62c6738c0"
+#         known_hash = None
+
+#         path = pooch.retrieve(
+#             url=url,
+#             fname=fname,
+#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             known_hash=known_hash,
+#             progressbar=True,
+#         )
+#         df = pd.read_csv(path)
+
+#     return df
 
 
 def magnetics(
@@ -2509,16 +2924,20 @@ def magnetics(
 ) -> xr.DataArray:
     """
     Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
+    from  Golynsky et al. (2018). New magnetic anomaly map of the Antarctic. Geophysical
+     Research Letters, 45, 6437– 6449. https://doi.org/10.1029/2018GL078153
+
     version='admap1'
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
-    https://admap.kongju.ac.kr/databases.html
+    Accessed from https://admap.kongju.ac.kr/databases.html
 
     version='admap2'
-    ADMAP2 magnetic anomaly compilation of Antarctica. Non-geosoft specific files
-    provide from Sasha Golynsky.
+    ADMAP2 magnetic anomaly compilation of Antarctica.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892723?format=html#download
 
     version='admap2_gdb'
-    Geosoft-specific .gdb abridged files. Accessed from
+    Geosoft-specific .gdb abridged files.
+    Accessed from
     https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
     Parameters
@@ -2576,7 +2995,7 @@ def magnetics(
                 transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
                 df["x"], df["y"] = transformer.transform(
                     df.lat.tolist(), df.lon.tolist()
-                )  # noqa
+                )
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
@@ -2590,7 +3009,7 @@ def magnetics(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -2617,19 +3036,56 @@ def magnetics(
             registration,
         )
 
-    # elif version == "admap2":
-    #     path = "../data/ADMAP_2B_2017_R9_BAS_.tif"
-    #     grd = xr.load_dataarray(path)
-    #     grd = grd.squeeze()
-    #     grd = pygmt.grdfilter(
-    #         grid=grd,
-    #         filter=f"g{spacing}",
-    #         spacing=spacing,
-    #         region=region,
-    #         distance="0",
-    #         nans="r",
-    #         verbose="q",
-    #     )
+    elif version == "admap2":
+        initial_region = [-3423000.0, 3426000.0, -3424500.0, 3426000.0]
+        initial_spacing = 1500
+        initial_registration = "g"
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname, action, pooch2):
+            "convert geosoft grd to xarrya dataarray and save it back as a .nc"
+            fname = Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".nc")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # convert to dataarray
+                processed = hm.load_oasis_montaj_grid(fname)
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        url = "https://hs.pangaea.de/mag/airborne/Antarctica/grid/ADMAP_2B_2017.grd"
+        fname = "ADMAP_2B_2017.grd"
+        path = pooch.retrieve(
+            url=url,
+            fname=fname,
+            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+            known_hash="87db037e0b8c134ec4198f261d85c75c2bd5d144d8358ca37759cf8b87ae8c40",  # noqa
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+        )
 
     elif version == "admap2_gdb":
         plot = False
@@ -2878,7 +3334,15 @@ def ghf(
         )
 
         if kwargs.get("points", False) is True:
-            file = [p for p in path if p.endswith("V003.xlsx")][0]
+            url = "https://github.com/RicardaDziadek/Antarctic-GHF-DB/raw/master/ANT_GHF_DB_V004.xlsx"  # noqa
+            file = pooch.retrieve(
+                url=url,
+                fname="ANT_GHF_DB_V004.xlsx",
+                path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+                known_hash=None,
+                progressbar=True,
+            )
+
             info = False
             plot = False
             # read the excel file with pandas
@@ -2926,7 +3390,9 @@ def ghf(
             except shutil.SameFileError:
                 new_file = file
 
-            grid = xr.load_dataarray(new_file).squeeze()
+            grid = (
+                xr.load_dataarray(new_file).squeeze().drop_vars(["band", "spatial_ref"])
+            )
 
             resampled = resample_grid(
                 grid,
@@ -3100,7 +3566,7 @@ def ghf(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -3319,7 +3785,7 @@ def crustal_thickness(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -3535,7 +4001,7 @@ def moho(
                     spacing=initial_spacing,
                     region=initial_region,
                     registration=initial_registration,
-                    M="1c",
+                    maxradius="1c",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -3621,7 +4087,7 @@ def moho(
         #   region='-1560000/1400000/-2400000/560000',
         #   spacing=10e3,
         #   registration='g',
-        #   M='1c',
+        #   maxradius='1c',
         #   outgrid=fname,
         # )
 

@@ -45,8 +45,20 @@ def test_RMSE():
     data = np.array([1, 2, 3])
     # calculate the RMSE
     rmse = utils.RMSE(data)
-    # test that the RMSE is 0
-    assert rmse == 2.0
+    # test that the RMSE is correct
+    assert rmse == pytest.approx(2.160247, rel=0.0001)
+
+
+def test_RMSE_median():
+    """
+    test the RMedianSE function
+    """
+    # create some dummy data
+    data = np.array([1, 2, 3])
+    # calculate the RMedianSE
+    rmse = utils.RMSE(data, as_median=True)
+    # test that the RMSE is correct
+    assert rmse == 2
 
 
 def test_get_grid_info():

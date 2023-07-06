@@ -30,8 +30,9 @@ dependencies = [
     "pandas",
     "openpyxl",
     "pooch[progress]", # includes tqdm
-    "verde", #@ git+https://github.com/fatiando/verde.git@0a4478ad8bfaa5ca80753b09b37417cc1935624e", # remove this git version with next verde release
+    "verde>=1.8.0",
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
+    "harmonica>=0.6.0",
     "pyproj",
     "matplotlib",
     "pyogrio",

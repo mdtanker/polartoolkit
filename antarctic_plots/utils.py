@@ -33,9 +33,13 @@ else:
 
 
 # function to give RMSE of data
-def RMSE(data):
-    return np.sqrt(np.nanmedian(data**2).item())
-    # return np.sqrt(np.nanmean(data**2).item())
+def RMSE(data, as_median=False):
+    if as_median:
+        rmse = np.sqrt(np.nanmedian(data**2).item())
+    else:
+        rmse = np.sqrt(np.nanmean(data**2).item())
+
+    return rmse
 
 
 def get_grid_info(grid):
@@ -350,18 +354,20 @@ def points_inside_region(
     df1 = df.copy()
 
     # make column of booleans for whether row is within the region
-    df1["inside"] = vd.inside(coordinates=(df1[names[0]], df1[names[1]]), region=region)
+    df1["inside_tmp"] = vd.inside(
+        coordinates=(df1[names[0]], df1[names[1]]), region=region
+    )
 
     if reverse is True:
         # subset if False
-        df_result = df1.loc[df1.inside == False].copy()  # noqa 712
+        df_result = df1.loc[df1.inside_tmp == False].copy()  # noqa 712
 
     else:
         # subset if True
-        df_result = df1.loc[df1.inside == True].copy()  # noqa 712
+        df_result = df1.loc[df1.inside_tmp == True].copy()  # noqa 712
 
     # drop the column 'inside'
-    df_result.drop(columns="inside", inplace=True)
+    df_result.drop(columns="inside_tmp", inplace=True)
 
     return df_result
 
@@ -494,7 +500,12 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
-    return output.drop_vars("spatial_ref")
+    try:
+        output = output.drop_vars("spatial_ref")
+    except ValueError:
+        pass
+
+    return output
 
 
 def alter_region(
@@ -927,7 +938,7 @@ def grd_compare(
                     justify="BL",
                     text="a)",
                     font=kwargs.get("label_font", "18p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -951,7 +962,7 @@ def grd_compare(
                     justify="BL",
                     text="b)",
                     font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
             fig = maps.plot_grd(
@@ -972,7 +983,7 @@ def grd_compare(
                     justify="BL",
                     text="c)",
                     font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset="j0/.3",
+                    offset=kwargs.get("label_offset", "j0/.3"),
                     no_clip=True,
                 )
 
