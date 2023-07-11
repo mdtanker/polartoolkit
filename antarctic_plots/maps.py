@@ -590,17 +590,22 @@ def add_colorbar(
         grid = kwargs.get("grid", None)
 
         # clip grid to plot region
-        with pygmt.clib.Session() as lib:
-            region = list(lib.extract_region())
-            assert len(region) == 4
+        region = kwargs.get("region", None)
+        # if no region supplied, get region of current PyGMT figure
+        if region is None:
+            with pygmt.clib.Session() as lib:
+                region = list(lib.extract_region())
+                assert len(region) == 4
 
         # clip grid to plot region
         if region != utils.get_grid_info(grid)[1]:
             # grid = fetch.resample_grid(grid, region=region)
+            ew = [region[0], region[1]]
+            ns = [region[2], region[3]]
             grid_clipped = grid.sel(
                 {
-                    list(grid.sizes.keys())[1]: slice(region[0], region[1]),
-                    list(grid.sizes.keys())[0]: slice(region[2], region[3]),
+                    list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
+                    list(grid.sizes.keys())[0]: slice(max(ns), min(ns)),
                 }
             )
             # if subplotting, region will be in figure units and grid will be clipped
@@ -684,24 +689,27 @@ def add_colorbar(
         except pygmt.exceptions.GMTCLibError:
             pass
         # plot histograms above colorbar
-        fig.histogram(
-            data=data,
-            projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
-            region=hist_reg,
-            frame=kwargs.get("hist_frame", False),
-            cmap=kwargs.get("hist_cmap", True),
-            fill=kwargs.get("hist_fill", None),
-            pen=kwargs.get("hist_pen", "default"),
-            barwidth=kwargs.get("hist_barwidth", None),
-            center=kwargs.get("hist_center", False),
-            distribution=kwargs.get("hist_distribution", False),
-            cumulative=kwargs.get("hist_cumulative", False),
-            extreme=kwargs.get("hist_extreme", "b"),
-            stairs=kwargs.get("hist_stairs", False),
-            # horizontal=kwargs.get('hist_horizontal', False),
-            series=f"{zmin}/{zmax}/{bin_width}",
-            histtype=hist_type,
-        )
+        try:
+            fig.histogram(
+                data=data,
+                projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
+                region=hist_reg,
+                frame=kwargs.get("hist_frame", False),
+                cmap=kwargs.get("hist_cmap", True),
+                fill=kwargs.get("hist_fill", None),
+                pen=kwargs.get("hist_pen", "default"),
+                barwidth=kwargs.get("hist_barwidth", None),
+                center=kwargs.get("hist_center", False),
+                distribution=kwargs.get("hist_distribution", False),
+                cumulative=kwargs.get("hist_cumulative", False),
+                extreme=kwargs.get("hist_extreme", "b"),
+                stairs=kwargs.get("hist_stairs", False),
+                # horizontal=kwargs.get('hist_horizontal', False),
+                series=f"{zmin}/{zmax}/{bin_width}",
+                histtype=hist_type,
+            )
+        except pygmt.exceptions.GMTCLibError:
+            print("issue with plotting histogram, skipping...")
 
         # shift figure back
         try:
