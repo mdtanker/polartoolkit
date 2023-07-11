@@ -19,13 +19,18 @@
 * ROSETTA-Ice airborne magnetics for the Ross Ice Shelf from Tinto et al. 2019
 * BedMachine updated to v3
 
-#### New functions in `---`
+#### New functions in `regions`
+* `get_regions()``
+    * list all available regions
 
 ### 📖 Documentation
 
 ### ⛔ Maintenance
 * new URL for fetching ADMAP1 magnetic data
 * added Harmonica as a dependency for ADMAP-2 geosoft grid conversion
+* fix old binder links
+* added `north_arrow()` function call to `plot_grd()` with keyword `add_north_arrow`
+* fixed issues with clipping of grid for plotting colorbar histogram
 
 ### 🧑‍🤝‍🧑 Contributors
 [@mdtanker](https://github.com/mdtanker)
