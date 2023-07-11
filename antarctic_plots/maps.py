@@ -319,6 +319,7 @@ def plot_grd(
     inset = kwargs.get("inset", False)
     title = kwargs.get("title", None)
     scalebar = kwargs.get("scalebar", False)
+    north_arrow = kwargs.get("north_arrow", False)
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
     shp_mask = kwargs.get("shp_mask", None)
@@ -474,6 +475,15 @@ def plot_grd(
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("length_perc", 0.25),
             position=kwargs.get("position", "n.5/.05"),
+        )
+
+    # add north arrow
+    if north_arrow is True:
+        add_north_arrow(
+            fig,
+            region=region,
+            projection=proj_latlon,
+            **kwargs,
         )
 
     # display colorbar
