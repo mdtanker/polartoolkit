@@ -982,7 +982,7 @@ def add_north_arrow(
     """
     rose_size = kwargs.get("rose_size", "1c")
 
-    position = kwargs.get("position", "n.5/.05")
+    position = kwargs.get("position", "n.1/.05")
 
     # if no region supplied, get region of current PyGMT figure
     if region is None:
