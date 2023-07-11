@@ -12,7 +12,7 @@ Projection (EPSG:3031). The format is [East, West, North, South], in meters.
 import pandas as pd
 import verde as vd
 
-from antarctic_plots import maps, utils
+from antarctic_plots import maps, utils, regions
 
 try:
     import ipyleaflet
@@ -71,6 +71,28 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 # weddell_sea
 
 # ice catchements
+
+def get_regions():
+    exclude_list = [
+        "__",
+        "pd",
+        "vd",
+        "utils",
+        "regions",
+        "TYPE_CHECKING",
+        "Union",
+        "maps",
+        "ipyleaflet",
+        "ipywidgets",
+        "combine_regions",
+        "draw_region",
+        "get_regions",
+    ]
+
+    # regions_dict = [item for item in vars(regions) if (item not in exclude_list) & (not item.startswith("_"))]
+    regions_dict = {k: v for k, v in vars(regions).items() if (k not in exclude_list) & (not k.startswith("_"))}
+
+    return regions_dict
 
 
 def combine_regions(
