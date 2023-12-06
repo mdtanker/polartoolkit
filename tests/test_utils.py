@@ -9,6 +9,8 @@
 Tests for utils module.
 """
 # %%
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,7 +21,7 @@ from antarctic_plots import regions, utils
 
 def dummy_grid():
     (x, y, z) = vd.grid_coordinates(
-        region=[-100, 100, 200, 400],
+        region=(-100, 100, 200, 400),
         spacing=100,
         extra_coords=20,
     )
@@ -27,36 +29,34 @@ def dummy_grid():
     # create topographic features
     misfit = y**2
 
-    grid = vd.make_xarray_grid(
+    return vd.make_xarray_grid(
         (x, y),
         (misfit, z),
         data_names=("misfit", "upward"),
         dims=("northing", "easting"),
     )
 
-    return grid
 
-
-def test_RMSE():
+def test_rmse():
     """
     test the RMSE function
     """
     # create some dummy data
     data = np.array([1, 2, 3])
     # calculate the RMSE
-    rmse = utils.RMSE(data)
+    rmse = utils.rmse(data)
     # test that the RMSE is correct
     assert rmse == pytest.approx(2.160247, rel=0.0001)
 
 
-def test_RMSE_median():
+def test_rmse_median():
     """
     test the RMedianSE function
     """
     # create some dummy data
     data = np.array([1, 2, 3])
     # calculate the RMedianSE
-    rmse = utils.RMSE(data, as_median=True)
+    rmse = utils.rmse(data, as_median=True)
     # test that the RMSE is correct
     assert rmse == 2
 
@@ -69,7 +69,7 @@ def test_get_grid_info():
 
     info = utils.get_grid_info(grid.misfit)
 
-    assert info == (100.0, [-100.0, 100.0, 200.0, 400.0], 40000.0, 160000.0, "g")
+    assert info == (100.0, (-100.0, 100.0, 200.0, 400.0), 40000.0, 160000.0, "g")
 
 
 def test_dd2dms():
@@ -126,21 +126,21 @@ def test_region_xy_to_ll():
 
     reg_ll = utils.region_xy_to_ll(reg_xy, dms=True)
 
-    assert reg_ll == [
+    assert reg_ll == (
         "-154:24:41.35269126086496",
         "161:41:10.261402247124352",
         "-84:49:17.300473876937758",
         "-75:34:58.96941344602965",
-    ]
+    )
 
     reg_ll = utils.region_xy_to_ll(reg_xy)
 
-    assert reg_ll == [
+    assert reg_ll == (
         -154.41148685868356,
         161.6861837228464,
         -84.8214723538547,
         -75.58304705929056,
-    ]
+    )
 
 
 def test_region_to_bounding_box():
@@ -152,7 +152,7 @@ def test_region_to_bounding_box():
 
     box = utils.region_to_bounding_box(reg)
 
-    assert box == [-680000.0, -1420000.0, 470000.0, -310000.0]
+    assert box == (-680000.0, -1420000.0, 470000.0, -310000.0)
 
 
 def test_latlon_to_epsg3031():
@@ -247,7 +247,7 @@ def test_epsg3031_to_latlon_region():
 
     reg = utils.epsg3031_to_latlon(df_xy, reg=True)
 
-    assert reg == pytest.approx([-154.41, 161.69, -84.82, -75.58], abs=0.01)
+    assert reg == pytest.approx((-154.41, 161.69, -84.82, -75.58), abs=0.01)
 
 
 def test_points_inside_region():
