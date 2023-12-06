@@ -5,6 +5,7 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+from __future__ import annotations
 
 import warnings
 from math import floor, log10
