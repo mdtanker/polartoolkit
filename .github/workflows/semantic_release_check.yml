@@ -1,0 +1,60 @@
+name: semantic_release_check
+
+# define when this workflow is triggered
+on:
+  workflow_dispatch:
+  pull_request:
+
+# cancel pending or running jobs of only this workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # dry run of semantic release without changing anything
+  release:
+    name: Semantic Release Check
+    runs-on: ubuntu-latest
+    steps:
+      # checkout the repo and supply a PAT for the changelog update commit.
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      # use semantic-release in no operation mode
+      - id: semantic-release-check
+        uses: python-semantic-release/python-semantic-release@master
+        with:
+          root_options: --noop
+        # outputs: released, version, tag
+
+      # - id: comment
+      #   uses: actions/github-script@v7
+      #   # with:
+      #   #   script: return "Hello!"
+      #   #   result-encoding: string
+      #   run:
+      #     echo "${{steps.semantic-release.outputs.released}}" echo
+      #     "${{steps.semantic-release.outputs.version}}"
+
+      # output to comment in the PR
+      - name: comment if released
+        uses: wow-actions/auto-comment@v1
+        if: steps.semantic-release-check.outputs.released == 'true'
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pullRequestSynchronize: |
+            🔔 Thank you for raising your pull request.
+            📦 If merged, this PR will release version ${{steps.semantic-release-check.outputs.version}}.
+
+      # output to comment in the PR
+      - name: comment if not released
+        uses: wow-actions/auto-comment@v1
+        if: steps.semantic-release-check.outputs.released == 'false'
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pullRequestSynchronize: |
+            🔔 Thank you for raising your pull request.
+            Version ${{steps.semantic-release-check.outputs.version}} is already released. No increase in version will be made when this PR is merged.

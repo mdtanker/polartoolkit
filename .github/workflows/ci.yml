@@ -1,0 +1,99 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI
+
+# define when this workflow is triggered
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# cancel any currently running workflows in this same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Use bash by default in all jobs
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  # run pre-commit which includes many formatting and linting tools
+  pre-commit:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --hook-stage manual --all-files
+      - name: Run PyLint
+        run: |
+          echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
+          pipx run nox -s pylint
+
+  # Run tests and upload to codecov
+  test:
+    name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.runs-on }}
+    needs: [pre-commit]
+    strategy:
+      # Otherwise, the workflow would stop if a single job fails. We want to
+      # run all of them to catch failures in different combinations.
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10", "3.11"]
+        runs-on: [ubuntu-latest, macos-latest, windows-latest]
+
+    env:
+      FORCE_COLOR: 3
+      NUMBA_DISABLE_JIT: "1"
+
+    steps:
+      # Checkout current git repository
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+
+      # Install Mambaforge with conda-forge dependencies
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: antarctic_plots
+          environment-file: env/test_env.yml
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,nodefaults
+          channel-priority: strict
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          mamba-version: "*"
+          use-mamba: true
+          auto-activate-base: false
+
+      # Show installed pkg information for postmortem diagnostic
+      - name: List installed packages
+        run: mamba list
+
+      # Install the package in editable mode
+      - name: Install local package
+        run: pip install -e .
+
+      - name: Run the tests
+        run: >-
+          pytest -ra --cov --cov-report=xml --cov-report=term --durations=20
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3.1.4
