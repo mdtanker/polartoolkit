@@ -1,4 +1,4 @@
-# Gallery
+# 
 
 ## Maps
 [Basic map](basic_map.ipynb)                            | [Use with PyGMT](extend_pygmt.ipynb)
