@@ -19,13 +19,13 @@ from __future__ import annotations
 
 import os
 
+import deepdiff
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
 from dotenv import load_dotenv
 from geopandas.testing import assert_geodataframe_equal
-import deepdiff
 
 from antarctic_plots import fetch, regions, utils
 
