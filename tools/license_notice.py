@@ -9,8 +9,6 @@
 Add license notice to every source file if not present
 # adapted from the Fatiando a Terra project (https://www.fatiando.org)
 """
-from __future__ import annotations
-
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -61,11 +59,11 @@ def main():
     )
     args = parser.parse_args()
 
-    gitignore = get_gitignore(Path("."))
+    gitignore = get_gitignore(Path())
 
     python_files = [
         path
-        for path in Path(".").glob("**/*.py")
+        for path in Path().glob("**/*.py")
         if not str(path).startswith(".")
         if not gitignore.match_file(path)
     ]
