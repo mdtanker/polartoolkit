@@ -1,0 +1,34 @@
+name: push
+
+# define when this workflow is triggered
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  # determine appropriate version number, update changelog, and create a release commit
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    concurrency: release
+    permissions:
+      id-token: write
+      contents: write
+    environment:
+      name: testpypi
+      url: https://pypi.org/p/antarctic-plots
+    steps:
+      # checkout the repo and supply a PAT for the changelog update commit.
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{secrets.PAT}}
+
+      # use semantic-release
+      - id: semantic-release
+        uses: python-semantic-release/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.PAT }}
