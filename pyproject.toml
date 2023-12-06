@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools_scm>=6.2"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,6 +28,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 readme = "README.md"
+version = "0.0.6"
 license = {file = "LICENSE"}
 
 keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
@@ -94,25 +95,13 @@ homepage = "https://antarctic-plots.readthedocs.io/en/latest/index.html"
 repository = "https://github.com/mdtanker/antarctic_plots"
 documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
 
-[tool.setuptools]
-packages = ["antarctic_plots"]
-
-[tool.setuptools.dynamic]
-version = {attr = "antarctic_plots.__version__"}
-
-#[tool.setuptools_scm]
-#write_to = "antarctic_plots/_version.py"
-#version_scheme= "post-release"
-
-[tool.flake8]
-max-line-length = 88
-
-[tool.coverage.run]
-branch = true
-omit = [
-    "*/tests/*",
-    "**/__init__.py"
-    ]
+[tool.coverage]
+run.source = ["antarctic_plots"]
+port.exclude_lines = [
+  'pragma: no cover',
+  '\.\.\.',
+  'if typing.TYPE_CHECKING:',
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -228,3 +217,46 @@ messages_control.disable = [
   "missing-module-docstring",
   "wrong-import-position",
 ]
+
+
+[tool.semantic_release]
+version_variables = ["src/antarctic_plots/__init__.py:__version__"]
+version_toml = ["pyproject.toml:project.version"]
+major_on_zero = false
+build_command = """
+    python -m pip install build
+    python -m build .
+"""
+commit_parser = "angular"
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.branches.notmain]
+match = "(?!main)"
+prerelease = true
+
+[tool.semantic_release.changelog]
+template_dir = "templates"
+
+[tool.semantic_release.changelog.environment]
+trim_blocks = true
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = [
+    "build",    # Changes that affect the build system or external dependencies
+    "chore",    # Changes to the build process or auxiliary tools and libraries such as documentation generation
+    "ci",       # CI related changes
+    "docs",     # Documentation only changes
+    "feat",     # A new feature
+    "fix",      # A bug fix
+    "perf",     # A code change that improves performance
+    "style",    # Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+    "refactor", # A code change that neither fixes a bug nor adds a feature
+    "test",     # Adding missing or correcting existing tests
+]
+# including BREAKING CHANGE: in the commit message will trigger a major release
+minor_tags = ["feat"] # tags which result in minor releases
+patch_tags = ["fix", "perf"] # tags which result in patch releases
+
