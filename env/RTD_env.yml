@@ -1,0 +1,19 @@
+# Requirements for building the documentation
+name: antarctic_plots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9
+  - pip
+  # docs
+  - sphinx>=4.0
+  - myst-parser
+  - sphinx-copybutton
+  - sphinx-autodoc-typehints
+  - sphinx-book-theme>=0.3
+  - sphinx-design
+  - nbsphinx
+  - nbconvert
+  - pip:
+      - ../.
