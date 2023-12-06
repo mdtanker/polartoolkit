@@ -6,7 +6,6 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import TYPE_CHECKING, Callable, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -14,35 +13,22 @@ import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
-import rioxarray  # noqa
 import verde as vd
 import xarray as xr
 from pyproj import Transformer
 
 from antarctic_plots import fetch, maps
 
-if TYPE_CHECKING:
     import geopandas as gpd
 
 try:
     import seaborn as sns
 except ImportError:
-    _has_seaborn = False
-else:
-    _has_seaborn = True
-
-
-# function to give RMSE of data
-def RMSE(data, as_median=False):
     if as_median:
-        rmse = np.sqrt(np.nanmedian(data**2).item())
     else:
-        rmse = np.sqrt(np.nanmean(data**2).item())
-
-    return rmse
 
 
-def get_grid_info(grid):
+
     """
     Returns information of the specified grid.
 
@@ -53,7 +39,6 @@ def get_grid_info(grid):
 
     Returns
     -------
-    list
         (string of grid spacing,
         array with the region boundaries,
         data min,
@@ -71,41 +56,27 @@ def get_grid_info(grid):
     # pass
     # grid = xr.open_rasterio(grid)
     # grid = rioxarray.open_rasterio(grid)
-    if isinstance(grid, xr.DataArray):
-        if int(len(grid.dims)) > 2:
-            grid = grid.squeeze()
 
     try:
         spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
-    except Exception:  # pygmt.exceptions.GMTInvalidInput:
-        print("grid spacing can't be extracted")
         spacing = None
 
     try:
-        region = [
             float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
-        ]
-    except Exception:  # pygmt.exceptions.GMTInvalidInput:
-        print("grid region can't be extracted")
         region = None
 
     try:
         zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
-    except Exception:  # pygmt.exceptions.GMTInvalidInput:
-        print("grid zmin can't be extracted")
         zmin = None
 
     try:
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
-    except Exception:  # pygmt.exceptions.GMTInvalidInput:
-        print("grid zmax can't be extracted")
         zmax = None
 
     try:
         reg = grid.gmt.registration
         registration = "g" if reg == 0 else "p"
     except AttributeError:
-        print(
             "grid registration not extracted, re-trying with file loaded as xarray grid"
         )
         grid = xr.load_dataarray(grid)
@@ -113,10 +84,7 @@ def get_grid_info(grid):
             reg = grid.gmt.registration
             registration = "g" if reg == 0 else "p"
         except AttributeError:
-            print("grid registration can't be extracted, setting to 'g'.")
             registration = "g"
-    except Exception:
-        print("grid registration can't be extracted")
         registration = None
 
     return spacing, region, zmin, zmax, registration
@@ -145,73 +113,36 @@ def dd2dms(dd: float):
     return f"{int(degrees)}:{int(minutes)}:{seconds}"
 
 
-def region_to_df(input, names=["x", "y"], reverse=False):
     """
-    Convert region bounds  in [e, w, n, s] (GMT format) to pandas dataframe with
-    coordinates of region corners
 
     Parameters
     ----------
-    input : np.ndarray or pd.DataFrame
-        Array of 4 strings in GMT format; [e, w, n, s], or, if `reverse` is True, a
-        DataFrame with easting and northing columns with names set by `names`
-    names : list, optional
-        List of names to use for easting and northing, by default ["x", "y"]
-    reverse : bool, False
-        If True, convert from df to region string.
     Returns
     -------
-    pd.DataFrame or np.ndarray
         Dataframe with easting and northing columns, and a row for each corner of the
-        region, or, if `reverse` is True, a array in the format [e,w,n,s].
     """
     if reverse is False:
-        bl = (input[0], input[2])
-        br = (input[1], input[2])
-        tl = (input[0], input[3])
-        tr = (input[1], input[3])
-        df = pd.DataFrame(data=[bl, br, tl, tr], columns=(names[0], names[1]))
 
     elif reverse is True:
-        df = [
-            input[names[0]][0],
-            input[names[0]][1],
-            input[names[1]][0],
-            input[names[1]][2],
-        ]
 
     return df
 
 
-def region_xy_to_ll(input, dms=False):
     """
-    Convert GMT region string [e, w, n, s] in EPSG:3031 to lat / lon
 
     Parameters
     ----------
-    input : np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s] in meters
     dms: bool, False
         if True, will return results as deg:min:sec iinstead of decimal degrees
 
     Returns
     -------
-    np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s] in lat, lon
     """
-    df = region_to_df(input)
     df_proj = epsg3031_to_latlon(df, reg=True)
 
-    if dms is True:
-        output = [dd2dms(x) for x in df_proj]
-    else:
-        output = df_proj
-    return output
 
 
-def region_to_bounding_box(input):
     """
-    Convert GMT region string [e, w, n, s] to bounding box format used for icepyx:
     [ lower left longitude,
       lower left latitude,
       upper right longitude,
@@ -222,50 +153,32 @@ def region_to_bounding_box(input):
 
     Parameters
     ----------
-    input : np.ndarray
-        Array of 4 strings in GMT format; [e, w, n, s] in meters or degrees.
 
     Returns
     -------
-    list
-        Array of 4 strings in bounding box format.
     """
-    return [input[0], input[2], input[1], input[3]]
 
 
 def latlon_to_epsg3031(
-    df,
     reg: bool = False,
-    input=["lon", "lat"],
-    output=["x", "y"],
-):
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
     Polar Stereographic in meters.
 
     Parameters
     ----------
-    df : pd.DataFrame
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input : list, optional
-        set names for input columns, by default ["lon", "lat"]
-    output : list, optional
-        set names for output columns, by default ["x", "y"]
 
     Returns
     -------
-    pd.DataFrame or np.ndarray
-        Updated dataframe with new easting and northing columns or np.ndarray in format
         [e, w, n, s]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
 
     if isinstance(df, pd.DataFrame):
         df_new = df.copy()
-        df_new[output[0]], df_new[output[1]] = transformer.transform(
-            df_new[input[1]].tolist(), df_new[input[0]].tolist()
         )
     else:
         ll = df.copy()
@@ -273,35 +186,23 @@ def latlon_to_epsg3031(
 
     if reg is True:
         df_new = [
-            df_new[output[0]].min(),
-            df_new[output[0]].max(),
-            df_new[output[1]].min(),
-            df_new[output[1]].max(),
         ]
 
     return df_new
 
 
-def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "lat"]):
     """
     Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
     EPSG:4326 WGS84 in decimal degrees.
 
     Parameters
     ----------
-    df : pd.DataFrame or list
         input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input : list, optional
-        set names for input columns, by default ["x", "y"]
-    output : list, optional
-        set names for output columns, by default ["lon", "lat"]
 
     Returns
     -------
-    pd.DataFrame or np.ndarray
-        Updated dataframe with new latitude and longitude columns, np.ndarray in
         format [e, w, n, s], or list in format [lat, lon]
     """
 
@@ -310,15 +211,9 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
     df_out = df.copy()
 
     if isinstance(df, pd.DataFrame):
-        df_out[output[1]], df_out[output[0]] = transformer.transform(
-            df_out[input[0]].tolist(), df_out[input[1]].tolist()
         )
         if reg is True:
             df_out = [
-                df_out[output[0]].min(),
-                df_out[output[0]].max(),
-                df_out[output[1]].min(),
-                df_out[output[1]].max(),
             ]
     else:
         df_out = list(transformer.transform(df_out[0], df_out[1]))
@@ -328,7 +223,6 @@ def epsg3031_to_latlon(df, reg: bool = False, input=["x", "y"], output=["lon", "
 def points_inside_region(
     df: pd.DataFrame,
     region: list,
-    names: list = ["x", "y"],
     reverse: bool = False,
 ):
     """
@@ -360,25 +254,15 @@ def points_inside_region(
 
     if reverse is True:
         # subset if False
-        df_result = df1.loc[df1.inside_tmp == False].copy()  # noqa 712
 
     else:
         # subset if True
-        df_result = df1.loc[df1.inside_tmp == True].copy()  # noqa 712
 
     # drop the column 'inside'
-    df_result.drop(columns="inside_tmp", inplace=True)
-
-    return df_result
 
 
 def block_reduce(
     df: pd.DataFrame,
-    reduction: Callable,
-    input_coord_names: list = ["x", "y"],
-    input_data_names: list = None,
-    **kwargs,
-):
     # define verde reducer function
     reducer = vd.BlockReduce(reduction, **kwargs)
 
@@ -387,8 +271,6 @@ def block_reduce(
         input_data_names = list(df.columns.drop(input_coord_names))
 
     # get tuples of pd.Series
-    input_coords = tuple([df[col] for col in input_coord_names])
-    input_data = tuple([df[col] for col in input_data_names])
 
     # apply reduction
     coordinates, data = reducer.filter(
@@ -397,31 +279,20 @@ def block_reduce(
     )
 
     # add reduced coordinates to a dictionary
-    coord_cols = {k: v for k, v in zip(input_coord_names, coordinates)}
 
     # add reduced data to a dictionary
     if len(input_data_names) < 2:
         data_cols = {input_data_names[0]: data}
     else:
-        data_cols = {k: v for k, v in zip(input_data_names, data)}
 
     # merge dicts and create dataframe
-    df_reduced = pd.DataFrame(data=coord_cols | data_cols)
-
-    return df_reduced
 
 
 def mask_from_shp(
-    shapefile: Union[str or gpd.geodataframe.GeoDataFrame],
     invert: bool = True,
     xr_grid=None,
-    grid_file: str = None,
-    region=None,
-    spacing=None,
     masked: bool = False,
     crs: str = "epsg:3031",
-    pixel_register=True,
-    input_coord_names=("x", "y"),
 ):
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -439,8 +310,6 @@ def mask_from_shp(
         _xarray.DataArray; to use to define region, or to mask, by default None
     grid_file : str, optional
         path to a .nc or .tif file to use to define region or to mask, by default None
-    region : str or np.ndarray, optional
-        GMT region string or 1x4 ndarray in meters to create a dummy grid if none are
         supplied, by default None
     spacing : str or int, optional
         grid spacing in meters to create a dummy grid if none are supplied, by default
@@ -458,10 +327,6 @@ def mask_from_shp(
         Returns either a masked grid, or the mask grid itself.
     """
 
-    if isinstance(shapefile, str):
-        shp = pyogrio.read_dataframe(shapefile)
-    else:
-        shp = shapefile
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
@@ -470,7 +335,6 @@ def mask_from_shp(
             pixel_register=pixel_register,
         )
         ds = vd.make_xarray_grid(
-            coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
@@ -500,29 +364,19 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
-    try:
-        output = output.drop_vars("spatial_ref")
-    except ValueError:
-        pass
-
-    return output
 
 
 def alter_region(
-    starting_region: np.ndarray,
     zoom: float = 0,
     n_shift: float = 0,
     w_shift: float = 0,
     buffer: float = 0,
     print_reg: bool = False,
-):
     """
-    Change a region string by shifting the box east/west or north/south, zooming in or
     out, or adding a seperate buffer region.
 
     Parameters
     ----------
-    starting_region : np.ndarray
         Initial GMT formatted region in meters, [e,w,n,s]
     zoom : float, optional
         zoom in or out, in meters, by default 0
@@ -537,19 +391,10 @@ def alter_region(
 
     Returns
     -------
-    list
-        Returns of list of the following variables: region, buffer_region
     """
-    E, W = starting_region[0], starting_region[1]
-    N, S = starting_region[2], starting_region[3]
 
-    e = E + zoom + w_shift
-    w = W - zoom + w_shift
 
-    n = N + zoom - n_shift
-    s = S - zoom - n_shift
 
-    region = [e, w, n, s]
 
     e_buff, w_buff, n_buff, s_buff = (
         int(e - buffer),
@@ -558,17 +403,13 @@ def alter_region(
         int(s + buffer),
     )
 
-    buffer_region = [e_buff, w_buff, n_buff, s_buff]
 
     if print_reg is True:
-        print(f"inner region is {int((w-e)/1e3)} x {int((s-n)/1e3)} km")
     return region, buffer_region
 
 
 def set_proj(
-    region: Union[str or np.ndarray],
     fig_height: float = 15,
-    fig_width: float = None,
 ) -> str:
     """
     Gives GMT format projection string from region and figure height or width.
@@ -576,8 +417,6 @@ def set_proj(
 
     Parameters
     ----------
-    region : Union[str or np.ndarray]
-        GMT-format region str or list (e, w, n, s) in meters EPSG:3031
     fig_height : float
         desired figure height in cm
     fig_width : float
@@ -607,7 +446,6 @@ def set_proj(
 
 def grd_trend(
     da: xr.DataArray,
-    coords: list = ["x", "y", "z"],
     deg: int = 1,
     plot: bool = False,
     plot_type="pygmt",
@@ -636,8 +474,6 @@ def grd_trend(
     """
 
     # convert grid to a dataframe
-    df = vd.grid_to_table(da).astype("float64")
-    df.dropna(inplace=True)
 
     # define a trend
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
@@ -753,8 +589,6 @@ def grd_trend(
 
 
 def grd_compare(
-    da1: Union[xr.DataArray, str],
-    da2: Union[xr.DataArray, str],
     plot: bool = False,
     plot_type: str = "pygmt",
     robust: bool = False,
@@ -781,7 +615,6 @@ def grd_compare(
         shapefile filename to use to mask the grids for setting the color range.
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
-    region : Union[str, np.ndarray]
         choose a specific region to compare.
     rmse_in_title: bool
         add the RMSE to the title, by default is True.
@@ -828,9 +661,6 @@ def grd_compare(
         # get minimum grid spacing of both grids
         if da1_spacing != da2_spacing:
             spacing = min(da1_spacing, da2_spacing)
-            print(
-                "grid spacings don't match, using smaller spacing",
-                f"({spacing}m).",
             )
         else:
             spacing = da1_spacing
@@ -840,8 +670,6 @@ def grd_compare(
             w = min(da1_reg[1], da2_reg[1])
             n = max(da1_reg[2], da2_reg[2])
             s = min(da1_reg[3], da2_reg[3])
-            region = [e, w, n, s]
-            print(f"grid regions dont match, using inner region {region}")
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
@@ -886,7 +714,6 @@ def grd_compare(
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
-            title += f", RMSE: {round(RMSE(dif),kwargs.get('RMSE_decimals', 2))}"
 
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 10)
@@ -896,9 +723,6 @@ def grd_compare(
             subplot_labels = kwargs.get("subplot_labels", False)
 
             new_kwargs = {
-                kw: kwargs[kw]
-                for kw in kwargs
-                if kw
                 not in [
                     "cmap",
                     "region",
@@ -910,17 +734,12 @@ def grd_compare(
                     "inset_pos",
                 ]
             }
-
             diff_kwargs = {
-                kw: new_kwargs[kw]
-                for kw in new_kwargs
-                if kw
                 not in [
                     "reverse_cpt",
                     "cbar_label",
                 ]
             }
-
             fig = maps.plot_grd(
                 grid1,
                 cmap=cmap,
@@ -1074,7 +893,6 @@ def grd_compare(
 
 
 def make_grid(
-    region: Union[str, np.ndarray],
     spacing: float,
     value: float,
     name: str,
@@ -1084,8 +902,6 @@ def make_grid(
 
     Parameters
     ----------
-    region : Union[str, np.ndarray]
-        GMT format region for the inverion, by default is extent of gravity data,
     spacing : float
         spacing for grid
     value : float
@@ -1100,15 +916,10 @@ def make_grid(
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) * value
-    grid = vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
-    return grid
 
 
 def raps(
-    data: Union[pd.DataFrame, xr.DataArray, xr.Dataset],
-    names: np.ndarray,
     plot_type: str = "mpl",
-    filter: str = None,
     **kwargs,
 ):
     """
@@ -1116,34 +927,25 @@ def raps(
 
     Parameters
     ----------
-    data : Union[pd.DataFrame, str, list, xr.Dataset, xr.Dataarray]
         if dataframe: need with columns 'x', 'y', and other columns to calc RAPS for.
         if str: should be a .nc or .tif file.
         if list: list of grids or filenames.
-    names : np.ndarray
-        names of pd.dataframe columns, xr.dataset variables, xr.dataarray variable, or
         files to calculate and plot RAPS for.
     plot_type : str, optional
         choose whether to plot with PyGMT or matplotlib, by default 'mpl'
-    filter : str
         GMT string to use for pre-filtering data, ex. "c100e3+h" is a 100km low-pass
         cosine filter, by default is None.
     Keyword Args
     ------------
-    region : Union[str, np.ndarray]
         grid region if input is not a grid
     spacing : float
         grid spacing if input is not a grid
     """
-    if not _has_seaborn:
-        raise ImportError("seaborn is required for this function.")
 
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
     if plot_type == "pygmt":
-        import random
-
         spec = pygmt.Figure()
         spec.basemap(
             region="10/1000/.001/10000",
@@ -1181,11 +983,9 @@ def raps(
             data.to_netcdf("tmp_outputs/fft.nc")
             pygmt.grdfill("tmp_outputs/fft.nc", mode="n", outgrid="tmp_outputs/fft.nc")
             grid = "tmp_outputs/fft.nc"
-        if filter is not None:
             with pygmt.clib.Session() as session:
                 fin = grid
                 fout = "tmp_outputs/fft.nc"
-                args = f"{fin} -F{filter} -D0 -G{fout}"
                 session.call_module("grdfilter", args)
             grid = "tmp_outputs/fft.nc"
         with pygmt.clib.Session() as session:
@@ -1194,19 +994,14 @@ def raps(
             args = f"{fin} -Er+wk -Na+d -G{fout}"
             session.call_module("grdfft", args)
         if plot_type == "mpl":
-            raps = pd.read_csv(
                 "tmp_outputs/raps.txt",
                 header=None,
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
-            ax = sns.lineplot(x=raps.wavelength, y=raps.power, label=j)
-            ax = sns.scatterplot(x=raps.wavelength, y=raps.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
-            pass
         elif plot_type == "pygmt":
-            color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"  # noqa
             spec.plot("tmp_outputs/raps.txt", pen=f"1p,{color}")
             spec.plot(
                 "tmp_outputs/raps.txt",
@@ -1241,14 +1036,9 @@ def coherency(grids: list, label: str, **kwargs):
         used to label line.
     Keyword Args
     ------------
-    region : Union[str, np.ndarray]
         grid region if input is pd.DataFrame
     spacing : float
         grid spacing if input is pd.DataFrame
-    """
-
-    if not _has_seaborn:
-        raise ImportError("seaborn is required for this function.")
 
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
@@ -1314,46 +1104,9 @@ def coherency(grids: list, label: str, **kwargs):
     ax.set_xscale("log")
     ax.set_xlim(2000, 10)
     return ax
-    """
-    Examples:
-    utils.coherency(
-    grids = [
-        iter_corrections[['x','y','iter_1_initial_top']],
-        df_inversion[['x','y','Gobs']]],
-        spacing=grav_spacing,
-        region=inv_reg,
-        label='0'
-        )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_1_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='1'
-            )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_2_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='2'
-            )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_3_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='3'
-            )
-    """
 
 
 def square_subplots(n: int):
-    """
-    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py # noqa
     Calculate the number of rows and columns based on the total number of items (n) to
     make an arrangement as close to square as looks good.
 
@@ -1365,11 +1118,7 @@ def square_subplots(n: int):
     Returns
     -------
     tuple
-        Returns a tuple in the format (number of rows, number of columns), so for example a 3 x 2
-        grid would be represented as ``(3, 3)``, because there are 2 rows
-        of length 3.
     """
-    SPECIAL_CASES = {
         1: (1, 1),
         2: (1, 2),
         3: (2, 2),
@@ -1380,8 +1129,6 @@ def square_subplots(n: int):
         8: (3, 3),
         9: (3, 3),
     }
-    if n in SPECIAL_CASES:
-        return SPECIAL_CASES[n]
 
     # May not work for very large n
     n_sqrtf = np.sqrt(n)
@@ -1425,16 +1172,13 @@ def random_color():
     str
         returns a random color string
     """
-    color = (
         f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
         f"/{int(np.random.random() * 256)}"
     )
-    return color
 
 
 def get_min_max(
     grid: xr.DataArray,
-    shapefile: Union[str or gpd.geodataframe.GeoDataFrame] = None,
     robust: bool = False,
 ):
     """
@@ -1493,9 +1237,7 @@ def shapes_to_df(shapes: list):
         shape = pd.DataFrame({"lon": lon, "lat": lat, "shape_num": i})
         df = pd.concat((df, shape))
 
-    df_xy = latlon_to_epsg3031(df)
 
-    return df_xy
 
 
 def polygon_to_region(polygon: list):
@@ -1516,21 +1258,14 @@ def polygon_to_region(polygon: list):
     df = shapes_to_df(polygon)
 
     if df.shape_num.max() > 0:
-        print("supplied dataframe has multiple polygons, only using the first one.")
         df = df[df.shape_num == 0]
 
-    region = vd.get_region((df.x, df.y))
-
-    return region
 
 
 def mask_from_polygon(
     polygon: list,
     invert: bool = False,
     drop_nans: bool = False,
-    grid: Union[str, xr.DataArray] = None,
-    region: list = None,
-    spacing: int = None,
     **kwargs,
 ):
     """
@@ -1553,7 +1288,6 @@ def mask_from_polygon(
 
     Returns
     -------
-    xr.Dataarray
         masked grid or mask grid with 1's inside the mask.
     """
 
@@ -1563,7 +1297,6 @@ def mask_from_polygon(
 
     # remove additional polygons
     if df.shape_num.max() > 0:
-        print("supplied dataframe has multiple polygons, only using the first one.")
         df = df[df.shape_num == 0]
 
     # if grid given as filename, load it
@@ -1614,9 +1347,7 @@ def change_reg(grid):
     Returns
     -------
     xr.DataArray
-        returns a dataarray with switch reg type.
     """
-    with pygmt.clib.Session() as ses:
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_grid(grid) as f_in:
             # send the output to a file so that we can read it
@@ -1630,7 +1361,6 @@ def change_reg(grid):
 def grd_blend(
     grid1: xr.DataArray,
     grid2: xr.DataArray,
-    **kwargs,
 ):
     """
     Use GMT grdblend to blend 2 grids into 1.
@@ -1646,9 +1376,7 @@ def grd_blend(
     Returns
     -------
     xr.DataArray
-        returns a blended dataarray.
     """
-    with pygmt.clib.Session() as session:
         with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
             # store the input grids in a virtual files so GMT can read it from
             # dataarrays
@@ -1662,41 +1390,27 @@ def grd_blend(
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
 
 
-def get_fig_width(figure):
-    with pygmt.clib.Session() as session:
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
             map_width = tmpfile.read().strip()
     return float(map_width)
 
 
-def get_fig_height(figure):
-    with pygmt.clib.Session() as session:
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
             map_height = tmpfile.read().strip()
     return float(map_height)
 
 
-def GMT_str_to_list(region: list):
     return "".join([str(x) + "/" for x in region])[:-1]
 
 
 def grd_mask(
-    df,
-    spacing,
-    region,
-    clobber="o",
-    values="0/0/1",
-    radius="0c",
-):
-    with pygmt.clib.Session() as ses:
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
             # send the output to a file so that we can read it
             with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
                 args = (
-                    f"{f_in} -I{spacing} -R{str(GMT_str_to_list(region))}",
                     f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
                 )
                 ses.call_module("grdmask", args)
