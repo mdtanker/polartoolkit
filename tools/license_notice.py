@@ -9,6 +9,7 @@
 Add license notice to every source file if not present
 # adapted from the Fatiando a Terra project (https://www.fatiando.org)
 """
+from __future__ import annotations
 
 import sys
 from argparse import ArgumentParser
