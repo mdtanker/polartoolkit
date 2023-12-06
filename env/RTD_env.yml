@@ -6,6 +6,27 @@ channels:
 dependencies:
   - python=3.9
   - pip
+  # Run-time
+  - pandas
+  - openpyxl
+  - pooch
+  - tqdm
+  - verde
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - harmonica>=0.6.0
+  - pyproj
+  - matplotlib
+  - pyogrio
+  - rioxarray
+  - scipy
+  - numpy
+  - pygmt
+  - geopandas
+  - zarr
+  - python-dotenv
+  - nptyping
   # docs
   - sphinx>=4.0
   - myst-parser
