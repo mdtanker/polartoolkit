@@ -158,3 +158,58 @@ ignore_missing_imports = true
 module = "antarctic_plots.*"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+
+
+[tool.ruff]
+lint.select = [
+  "E", "F", "W", # flake8
+  "B",           # flake8-bugbear
+  "I",           # isort
+  "ARG",         # flake8-unused-arguments
+  "C4",          # flake8-comprehensions
+  "EM",          # flake8-errmsg
+  "ICN",         # flake8-import-conventions
+  "ISC",         # flake8-implicit-str-concat
+  "G",           # flake8-logging-format
+  "PGH",         # pygrep-hooks
+  "PIE",         # flake8-pie
+  "PL",          # pylint
+  "PT",          # flake8-pytest-style
+  "PTH",         # flake8-use-pathlib
+  "RET",         # flake8-return
+  "RUF",         # Ruff-specific
+  "SIM",         # flake8-simplify
+  "T20",         # flake8-print
+  "UP",          # pyupgrade
+  "YTT",         # flake8-2020
+  "EXE",         # flake8-executable
+  "NPY",         # NumPy specific rules
+  "PD",          # pandas-vet
+]
+lint.extend-ignore = [
+  "PLR",    # Design related pylint codes
+  "G004",   # Logging with f-strings
+  "PD901",  # Bad variable name warning
+  "PD003", # Changes .isna to .isnull
+  "PD004", # Changes .notna to .notnull
+  "PD011", # Changes .values() to .to_numpy()
+]
+src = ["src"]
+lint.unfixable = [
+  "T20",  # Removes print statements
+  "F841", # Removes unused variables
+  "PD003", # Changes .isna to .isnull
+  "PD004", # Changes .notna to .notnull
+  "PD011", # Changes .values() to .to_numpy()
+]
+exclude = ["docs/index.md", "CHANGELOG.md", "tools/license_notice.py"]
+line-length = 88 # Set the maximum line length to 88.
+lint.flake8-unused-arguments.ignore-variadic-names = true
+lint.isort.required-imports = ["from __future__ import annotations"]
+# Uncomment if using a _compat.typing backport
+# typing-modules = ["antarctic_plots._compat.typing"]
+extend-include = ["*.ipynb"]
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
+"noxfile.py" = ["T20"]
+"*.ipynb" = ["E402", "B018", "T201", "F821"]
