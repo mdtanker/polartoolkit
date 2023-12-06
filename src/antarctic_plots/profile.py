@@ -6,7 +6,6 @@
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
 
-from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import pandas as pd
@@ -22,20 +21,10 @@ from antarctic_plots import fetch, maps, utils
 try:
     import ipyleaflet
 except ImportError:
-    _has_ipyleaflet = False
-else:
-    _has_ipyleaflet = True
-
-from contextlib import redirect_stderr, redirect_stdout
 
 
 def create_profile(
     method: str,
-    start: np.ndarray = None,
-    stop: np.ndarray = None,
-    num: int = None,
-    shapefile: str = None,
-    polyline: pd.DataFrame = None,
     **kwargs,
 ):
     """
@@ -65,12 +54,10 @@ def create_profile(
     """
     methods = ["points", "shapefile", "polyline"]
     if method not in methods:
-        raise ValueError(f"Invalid method type. Expected one of {methods}")
     if method == "points":
         if num is None:
             num = 1000
         if any(a is None for a in [start, stop]):
-            raise ValueError(f"If method = {method}, 'start' and 'stop' must be set.")
         coordinates = pd.DataFrame(
             data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
         )
@@ -82,7 +69,6 @@ def create_profile(
 
     elif method == "shapefile":
         if shapefile is None:
-            raise ValueError(f"If method = {method}, need to provide a valid shapefile")
         shp = pyogrio.read_dataframe(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
@@ -92,19 +78,14 @@ def create_profile(
 
     elif method == "polyline":
         if polyline is None:
-            raise ValueError(f"If method = {method}, need to provide a valid dataframe")
         # for shapefiles, dist is cumulative from previous points
         coordinates = cum_dist(polyline, **kwargs)
 
-    coordinates.sort_values(by=["dist"], inplace=True)
 
     if method in ["shapefile", "polyline"]:
         try:
             if num is not None:
-                df = coordinates.set_index("dist")
                 dist_resampled = np.linspace(
-                    coordinates.dist.min(),
-                    coordinates.dist.max(),
                     num,
                     dtype=float,
                 )
@@ -115,26 +96,14 @@ def create_profile(
                 )
                 df2 = df1[df1.dist.isin(dist_resampled)]
             else:
-                df2 = coordinates
         except ValueError:
-            print(
-                "Issue with resampling, possibly due to number of points, you must provide at least 4 points. Returning unsampled points"  # noqa
             )
-            df2 = coordinates
     else:
-        df2 = coordinates
 
-    df_out = df2[["x", "y", "dist"]].reset_index(drop=True)
-
-    return df_out
 
 
 def sample_grids(
     df: pd.DataFrame,
-    grid: Union[str or xr.DataArray],
-    name: str,
-    **kwargs,
-):
     """
     Sample data at every point along a line
 
@@ -145,53 +114,36 @@ def sample_grids(
         "coor_names".
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
-    name : str,
         Name for sampled column
 
     Returns
     -------
     pd.DataFrame
-        Dataframe with new column (name) of sample values from (grid)
     """
 
     # drop name column if it already exists
     try:
-        df.drop(columns=name, inplace=True)
     except KeyError:
-        pass
-
-    df1 = df.copy()
 
     # reset the index
-    df1.reset_index(inplace=True)
 
     x, y = kwargs.get("coord_names", ("x", "y"))
     # get points to sample at
-    points = df1[[x, y]].copy()
 
     # sample the grid at all x,y points
     sampled = pygmt.grdtrack(
         points=points,
         grid=grid,
-        newcolname=name,
-        radius=kwargs.get("radius", None),
-        no_skip=kwargs.get("no_skip", False),
         verbose=kwargs.get("verbose", "w"),
         interpolation=kwargs.get("interpolation", "c"),
     )
 
-    df1[name] = sampled[name]
 
     # reset index to previous
-    df1.set_index("index", inplace=True)
 
     # reset index name to be same as originals
-    df1.index.name = df.index.name
 
-    # check that dataframe is identical to orignal except for new column
-    pd.testing.assert_frame_equal(df1.drop(columns=name), df)
 
-    return df1
 
 
 def fill_nans(df):
@@ -217,7 +169,6 @@ def fill_nans(df):
     return df
 
 
-def shorten(df, max_dist=None, min_dist=None, **kwargs):
     """
     Shorten a dataframe at either end based on distance column.
 
@@ -251,7 +202,6 @@ def make_data_dict(
     names: list,
     grids: list,
     colors: list,
-    axes: list = None,
 ) -> dict:
     """
     Create nested dictionary of data and attributes
@@ -272,9 +222,7 @@ def make_data_dict(
         Nested dictionaries of grids and attributes
     """
 
-    data_dict = {
         f"{i}": {
-            "name": names[i],
             "grid": grids[i],
             "color": colors[i],
             "axis": axes[i] if axes is not None else 0,
@@ -282,14 +230,8 @@ def make_data_dict(
         for i, j in enumerate(names)
     }
 
-    return data_dict
-
 
 def default_layers(
-    version,
-    region=None,
-    reference=None,
-) -> dict:
     """
     Fetch default ice surface, ice base, and bed layers.
 
@@ -298,28 +240,18 @@ def default_layers(
     version : str
         choose between 'bedmap2' and 'bedmachine' layers
 
-    region : str or list[int], optional
-       region of Antarctic to load, by default is data's original region.
-
     Returns
     -------
-    dict[dict]
         Nested dictionary of earth layers and attributes
     """
 
     if version == "bedmap2":
         if reference is None:
             reference = "eigen-gl04c"
-        surface = fetch.bedmap2("surface", fill_nans=True, reference=reference)
-        icebase = fetch.bedmap2("icebase", fill_nans=True, reference=reference)
-        bed = fetch.bedmap2("bed", reference=reference)
 
     elif version == "bedmachine":
         if reference is None:
             reference = "eigen-6c4"
-        surface = fetch.bedmachine("surface", reference=reference)
-        icebase = fetch.bedmachine("icebase", reference=reference)
-        bed = fetch.bedmachine("bed", reference=reference)
 
     layer_names = [
         "surface",
@@ -333,21 +265,15 @@ def default_layers(
     ]
     layer_grids = [surface, icebase, bed]
 
-    layers_dict = {
-        j: {"name": layer_names[i], "grid": layer_grids[i], "color": layer_colors[i]}
         for i, j in enumerate(layer_names)
     }
-    return layers_dict
 
 
-def default_data(region=None) -> dict:
     """
     Fetch default gravity and magnetic datasets.
 
     Parameters
     ----------
-    region : str or list[int], optional
-       region of Antarctic to load, by default is data's original region.
 
     Returns
     -------
@@ -356,13 +282,10 @@ def default_data(region=None) -> dict:
     """
     mag = fetch.magnetics(
         version="admap1",
-        # region=region,
         # spacing=10e3,
     )
-    FA_grav = fetch.gravity(
         version="antgg-update",
         anomaly_type="FA",
-        # region=region,
         # spacing=10e3,
     )
     data_names = [
@@ -371,22 +294,16 @@ def default_data(region=None) -> dict:
     ]
     data_grids = [
         mag,
-        FA_grav,
     ]
     data_colors = [
         "red",
         "blue",
     ]
 
-    data_dict = make_data_dict(data_names, data_grids, data_colors)
-
-    return data_dict
 
 
 def plot_profile(
     method: str,
-    layers_dict: dict = None,
-    data_dict: dict = None,
     add_map: bool = False,
     layers_version="bedmap2",
     fig_height: float = 9,
@@ -477,7 +394,6 @@ def plot_profile(
     # sample cross-section layers from grids
     df_layers = points.copy()
     for k, v in layers_dict.items():
-        df_layers = sample_grids(df_layers, v["grid"], name=k)
 
     # fill layers with above layer's values
     if kwargs.get("fillnans", True) is True:
@@ -488,14 +404,10 @@ def plot_profile(
     if data_dict is not None:
         points = points[["x", "y", "dist"]].copy()
         for k, v in data_dict.items():
-            df_data = sample_grids(df_data, v["grid"], name=k)
 
     # shorten profiles
     if kwargs.get("clip") is True:
         if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
-            raise ValueError(
-                f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
-            )
         df_layers = shorten(df_layers, **kwargs)
         if data_dict is not None:
             df_data = shorten(df_data, **kwargs)
@@ -539,11 +451,7 @@ def plot_profile(
 
         frames = kwargs.get("data_frame", None)
 
-        if isinstance(frames, (str, type(None))):
             frames = [frames]
-        elif isinstance(frames, list):
-            if isinstance(frames[0], str):
-                frames = [frames]
 
         for i, (k, v) in enumerate(data_dict.items()):
             if v["axis"] == axes.unique()[0]:
@@ -559,8 +467,6 @@ def plot_profile(
                 else:
                     frame = frames[0]
             else:
-                data_min = [np.min(a) for (a, b) in ax1_min_max][0]
-                data_max = [np.max(b) for (a, b) in ax1_min_max][0]
                 try:
                     if frames[1] is None:
                         frame = [
@@ -631,7 +537,6 @@ def plot_profile(
                 #     frame=frame,
                 #     x=df_data.dist,
                 #     y=df_data[k],
-                #     pen = f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,{v['color']}", # noqa
                 #     label = v["name"],
                 # )
             else:
@@ -768,7 +673,6 @@ def plot_profile(
                 fig.plot(
                     x=df_layers.dist,
                     y=df_layers[k],
-                    # pen = f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,{v['color']}", # noqa
                     pen=pen,
                     frame=kwargs.get("layers_frame", ["nSew", "a"]),
                     label=v["name"],
@@ -784,7 +688,6 @@ def plot_profile(
                 fig.plot(
                     x=df_layers.dist,
                     y=df_layers[k],
-                    pen=f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,+z",  # noqa
                     frame=kwargs.get("layers_frame", ["nSew", "a"]),
                     label=v["name"],
                     cmap=True,
@@ -862,7 +765,6 @@ def plot_profile(
         # Set figure parameters
         if subplot_orientation == "horizontal":
             # if shifting horizontally, set map height to match graph height
-            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_height=fig_height,
             )
@@ -875,7 +777,6 @@ def plot_profile(
                 fig.shift_origin(xshift=f"-{map_width+1}c")
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
-            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_width=fig_width,
             )
@@ -885,7 +786,6 @@ def plot_profile(
             else:
                 fig.shift_origin(yshift=f"{fig_height+.5}c")
         else:
-            raise ValueError("invalid subplot_orientation string")
 
         # plot imagery, or supplied grid as background
         # cant use maps.plot_grd becauseit reset projection
@@ -967,7 +867,6 @@ def plot_profile(
 
     if kwargs.get("save") is True:
         if kwargs.get("path") is None:
-            raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
     return fig, df_layers, df_data
@@ -975,7 +874,6 @@ def plot_profile(
 
 def plot_data(
     method: str,
-    data_dict: dict = None,
     add_map: bool = False,
     fig_height: float = 9,
     fig_width: float = 14,
@@ -1049,14 +947,9 @@ def plot_data(
     if data_dict is not None:
         points = points[["x", "y", "dist"]].copy()
         for k, v in data_dict.items():
-            df_data = sample_grids(df_data, v["grid"], name=k)
 
     # shorten profiles
-    if kwargs.get("clip") is True:
         if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
-            raise ValueError(
-                f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
-            )
     df_data = shorten(df_data, **kwargs)
 
     fig = pygmt.Figure()
@@ -1080,11 +973,7 @@ def plot_data(
 
     frames = kwargs.get("data_frame", None)
 
-    if isinstance(frames, (str, type(None))):
         frames = [frames]
-    elif isinstance(frames, list):
-        if isinstance(frames[0], str):
-            frames = [frames]
 
     for i, (k, v) in enumerate(data_dict.items()):
         if v["axis"] == axes.unique()[0]:
@@ -1100,8 +989,6 @@ def plot_data(
             else:
                 frame = frames[0]
         else:
-            data_min = [np.min(a) for (a, b) in ax1_min_max][0]
-            data_max = [np.max(b) for (a, b) in ax1_min_max][0]
             try:
                 if frames[1] is None:
                     frame = [
@@ -1235,7 +1122,6 @@ def plot_data(
         # Set figure parameters
         if subplot_orientation == "horizontal":
             # if shifting horizontally, set map height to match graph height
-            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_height=fig_height,
             )
@@ -1248,7 +1134,6 @@ def plot_data(
                 fig.shift_origin(xshift=f"-{map_width+1}c")
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
-            map_proj, map_proj_ll, map_width, map_height = utils.set_proj(
                 map_reg,
                 fig_width=fig_width,
             )
@@ -1258,7 +1143,6 @@ def plot_data(
             else:
                 fig.shift_origin(yshift=f"{fig_height+.5}c")
         else:
-            raise ValueError("invalid subplot_orientation string")
 
         # plot imagery, or supplied grid as background
         # cant use maps.plot_grd becauseit reset projection
@@ -1340,7 +1224,6 @@ def plot_data(
 
     if kwargs.get("save") is True:
         if kwargs.get("path") is None:
-            raise ValueError(f"If save = {kwargs.get('save')}, 'path' must be set.")
         fig.savefig(kwargs.get("path"), dpi=300)
 
     return fig, df_data
@@ -1419,12 +1302,9 @@ def draw_lines(**kwargs):
     m = maps.interactive_map(**kwargs, show=False)
 
     def clear_m():
-        global lines
-        lines = list()
 
     clear_m()
 
-    myDrawControl = ipyleaflet.DrawControl(
         polyline={
             "shapeOptions": {
                 "fillColor": "#fca45d",
@@ -1437,8 +1317,6 @@ def draw_lines(**kwargs):
         polygon={},
     )
 
-    def handle_line_draw(self, action, geo_json):
-        global lines
         shapes = []
         for coords in geo_json["geometry"]["coordinates"]:
             shapes.append(list(coords))
@@ -1446,10 +1324,7 @@ def draw_lines(**kwargs):
         if action == "created":
             lines.append(shapes)
 
-    myDrawControl.on_draw(handle_line_draw)
-    m.add_control(myDrawControl)
 
     clear_m()
-    display(m)  # noqa
 
     return lines
