@@ -91,9 +91,11 @@ all = [
 ]
 
 [project.urls]
-homepage = "https://antarctic-plots.readthedocs.io/en/latest/index.html"
-repository = "https://github.com/mdtanker/antarctic_plots"
-documentation = "https://antarctic-plots.readthedocs.io/en/latest/api.html"
+Homepage = "https://github.com/mdtanker/antarctic_plots"
+Documentation = "https://antarctic-plots.readthedocs.io/"
+"Bug Tracker" = "https://github.com/mdtanker/antarctic_plots/issues"
+Discussions = "https://github.com/mdtanker/antarctic_plots/discussions"
+Changelog = "https://antarctic-plots.readthedocs.io/en/latest/changelog.html"
 
 [tool.coverage]
 run.source = ["antarctic_plots"]
