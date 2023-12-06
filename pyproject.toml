@@ -55,7 +55,16 @@ interactive = [
 viz = [
     "seaborn",
 ]
-
+docs = [
+  "sphinx>=4.0",
+  "myst_parser",
+  "sphinx_copybutton",
+  "sphinx_autodoc_typehints",
+  "sphinx-book-theme>=0.3",
+  "sphinx_design",
+  "nbsphinx",
+  "nbconvert",
+]
 dev = [
     "pytest",
     "pytest-cov",
