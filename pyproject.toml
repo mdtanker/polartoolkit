@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "antarctic_plots"
-dynamic = ["version"]
 authors = [
     {name = "Matt Tankersley", email = "matt.d.tankersley@gmail.com"},
 ]
@@ -261,4 +260,3 @@ allowed_tags = [
 # including BREAKING CHANGE: in the commit message will trigger a major release
 minor_tags = ["feat"] # tags which result in minor releases
 patch_tags = ["fix", "perf"] # tags which result in patch releases
-
