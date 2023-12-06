@@ -1,70 +1,137 @@
-# Antarctic-plots
+# Antarctic-Plots
 
 Functions to automate Antarctic data visualization
 
-<p align="center">
-<a href="https://mybinder.org/v2/gh/mdtanker/antarctic_plots/main">
- <img src="https://mybinder.org/badge_logo.svg" alt="Binder link"></a>
- </p>
+```{include} ../README.md
+:start-after: <!-- SPHINX-START1 -->
+:end-before: <!-- SPHINX-END1 -->
+```
 
-<p align="center">
-<a href="https://pypi.python.org/pypi/antarctic-plots">
-<img
-src="https://img.shields.io/pypi/v/antarctic-plots?style=flat-square"
-alt="Latest version on PyPI"
-/>
-</a>
-<a href="https://github.com/conda-forge/antarctic-plots-feedstock">
-<img
-src="https://img.shields.io/conda/vn/conda-forge/antarctic-plots.svg?style=flat-square"
-alt="Latest version on conda-forge"
-/>
-</a>
-<a href="https://codecov.io/gh/mdtanker/antarctic_plots">
-<img
-src="https://img.shields.io/codecov/c/github/mdtanker/antarctic_plots/main.svg?style=flat-square"
-alt="Test coverage status"
-/>
+```{image} cover_fig.png
+:alt: cover figure
+:width: 400px
+:align: center
+```
 
-<p align="center">
-<a href="https://pypi.org/project/antarctic-plots/">
-<img src="https://img.shields.io/pypi/pyversions/antarctic-plots?style=flat-square"
-alt="Compatible Python versions."
-/>
-</a>
-<a href="https://zenodo.org/badge/latestdoi/475677039">
-<img src="https://zenodo.org/badge/475677039.svg?style=flat-square"
-alt="Zenodo DOI"
-/>
-</a>
-<a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
- </p>
+```{include} ../README.md
+:start-after: <!-- SPHINX-START2 -->
+:end-before: <!-- SPHINX-END2 -->
+```
 
-![](cover_fig.png)
 
-## Disclaimer
+```{toctree}
+:maxdepth: 1
+:hidden:
+overview
+install
+```
 
-<p align="center">
-🚨 **This package is in early stages of design and implementation.** 🚨
- </p>
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: 🚶 Tutorials
+tutorial/index.md
+```
 
-I welcome any feedback, ideas, or contributions! Please contact us on the [Github discussions page](https://github.com/mdtanker/antarctic_plots/discussions) or submit an [issue on Github](https://github.com/mdtanker/antarctic_plots/issues) for problems or feature ideas.
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: 📚 Gallery
+gallery/index.md
+```
 
-## About
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Tips
+tips.ipynb
+```
 
-The **Antarctic-plots** python package provides some basic tools to help in conducting Antarctic research. You can use it to download common datasets (i.e. BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica, and visualize data with multiple methods.
+```{toctree}
+:maxdepth: 2
+:hidden:
+:caption: 📖 Reference documentation
+api/antarctic_plots
+citing.md
+changelog.md
+references.rst
+```
 
-Check out our [Documentation](https://antarctic-plots.readthedocs.io/en/latest/) for instructions on installing and using the package.
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: ℹ️ Other resources
+contributing.md
+Source code on GitHub <https://github.com/mdtanker/antarctic_plots>
+```
 
-Feel free to use, share, modify, and [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html) to this project. I've mostly made this for personal usage so expect significant changes. Hopefully I'll implement more tests and Gallery examples soon.
 
-## Project goals
+::::{grid} 2
+:::{grid-item-card} {octicon}`rocket` Getting started?
+:text-align: center
+New to Antarctic-Plots? Start here!
+```{button-ref} overview
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
 
-Below is a list of some features I hope to eventually include. Feel free to make a feature request through [Github Issues](https://github.com/mdtanker/antarctic_plots/issues/new/choose).
+:::{grid-item-card} {octicon}`comment-discussion` Need help?
+:text-align: center
+Start a discussion on GitHub!
+```{button-link} https://github.com/mdtanker/antarctic_plots/discussions
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+    Discussions
+```
+:::
 
-* Create 3D interactive models to help visualize data.
-* Include more Antarctic datasets to aid in download and storage.
-* Additional projections and possible support for the Arctic region as well.
+:::{grid-item-card} {octicon}`file-badge` Reference documentation
+:text-align: center
+A list of modules and functions
+```{button-ref} api/antarctic_plots
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
 
-```{tableofcontents}
+:::{grid-item-card} {octicon}`bookmark` Using Antarctic-Plots for research?
+:text-align: center
+Citations help support our work
+```{button-ref} citing
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
+::::
+
+
+```{admonition} Early-stages of development
+:class: seealso
+
+This package is at the very beginning of it's development! This means that we are still adding a lot of new features and sometimes we
+make changes to the ones we already have while we try to improve the
+software based on users' experience, test new ideas, take better design
+decisions, etc.
+Some of these changes could be **backwards incompatible**. Keep that in
+mind before you update Antarctic-Plots to a newer version.
+```
+
+```{admonition} How to contribute
+:class: seealso
+
+Please, read our [Contributor Guide](https://github.com/mdtanker/antarctic_plots/blob/main/.github/CONTRIBUTING.md) to learn
+how you can contribute to the project.
+```
+
+```{note}
+*Many parts of this documentation was adapted from the* [Fatiando project](https://www.fatiando.org/).
 ```
