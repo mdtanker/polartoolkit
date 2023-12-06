@@ -5,6 +5,7 @@
 # This code is part of the package:
 # Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
 #
+from __future__ import annotations
 import os
 import shutil
 from getpass import getpass
