@@ -1,68 +1,44 @@
 # Build, package, test, and clean
 PROJECT=antarctic_plots
-STYLE_CHECK_FILES= $(PROJECT) docs tools
+STYLE_CHECK_FILES=.
 
-help:
-	@echo "Commands:"
-	@echo ""
-	@echo "  install   install in editable mode"
-	@echo "  test      run the test suite (including doctests) and report coverage"
-	@echo "  format    automatically format the code"
-	@echo "  check     run code style and quality checks"
-	@echo "  clean     clean up build and generated files"
-	@echo ""
-#
-#
-#
-# ENVIRONMENTS
-#
-#
-#
+create:
+	mamba create --name $(PROJECT) --yes --force pygmt geopandas python=3.11
+
+create_test_env:
+	mamba create --name test --yes python=3.11
+
 install:
-	pip install -e ".[dev]"
+	pip install -e .[all]
 
-# install with conda
-conda_install:
-	mamba create --name antarctic_plots --yes --force antarctic-plots
+install_test:
+	pip install antarctic-plots[all]
 
-# create binder yml
-binder_env:
-	mamba env export --name antarctic_plots --no-builds > binder/environment.yml
+remove:
+	mamba remove --name $(PROJECT) --all
 
-#
-#
-#
-# TESTING
-#
-#
-#
-# Run a tmp folder to make sure the tests are run on the installed version
 test:
-	mkdir -p .cov
-	pytest --cov . --cov-config=pyproject.toml --cov-report xml:.cov/coverage.xml -m "not earthdata and not issue and not fetch"
+	pytest -m "not earthdata and not issue and not fetch"
 
-#
-#
-#
-# STYLE
-#
-#
-#
-format: isort black license-add
+format:
+	ruff format $(STYLE_CHECK_FILES)
 
-check: isort-check black-check license-check flake8
+check:
+	ruff check --fix $(STYLE_CHECK_FILES)
 
-black:
-	black $(STYLE_CHECK_FILES)
+lint:
+	pre-commit run --all-files
 
-black-check:
-	black --check $(STYLE_CHECK_FILES)
+pylint:
+	pylint antarctic_plots
 
-isort:
-	isort $(STYLE_CHECK_FILES)
+style: format check lint pylint
 
-isort-check:
-	isort --check $(STYLE_CHECK_FILES)
+release_check:
+	semantic-release --noop version
+
+changelog:
+	semantic-release changelog
 
 license-add:
 	python tools/license_notice.py
@@ -70,15 +46,6 @@ license-add:
 license-check:
 	python tools/license_notice.py --check
 
-flake8:
-	flake8p $(STYLE_CHECK_FILES) --exclude=*/_build/*
-#
-#
-#
-# DOCUMENTATION
-#
-#
-#
 run_gallery:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
 
@@ -89,28 +56,10 @@ run_doc_files:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*/*.ipynb
 
-build_docs:
-	@echo
-	@echo "Building HTML files."
-	@echo
-	jupyter-book build docs/
-	@echo
-	@echo "Build finished. The HTML pages are in docs/build/html."
-#
-#
-#
-# PACKAGING
-#
-#
-#
-build:
-	python -m build
+# install with conda
+conda_install:
+	mamba create --name antarctic_plots --yes --force antarctic-plots
 
-test_publish:
-	twine upload -r testpypi dist/*
-
-test_pypi_env:
-	mamba create --name antarctic_plots_test_pypi python=3.10 pygmt ipykernel --yes --force
-
-publish:
-	twine upload dist/*
+# create binder yml
+binder_env:
+	mamba env export --name antarctic_plots --no-builds > binder/environment.yml
