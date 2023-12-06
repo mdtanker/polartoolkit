@@ -6,16 +6,17 @@ channels:
   - defaults
 dependencies:
   - python>=3.9
+  - pip
   # Run-time
   - pandas
   - openpyxl
   - pooch
   - tqdm
   - verde
-  - harmonica
   - xarray
   - netcdf4
   - h5netcdf
+  - harmonica>=0.6.0
   - pyproj
   - matplotlib
   - pyogrio
@@ -26,6 +27,24 @@ dependencies:
   - geopandas
   - zarr
   - python-dotenv
-  # testing
-  - pytest
-  - pytest-cov
+  - nptyping
+  # interavtive
+  - geoviews
+  - cartopy
+  - ipyleaflet
+  # viz
+  - seaborn
+  # test
+  - pytest>=6
+  - pytest-cov>=3
+  - deepdiff
+  # docs
+  - sphinx>=4.0
+  - myst-parser
+  - sphinx-copybutton
+  - sphinx-autodoc-typehints
+  - sphinx-book-theme>=0.3
+  - sphinx-design
+  - nbsphinx
+  - pip:
+    - ../.
