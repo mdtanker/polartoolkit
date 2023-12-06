@@ -5,14 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "antarctic_plots"
 dynamic = ["version"]
-description = "Functions to automate Antarctic data visualization"
-readme = "README.md"
-requires-python = ">=3.9"
-license = {file = "LICENSE"}
 authors = [
-    {name = "Matthew Tankersley", email = "matt.d.tankersley@gmail.com"},
+    {name = "Matt Tankersley", email = "matt.d.tankersley@gmail.com"},
 ]
-keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
+description = "Functions to automate Antarctic data visualization"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -22,10 +19,19 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Typing :: Typed",
 ]
+readme = "README.md"
+license = {file = "LICENSE"}
+
+keywords = ["antarctica", "maps", "plotting", "pygmt", "cross-section"]
+
 dependencies = [
     "pandas",
     "openpyxl",
@@ -43,7 +49,7 @@ dependencies = [
     "geopandas",
     "zarr",
     "python-dotenv",
-    "pip",
+    "nptyping",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +60,11 @@ interactive = [
 ]
 viz = [
     "seaborn",
+]
+test = [
+  "pytest >=6",
+  "pytest-cov >=3",
+  "deepdiff",
 ]
 docs = [
   "sphinx>=4.0",
@@ -66,17 +77,16 @@ docs = [
   "nbconvert",
 ]
 dev = [
-    "pytest",
-    "pytest-cov",
-    "flake8",
-    "isort",
-    "Flake8-pyproject",
-    "black[jupyter]", # includes ipython, tokenize-rt
-    "nbsphinx",
-    "sphinx-gallery",
-    "jupyter-book",
-    "nbconvert",
+    "antarctic-plots[interactive,viz,test,docs]",
+    "ruff",
+    "nox",
+    "pre-commit",
+    "pylint",
+    "python-semantic-release >=8",
     "ipykernel",
+]
+all = [
+  "antarctic-plots[interactive,viz,test,dev,docs]",
 ]
 
 [project.urls]
