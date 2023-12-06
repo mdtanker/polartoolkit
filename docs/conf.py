@@ -28,31 +28,6 @@ exclude_patterns = [
     ".env",
     ".venv",
 ]
-autodoc_mock_imports = [
-    "pandas",
-    "openpyxl",
-    "pooch",  # includes tqdm
-    "verde",
-    "xarray",  # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch # noqa: E501
-    "harmonica",
-    "pyproj",
-    "matplotlib",
-    "pyogrio",
-    "rioxarray",
-    "scipy",
-    "numpy",
-    "pygmt",
-    "geopandas",
-    "zarr",
-    "python-dotenv",
-    "nptyping",
-    # interactive
-    "geoviews",
-    "cartopy",
-    "ipyleaflet",
-    # viz
-    "seaborn",
-]
 
 nbsphinx_execute = "never"
 
