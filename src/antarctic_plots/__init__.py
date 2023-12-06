@@ -7,8 +7,5 @@
 #
 """Functions to automate Antarctic data visualization"""
 
-# from importlib.metadata import version
-
-# __version__ = version("antarctic_plots")
 
 __version__ = "0.0.6"
