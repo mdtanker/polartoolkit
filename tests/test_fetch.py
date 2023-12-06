@@ -189,12 +189,18 @@ test = [
 
 @pytest.mark.working()
 @pytest.mark.parametrize(("test_input", "expected"), test)
-@pytest.mark.filterwarnings('ignore::RuntimeWarning')
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
     resampled = fetch.resample_grid(grid, **test_input)
     # assert utils.get_grid_info(resampled) == pytest.approx(expected, rel=0.1)
-    assert not deepdiff.DeepDiff(utils.get_grid_info(resampled), expected, ignore_order=True, significant_digits=6)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(resampled),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
+
 
 # test_input = dict(
 #     spacing=10119,
@@ -221,7 +227,9 @@ def test_ice_vel_lowres():
         "g",
     )
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-    assert not deepdiff.DeepDiff(utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=6)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=6
+    )
 
 
 @pytest.mark.fetch()
