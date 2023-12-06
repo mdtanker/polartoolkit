@@ -1,4 +1,4 @@
-# Contribution guide
+# How to contribute
 🎉 Thanks for considering contributing to this package! 🎉
 
 <sub>Adapted from the great contribution guidelines of the [Fatiando a Terra](https://www.fatiando.org/) packages<sub>.
