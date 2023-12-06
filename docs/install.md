@@ -1,4 +1,4 @@
-# Installation
+# 🚀 Install
 
 ## Online usage (Binder)
 
@@ -27,7 +27,7 @@ Create a new virtual environement:
 Pip install antarctic-plots
 
     mamba activate antarctic_plots
-    pip install antarctic_plots
+    pip install antarctic-plots
 
 If you don't have Python set up on your computer, I recommend setting up python with Miniconda. See the install instructions [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
