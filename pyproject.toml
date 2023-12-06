@@ -115,6 +115,25 @@ omit = [
     ]
 
 [tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+  "-rA",
+  "--showlocals",
+  "--strict-markers",
+  "--strict-config",
+  "--cov", "--cov-report", "term-missing",
+  ]
+xfail_strict = true
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning",
+  "ignore::PendingDeprecationWarning",
+  "ignore::FutureWarning",
+]
+log_cli_level = "INFO"
+testpaths = [
+  "tests",
+]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "earthdata: marks tests as requiring earthdata login info (deselect with '-m \"not earthdata\"')",
