@@ -213,3 +213,18 @@ extend-include = ["*.ipynb"]
 "tests/**" = ["T20"]
 "noxfile.py" = ["T20"]
 "*.ipynb" = ["E402", "B018", "T201", "F821"]
+
+
+[tool.pylint]
+py-version = "3.9"
+ignore-paths = ["CHANGELOG.md"]
+reports.output-format = "colorized"
+similarities.ignore-imports = "yes"
+similarities.min-similarity-lines = 5
+messages_control.disable = [
+  "design",
+  "fixme",
+  "line-too-long",
+  "missing-module-docstring",
+  "wrong-import-position",
+]
