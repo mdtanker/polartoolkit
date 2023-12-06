@@ -15,6 +15,8 @@ def test_():
     expected =
     assert utils.get_grid_info(grid) == expected
 """
+from __future__ import annotations
+
 import os
 
 import geopandas as gpd
@@ -23,6 +25,7 @@ import pandas as pd
 import pytest
 from dotenv import load_dotenv
 from geopandas.testing import assert_geodataframe_equal
+import deepdiff
 
 from antarctic_plots import fetch, regions, utils
 
@@ -43,10 +46,10 @@ skip_earthdata = pytest.mark.skipif(
 test = [
     # no inputs
     (
-        dict(),
+        {},
         (
-            10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            10000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -384.5,
             204.800003052,
             "g",
@@ -54,14 +57,14 @@ test = [
     ),
     # return original with given initials
     (
-        dict(
-            initial_region=[-3330000.0, 3330000.0, -3330000.0, 3330000.0],
-            initial_spacing=10e3,
-            initial_registration="g",
-        ),
+        {
+            "initial_region": (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+            "initial_spacing": 10e3,
+            "initial_registration": "g",
+        },
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -384.5,
             204.800003052,
             "g",
@@ -69,14 +72,14 @@ test = [
     ),
     # give false initial values, return actual initial values
     (
-        dict(
-            initial_region=[-2800000.0, 2800000.0, -2800000.0, 2800000.0],
-            initial_spacing=8e3,
-            initial_registration="p",
-        ),
+        {
+            "initial_region": (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
+            "initial_spacing": 8e3,
+            "initial_registration": "p",
+        },
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -384.5,
             204.800003052,
             "g",
@@ -84,12 +87,12 @@ test = [
     ),
     # Only registration is different
     (
-        dict(
-            registration="p",
-        ),
+        {
+            "registration": "p",
+        },
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -337.490234375,
             170.69921875,
             "p",
@@ -97,10 +100,10 @@ test = [
     ),
     # smaller spacing, uneven, reset region to keep exact spacing
     (
-        dict(spacing=8212),
+        {"spacing": 8212},
         (
             8212,
-            [-3325860.0, 3325860.0, -3325860.0, 3325860.0],
+            (-3325860.0, 3325860.0, -3325860.0, 3325860.0),
             -374.47366333,
             182.33392334,
             "g",
@@ -108,10 +111,10 @@ test = [
     ),
     # larger spacing, uneven, reset region to keep exact spacing
     (
-        dict(spacing=10119),
+        {"spacing": 10119},
         (
             10119,
-            [-3329151.0, 3329151.0, -3329151.0, 3329151.0],
+            (-3329151.0, 3329151.0, -3329151.0, 3329151.0),
             -318.772613525,
             177.986114502,
             "g",
@@ -119,10 +122,10 @@ test = [
     ),
     # uneven subregion, reset region to keep exact spacing
     (
-        dict(region=[210012.0, 390003.0, -1310217.0, -1121376.0]),
+        {"region": (210012.0, 390003.0, -1310217.0, -1121376.0)},
         (
             10000,
-            [210000.0, 400000.0, -1320000.0, -1120000.0],
+            (210000.0, 400000.0, -1320000.0, -1120000.0),
             -175.400009155,
             54.1000022888,
             "g",
@@ -130,13 +133,13 @@ test = [
     ),
     # uneven subregion with diff reg, reset region to keep exact spacing
     (
-        dict(
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
-            registration="p",
-        ),
+        {
+            "region": (210012.0, 390003.0, -1310217.0, -1121376.0),
+            "registration": "p",
+        },
         (
             10000,
-            [210000.0, 400000.0, -1320000.0, -1120000.0],
+            (210000.0, 400000.0, -1320000.0, -1120000.0),
             -156.026565552,
             46.8070335388,
             "p",
@@ -144,13 +147,13 @@ test = [
     ),
     # uneven spacing (smaller) and uneven region, reset region to keep exact spacing
     (
-        dict(
-            spacing=8212,
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
-        ),
+        {
+            "spacing": 8212,
+            "region": (210012.0, 390003.0, -1310217.0, -1121376.0),
+        },
         (
             8212,
-            [205300.0, 402388.0, -1322132.0, -1116832.0],
+            (205300.0, 402388.0, -1322132.0, -1116832.0),
             -170.436401367,
             47.9773178101,
             "g",
@@ -158,13 +161,13 @@ test = [
     ),
     # uneven spacing (larger) and uneven region, reset region to keep exact spacing
     (
-        dict(
-            spacing=10119,
-            region=[210012.0, 390003.0, -1310217.0, -1121376.0],
-        ),
+        {
+            "spacing": 10119,
+            "region": (210012.0, 390003.0, -1310217.0, -1121376.0),
+        },
         (
             10119,
-            [212499.0, 384522.0, -1305351.0, -1123209.0],
+            (212499.0, 384522.0, -1305351.0, -1123209.0),
             -173.363143921,
             50.2054672241,
             "g",
@@ -172,10 +175,10 @@ test = [
     ),
     # larger than initial region, return initial region
     (
-        dict(region=[-3400e3, 3400e3, -3400e3, 34030e3]),
+        {"region": (-3400e3, 3400e3, -3400e3, 34030e3)},
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -384.5,
             204.800003052,
             "g",
@@ -184,17 +187,18 @@ test = [
 ]
 
 
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings('ignore::RuntimeWarning')
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
     resampled = fetch.resample_grid(grid, **test_input)
-    assert utils.get_grid_info(resampled) == pytest.approx(expected, rel=0.1)
-
+    # assert utils.get_grid_info(resampled) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(utils.get_grid_info(resampled), expected, ignore_order=True, significant_digits=6)
 
 # test_input = dict(
 #     spacing=10119,
-#     region=[-3400e3, 3400e3, -3400e3, 34030e3],
+#     region=(-3400e3, 3400e3, -3400e3, 34030e3),
 #     registration='p',
 # )
 # grid = fetch.gravity(version='antgg', anomaly_type='FA')
@@ -203,31 +207,32 @@ def test_resample_grid(test_input, expected):
 
 
 # %% ice_vel
-@pytest.mark.fetch
-@pytest.mark.slow
-@pytest.mark.earthdata
+@pytest.mark.fetch()
+@pytest.mark.slow()
+@pytest.mark.earthdata()
 @skip_earthdata
 def test_ice_vel_lowres():
     grid = fetch.ice_vel(spacing=8e3)
     expected = (
         8000,
-        [-2800000.0, 2792000.0, -2792000.0, 2800000.0],
+        (-2800000.0, 2792000.0, -2792000.0, 2800000.0),
         -125.007492065,
         4200.79833984,
         "g",
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=6)
 
 
-@pytest.mark.fetch
-@pytest.mark.slow
-@pytest.mark.earthdata
+@pytest.mark.fetch()
+@pytest.mark.slow()
+@pytest.mark.earthdata()
 @skip_earthdata
 def test_ice_vel_highres():
     grid = fetch.ice_vel(spacing=1e3)
     expected = (
         1000,
-        [-2800000.0, 2799000.0, -2799000.0, 2800000.0],
+        (-2800000.0, 2799000.0, -2799000.0, 2800000.0),
         -92.828956604,
         4216.78759766,
         "g",
@@ -241,9 +246,9 @@ def test_ice_vel_highres():
 # %% modis_moa
 
 
-@pytest.mark.fetch
-@pytest.mark.slow
-@pytest.mark.earthdata
+@pytest.mark.fetch()
+@pytest.mark.slow()
+@pytest.mark.earthdata()
 @skip_earthdata
 def test_modis_moa():
     grid = fetch.modis_moa(version=750)
@@ -265,8 +270,8 @@ def test_modis_moa():
 # %% imagery
 
 
-@pytest.mark.fetch
-@pytest.mark.slow
+@pytest.mark.fetch()
+@pytest.mark.slow()
 def test_imagery():
     grid = fetch.imagery()
     expected = (
@@ -285,8 +290,8 @@ def test_imagery():
 # %% basement
 
 
-@pytest.mark.fetch
-@pytest.mark.working
+@pytest.mark.fetch()
+@pytest.mark.working()
 def test_basement():
     grid = fetch.basement()
     expected = (
@@ -337,8 +342,8 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_sediment_thickness(test_input, expected):
     grid = fetch.sediment_thickness(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -356,8 +361,8 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_geomap(test_input, expected):
     # collect a few points
     data = fetch.geomap(
@@ -371,10 +376,10 @@ def test_geomap(test_input, expected):
 # %% IBCSO coverage data
 
 
-@pytest.mark.fetch
-def test_IBCSO_coverage():
+@pytest.mark.fetch()
+def test_ibcso_coverage():
     # collect a few points
-    points, polygons = fetch.IBCSO_coverage(
+    points, polygons = fetch.ibcso_coverage(
         region=utils.alter_region(regions.siple_coast, zoom=270e3)[0]
     )
 
@@ -412,10 +417,10 @@ def test_IBCSO_coverage():
 
 test = [
     (
-        dict(
-            layer="surface",
-            spacing=500,
-        ),
+        {
+            "layer": "surface",
+            "spacing": 500,
+        },
         (
             500,
             [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
@@ -425,10 +430,10 @@ test = [
         ),
     ),
     (
-        dict(
-            layer="surface",
-            spacing=5e3,
-        ),
+        {
+            "layer": "surface",
+            "spacing": 5e3,
+        },
         (
             5000,
             [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
@@ -438,10 +443,10 @@ test = [
         ),
     ),
     (
-        dict(
-            layer="bed",
-            spacing=500,
-        ),
+        {
+            "layer": "bed",
+            "spacing": 500,
+        },
         (
             500,
             [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
@@ -451,10 +456,10 @@ test = [
         ),
     ),
     (
-        dict(
-            layer="bed",
-            spacing=5e3,
-        ),
+        {
+            "layer": "bed",
+            "spacing": 5e3,
+        },
         (
             5000,
             [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
@@ -466,10 +471,10 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
-def test_IBCSO(test_input, expected):
-    grid = fetch.IBCSO(**test_input)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
+def test_ibcso(test_input, expected):
+    grid = fetch.ibcso(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
@@ -477,7 +482,7 @@ def test_IBCSO(test_input, expected):
 #     layer='surface',
 #     spacing=500,
 # )
-# grid = fetch.IBCSO(test_input)
+# grid = fetch.ibcso(test_input)
 # utils.get_grid_info(grid)
 
 
@@ -532,21 +537,21 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.earthdata
+@pytest.mark.fetch()
+@pytest.mark.earthdata()
 @skip_earthdata
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-@pytest.mark.fetch
-@pytest.mark.earthdata
+@pytest.mark.fetch()
+@pytest.mark.earthdata()
 @skip_earthdata
 def test_bedmachine_reference():
     # fetch variations of grids and reference models
-    region = [-101e3, -100e3, -51e3, -50e3]
+    region = (-101e3, -100e3, -51e3, -50e3)
     eigen_6c4_grid = fetch.geoid(
         spacing=500,
         region=region,
@@ -586,59 +591,59 @@ def test_bedmachine_reference():
 
 test = [
     (
-        dict(layer="bed"),
+        {"layer": "bed"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -7054.0, 3972.0, "g"),
     ),
     (
-        dict(layer="coverage"),
+        {"layer": "coverage"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 1.0, "g"),
     ),
     (
-        dict(layer="grounded_bed_uncertainty"),
+        {"layer": "grounded_bed_uncertainty"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 65535.0, "g"),
     ),
     (
-        dict(layer="icemask_grounded_and_shelves"),
+        {"layer": "icemask_grounded_and_shelves"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 1.0, "g"),
     ),
     (
-        dict(layer="rockmask"),
+        {"layer": "rockmask"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 0.0, "g"),
     ),
     (
-        dict(layer="surface"),
+        {"layer": "surface"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 4082.0, "g"),
     ),
     (
-        dict(layer="thickness"),
+        {"layer": "thickness"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4621.0, "g"),
     ),
     (
-        dict(layer="icebase"),
+        {"layer": "icebase"},
         (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -2736.0, 3972.0, "g"),
     ),
     (
-        dict(layer="lakemask_vostok"),
+        {"layer": "lakemask_vostok"},
         (1000, [1190000.0, 1470000.0, -402000.0, -291000.0], 1.0, 1.0, "g"),
     ),
     (
-        dict(layer="thickness_uncertainty_5km"),
+        {"layer": "thickness_uncertainty_5km"},
         (5000, [-3399000.0, 3401000.0, -3400000.0, 3400000.0], 0.0, 65535.0, "g"),
     ),
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_bedmap2(test_input, expected):
     grid = fetch.bedmap2(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-@pytest.mark.fetch
+@pytest.mark.fetch()
 def test_bedmap2_reference():
     # fetch variations of grids and reference models
-    region = [-101e3, -100e3, -51e3, -50e3]
+    region = (-101e3, -100e3, -51e3, -50e3)
     eigen_gl04c_grid = fetch.bedmap2(
         layer="gl04c_geiod_to_WGS84",
         region=region,
@@ -678,22 +683,22 @@ def test_bedmap2_reference():
 
 test = [
     (
-        dict(layer="surface"),
+        {"layer": "surface"},
         [1964.5349, 602.32306],
     ),
     (
-        dict(layer="thickness"),
+        {"layer": "thickness"},
         [1926.642, 590.70514],
     ),
     (
-        dict(layer="icebase"),
+        {"layer": "icebase"},
         [37.89277, 11.617859],
     ),
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_bedmap2_fill_nans(test_input, expected):
     grid = fetch.bedmap2(**test_input)
     filled_grid = fetch.bedmap2(**test_input, fill_nans=True)
@@ -708,7 +713,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 # %% Bedmap points
 
 
-@pytest.mark.fetch
+@pytest.mark.fetch()
 def test_bedmap_points():
     df = fetch.bedmap_points(version="bedmap1")
     expected = [
@@ -731,9 +736,9 @@ def test_bedmap_points():
 # %% deepbedmap
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.slow
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.slow()
 def test_deepbedmap():
     grid = fetch.deepbedmap()
     expected = (
@@ -786,9 +791,9 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type="FA")
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -802,8 +807,8 @@ def test_gravity(test_input, expected):
 
 
 # @pytest.mark.fetch
-# def test_ROSETTA_radar():
-#     df = fetch.ROSETTA_radar_data()
+# def test_rosetta_radar():
+#     df = fetch.rosetta_radar_data()
 #     # expected = [
 #     #     547.0122703054126,
 #     #     -80.63749846487134,
@@ -821,9 +826,9 @@ def test_gravity(test_input, expected):
 # %% ROSETTA magnetics
 
 
-@pytest.mark.fetch
-def test_ROSETTA_magnetics():
-    df = fetch.ROSETTA_magnetics()
+@pytest.mark.fetch()
+def test_rosetta_magnetics():
+    df = fetch.rosetta_magnetics()
     expected = [
         547.0122703054126,
         -80.63749846487134,
@@ -840,9 +845,9 @@ def test_ROSETTA_magnetics():
 # %% ROSETTA gravity
 
 
-@pytest.mark.fetch
-def test_ROSETTA_gravity():
-    df = fetch.ROSETTA_gravity()
+@pytest.mark.fetch()
+def test_rosetta_gravity():
+    df = fetch.rosetta_gravity()
     expected = [
         661.2195503654474,
         -80.57119757556714,
@@ -856,7 +861,7 @@ def test_ROSETTA_gravity():
     assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
 
 
-# df = fetch.ROSETTA_gravity()
+# df = fetch.rosetta_gravity()
 # # get mean values of each column
 # df.describe().iloc[1].tolist()
 
@@ -876,9 +881,9 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_magnetics(test_input, expected):
     grid = fetch.magnetics(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -913,8 +918,8 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_mass_change(test_input, expected):
     grid = fetch.mass_change(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -936,8 +941,8 @@ test = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", test)
-@pytest.mark.fetch
+@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.fetch()
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -989,16 +994,16 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-@pytest.mark.fetch
-@pytest.mark.working
+@pytest.mark.fetch()
+@pytest.mark.working()
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
     expected = [
@@ -1044,8 +1049,8 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -1080,9 +1085,9 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -1117,9 +1122,9 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.working
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.working()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -1144,8 +1149,8 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
 def test_geoid(test_input, expected):
     grid = fetch.geoid(test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -1165,7 +1170,7 @@ expected = (
 )
 
 
-@pytest.mark.fetch
+@pytest.mark.fetch()
 def test_etopo():
     grid = fetch.etopo()
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -1179,7 +1184,7 @@ def test_etopo():
 
 test = [
     (
-        dict(version=500),
+        {"version": 500},
         (
             500,
             [-2700250.0, 2750250.0, -2500250.0, 3342250.0],
@@ -1189,7 +1194,7 @@ test = [
         ),
     ),
     (
-        dict(version=1000),
+        {"version": 1000},
         (
             1000,
             [-2700500.0, 2750500.0, -2500500.0, 3342500.0],
@@ -1201,12 +1206,12 @@ test = [
 ]
 
 
-@pytest.mark.fetch
-@pytest.mark.parametrize("test_input,expected", test)
-def test_REMA(test_input, expected):
-    grid = fetch.REMA(**test_input)
+@pytest.mark.fetch()
+@pytest.mark.parametrize(("test_input", "expected"), test)
+def test_rema(test_input, expected):
+    grid = fetch.rema(**test_input)
     assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
 
 
-# grid = fetch.REMA(version=500)
+# grid = fetch.rema(version=500)
 # utils.get_grid_info(grid)
