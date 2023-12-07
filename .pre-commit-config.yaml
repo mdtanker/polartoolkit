@@ -75,6 +75,7 @@ repos:
         args: []
         additional_dependencies:
           - pytest
+          - types-requests
           # - data-science-types
 
   - repo: https://github.com/codespell-project/codespell
