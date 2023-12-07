@@ -1,4 +1,4 @@
-# Requirements for running the Github Action: test
+# Requirements for running the GitHub Action: test
 # only need run-time dependencies
 name: antarctic_plots
 channels:
