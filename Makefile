@@ -56,6 +56,8 @@ run_doc_files:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*/*.ipynb
 
+run_notebooks: run_gallery run_tutorials run_doc_files
+
 # install with conda
 conda_install:
 	mamba create --name antarctic_plots --yes --force antarctic-plots
