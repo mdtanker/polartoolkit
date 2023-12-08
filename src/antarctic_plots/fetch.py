@@ -27,6 +27,30 @@ from pyproj import Transformer
 load_dotenv()
 
 
+def get_fetches() -> list[str]:
+    """
+    get all the fetch functions defined in this module.
+
+    Returns
+    -------
+    list[str, tuple[float, float, float, float] ]
+        names of each fetch function
+    """
+
+    fetch_functions = [i[0] for i in getmembers(fetch, isfunction)]
+
+    remove = [
+        "load_dotenv",
+        "isfunction",
+        "getmembers",
+        "resample_grid",
+        "sample_shp",
+        "get_fetches",
+    ]
+
+    return [x for x in fetch_functions if x not in remove]
+
+
 def resample_grid(
     # get coordinate names
     # original_dims = list(grid.sizes.keys())
