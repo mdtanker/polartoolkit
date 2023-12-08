@@ -8,7 +8,7 @@ this package online, without needing to install anything, check out our
 which gives full access the the package in an online environment.
 
 This Binder environment can also be accessed by clicking the Binder icon in any
-of the {doc}`gallery/gallery` examples.
+of the `gallery` or `tutorial` examples.
 
 ## Install package
 
