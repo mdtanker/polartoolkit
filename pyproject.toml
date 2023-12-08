@@ -196,7 +196,7 @@ lint.unfixable = [
 exclude = ["docs/index.md", "CHANGELOG.md", "tools/license_notice.py"]
 line-length = 88 # Set the maximum line length to 88.
 lint.flake8-unused-arguments.ignore-variadic-names = true
-lint.isort.required-imports = ["from __future__ import annotations"]
+# lint.isort.required-imports = ["from __future__ import annotations"]
 # Uncomment if using a _compat.typing backport
 # typing-modules = ["antarctic_plots._compat.typing"]
 extend-include = ["*.ipynb"]
