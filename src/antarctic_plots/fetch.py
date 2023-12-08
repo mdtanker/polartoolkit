@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 # Copyright (c) 2022 The Antarctic-Plots Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
@@ -46,7 +47,7 @@ def resample_grid(
     if registration is None:
         registration = initial_registration
 
-    # if all specs are same as orginal, return orginal
+    # if all specs are same as original, return original
     rules = [
         spacing == initial_spacing,
         region == initial_region,
@@ -127,6 +128,7 @@ def resample_grid(
 
 class EarthDataDownloader:
     """
+    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py
     Either pulls login details from pre-set environment variables, or prompts user to
     input username and password.
     """
@@ -197,7 +199,7 @@ def mass_change(
     Atmosphere Processes.” Science, April 30, 2020, eaaz5845.
     https://doi.org/10.1126/science.aaz5845.
 
-    Choose a version of the data to download with the formt: "ais_VERSION_TYPE" where
+    Choose a version of the data to download with the format: "ais_VERSION_TYPE" where
     VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
     content.
     TYPE is "floating" or "grounded"
@@ -250,12 +252,15 @@ def mass_change(
 
 def basal_melt(variable="w_b") -> xr.DataArray:
     """
+    Antarctic ice shelf basal melt rates for 1994-2018 from satellite radar altimetry.
     from Adusumilli et al. “Interannual Variations in Meltwater Input to the Southern
     Ocean from Antarctic Ice Shelves.” Nature Geoscience 13, no. 9 (September 2020):
+    616-20. https://doi.org/10.1038/s41561-020-0616-z.
 
     accessed from http://library.ucsd.edu/dc/object/bb0448974g
 
     reading files and preprocessing from supplied jupyternotebooks:
+    https://github.com/sioglaciology/ice_shelf_change/blob/master/read_melt_rate_file.ipynb
 
     Units are in m/yr
 
@@ -263,7 +268,8 @@ def basal_melt(variable="w_b") -> xr.DataArray:
     ----------
     variable : str
         choose which variable to load, either 'w_b' for basal melt rate, 'w_b_interp',
-        for basal melt rate iwth interpolated values, and 'w_b_uncert' for uncertainty
+        for basal melt rate with interpolated values, and 'w_b_uncert' for uncertainty
+
     Returns
     -------
     xr.DataArray
@@ -346,13 +352,10 @@ def ice_vel(
 
     Parameters
     ----------
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
-    spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3, original spacing
+    spacing : float,
+        grid spacing to resample the loaded grid to, by default 5e3, original spacing
         is 450m
     registration : str, optional
         set either 'p' for pixel or 'g' for gridline registration, by default is 'g'
@@ -444,12 +447,12 @@ def modis_moa(
     version: int = 750,
 ) -> str:
     """
-    Load the MODIS MoA imagery in either 750m or 125m resolutions.
+    Load the MODIS MoA imagery in either "750m" or "125m" resolutions.
 
     Parameters
     ----------
-    version : int, optional
-        choose between 750m or 125m resolutions, by default 750m
+    version : str, optional
+        choose between "750m" or "125m" resolutions, by default "750m"
 
     Returns
     -------
@@ -485,6 +488,7 @@ def imagery() -> xr.DataArray:
     https://lima.usgs.gov/fullcontinent.php
     will replace with below once figured out login issue with pooch
     MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
+    Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
 
     Returns
     -------
@@ -519,10 +523,11 @@ def geomap(
         by default "faults"
     region : list, optional
         return only data within this region, by default None
+
     Returns
     -------
-    str
-        file path
+    gpd.GeoDataFrame
+        Returns a geodataframe
     """
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
 
@@ -763,10 +768,6 @@ def basement(
 
     Parameters
     ----------
-    plot : bool, optional
-        plot the fetched grid, by default False
-    info : bool, optional
-        print info on the fetched grid, by default False
 
     Returns
     -------
@@ -826,6 +827,7 @@ def sediment_thickness(
     From Baranov A, Morelli A and Chuvaev A (2021) ANTASed; An Updated Sediment Model
     for Antarctica. Front. Earth Sci. 9:722699.
     doi: 10.3389/feart.2021.722699
+    Accessed from https://www.itpz-ran.ru/en/activity/current-projects/antased-a-new-sediment-model-for-antarctica/
 
     version='tankersley-2022'
     From Tankersley, Matthew; Horgan, Huw J; Siddoway, Christine S; Caratori Tontini,
@@ -844,6 +846,7 @@ def sediment_thickness(
     version='GlobSed'
     From  Straume, E. O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker,
     J. M., et al. (2019). GlobSed: Updated total sediment thickness in the world's
+    oceans. Geochemistry, Geophysics, Geosystems, 20, 1756- 1772.
     https://doi.org/10.1029/2018GC008115
     Accessed from https://ngdc.noaa.gov/mgg/sedthick/
 
@@ -851,10 +854,7 @@ def sediment_thickness(
     ----------
     version : str,
         choose which version of data to fetch.
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1104,9 +1104,8 @@ def sediment_thickness(
 
     Parameters
     ----------
+    region : tuple[float, float, float, float]
         GMT-format region to subset the data from.
-    plot : bool, optional
-        choose whether to plot the resulting points on a map, by default is False
 
     Returns
     -------
@@ -1134,7 +1133,7 @@ def sediment_thickness(
     # extract the single points/polygons within region
     data_subset = data_coords.clip(mask=utils.region_to_bounding_box(region))
 
-    # seperate points and polygons
+    # separate points and polygons
     points = data_subset[data_subset.geometry.type == "Point"]
     polygons = data_subset[data_subset.geometry.type == "Polygon"]
 
@@ -1186,10 +1185,7 @@ def sediment_thickness(
     layer : str
         choose which layer to fetch:
         'surface', 'bed'
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default
@@ -1363,14 +1359,49 @@ def bedmachine(
     **kwargs,
 ) -> xr.DataArray:
     """
+    Load BedMachine v3 data,  from Morlighem et al. 2020:
+    https://doi.org/10.1038/s41561-019-0510-8
 
+    Cited as: Morlighem, M. 2022. MEaSUREs BedMachine Antarctica, Version 3.
+    [Indicate subset used]. Boulder, Colorado USA. NASA National Snow and Ice Data
+    Center Distributed Active Archive Center. https://doi.org/10.5067/FPSU0V1MWUB6
 
+    Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
+    Also available from
+    https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
 
+    Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add
+    the geoid grid. use `reference='ellipsoid'` to include this conversion in the
+    fetch call.
 
+    Surface and ice thickness are in ice equivalents. Actual snow surface is from
+    REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
+    Bedmachine Surface.
 
+    To get snow surface: surface+firn
+    To get firn and ice thickness: thickness+firn
 
+    Here, icebase will return a grid of surface-thickness
+    This should be the same as snow-surface - (firn and ice thickness)
 
+    Parameters
+    ----------
+    layer : str
+        choose which layer to fetch:
+        'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mapping', 'mask', 'source',
+        'surface', 'thickness'; 'icebase' will give results of surface-thickness
+    reference : str
+        choose whether heights are referenced to 'eigen-6c4' geoid or the
+        'ellipsoid' (WGS84), by default is eigen-6c4'
+    region : str or NDArray, optional
+        GMT-format region to clip the loaded grid to, by default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
 
+    Returns
+    -------
+    xr.DataArray
+        Returns a loaded, and optional clip/resampled grid of Bedmachine.
     """
 
     # found with utils.get_grid_info()
@@ -1473,6 +1504,7 @@ def bedmap_points(
 
     version == 'bedmap2'
         from Fretwell et al. 2013. Bedmap2: improved ice bed, surface and thickness
+        datasets for Antarctica, The Cryosphere, 7, 375-393
         DOI: https://doi.org/10.5285/2fd95199-365e-4da1-ae26-3b6d48b3e6ac
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01616
 
@@ -1489,8 +1521,6 @@ def bedmap_points(
         choose between 'bedmap1', 'bedmap2', or 'bedmap3' point data
     region : list, optional
         add a GMT region to subset the data by, by default None
-    plot ; bool, optional
-        choose whether to show the points on a simple map
 
     Returns
     -------
@@ -1580,6 +1610,7 @@ def bedmap2(
     Antarctica - gridding products (Version 1.0) [Data set]. NERC EDS UK Polar Data
     Centre.
     DOI: https://doi.org/10.5285/FA5D606C-DC95-47EE-9016-7A82E446F2F2
+    accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=fa5d606c-dc95-47ee-9016-7a82e446f2f2.
 
     All grids are by default referenced to the EIGEN-GL04C geoid. Use the
     reference='ellipsoid' to convert to the WGS-84 ellipsoid or reference='eigen-6c4' to
@@ -1602,10 +1633,7 @@ def bedmap2(
     reference : str
         choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
         ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1845,7 +1873,7 @@ def bedmap2(
     WGS84 ellipsoid. To convert the data to be geoid-referenced, subtract a geoid model,
     which you can get from fetch.geoid().
 
-    Choose between 1km or 500m resolutions with parameter `version`.
+    Choose between "1km" or "500m" resolutions with parameter `version`.
 
     from Howat et al. 2019: The Reference Elevation Model of Antarctica, The Cryosphere,
     13, 665-674, https://doi.org/10.5194/tc-13-665-2019.
@@ -1854,12 +1882,9 @@ def bedmap2(
 
     Parameters
     ----------
-    version : int, optional,
-        choose which resolution to fetch, either 1km or 500m, by default is 1000
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    version : str, optional,
+        choose which resolution to fetch, either "1km" or "500m", by default is "1km"
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1972,10 +1997,7 @@ def deepbedmap(
 
     Parameters
     ----------
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2051,16 +2073,14 @@ def gravity(
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
     (ellipsoidal) height.
+    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa: E501
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa: E501
 
     Parameters
     ----------
     version : str
         choose which version of gravity data to fetch.
-
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2077,6 +2097,8 @@ def gravity(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of either observed, free-air
         or Bouguer gravity anomalies.
+    """  # noqa: E501
+
     anomaly_type = kwargs.get("anomaly_type", None)
 
     if version == "antgg":
@@ -2277,13 +2299,13 @@ def etopo(
     Loads a grid of Antarctic topography from ETOPO1. Originally at 10 arc-min
     resolution, reference to mean sea-level
 
+    originally from https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316 # noqa: E501
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-topography-10arcmin # noqa: E501
 
     Parameters
     ----------
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2292,6 +2314,7 @@ def etopo(
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of topography.
+    """  # noqa: E501
     initial_spacing = 5e3
     initial_registration = "g"
 
@@ -2370,14 +2393,16 @@ def geoid(
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
+    To convert a topographic grid which is referenced to the geoid to be reference to
+    the ellipsoid, subtract this grid.
 
+    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa: E501
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin # noqa: E501
 
     Parameters
     ----------
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2386,6 +2411,7 @@ def geoid(
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of geoid height.
+    """  # noqa: E501
     initial_spacing = 5e3
     initial_registration = "g"
 
@@ -2454,19 +2480,18 @@ def geoid(
     """
     Load either a shapefile of ROSETTA-ice flightlines, a dataframe of ROSETTA-Ice
     airborne gravity data over the Ross Ice Shelf, or a dataframe of ROSETTA-Ice density
-    values from the denstiy inversion.
-
+    values from the density inversion.
     from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441- 449.
+    https://doi.org/10.1038/s41561-019-0370-2
     Accessed from https://www.usap-dc.org/view/project/p0010035
-
     This is only data from the first 2 of the 3 field seasons.
-
     Columns:
     Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
     Latitude (degrees): Latitude decimal degrees WGS84
     Longitude (degrees): Longitude decimal degrees WGS84
     unixtime (seconds): The number of seconds that have elapsed since midnight
-        (00:00:00 UTC) on January 1st, 1970
+    (00:00:00 UTC) on January 1st, 1970
     Height (meters): Height above WGS84 ellipsoid
     x (meters): Polar stereographic projected coordinates true to scale at 71° S
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
@@ -2527,16 +2552,16 @@ def geoid(
 
     """
     Load  a dataframe of ROSETTA-Ice airborne magnetics data over the Ross Ice Shelf
-
     from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
+    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441- 449.
+    https://doi.org/10.1038/s41561-019-0370-2
     Accessed from https://www.usap-dc.org/view/project/p0010035
-
     Columns:
     Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
     Latitude (degrees): Latitude decimal degrees WGS84
     Longitude (degrees): Longitude decimal degrees WGS84
     unixtime (seconds): The number of seconds that have elapsed since midnight
-        (00:00:00 UTC) on January 1st, 1970
+    (00:00:00 UTC) on January 1st, 1970
     H_Ell (meters): Height above WGS84 ellipsoid
     x (meters): Polar stereographic projected coordinates true to scale at 71° S
     y (meters): Polar stereographic projected coordinates true to scale at 71° S
@@ -2657,6 +2682,7 @@ def magnetics(
     """
     Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
     from  Golynsky et al. (2018). New magnetic anomaly map of the Antarctic. Geophysical
+    Research Letters, 45, 6437- 6449. https://doi.org/10.1029/2018GL078153
 
     version='admap1'
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
@@ -2675,10 +2701,8 @@ def magnetics(
     ----------
     version : str
         Either 'admap1', 'admap2', or 'admap2_gdb'
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2847,6 +2871,7 @@ def ghf(
     Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
 
     version='an-2015'
+    From At et al. 2015: emperature, lithosphere-asthenosphere boundary, and heat flux
     beneath the Antarctic Plate inferred from seismic velocities
     http://dx.doi.org/doi:10.1002/2015JB011917
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
@@ -2856,7 +2881,7 @@ def ghf(
     Research Letters, 44(22), 11417-11426, https://doi.org/10.1002/2017GL075609
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.882503
 
-    verion='shen-2020':
+    version='shen-2020':
     From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
     Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
@@ -2885,10 +2910,7 @@ def ghf(
     ----------
     version : str
         Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3325,10 +3347,7 @@ def gia(
     ----------
     version : str
         For now the only option is 'stal-2020',
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3400,6 +3419,7 @@ def crustal_thickness(
     version='an-2015'
     Crustal thickness (distance from solid (ice and rock) top to Moho discontinuity)
     from An et al. 2015:  S-velocity Model and Inferred Moho Topography beneath the
+    Antarctic Plate from Rayleigh Waves. J. Geophys. Res., 120(1),359-383,
     doi:10.1002/2014JB011332
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
     File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses
@@ -3414,10 +3434,7 @@ def crustal_thickness(
         Either 'shen-2018',
         will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes', 'pappa', 'stal'
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3607,6 +3624,7 @@ def moho(
     version='pappa-2019'
     from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica:
     Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics,
+    Geosystems, 20, 1629- 1645.
     https://doi.org/10.1029/2018GC008111
     Accessed from supplement material
 
@@ -3616,10 +3634,7 @@ def moho(
         Either 'shen-2018', 'an-2015', 'pappa-2019',
         will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes',
-    plot : bool, optional
-        choose to plot grid, by default False
-    info : bool, optional
-        choose to print info on grid, by default False
+    region : str or NDArray, optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from

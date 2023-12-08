@@ -75,7 +75,14 @@ ross_sea = [-500e3, 450e3, -2100e3, -1300e3]
 # ice catchements
 
 
-def get_regions():
+    """
+    get all the regions defined in this module.
+
+    Returns
+    -------
+    dict[str, tuple[float, float, float, float] ]
+        dictionary of each defined region's name and values
+    """
     exclude_list = [
         "__",
         "pd",
@@ -110,14 +117,14 @@ def combine_regions(
 
     Parameters
     ----------
-    region1 : list
+    region1 : tuple[float, float, float, float]
         first region
-    region2 : list
+    region2 : tuple[float, float, float, float]
         second region
 
     Returns
     -------
-    list
+    tuple[float, float, float, float]
         Bounding region of the 2 supplied regions.
     """
     coords1 = utils.region_to_df(region1)
@@ -136,8 +143,8 @@ def draw_region(**kwargs):
 
     Returns
     -------
-    tuple
-        Returns a tuple of list of vertices for each polyline.
+    typing.Any
+        Returns a list of list of vertices for each polyline.
     """
 
     m = maps.interactive_map(**kwargs, show=False)

@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 # Copyright (c) 2022 The Antarctic-Plots Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
@@ -25,6 +26,21 @@ from antarctic_plots import fetch, maps
 try:
     import seaborn as sns
 except ImportError:
+    """
+    function to give the root mean/median squared error (RMSE) of data
+
+    Parameters
+    ----------
+    data : NDArray
+        input data
+    as_median : bool, optional
+        choose to give root median squared error instead, by default False
+
+    Returns
+    -------
+    float
+        RMSE value
+    """
     if as_median:
     else:
 
@@ -37,9 +53,12 @@ except ImportError:
     ----------
     grid : str or xarray.DataArray
         Input grid to get info from. Filename string or loaded grid.
+    print_info : bool, optional
+        If true, prints out the grid info, by default False
 
     Returns
     -------
+    tuple
         (string of grid spacing,
         array with the region boundaries,
         data min,
@@ -115,11 +134,23 @@ def dd2dms(dd: float):
 
 
     """
+    Convert region bounds in GMT format [e, w, n, s] to pandas dataframe with
+    coordinates of region corners, or reverse this if `reverse` is True.
 
     Parameters
     ----------
+    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
+        Tuple of bounding region in GMT format; [e, w, n, s], or, if `reverse` is True,
+        a DataFrame with coordinate columns with names set by `cood_names`
+    coord_names : tuple[str, str], optional
+        names of input or output coordinate columns, by default ("x", "y")
+    reverse : bool, optional
+        If True, convert from df to region tuple, else, convert from region tuple to df,
+        by default False
+
     Returns
     -------
+    tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
         Dataframe with easting and northing columns, and a row for each corner of the
     """
     if reverse is False:
@@ -144,19 +175,25 @@ def dd2dms(dd: float):
 
 
     """
-    [ lower left longitude,
-      lower left latitude,
-      upper right longitude,
-      uper right latitude
+    Convert GMT region in format [e, w, n, s] to bounding box format used for icepyx:
+    [
+    lower left longitude,
+    lower left latitude,
+    upper right longitude,
+    upper right latitude
     ]
     Same format as [xmin, ymin, xmax, ymax], used for `bbox` parameter of
     geopandas.read_file
 
     Parameters
     ----------
+    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+        region boundaries in GMT format; [e, w, n, s] in meters or degrees.
 
     Returns
     -------
+    tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+        region boundaries in bounding box format.
     """
 
 
@@ -168,12 +205,19 @@ def latlon_to_epsg3031(
 
     Parameters
     ----------
+    df : pd.DataFrame or NDArray
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
+    input_coord_names : list, optional
+        set names for input coordinate columns, by default ["lon", "lat"]
+    output_coord_names : list, optional
+        set names for output coordinate columns, by default ["x", "y"]
 
     Returns
     -------
+    pd.DataFrame or NDArray
+        Updated dataframe with new easting and northing columns or NDArray in format
         [e, w, n, s]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
@@ -198,12 +242,19 @@ def latlon_to_epsg3031(
 
     Parameters
     ----------
+    df : pd.DataFrame or NDArray
         input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
+    input_coord_names : list, optional
+        set names for input coordinate columns, by default ["x", "y"]
+    output_coord_names : list, optional
+        set names for output coordinate columns, by default ["lon", "lat"]
 
     Returns
     -------
+    pd.DataFrame or NDArray
+        Updated dataframe with new latitude and longitude columns, NDArray in
         format [e, w, n, s], or list in format [lat, lon]
     """
 
@@ -233,10 +284,10 @@ def points_inside_region(
     ----------
     df : pd.DataFrame
         dataframe with columns 'x','y' to use for defining if within region
-    region : list
-        GMT region string to use as bounds for new subset dataframe
-    names : list, optional
-        list of column names to use for x and y coordinates, by default ["x", "y"]
+    region : tuple[float, float, float, float]
+        bounding region in GMT format for bounds of new subset dataframe
+    names : tuple[str, str], optional
+        column names to use for x and y coordinates, by default ("x", "y")
     reverse : bool, optional
         if True, will return points outside the region, by default False
 
@@ -264,6 +315,25 @@ def points_inside_region(
 
 def block_reduce(
     df: pd.DataFrame,
+    """
+    perform a block reduction of a dataframe.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        data to block reduce
+    reduction : typing.Callable
+        function to use in reduction, e.g. np.mean
+    input_coord_names : tuple[str, str], optional
+        strings of coordinate column names, by default ("x", "y")
+    input_data_names : typing.Any | None, optional
+        strings of data column names, by default None
+
+    Returns
+    -------
+    pd.DataFrame
+        a block-reduced dataframe
+    """
     # define verde reducer function
     reducer = vd.BlockReduce(reduction, **kwargs)
 
@@ -300,17 +370,19 @@ def mask_from_shp(
 
     Parameters
     ----------
-    shapefile : Union[str or gpd.geodataframe.GeoDataFrame]
+    shapefile : str or gpd.geodataframe.GeoDataFrame]
         either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
-         been loaded into a geodataframe.
+        been loaded into a geodataframe.
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
-    xr_grid : xarray.DataArray, optional
+    xr_grid : xr.DataArray, optional
         _xarray.DataArray; to use to define region, or to mask, by default None
     grid_file : str, optional
         path to a .nc or .tif file to use to define region or to mask, by default None
+    region : str or tuple[float, float, float, float], optional
+        bounding region in GMT format in meters to create a dummy grid if none are
         supplied, by default None
     spacing : str or int, optional
         grid spacing in meters to create a dummy grid if none are supplied, by default
@@ -374,10 +446,12 @@ def alter_region(
     buffer: float = 0,
     print_reg: bool = False,
     """
-    out, or adding a seperate buffer region.
+    Change a bounding region by shifting the box east/west or north/south, zooming in or
+    out, or adding a separate buffer region.
 
     Parameters
     ----------
+    starting_region : tuple[float, float, float, float]
         Initial GMT formatted region in meters, [e,w,n,s]
     zoom : float, optional
         zoom in or out, in meters, by default 0
@@ -392,6 +466,8 @@ def alter_region(
 
     Returns
     -------
+    tuple[tuple[float, float, float, float], tuple[float, float, float, float]]
+        Returns two tuples: region, buffer_region
     """
 
 
@@ -418,6 +494,8 @@ def set_proj(
 
     Parameters
     ----------
+    region : tuple[float, float, float, float]
+        region boundaries in GMT-format (e, w, n, s) in meters EPSG:3031
     fig_height : float
         desired figure height in cm
     fig_width : float
@@ -426,9 +504,9 @@ def set_proj(
 
     Returns
     -------
-    list
-        returns a list of the following variables: (proj, proj_latlon, fig_width,
-        fig_height)
+    tuple
+        returns a tuple of the following variables: proj, proj_latlon, fig_width,
+        fig_height
     """
     e, w, n, s = region
 
@@ -459,7 +537,7 @@ def grd_trend(
     ----------
     da : xr.DataArray
         input grid
-    coords : list, optional
+    coords : tuple[str, str, str], optional
         coordinate names of the supplied grid, by default ['x', 'y', 'z']
     deg : int, optional
         trend order to use, by default 1
@@ -470,7 +548,7 @@ def grd_trend(
 
     Returns
     -------
-    tuple
+    tuple[xr.DataArray, xr.DataArray]
         returns xr.DataArrays of the fitted surface, and the detrended grid.
     """
 
@@ -609,20 +687,25 @@ def grd_compare(
         plot the results, by default False
     plot_type : str, optional
         choose the style of plot, by default is pygmt, can choose xarray for faster,
-        simplier plots.
+        simpler plots.
+    robust : bool, optional
+        use xarray robust color lims instead of min and max, by default is False.
+
     Keyword Args
     ------------
     shp_mask : str
         shapefile filename to use to mask the grids for setting the color range.
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
+    region : tuple[float, float, float, float]
         choose a specific region to compare.
     rmse_in_title: bool
         add the RMSE to the title, by default is True.
+
     Returns
     -------
-    list
-        list of xr.DataArrays: (diff, resampled grid1, resampled grid2)
+    tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+        three xr.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask", None)
     region = kwargs.get("region", None)
@@ -903,6 +986,8 @@ def make_grid(
 
     Parameters
     ----------
+    region : tuple[float, float, float, float]
+        bounding region in GMT format
     spacing : float
         spacing for grid
     value : float
@@ -928,16 +1013,22 @@ def raps(
 
     Parameters
     ----------
+    data : Union[pd.DataFrame, str, list, xr.Dataset, xr.DataArray]
         if dataframe: need with columns 'x', 'y', and other columns to calc RAPS for.
         if str: should be a .nc or .tif file.
         if list: list of grids or filenames.
+    names : NDArray
+        names of pd.dataframe columns, xr.Dataset variables, xr.DataArray variable, or
         files to calculate and plot RAPS for.
     plot_type : str, optional
         choose whether to plot with PyGMT or matplotlib, by default 'mpl'
+    filter_str : str
         GMT string to use for pre-filtering data, ex. "c100e3+h" is a 100km low-pass
         cosine filter, by default is None.
+
     Keyword Args
     ------------
+    region : str | tuple[float, float, float, float]
         grid region if input is not a grid
     spacing : float
         grid spacing if input is not a grid
@@ -1035,12 +1126,49 @@ def coherency(grids: list, label: str, **kwargs):
         grid format can be str (filename), xr.DataArray, or pd.DataFrame.
     label : str
         used to label line.
+
     Keyword Args
     ------------
+    region : str | tuple[float, float, float, float]
         grid region if input is pd.DataFrame
     spacing : float
         grid spacing if input is pd.DataFrame
 
+    Examples
+    --------
+    utils.coherency(
+    grids = [
+        iter_corrections[['x','y','iter_1_initial_top']],
+        df_inversion[['x','y','Gobs']]],
+        spacing=grav_spacing,
+        region=inv_reg,
+        label='0'
+        )
+    utils.coherency(
+        grids = [
+            iter_corrections[['x','y','iter_1_final_top']],
+            df_inversion[['x','y','Gobs']]],
+            spacing=grav_spacing,
+            region=inv_reg,
+            label='1'
+            )
+    utils.coherency(
+        grids = [
+            iter_corrections[['x','y','iter_2_final_top']],
+            df_inversion[['x','y','Gobs']]],
+            spacing=grav_spacing,
+            region=inv_reg,
+            label='2'
+            )
+    utils.coherency(
+        grids = [
+            iter_corrections[['x','y','iter_3_final_top']],
+            df_inversion[['x','y','Gobs']]],
+            spacing=grav_spacing,
+            region=inv_reg,
+            label='3'
+            )
+    """
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
@@ -1107,7 +1235,8 @@ def coherency(grids: list, label: str, **kwargs):
     return ax
 
 
-def square_subplots(n: int):
+    """
+    From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py
     Calculate the number of rows and columns based on the total number of items (n) to
     make an arrangement as close to square as looks good.
 
@@ -1118,7 +1247,10 @@ def square_subplots(n: int):
 
     Returns
     -------
-    tuple
+    tuple[int, int]
+        Returns a tuple in the format (number of rows, number of columns), so for
+        example a 3 x 2 grid would be represented as ``(3, 3)``, because there are 2
+        rows of length 3.
     """
         1: (1, 1),
         2: (1, 2),
@@ -1193,9 +1325,10 @@ def get_min_max(
     robust: bool, optional
         choose whether to return the 2nd and 98th percentile values, instead of the
         min/max
+
     Returns
     -------
-    tuple
+    tuple[float, float]
         returns the min and max values.
     """
 
@@ -1252,8 +1385,8 @@ def polygon_to_region(polygon: list):
 
     Returns
     -------
-    list
-        list in format [e,w,n,s]
+    tuple[float, float, float, float]
+        region in format [e,w,n,s]
     """
 
     df = shapes_to_df(polygon)
@@ -1282,13 +1415,14 @@ def mask_from_polygon(
         drop nans after masking, by default False
     grid : Union[str, xr.DataArray], optional
         grid to mask, by default None
-    region : list, optional
+    region : tuple[float, float, float, float], optional
         region to create a grid if none is supplied, by default None
     spacing : int, optional
         spacing to create a grid if none is supplied, by default None
 
     Returns
     -------
+    xr.DataArray
         masked grid or mask grid with 1's inside the mask.
     """
 
@@ -1348,6 +1482,7 @@ def change_reg(grid):
     Returns
     -------
     xr.DataArray
+        returns a xr.DataArray with switch reg type.
     """
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_grid(grid) as f_in:
@@ -1377,6 +1512,7 @@ def grd_blend(
     Returns
     -------
     xr.DataArray
+        returns a blended grid.
     """
         with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
             # store the input grids in a virtual files so GMT can read it from
@@ -1391,22 +1527,75 @@ def grd_blend(
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
 
 
+    """
+    Get the width of the current PyGMT figure instance.
+
+    Returns
+    -------
+    float
+        width of the figure
+    """
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
             map_width = tmpfile.read().strip()
     return float(map_width)
 
 
+    """
+    Get the height of the current PyGMT figure instance.
+
+    Returns
+    -------
+    float
+        height of the figure
+    """
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
             map_height = tmpfile.read().strip()
     return float(map_height)
 
 
+    """
+    convert a tuple of floats representing the boundaries of a region into a GMT-style
+    region string
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float]
+        bounding region in format (e, w, n, s)
+
+    Returns
+    -------
+    str
+        a GMT style region string
+    """
     return "".join([str(x) + "/" for x in region])[:-1]
 
 
 def grd_mask(
+    """
+    Wrapper for GMT grdmask function
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        _description_
+    spacing : float
+        _description_
+    region : tuple[float, float, float, float]
+        _description_
+    clobber : str, optional
+        _description_, by default "o"
+    values : str, optional
+        _description_, by default "0/0/1"
+    radius : str, optional
+        _description_, by default "0c"
+
+    Returns
+    -------
+    xr.DataArray
+        _description_
+    """
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
             # send the output to a file so that we can read it
