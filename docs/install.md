@@ -4,7 +4,7 @@
 
 See below for the full installation instructions. If instead you'd like to use
 this package online, without needing to install anything, check out our
-[Binder link](https://mybinder.org/v2/gh/mdtanker/antarctic_plots/c88a23c9dfe92c36f0bfdbbc277d926c2de763de),
+[Binder link](https://mybinder.org/v2/gh/mdtanker/antarctic_plots/main),
 which gives full access the the package in an online environment.
 
 This Binder environment can also be accessed by clicking the Binder icon in any
