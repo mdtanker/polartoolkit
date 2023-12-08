@@ -877,7 +877,7 @@ def add_inset(
         add_box(
             fig,
             box=region,
-            pen=kwargs.get("inset_box_pen", "1p,black"),
+            pen=kwargs.get("inset_box_pen", "1p,red"),
         )
 
 
