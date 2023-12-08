@@ -476,7 +476,8 @@ def plot_grd(
             font_color=kwargs.get("font_color", "black"),
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("length_perc", 0.25),
-            position=kwargs.get("position", "n.5/.05"),
+            position=kwargs.get("scale_position", "n.5/.05"),
+            **kwargs,
         )
 
     # add north arrow
