@@ -34,13 +34,13 @@ except ImportError:
     sns = None
 
 
-def rmse(data: NDArray, as_median: bool = False) -> float:
+def rmse(data: typing.Any, as_median: bool = False) -> float:
     """
     function to give the root mean/median squared error (RMSE) of data
 
     Parameters
     ----------
-    data : NDArray
+    data : NDArray[typing.Any, typing.Any]
         input data
     as_median : bool, optional
         choose to give root median squared error instead, by default False
@@ -142,13 +142,14 @@ def get_grid_info(
         logging.warning(
             "grid registration not extracted, re-trying with file loaded as xarray grid"
         )
-        grid = xr.load_dataarray(grid)
-        try:
-            reg = grid.gmt.registration
-            registration = "g" if reg == 0 else "p"
-        except AttributeError:
-            logging.warning("grid registration can't be extracted, setting to 'g'.")
-            registration = "g"
+        # grid = xr.load_dataarray(grid)
+        with xr.open_dataarray(grid) as da:
+            try:
+                reg = da.gmt.registration
+                registration = "g" if reg == 0 else "p"
+            except AttributeError:
+                logging.warning("grid registration can't be extracted, setting to 'g'.")
+                registration = "g"
     except Exception as e:  # pylint: disable=broad-exception-caught
         logging.exception(e)
         logging.warning("grid registration can't be extracted")
@@ -284,18 +285,18 @@ def region_to_bounding_box(
 
 
 def latlon_to_epsg3031(
-    df: pd.DataFrame | NDArray,
+    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] = ("lon", "lat"),
     output_coord_names: tuple[str, str] = ("x", "y"),
-) -> pd.DataFrame | NDArray:
+) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
     Polar Stereographic in meters.
 
     Parameters
     ----------
-    df : pd.DataFrame or NDArray
+    df : pd.DataFrame or NDArray[typing.Any, typing.Any]
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -306,7 +307,7 @@ def latlon_to_epsg3031(
 
     Returns
     -------
-    pd.DataFrame or NDArray
+    pd.DataFrame or NDArray[typing.Any, typing.Any]
         Updated dataframe with new easting and northing columns or NDArray in format
         [e, w, n, s]
     """
@@ -336,18 +337,18 @@ def latlon_to_epsg3031(
 
 
 def epsg3031_to_latlon(
-    df: pd.DataFrame | NDArray,
+    df: pd.DataFrame | list[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] = ("x", "y"),
     output_coord_names: tuple[str, str] = ("lon", "lat"),
-) -> pd.DataFrame | NDArray:
+) -> pd.DataFrame | list[typing.Any]:
     """
     Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
     EPSG:4326 WGS84 in decimal degrees.
 
     Parameters
     ----------
-    df : pd.DataFrame or NDArray
+    df : pd.DataFrame or list[typing.Any]
         input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -358,7 +359,7 @@ def epsg3031_to_latlon(
 
     Returns
     -------
-    pd.DataFrame or NDArray
+    pd.DataFrame or list[typing.Any]
         Updated dataframe with new latitude and longitude columns, NDArray in
         format [e, w, n, s], or list in format [lat, lon]
     """
@@ -369,17 +370,18 @@ def epsg3031_to_latlon(
 
     if isinstance(df, pd.DataFrame):
         (  # pylint: disable=unpacking-non-sequence
-            df_out[output_coord_names[1]],
-            df_out[output_coord_names[0]],
+            df_out[output_coord_names[1]],  # type: ignore[call-overload]
+            df_out[output_coord_names[0]],  # type: ignore[call-overload]
         ) = transformer.transform(
-            df_out[input_coord_names[0]].tolist(), df_out[input_coord_names[1]].tolist()
+            df_out[input_coord_names[0]].tolist(),  # type: ignore[call-overload]
+            df_out[input_coord_names[1]].tolist(),  # type: ignore[call-overload]
         )
         if reg is True:
             df_out = [
-                df_out[output_coord_names[0]].min(),
-                df_out[output_coord_names[0]].max(),
-                df_out[output_coord_names[1]].min(),
-                df_out[output_coord_names[1]].max(),
+                df_out[output_coord_names[0]].min(),  # type: ignore[call-overload]
+                df_out[output_coord_names[0]].max(),  # type: ignore[call-overload]
+                df_out[output_coord_names[1]].min(),  # type: ignore[call-overload]
+                df_out[output_coord_names[1]].max(),  # type: ignore[call-overload]
             ]
     else:
         df_out = list(transformer.transform(df_out[0], df_out[1]))
@@ -581,7 +583,7 @@ def mask_from_shp(
     except ValueError as e:
         logging.exception(e)
 
-    return output
+    return typing.cast(xr.DataArray, output)
 
 
 def alter_region(
@@ -957,6 +959,9 @@ def grd_compare(
             verbose=verbose,
         )
 
+    grid1 = typing.cast(xr.DataArray, grid1)
+    grid2 = typing.cast(xr.DataArray, grid2)
+
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
@@ -1189,12 +1194,15 @@ def make_grid(
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) * value
-    return vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
+    return typing.cast(
+        xr.DataArray,
+        vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name),
+    )
 
 
 def raps(
     data: pd.DataFrame | xr.DataArray | xr.Dataset,
-    names: NDArray,
+    names: NDArray[typing.Any, typing.Any],
     plot_type: str = "mpl",
     filter_str: str | None = None,
     **kwargs: typing.Any,
@@ -1208,7 +1216,7 @@ def raps(
         if dataframe: need with columns 'x', 'y', and other columns to calc RAPS for.
         if str: should be a .nc or .tif file.
         if list: list of grids or filenames.
-    names : NDArray
+    names : NDArray[typing.Any, typing.Any]
         names of pd.dataframe columns, xr.Dataset variables, xr.DataArray variable, or
         files to calculate and plot RAPS for.
     plot_type : str, optional
@@ -1667,6 +1675,7 @@ def mask_from_polygon(
     # if grid given as filename, load it
     if isinstance(grid, str):
         grid = xr.load_dataarray(grid)
+        grid = typing.cast(xr.DataArray, grid)
         ds = grid.to_dataset()
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
@@ -1697,7 +1706,7 @@ def mask_from_polygon(
     if drop_nans is True:
         masked = masked.where(masked.notnull() == 1, drop=True)
 
-    return masked
+    return typing.cast(xr.DataArray, masked)
 
 
 def change_reg(grid: xr.DataArray) -> xr.DataArray:
@@ -1721,7 +1730,7 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
             with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
                 args = f"{f_in} -T -G{tmpfile.name}"
                 ses.call_module("grdedit", args)
-                f_out = pygmt.load_dataarray(tmpfile.name)
+                f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
     return f_out
 
 
@@ -1756,7 +1765,9 @@ def grd_blend(
                 #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
                 args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
                 session.call_module(module="grdblend", args=args)
-    return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
+    return typing.cast(
+        xr.DataArray, pygmt.load_dataarray(infile1)
+    )  # if outgrid == tmpfile.name else None
 
 
 def get_fig_width() -> float:
@@ -1850,5 +1861,5 @@ def grd_mask(
                     f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
                 )
                 ses.call_module("grdmask", args)
-                f_out = pygmt.load_dataarray(tmpfile.name)
+                f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
     return f_out

@@ -10,16 +10,13 @@ from __future__ import annotations
 
 import logging
 import typing
-from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 import pygmt
 import pyogrio
 import verde as vd
-
-if TYPE_CHECKING:
-    import xarray as xr
+import xarray as xr
 
 from antarctic_plots import fetch, maps, utils
 
@@ -50,9 +47,9 @@ def create_profile(
     ----------
     method : str
         Choose sampling method, either "points", "shapefile", or "polyline"
-    start :np.ndarray, optional
+    start : tuple[float, float], optional
         Coordinates for starting point of profile, by default None
-    stop : np.ndarray, optional
+    stop : tuple[float, float], optional
         Coordinates for eding point of profile, by default None
     num : int, optional
         Number of points to sample at, for "points" by default is 100, for other methods
@@ -78,6 +75,8 @@ def create_profile(
         if any(a is None for a in [start, stop]):
             msg = f"If method = {method}, 'start' and 'stop' must be set."
             raise ValueError(msg)
+        start = typing.cast(tuple[float, float], start)
+        stop = typing.cast(tuple[float, float], stop)
         coordinates = pd.DataFrame(
             data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
         )
@@ -394,6 +393,8 @@ def default_data(
         # spacing=10e3,
         verbose=verbose,
     )
+    mag = typing.cast(xr.DataArray, mag)
+
     fa_grav = fetch.gravity(
         version="antgg-update",
         anomaly_type="FA",
@@ -1478,9 +1479,8 @@ def draw_lines(**kwargs: typing.Any) -> typing.Any:
         raise ImportError(msg)
 
     if display is None:
-        msg = """
-            Missing optional dependency 'ipython' required for interactive plotting.
-        """
+        msg = "Missing optional dependency 'ipython' required for interactive plotting."
+
         raise ImportError(msg)
 
     m = maps.interactive_map(**kwargs, show=False)
@@ -1517,6 +1517,6 @@ def draw_lines(**kwargs: typing.Any) -> typing.Any:
     m.add_control(mydrawcontrol)
 
     clear_m()
-    display(m)  # pylint:disable=undefined-variable # type: ignore[name-defined]
+    display(m)
 
     return lines  # type: ignore[name-defined]

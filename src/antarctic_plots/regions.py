@@ -163,9 +163,7 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
         raise ImportError(msg)
 
     if display is None:
-        msg = """
-            Missing optional dependency 'ipython' required for interactive plotting.
-        """
+        msg = "Missing optional dependency 'ipython' required for interactive plotting."
         raise ImportError(msg)
 
     m = maps.interactive_map(**kwargs, show=False)
@@ -202,6 +200,6 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
     m.add_control(mydrawcontrol)
 
     clear_m()
-    display(m)  # pylint: disable=undefined-variable # type: ignore[name-defined]
+    display(m)
 
     return poly  # type: ignore[name-defined]

@@ -188,7 +188,7 @@ def basemap(
 
 
 def plot_grd(
-    grid: str | xr.DataArray | None,
+    grid: str | xr.DataArray,
     cmap: str | bool = "viridis",
     region: tuple[float, float, float, float] | None = None,
     coast: bool = False,
@@ -200,7 +200,7 @@ def plot_grd(
 
     Parameters
     ----------
-    grid : Union[str or xr.DataArray]
+    grid : str or xr.DataArray
         grid file to plot, either loaded xr.DataArray or string of a filename
     cmap : str or bool, optional
         GMT color scale to use, by default 'viridis'
@@ -219,16 +219,16 @@ def plot_grd(
         set to True if plotting imagery to correctly set colorscale.
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
-    cmap_region : Union[str or np.ndarray]
+    cmap_region : str or tuple[float, float, float, float]
         region to use to define color scale if grd2cpt is True, by default is
         region
     cbar_label : str
         label to add to colorbar.
     points : pd.DataFrame
         points to plot on map, must contain columns 'x' and 'y'.
-    show_region : np.ndarray
+    show_region : tuple[float, float, float, float]
         GMT-format region to use to plot a bounding regions.
-    cpt_lims : Union[str or tuple]
+    cpt_lims : str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
     fig : pygmt.Figure()
         if adding subplots, set the first returned figure to a variable, and add that
@@ -368,7 +368,7 @@ def plot_grd(
         )
         colorbar = False
     elif grd2cpt is True:
-        if cpt_lims is None:
+        if cpt_lims is None and isinstance(grid, (xr.DataArray)):
             zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
         else:
             zmin, zmax = cpt_lims
@@ -409,7 +409,8 @@ def plot_grd(
             )
     else:
         try:
-            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+            if isinstance(grid, (xr.DataArray)):
+                zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -1090,7 +1091,7 @@ def interactive_map(
     display_xy : bool, optional
         choose if you want clicks to show the xy location, by default True
     show : bool, optional
-        choose whether to displat the map, by default True
+        choose whether to display the map, by default True
     points : pd.DataFrame, optional
         choose to plot points supplied as columns x, y, in EPSG:3031 in a dataframe
     basemap_type : str, optional
@@ -1111,9 +1112,7 @@ def interactive_map(
         raise ImportError(msg)
 
     if display is None:
-        msg = """
-            Missing optional dependency 'ipython' required for interactive plotting.
-        """
+        msg = "Missing optional dependency 'ipython' required for interactive plotting."
         raise ImportError(msg)
 
     layout = ipywidgets.Layout(
@@ -1127,7 +1126,7 @@ def interactive_map(
             center_ll = [points.lon.mean(), points.lat.mean()]
         else:
             # convert points to lat lon
-            points_ll = utils.epsg3031_to_latlon(points)
+            points_ll: pd.DataFrame = utils.epsg3031_to_latlon(points)
             # if points supplied, center map on points
             center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
             # add points to geodataframe
@@ -1173,7 +1172,7 @@ def interactive_map(
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
-        display(label_xy)  # pylint: disable=undefined-variable # type: ignore[name-defined]
+        display(label_xy)
 
         def handle_click(**kwargs: typing.Any) -> None:
             if kwargs.get("type") == "click":
@@ -1183,7 +1182,7 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
-        display(m)  # pylint: disable=undefined-variable # type: ignore[name-defined]
+        display(m)
 
     return m
 
@@ -1493,7 +1492,7 @@ def plot_3d(
 
 def interactive_data(
     coast: bool = True,
-    grid: xr.DataArray = None,
+    grid: xr.DataArray | None = None,
     grid_cmap: str = "inferno",
     points: pd.DataFrame = None,
     points_z: str | None = None,
