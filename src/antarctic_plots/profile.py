@@ -530,9 +530,18 @@ def plot_profile(
         if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
             msg = f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
             raise ValueError(msg)
-        df_layers = shorten(df_layers, **kwargs)
+        df_layers = shorten(
+            df_layers,
+            max_dist=kwargs.get("max_dist", None),
+            min_dist=kwargs.get("min_dist", None),
+        )
+
         if data_dict is not None:
-            df_data = shorten(df_data, **kwargs)
+            df_data = shorten(
+                df_data,
+                max_dist=kwargs.get("max_dist", None),
+                min_dist=kwargs.get("min_dist", None),
+            )
 
     fig = pygmt.Figure()
 
@@ -1092,7 +1101,11 @@ def plot_data(
         if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
             msg = f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
             raise ValueError(msg)
-    df_data = shorten(df_data, **kwargs)
+    df_data = shorten(
+        df_data,
+        max_dist=kwargs.get("max_dist", None),
+        min_dist=kwargs.get("min_dist", None),
+    )
 
     fig = pygmt.Figure()
 
