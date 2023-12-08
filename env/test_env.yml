@@ -32,6 +32,7 @@ dependencies:
   - geoviews
   - cartopy
   - ipyleaflet
+  - ipython
   # viz
   - seaborn
   # test
