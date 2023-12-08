@@ -86,6 +86,7 @@ dev = [
     "python-semantic-release >=8",
     "ipykernel",
     "jupyterlab",
+    "mypy",
 ]
 all = [
   "antarctic-plots[interactive,viz,test,dev,docs]",
