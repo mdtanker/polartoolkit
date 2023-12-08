@@ -603,7 +603,7 @@ def add_colorbar(
 
     # add colorbar
     with pygmt.config(
-        FONT=kwargs.get("cbar_font", "10p,Helvetica,black"),
+        FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
         fig.colorbar(
             cmap=kwargs.get("cmap", True),
