@@ -49,13 +49,17 @@ alt="Zenodo DOI"
 
 ![](docs/cover_fig.png)
 
-<!-- SPHINX-START2 -->
-
 ## Disclaimer
 
 <p align="center">
-🚨 **This package is in early stages of design and implementation.** 🚨
- </p>
+🚨 **This package is in early stages of development.** 🚨
+</p>
+
+This means that we are still adding a lot of new features and sometimes we make
+changes to the ones we already have while we try to improve the software based
+on users' experience, test new ideas, make better design decisions, etc. Some of
+these changes could be **backwards incompatible**. Keep that in mind before you
+update Antarctic-Plots to a newer version.
 
 I welcome any feedback, ideas, or contributions! Please contact us on the
 [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions)
@@ -63,7 +67,7 @@ or submit an
 [issue on GitHub](https://github.com/mdtanker/antarctic_plots/issues) for
 problems or feature ideas.
 
-## About
+<!-- SPHINX-START2 -->
 
 The **Antarctic-Plots** python package provides some basic tools to help in
 conducting Antarctic research. You can use it to download common datasets (i.e.
@@ -86,3 +90,16 @@ a feature request through
 - Additional projections and possible support for the Arctic region as well.
 
 <!-- SPHINX-END2 -->
+
+## How to contribute
+
+I really welcome all forms of contribution! If you have any questions, comments
+or suggestions, please open a [discussion]() or [issue (feature request)]() on
+the [GitHub page](https://github.com/mdtanker/antarctic_plots/)!
+
+Also, please feel free to share how you're using Antarctic-Plots, I'd love to
+know.
+
+Please, read our
+[Contributor Guide](https://github.com/mdtanker/antarctic_plots/blob/main/.github/CONTRIBUTING.md)
+to learn how you can contribute to the project.

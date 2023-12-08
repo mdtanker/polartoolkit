@@ -13,11 +13,33 @@ Functions to automate Antarctic data visualization
 :align: center
 ```
 
+```{admonition} Early-stages of development
+:class: seealso
+
+This package is in early stages of development! This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update Antarctic-Plots to a newer version.
+```
+
+
 ```{include} ../README.md
 :start-after: <!-- SPHINX-START2 -->
 :end-before: <!-- SPHINX-END2 -->
 ```
 
+
+```{admonition} How to contribute
+:class: seealso
+
+I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion]() or [issue (feature request)]() on the [GitHub page](https://github.com/mdtanker/antarctic_plots/)!
+
+Also, please feel free to share how you're using Antarctic-Plots, I'd love to know.
+
+Please, read our [Contributor Guide](https://github.com/mdtanker/antarctic_plots/blob/main/.github/CONTRIBUTING.md) to learn
+how you can contribute to the project.
+```
+
+```{note}
+*Many parts of this documentation was adapted from the* [Fatiando project](https://www.fatiando.org/).
+```
 
 ```{toctree}
 :maxdepth: 1
@@ -112,26 +134,3 @@ Citations help support our work
 ```
 :::
 ::::
-
-
-```{admonition} Early-stages of development
-:class: seealso
-
-This package is at the very beginning of it's development! This means that we are still adding a lot of new features and sometimes we
-make changes to the ones we already have while we try to improve the
-software based on users' experience, test new ideas, take better design
-decisions, etc.
-Some of these changes could be **backwards incompatible**. Keep that in
-mind before you update Antarctic-Plots to a newer version.
-```
-
-```{admonition} How to contribute
-:class: seealso
-
-Please, read our [Contributor Guide](https://github.com/mdtanker/antarctic_plots/blob/main/.github/CONTRIBUTING.md) to learn
-how you can contribute to the project.
-```
-
-```{note}
-*Many parts of this documentation was adapted from the* [Fatiando project](https://www.fatiando.org/).
-```
