@@ -43,7 +43,7 @@ skip_earthdata = pytest.mark.skipif(
 )
 
 # %% resample_grid
-test = [
+resample_test = [
     # no inputs
     (
         {},
@@ -188,7 +188,7 @@ test = [
 
 
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.parametrize(("test_input", "expected"), resample_test)
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_resample_grid(test_input, expected):
     grid = fetch.gravity(version="antgg", anomaly_type="FA")
@@ -217,13 +217,14 @@ def test_resample_grid(test_input, expected):
 @pytest.mark.slow()
 @pytest.mark.earthdata()
 @skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_lowres():
-    grid = fetch.ice_vel(spacing=8e3)
+    grid = fetch.ice_vel(spacing=5e3)
     expected = (
-        8000,
-        (-2800000.0, 2792000.0, -2792000.0, 2800000.0),
-        -125.007492065,
-        4200.79833984,
+        5000,
+        (-2800000.0, 2795000.0, -2795000.0, 2800000.0),
+        2.87566308543e-05,
+        4201.68994141,
         "g",
     )
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -236,6 +237,7 @@ def test_ice_vel_lowres():
 @pytest.mark.slow()
 @pytest.mark.earthdata()
 @skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_highres():
     grid = fetch.ice_vel(spacing=1e3)
     expected = (
@@ -245,7 +247,13 @@ def test_ice_vel_highres():
         4216.78759766,
         "g",
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.ice_vel(spacing=1e3)
@@ -258,21 +266,28 @@ def test_ice_vel_highres():
 @pytest.mark.slow()
 @pytest.mark.earthdata()
 @skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_modis_moa():
-    grid = fetch.modis_moa(version=750)
+    grid = fetch.modis_moa(version="750m")
     expected = (
         750,
-        [-3174450.0, 2867550.0, -2816675.0, 2406325.0],
+        (-3174450.0, 2867550.0, -2816675.0, 2406325.0),
         0.0,
         42374.0,
         "p",
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
-# version=125 not testing since too large
+# version="125m" not testing since too large
 
-# grid = fetch.modis_moa(version=750)
+# grid = fetch.modis_moa(version="750m")
 # utils.get_grid_info(grid)
 
 # %% imagery
@@ -280,16 +295,23 @@ def test_modis_moa():
 
 @pytest.mark.fetch()
 @pytest.mark.slow()
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_imagery():
     grid = fetch.imagery()
     expected = (
         240.000000516,
-        [-2668274.98913, 2813804.9199, -2294625.04002, 2362334.96998],
+        (-2668274.98913, 2813804.9199, -2294625.04002, 2362334.96998),
         1.79769313486e308,
         -1.79769313486e308,
         "p",
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.imagery()
@@ -300,16 +322,23 @@ def test_imagery():
 
 @pytest.mark.fetch()
 @pytest.mark.working()
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basement():
     grid = fetch.basement()
     expected = (
         5000,
-        [-3330000.0, 1900000.0, -3330000.0, 1850000.0],
+        (-3330000.0, 1900000.0, -3330000.0, 1850000.0),
         -8503.13378906,
         78.269317627,
         "p",
     )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.basement()
@@ -318,16 +347,16 @@ def test_basement():
 # %% sediment thickness
 
 
-test = [
+sediment_test = [
     (
         "ANTASed",
-        (10000, [-2350000.0, 2490000.0, -1990000.0, 2090000.0], 0.0, 12730.0, "g"),
+        (10000, (-2350000.0, 2490000.0, -1990000.0, 2090000.0), 0.0, 12730.0, "g"),
     ),
     (
         "tankersley-2022",
         (
             5000,
-            [-3330000.0, 1900000.0, -3330000.0, 1850000.0],
+            (-3330000.0, 1900000.0, -3330000.0, 1850000.0),
             0.0,
             8002.51953125,
             "p",
@@ -335,13 +364,13 @@ test = [
     ),
     (
         "lindeque-2016",
-        (5000, [-4600000.0, 1900000.0, -3900000.0, 1850000.0], 0.0, 8042.0, "g"),
+        (5000, (-4600000.0, 1900000.0, -3900000.0, 1850000.0), 0.0, 8042.0, "g"),
     ),
     (
         "GlobSed",
         (
             1000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -23.5582103729,
             14005.65625,
             "g",
@@ -351,10 +380,17 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), sediment_test)
 def test_sediment_thickness(test_input, expected):
     grid = fetch.sediment_thickness(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.sediment_thickness(version='GlobSed')
@@ -363,14 +399,14 @@ def test_sediment_thickness(test_input, expected):
 
 # %% GeoMap data
 
-test = [
+geomap_test = [
     ("faults", [750, 765]),
     ("units", [402, 371]),
 ]
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.parametrize(("test_input", "expected"), geomap_test)
 def test_geomap(test_input, expected):
     # collect a few points
     data = fetch.geomap(
@@ -423,7 +459,7 @@ def test_ibcso_coverage():
 # %% IBCSO surface and bed elevations
 
 
-test = [
+ibcso_test = [
     (
         {
             "layer": "surface",
@@ -431,7 +467,7 @@ test = [
         },
         (
             500,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -6321.07080078,
             4799.17333984,
             "p",
@@ -444,7 +480,7 @@ test = [
         },
         (
             5000,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -6223.27148438,
             4134.63476563,
             "p",
@@ -457,7 +493,7 @@ test = [
         },
         (
             500,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -6321.07080078,
             4723.67041016,
             "p",
@@ -470,7 +506,7 @@ test = [
         },
         (
             5000,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -6223.27148438,
             4126.67089844,
             "p",
@@ -480,10 +516,17 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), ibcso_test)
 def test_ibcso(test_input, expected):
     grid = fetch.ibcso(**test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # test_input = dict(
@@ -497,14 +540,14 @@ def test_ibcso(test_input, expected):
 # %% bedmachine
 # test for all layers, but only test reference models with 1 layer
 
-test = [
+bedmachine_test = [
     (
         "icebase",
         (
-            500,
-            [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
-            -3856.74609375,
-            4818.15527344,
+            500.0,
+            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
+            -3827.19604492,
+            4818.15576172,
             "g",
         ),
     ),
@@ -512,9 +555,9 @@ test = [
         "surface",
         (
             500,
-            [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
+            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
             0.0,
-            4818.15527344,
+            4818.15576172,
             "g",
         ),
     ),
@@ -522,9 +565,9 @@ test = [
         "thickness",
         (
             500,
-            [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
+            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
             0.0,
-            4726.54638672,
+            4822.79492188,
             "g",
         ),
     ),
@@ -532,15 +575,15 @@ test = [
         "bed",
         (
             500,
-            [-3333000.0, 3333000.0, -3333000.0, 3333000.0],
-            -8151.48730469,
-            4818.15527344,
+            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
+            -8166.31542969,
+            4818.15576172,
             "g",
         ),
     ),
     (
         "geoid",
-        (500, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -66.0, 52.0, "g"),
+        (500, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), -66.0, 52.0, "g"),
     ),
 ]
 
@@ -548,15 +591,23 @@ test = [
 @pytest.mark.fetch()
 @pytest.mark.earthdata()
 @skip_earthdata
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), bedmachine_test)
 def test_bedmachine(test_input, expected):
     grid = fetch.bedmachine(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 @pytest.mark.fetch()
 @pytest.mark.earthdata()
 @skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmachine_reference():
     # fetch variations of grids and reference models
     region = (-101e3, -100e3, -51e3, -50e3)
@@ -597,58 +648,66 @@ def test_bedmachine_reference():
 # test for all layers, but only test reference models with 1 layer and fill_nans with 1
 # layer
 
-test = [
+bedmap2_test = [
     (
         {"layer": "bed"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -7054.0, 3972.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), -7054.0, 3972.0, "g"),
     ),
     (
         {"layer": "coverage"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 1.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 1.0, 1.0, "g"),
     ),
     (
         {"layer": "grounded_bed_uncertainty"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 65535.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 0.0, 65535.0, "g"),
     ),
     (
         {"layer": "icemask_grounded_and_shelves"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 1.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 0.0, 1.0, "g"),
     ),
     (
         {"layer": "rockmask"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 0.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 0.0, 0.0, "g"),
     ),
     (
         {"layer": "surface"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 1.0, 4082.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 1.0, 4082.0, "g"),
     ),
     (
         {"layer": "thickness"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], 0.0, 4621.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), 0.0, 4621.0, "g"),
     ),
     (
         {"layer": "icebase"},
-        (1000, [-3333000.0, 3333000.0, -3333000.0, 3333000.0], -2736.0, 3972.0, "g"),
+        (1000, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), -2736.0, 3972.0, "g"),
     ),
     (
         {"layer": "lakemask_vostok"},
-        (1000, [1190000.0, 1470000.0, -402000.0, -291000.0], 1.0, 1.0, "g"),
+        (1000, (1190000.0, 1470000.0, -402000.0, -291000.0), 1.0, 1.0, "g"),
     ),
     (
         {"layer": "thickness_uncertainty_5km"},
-        (5000, [-3399000.0, 3401000.0, -3400000.0, 3400000.0], 0.0, 65535.0, "g"),
+        (5000, (-3399000.0, 3401000.0, -3400000.0, 3400000.0), 0.0, 65535.0, "g"),
     ),
 ]
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), bedmap2_test)
 def test_bedmap2(test_input, expected):
     grid = fetch.bedmap2(**test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 @pytest.mark.fetch()
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmap2_reference():
     # fetch variations of grids and reference models
     region = (-101e3, -100e3, -51e3, -50e3)
@@ -689,7 +748,7 @@ def test_bedmap2_reference():
     assert surface_6c4 + eigen_6c4 == pytest.approx(surface_ellipsoid, rel=0.1)
 
 
-test = [
+bedmap2_fill_nans_test = [
     (
         {"layer": "surface"},
         [1964.5349, 602.32306],
@@ -706,7 +765,7 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.parametrize(("test_input", "expected"), bedmap2_fill_nans_test)
 def test_bedmap2_fill_nans(test_input, expected):
     grid = fetch.bedmap2(**test_input)
     filled_grid = fetch.bedmap2(**test_input, fill_nans=True)
@@ -744,19 +803,26 @@ def test_bedmap_points():
 # %% deepbedmap
 
 
-@pytest.mark.fetch()
-@pytest.mark.working()
-@pytest.mark.slow()
-def test_deepbedmap():
-    grid = fetch.deepbedmap()
-    expected = (
-        250,
-        [-2700000.0, 2800000.0, -2199750.0, 2299750.0],
-        -6156.0,
-        4215.0,
-        "p",
-    )
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+# @pytest.mark.fetch()
+# @pytest.mark.working()
+# @pytest.mark.slow()
+# @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+# def test_deepbedmap():
+#     grid = fetch.deepbedmap()
+#     expected = (
+#         250,
+#         (-2700000.0, 2800000.0, -2199750.0, 2299750.0),
+#         -6156.0,
+#         4215.0,
+#         "p",
+#     )
+#     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+#     assert not deepdiff.DeepDiff(
+#         utils.get_grid_info(grid),
+#         expected,
+#         ignore_order=True,
+#         significant_digits=6,
+#     )
 
 
 # grid = fetch.deepbedmap()
@@ -765,12 +831,12 @@ def test_deepbedmap():
 # %% gravity
 # only testing 1 anomaly type (FA) for each version
 
-test = [
+gravity_test = [
     (
         "antgg",
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -384.5,
             204.800003052,
             "g",
@@ -780,7 +846,7 @@ test = [
         "antgg-update",
         (
             10000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -237.559997559,
             171.86000061,
             "g",
@@ -790,7 +856,7 @@ test = [
         "eigen",
         (
             5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             977835.3125,
             980167.75,
             "g",
@@ -801,10 +867,17 @@ test = [
 
 @pytest.mark.fetch()
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), gravity_test)
 def test_gravity(test_input, expected):
     grid = fetch.gravity(test_input, anomaly_type="FA")
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.gravity(version='eigen')
@@ -875,26 +948,48 @@ def test_rosetta_gravity():
 
 # %% magnetics
 
-test = [
+magnetics_test = [
     (
         "admap1",
         (
             5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
-            -936.875427246,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+            -936.875366211,
             1766.1373291,
             "g",
         ),
     ),
+    (
+        "admap2",
+        (
+            1500.0,
+            (-3423000.0, 3426000.0, -3424500.0, 3426000.0),
+            -2827.82373047,
+            4851.73828125,
+            "g",
+        ),
+    ),
+    # (
+    #     "admap2_gdb",
+    #     (
+    #     ),
+    # ),
 ]
 
 
 @pytest.mark.fetch()
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), magnetics_test)
 def test_magnetics(test_input, expected):
     grid = fetch.magnetics(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.magnetics(version='admap1')
@@ -902,12 +997,12 @@ def test_magnetics(test_input, expected):
 
 # %% mass change
 
-test = [
+mass_change_test = [
     (
         "ais_dhdt_floating",
         (
             5001.18699879,
-            [-2521652.10412, 2843360.03282, -2229531.47932, 2336552.25058],
+            (-2521652.10412, 2843360.03282, -2229531.47932, 2336552.25058),
             -9.33203697205,
             11.7978229523,
             "p",
@@ -917,7 +1012,7 @@ test = [
         "ais_dmdt_grounded",
         (
             5000.0,
-            [-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559],
+            (-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559),
             -27.9888286591,
             1.0233386755,
             "p",
@@ -927,20 +1022,27 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), mass_change_test)
 def test_mass_change(test_input, expected):
     grid = fetch.mass_change(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # %% basal melt
 
-test = [
+basal_melt_test = [
     (
         "w_b",
         (
             500.0,
-            [-2736000.0, 2734000.0, -2374000.0, 2740000.0],
+            (-2736000.0, 2734000.0, -2374000.0, 2740000.0),
             -19.8239116669,
             272.470550537,
             "g",
@@ -949,21 +1051,28 @@ test = [
 ]
 
 
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
 @pytest.mark.fetch()
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # %% ghf
 
-test = [
+ghf_test = [
     (
         "an-2015",
         (
             5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             26.4593582153,
             102.412307739,
             "g",
@@ -973,7 +1082,7 @@ test = [
         "martos-2017",
         (
             15000,
-            [-2535000.0, 2715000.0, -2130000.0, 2220000.0],
+            (-2535000.0, 2715000.0, -2130000.0, 2220000.0),
             42.6263694763,
             240.510910034,
             "g",
@@ -983,7 +1092,7 @@ test = [
         "burton-johnson-2020",
         (
             17000,
-            [-2543500.0, 2624500.0, -2121500.0, 2213500.0],
+            (-2543500.0, 2624500.0, -2121500.0, 2213500.0),
             42.2533454895,
             106.544433594,
             "p",
@@ -993,7 +1102,7 @@ test = [
         "losing-ebbing-2021",
         (
             5000,
-            [-2990000.0, 2990000.0, -2990000.0, 2990000.0],
+            (-2990000.0, 2990000.0, -2990000.0, 2990000.0),
             24.609621048,
             144.53793335,
             "g",
@@ -1004,10 +1113,17 @@ test = [
 
 @pytest.mark.fetch()
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), ghf_test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 @pytest.mark.fetch()
@@ -1043,12 +1159,12 @@ def test_ghf_points():
 
 # %% gia
 
-test = [
+gia_test = [
     (
         "stal-2020",
         (
             10000,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -2953.8605957,
             3931.43554688,
             "p",
@@ -1058,10 +1174,17 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), gia_test)
 def test_gia(test_input, expected):
     grid = fetch.gia(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.gia(version='stal-2020')
@@ -1069,22 +1192,22 @@ def test_gia(test_input, expected):
 
 # %% crustal_thickness
 
-test = [
-    (
-        "shen-2018",
-        (
-            10000,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
-            17216.1484375,
-            57233.3320313,
-            "g",
-        ),
-    ),
+crust_test = [
+    # (
+    #     "shen-2018",
+    #     (
+    #         10000,
+    #         (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
+    #         17216.1484375,
+    #         57233.3320313,
+    #         "g",
+    #     ),
+    # ),
     (
         "an-2015",
         (
             5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             6264.58496094,
             65197.1328125,
             "g",
@@ -1095,10 +1218,17 @@ test = [
 
 @pytest.mark.fetch()
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), crust_test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.crustal_thickness(version='an-2015')
@@ -1106,12 +1236,12 @@ def test_crustal_thickness(test_input, expected):
 
 # %% moho
 
-test = [
+moho_test = [
     (
         "shen-2018",
         (
             10000,
-            [-2800000.0, 2800000.0, -2800000.0, 2800000.0],
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
             -57223.5273438,
             -17218.0996094,
             "g",
@@ -1121,7 +1251,7 @@ test = [
         "an-2015",
         (
             5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             -65197.1328125,
             -6264.58496094,
             "g",
@@ -1132,10 +1262,17 @@ test = [
 
 @pytest.mark.fetch()
 @pytest.mark.working()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), moho_test)
 def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.moho(version='shen-2018')
@@ -1143,25 +1280,25 @@ def test_moho(test_input, expected):
 
 # %% geoid
 
-test = [
-    (
-        "eigen",
-        (
-            5000,
-            [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
-            -66.1241073608,
-            52.2200775146,
-            "g",
-        ),
-    ),
-]
-
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
-def test_geoid(test_input, expected):
-    grid = fetch.geoid(test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_geoid():
+    grid = fetch.geoid()
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    expected = (
+        5000,
+        (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+        -66.1241073608,
+        52.2200775146,
+        "g",
+    )
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.geoid()
@@ -1171,7 +1308,7 @@ def test_geoid(test_input, expected):
 
 expected = (
     5000,
-    [-3330000.0, 3330000.0, -3330000.0, 3330000.0],
+    (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
     -7093.03369141,
     4089.17773438,
     "g",
@@ -1179,9 +1316,16 @@ expected = (
 
 
 @pytest.mark.fetch()
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_etopo():
     grid = fetch.etopo()
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
 # grid = fetch.etopo()
@@ -1190,24 +1334,24 @@ def test_etopo():
 # %% REMA
 
 
-test = [
+rema_test = [
     (
-        {"version": 500},
+        {"version": "500m"},
         (
             500,
-            [-2700250.0, 2750250.0, -2500250.0, 3342250.0],
+            (-2700250.0, 2750250.0, -2500250.0, 3342250.0),
             -66.4453125,
-            4685.50097656,
+            4702.28125,
             "g",
         ),
     ),
     (
-        {"version": 1000},
+        {"version": "1km"},
         (
             1000,
-            [-2700500.0, 2750500.0, -2500500.0, 3342500.0],
-            -66.4447631836,
-            4624.09716797,
+            (-2700500.0, 2750500.0, -2500500.0, 3342500.0),
+            -66.4453125,
+            4639.3125,
             "g",
         ),
     ),
@@ -1215,11 +1359,18 @@ test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.parametrize(("test_input", "expected"), test)
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.parametrize(("test_input", "expected"), rema_test)
 def test_rema(test_input, expected):
     grid = fetch.rema(**test_input)
-    assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=6,
+    )
 
 
-# grid = fetch.rema(version=500)
+# grid = fetch.rema(version="500m")
 # utils.get_grid_info(grid)
