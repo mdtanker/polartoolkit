@@ -57,6 +57,7 @@ interactive = [
     "geoviews",
     "cartopy",
     "ipyleaflet",
+    "ipython",
 ]
 viz = [
     "seaborn",
