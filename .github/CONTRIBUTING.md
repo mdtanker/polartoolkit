@@ -3,13 +3,19 @@
 
 <sub>Adapted from the great contribution guidelines of the [Fatiando a Terra](https://www.fatiando.org/) packages<sub>.
 
-> This document contains some general guidlines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [Github discussions page](https://github.com/mdtanker/antarctic_plots/discussions)!
+> This document contains some general guidlines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions)!
 
 Any kind of help would be much appreciated. Here are a few ways to contribute:
 * 🐛 Submitting bug reports and feature requests
 * 📝 Writing tutorials or examples
 * 🔍 Fixing typos and improving to the documentation
 * 💡 Writing code for everyone to use
+
+A few easy options:
+* Add a new pre-defined region
+  * this could simple involve adding 1 line of code!
+* Add a new dataset to the `fetch` module
+  * most of the code is reused for each function in `fetch`, just find an existing function which has the same input datatype (filetype, whether it needs unzipping, preprocessing, or both), and reused the code.
 
 If you get stuck at any point you can create an issue on GitHub (look for the Issues tab in the repository).
 
@@ -62,12 +68,10 @@ problem.
 
 If you're browsing the documentation and notice a typo or something that could be
 improved, please consider letting us know by [creating an issue](#reporting-a-bug) or
-submitting a fix (even better 🌟).
-
-You can submit fixes to the documentation pages completely online without having to
+submitting a fix (even better 🌟). You can submit fixes to the documentation pages completely online without having to
 download and install anything:
 
-* On each documentation page, there should be a "Suggest edit" link at the very
+* On each documentation page, there should be a " ✏️ Suggest edit" link at the very
   top (click on the GitHub logo).
 * Click on that link to open the respective source file on GitHub for editing online (you'll need a GitHub account).
 * Make your desired changes.
@@ -87,7 +91,7 @@ example scripts. See [Contributing Code](#contributing-code) for instructions.
 
 **Is this your first contribution?**
 Please take a look at these resources to learn about git and pull requests (don't
-hesitate to ask questions in the [Github discussions page](https://github.com/mdtanker/antarctic_plots/discussions):
+hesitate to ask questions in the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions):
 
 * [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
 * Aaron Meurer's [tutorial on the git workflow](http://www.asmeurer.com/git-workflow/)
@@ -107,43 +111,55 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 
 To get the latest version clone the github repo:
 
-  git clone https://github.com/mdtanker/antarctic_plots.git
-
+```
+git clone https://github.com/mdtanker/antarctic_plots.git
+```
 Change into the directory:
 
-  cd antarctic_plots
+```
+cd antarctic_plots
+```
 
 Run the following command to make a new environment and install the package dependencies:
 
-  make conda_install
-
+```
+  make create
+```
 Activate the environement:
-
-  conda activate antarctic_plots
-
+```
+    conda activate antarctic_plots
+```
 Install your local version:
-
+```
   make install
-
+```
 This environment now contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 > **Note:** You'll need to activate the environment every time you start a new terminal.
 
-### Code style
+### Code style and linting
 
-We use [Black](https://github.com/ambv/black) to format the code so we don't have to
-think about it.
-Black loosely follows the [PEP8](http://pep8.org) guide but with a few differences.
-Regardless, you won't have to worry about formatting the code yourself.
-Before committing, run the following to automatically format your code:
-
+We use [Ruff](https://docs.astral.sh/ruff/) to format the code so we don't have to
+think about it. This allows you to not think about proper indentation, line length, or aligning your code while to development. Before committing, or periodically while you code, run the following to automatically format your code:
+```
     make format
-
+```
 Some formatting changes can't be applied automatically. Running the following to see these.
-
+```
     make check
+```
+Go through the output of this and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
 
-Go through the output of this and try to change the code based on the errors. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa` at the end of the line and the check will ignore it.
+We also use [Pylint](https://pylint.readthedocs.io/en/latest/), which performs static-linting on the code. This checks the code and catches many common bugs and errors, without running any of the code. This check is slightly slower the the `Ruff` check. Run it with the following:
+```
+make pylint
+```
+Similar to using `Ruff`, go through the output of this, search the error codes on the [Pylint documentation](https://pylint.readthedocs.io/en/latest/) for help, and try and fix all the errors and warnings. If there are false-positives, or your confident you don't agree with the warning, add ` # pylint: disable=` at the end of the lines, with the warning code following the `=`.
+
+To run all three of the code checks, use:
+```
+make style
+```
 
 #### Docstrings
 
@@ -152,10 +168,18 @@ Go through the output of this and try to change the code based on the errors. Re
 All functions/classes/methods should have docstrings with a full description of all
 arguments and return values.
 
-While the maximum line length for code is automatically set by *Black*, docstrings
+While the maximum line length for code is automatically set by *Ruff*, docstrings
 must be formatted manually. To play nicely with Jupyter and IPython, **keep docstrings
 limited to 88 characters** per line. We don't have a good way of enforcing this
 automatically yet, so please do your best.
+
+#### Type hints
+
+We have also opted to use type hints throughout the codebase. This means each function/class/method should be fulled typed, including the docstrings. We use [mypy](https://mypy.readthedocs.io/en/stable/) as a type checker.
+```
+make mypy
+```
+Try and address all the errors and warnings. If there are complex types, just use `typing.Any`, or if necessary, ignore the line causing the issue by adding `# type: ignore[]` with the error code inside the square brackets.
 
 ### Testing your code
 
@@ -207,7 +231,7 @@ Check for returned errors and open `index.html` in docs/_build/html/ to view the
 
 #### Automatically build the docs
 
-Add, commit, and push all changes to Github in a Pull Request, and `RTD` should automatically build the docs.
+Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
 
 ### Code Review
 
@@ -231,7 +255,7 @@ If you're PR involves changing the package dependencies, see the below instructi
 
 Pull requests will automatically have tests run by GitHub Actions.
 This includes running both the unit tests as well as code linters.
-Github will show the status of these checks on the pull request.
+GitHub will show the status of these checks on the pull request.
 Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
 [post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
@@ -270,7 +294,7 @@ Run a few gallery examples to make sure this env works, then its ready to publis
 
     make publish
 
-Now push the changes to Github and make a release with the matching version number.
+Now push the changes to GitHub and make a release with the matching version number.
 
 ### Conda-Forge
 Once the new version is on PyPI, we can update the conda-forge feedstock.
