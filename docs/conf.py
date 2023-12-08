@@ -94,10 +94,10 @@ html_theme_options = {
     "repository_url": "https://github.com/mdtanker/antarctic_plots",
     "repository_branch": "main",
     "path_to_docs": "doc",
-    # "launch_buttons": {
-    #     "binderhub_url": "https://mybinder.org",
-    #     "notebook_interface": "jupyterlab",
-    # },
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "notebook_interface": "jupyterlab",
+    },
     "use_edit_page_button": True,
     "use_issues_button": True,
     "use_repository_button": True,
