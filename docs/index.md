@@ -46,21 +46,35 @@ how you can contribute to the project.
 :hidden:
 overview
 install
-```
-
-```{toctree}
-:maxdepth: 1
-:hidden:
-:caption: 🚶 Tutorials
+gallery/index.md
 tutorial/index.md
 ```
 
-```{toctree}
-:maxdepth: 1
-:hidden:
-:caption: 📚 Gallery
-gallery/index.md
-```
+<!-- ```{nbgallery}
+---
+caption: 📚 Gallery
+maxdepth: 1
+glob:
+---
+gallery/basic_map
+gallery/extend_pygmt
+gallery/setting_projection
+gallery/3D_stack
+gallery/subplots
+gallery/subplot_layout
+``` -->
+
+<!-- ```{nbgallery}
+---
+caption: 🚶 Tutorials
+maxdepth: 1
+glob:
+---
+tutorial/fetch_walkthrough
+tutorial/profile_walkthrough
+tutorial/regions_walkthrough
+tutorial/utils_walkthrough
+``` -->
 
 ```{toctree}
 :maxdepth: 1
