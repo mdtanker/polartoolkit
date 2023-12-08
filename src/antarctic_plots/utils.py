@@ -8,6 +8,9 @@
 #
 from __future__ import annotations
 
+import logging
+import random
+import typing
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -17,10 +20,12 @@ import pygmt
 import pyogrio
 import verde as vd
 import xarray as xr
+from nptyping import NDArray
 from pyproj import Transformer
 
 from antarctic_plots import fetch, maps
 
+if typing.TYPE_CHECKING:
     import geopandas as gpd
 
 try:
@@ -29,6 +34,7 @@ except ImportError:
     sns = None
 
 
+def rmse(data: NDArray, as_median: bool = False) -> float:
     """
     function to give the root mean/median squared error (RMSE) of data
 
@@ -45,10 +51,23 @@ except ImportError:
         RMSE value
     """
     if as_median:
+        value: float = np.sqrt(np.nanmedian(data**2).item())
     else:
+        value = np.sqrt(np.nanmean(data**2).item())
+
+    return value
 
 
-
+def get_grid_info(
+    grid: str | xr.DataArray,
+    print_info: bool = False,
+) -> tuple[
+    float | None,
+    tuple[float, float, float, float] | None,
+    float | None,
+    float | None,
+    str | None,
+]:
     """
     Returns information of the specified grid.
 
@@ -79,27 +98,48 @@ except ImportError:
     # pass
     # grid = xr.open_rasterio(grid)
     # grid = rioxarray.open_rasterio(grid)
+    if isinstance(grid, xr.DataArray) and int(len(grid.dims)) > 2:
+        grid = grid.squeeze()
 
     try:
-        spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
+        spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logging.exception(e)
+        logging.warning("grid spacing can't be extracted")
         spacing = None
 
     try:
+        region: typing.Any = tuple(
             float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logging.exception(e)
+        logging.warning("grid region can't be extracted")
         region = None
 
     try:
-        zmin = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+        zmin: float | None = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logging.exception(e)
+        logging.warning("grid zmin can't be extracted")
         zmin = None
 
     try:
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logging.exception(e)
+        logging.warning("grid zmax can't be extracted")
         zmax = None
 
     try:
-        reg = grid.gmt.registration
-        registration = "g" if reg == 0 else "p"
+        reg = grid.gmt.registration  # type: ignore[union-attr]
+        registration: str | None = "g" if reg == 0 else "p"
     except AttributeError:
+        logging.warning(
             "grid registration not extracted, re-trying with file loaded as xarray grid"
         )
         grid = xr.load_dataarray(grid)
@@ -107,13 +147,27 @@ except ImportError:
             reg = grid.gmt.registration
             registration = "g" if reg == 0 else "p"
         except AttributeError:
+            logging.warning("grid registration can't be extracted, setting to 'g'.")
             registration = "g"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logging.exception(e)
+        logging.warning("grid registration can't be extracted")
         registration = None
+
+    if print_info:
+        info = (
+            f"grid spacing: {spacing} m\n"
+            f"grid region: {region}\n"
+            f"grid zmin: {zmin}\n"
+            f"grid zmax: {zmax}\n"
+            f"grid registration: {registration}"
+        )
+        print(info)  # noqa: T201
 
     return spacing, region, zmin, zmax, registration
 
 
-def dd2dms(dd: float):
+def dd2dms(dd: float) -> str:
     """
     Convert decimal degrees to minutes, seconds. Modified from
     https://stackoverflow.com/a/10286690/18686384
@@ -136,6 +190,11 @@ def dd2dms(dd: float):
     return f"{int(degrees)}:{int(minutes)}:{seconds}"
 
 
+def region_to_df(
+    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame,
+    coord_names: tuple[str, str] = ("x", "y"),
+    reverse: bool = False,
+) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame:
     """
     Convert region bounds in GMT format [e, w, n, s] to pandas dataframe with
     coordinates of region corners, or reverse this if `reverse` is True.
@@ -155,28 +214,51 @@ def dd2dms(dd: float):
     -------
     tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
         Dataframe with easting and northing columns, and a row for each corner of the
+        region, or, if `reverse` is True, an array in the format [e,w,n,s].
     """
-    if reverse is False:
 
-    elif reverse is True:
+    if reverse:
+        return (
+            region[coord_names[0]][0],  # type: ignore[call-overload]
+            region[coord_names[0]][1],  # type: ignore[call-overload]
+            region[coord_names[1]][0],  # type: ignore[call-overload]
+            region[coord_names[1]][2],  # type: ignore[call-overload]
+        )
 
-    return df
+    bl = (region[0], region[2])
+    br = (region[1], region[2])
+    tl = (region[0], region[3])
+    tr = (region[1], region[3])
+    return pd.DataFrame(data=[bl, br, tl, tr], columns=(coord_names[0], coord_names[1]))
 
 
+def region_xy_to_ll(
+    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any], dms: bool = False
+) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
+    Convert GMT region in format [e, w, n, s] in EPSG:3031 to lat / lon
 
     Parameters
     ----------
+    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+        region boundaries in GMT format; [e, w, n, s] in meters
     dms: bool, False
         if True, will return results as deg:min:sec iinstead of decimal degrees
 
     Returns
     -------
+    tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+        region boundaries in GMT format; [e, w, n, s] in lat, lon
     """
+    df = region_to_df(region)
     df_proj = epsg3031_to_latlon(df, reg=True)
 
+    return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
 
+def region_to_bounding_box(
+    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
     Convert GMT region in format [e, w, n, s] to bounding box format used for icepyx:
     [
@@ -198,10 +280,15 @@ def dd2dms(dd: float):
     tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in bounding box format.
     """
+    return (region[0], region[2], region[1], region[3])
 
 
 def latlon_to_epsg3031(
+    df: pd.DataFrame | NDArray,
     reg: bool = False,
+    input_coord_names: tuple[str, str] = ("lon", "lat"),
+    output_coord_names: tuple[str, str] = ("x", "y"),
+) -> pd.DataFrame | NDArray:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
     Polar Stereographic in meters.
@@ -227,6 +314,11 @@ def latlon_to_epsg3031(
 
     if isinstance(df, pd.DataFrame):
         df_new = df.copy()
+        (  # pylint: disable=unpacking-non-sequence
+            df_new[output_coord_names[0]],
+            df_new[output_coord_names[1]],
+        ) = transformer.transform(
+            df_new[input_coord_names[1]].tolist(), df_new[input_coord_names[0]].tolist()
         )
     else:
         ll = df.copy()
@@ -234,11 +326,21 @@ def latlon_to_epsg3031(
 
     if reg is True:
         df_new = [
+            df_new[output_coord_names[0]].min(),
+            df_new[output_coord_names[0]].max(),
+            df_new[output_coord_names[1]].min(),
+            df_new[output_coord_names[1]].max(),
         ]
 
     return df_new
 
 
+def epsg3031_to_latlon(
+    df: pd.DataFrame | NDArray,
+    reg: bool = False,
+    input_coord_names: tuple[str, str] = ("x", "y"),
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
+) -> pd.DataFrame | NDArray:
     """
     Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
     EPSG:4326 WGS84 in decimal degrees.
@@ -266,9 +368,18 @@ def latlon_to_epsg3031(
     df_out = df.copy()
 
     if isinstance(df, pd.DataFrame):
+        (  # pylint: disable=unpacking-non-sequence
+            df_out[output_coord_names[1]],
+            df_out[output_coord_names[0]],
+        ) = transformer.transform(
+            df_out[input_coord_names[0]].tolist(), df_out[input_coord_names[1]].tolist()
         )
         if reg is True:
             df_out = [
+                df_out[output_coord_names[0]].min(),
+                df_out[output_coord_names[0]].max(),
+                df_out[output_coord_names[1]].min(),
+                df_out[output_coord_names[1]].max(),
             ]
     else:
         df_out = list(transformer.transform(df_out[0], df_out[1]))
@@ -277,9 +388,10 @@ def latlon_to_epsg3031(
 
 def points_inside_region(
     df: pd.DataFrame,
-    region: list,
+    region: tuple[float, float, float, float],
+    names: tuple[str, str] = ("x", "y"),
     reverse: bool = False,
-):
+) -> pd.DataFrame:
     """
     return a subset of a dataframe which is within a region
 
@@ -309,15 +421,23 @@ def points_inside_region(
 
     if reverse is True:
         # subset if False
+        df_result = df1.loc[df1.inside_tmp == False].copy()  # noqa: E712 # pylint: disable=singleton-comparison
 
     else:
         # subset if True
+        df_result = df1.loc[df1.inside_tmp == True].copy()  # noqa: E712 # pylint: disable=singleton-comparison
 
     # drop the column 'inside'
+    return df_result.drop(columns="inside_tmp")
 
 
 def block_reduce(
     df: pd.DataFrame,
+    reduction: typing.Callable[..., float | int],
+    input_coord_names: tuple[str, str] = ("x", "y"),
+    input_data_names: typing.Any | None = None,
+    **kwargs: typing.Any,
+) -> pd.DataFrame:
     """
     perform a block reduction of a dataframe.
 
@@ -342,9 +462,11 @@ def block_reduce(
 
     # if no data names provided, use all columns
     if input_data_names is None:
-        input_data_names = list(df.columns.drop(input_coord_names))
+        input_data_names = tuple(df.columns.drop(input_coord_names))
 
     # get tuples of pd.Series
+    input_coords = tuple([df[col] for col in input_coord_names])  # pylint: disable=consider-using-generator
+    input_data = tuple([df[col] for col in input_data_names])  # pylint: disable=consider-using-generator
 
     # apply reduction
     coordinates, data = reducer.filter(
@@ -353,21 +475,30 @@ def block_reduce(
     )
 
     # add reduced coordinates to a dictionary
+    coord_cols = dict(zip(input_coord_names, coordinates))
 
     # add reduced data to a dictionary
     if len(input_data_names) < 2:
         data_cols = {input_data_names[0]: data}
     else:
+        data_cols = dict(zip(input_data_names, data))
 
     # merge dicts and create dataframe
+    return pd.DataFrame(data=coord_cols | data_cols)
 
 
 def mask_from_shp(
+    shapefile: str | gpd.geodataframe.GeoDataFrame,
     invert: bool = True,
-    xr_grid=None,
+    xr_grid: xr.DataArray | None = None,
+    grid_file: str | None = None,
+    region: str | tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
     masked: bool = False,
     crs: str = "epsg:3031",
-):
+    pixel_register: bool = True,
+    input_coord_names: tuple[str, str] = ("x", "y"),
+) -> xr.DataArray:
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
 
@@ -403,6 +534,7 @@ def mask_from_shp(
         Returns either a masked grid, or the mask grid itself.
     """
 
+    shp = pyogrio.read_dataframe(shapefile) if isinstance(shapefile, str) else shapefile
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
@@ -411,6 +543,10 @@ def mask_from_shp(
             pixel_register=pixel_register,
         )
         ds = vd.make_xarray_grid(
+            coords,
+            np.ones_like(coords[0]),
+            dims=reversed(input_coord_names),
+            data_names="z",
         )
         xds = ds.z.rio.write_crs(crs)
     elif xr_grid is not None:
@@ -440,14 +576,22 @@ def mask_from_shp(
     elif masked is False:
         output = mask_grd
 
+    try:
+        output = output.drop_vars("spatial_ref")
+    except ValueError as e:
+        logging.exception(e)
+
+    return output
 
 
 def alter_region(
+    starting_region: tuple[float, float, float, float],
     zoom: float = 0,
     n_shift: float = 0,
     w_shift: float = 0,
     buffer: float = 0,
     print_reg: bool = False,
+) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
     """
     Change a bounding region by shifting the box east/west or north/south, zooming in or
     out, or adding a separate buffer region.
@@ -472,9 +616,16 @@ def alter_region(
     tuple[tuple[float, float, float, float], tuple[float, float, float, float]]
         Returns two tuples: region, buffer_region
     """
+    starting_e, starting_w = starting_region[0], starting_region[1]
+    starting_n, starting_s = starting_region[2], starting_region[3]
 
+    e = starting_e + zoom + w_shift
+    w = starting_w - zoom + w_shift
 
+    n = starting_n + zoom - n_shift
+    s = starting_s - zoom - n_shift
 
+    region = (e, w, n, s)
 
     e_buff, w_buff, n_buff, s_buff = (
         int(e - buffer),
@@ -483,14 +634,20 @@ def alter_region(
         int(s + buffer),
     )
 
+    buffer_region = (e_buff, w_buff, n_buff, s_buff)
 
     if print_reg is True:
+        logging.info(
+            "inner region is %s x %s km", int((w - e) / 1e3), int((s - n) / 1e3)
+        )
     return region, buffer_region
 
 
 def set_proj(
+    region: tuple[float, float, float, float],
     fig_height: float = 15,
-) -> str:
+    fig_width: float | None = None,
+) -> tuple[str, str, float, float]:
     """
     Gives GMT format projection string from region and figure height or width.
     Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
@@ -528,11 +685,12 @@ def set_proj(
 
 def grd_trend(
     da: xr.DataArray,
+    coords: tuple[str, str, str] = ("x", "y", "z"),
     deg: int = 1,
     plot: bool = False,
-    plot_type="pygmt",
-    **kwargs,
-):
+    plot_type: str = "pygmt",
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray]:
     """
     Fit an arbitrary order trend to a grid and use it to detrend.
 
@@ -556,6 +714,8 @@ def grd_trend(
     """
 
     # convert grid to a dataframe
+    df0 = vd.grid_to_table(da).astype("float64")
+    df = df0.dropna()
 
     # define a trend
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
@@ -621,15 +781,17 @@ def grd_trend(
                 a.set_aspect("equal")
 
         elif plot_type == "pygmt":
-            cmap = kwargs.get("cmap", "plasma")
-            coast = kwargs.get("coast", True)
-            inset = kwargs.get("inset", True)
-            inset_pos = kwargs.get("inset_pos", "BL")
-            origin_shift = kwargs.get("origin_shift", "yshift")
-            fit_label = kwargs.get("fit_label", f"fitted trend (order {deg})")
-            input_label = kwargs.get("input_label", "input grid")
-            title = kwargs.get("title", "Detrending a grid")
-            detrended_label = kwargs.get("detrended_label", "detrended")
+            cmap: typing.Any = kwargs.get("cmap", "plasma")
+            coast: typing.Any = kwargs.get("coast", True)
+            inset: typing.Any = kwargs.get("inset", True)
+            inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
+            origin_shift: typing.Any = kwargs.get("origin_shift", "yshift")
+            fit_label: typing.Any = kwargs.get(
+                "fit_label", f"fitted trend (order {deg})"
+            )
+            input_label: typing.Any = kwargs.get("input_label", "input grid")
+            title: typing.Any = kwargs.get("title", "Detrending a grid")
+            detrended_label: typing.Any = kwargs.get("detrended_label", "detrended")
 
             fig = maps.plot_grd(
                 detrend,
@@ -671,11 +833,13 @@ def grd_trend(
 
 
 def grd_compare(
+    da1: xr.DataArray | str,
+    da2: xr.DataArray | str,
     plot: bool = False,
     plot_type: str = "pygmt",
     robust: bool = False,
-    **kwargs,
-):
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """
     Find the difference between 2 grids and plot the results, if necessary resample and
     cut grids to match
@@ -711,8 +875,8 @@ def grd_compare(
         three xr.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask", None)
-    region = kwargs.get("region", None)
-
+    region: tuple[float, float, float, float] = kwargs.get("region", None)
+    verbose = kwargs.get("verbose", "e")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
@@ -724,22 +888,29 @@ def grd_compare(
         da1 = pygmt.grdcut(
             da1,
             region=region,
-            verbose=kwargs.get("verbose", "e"),
+            verbose=verbose,
         )
         da2 = pygmt.grdcut(
             da2,
             region=region,
-            verbose=kwargs.get("verbose", "e"),
+            verbose=verbose,
         )
 
+    # extract grid info of both grids
+    da1_info = get_grid_info(da1)
+    da2_info = get_grid_info(da2)
+
     # extract spacing of both grids
-    da1_spacing = float(get_grid_info(da1)[0])
-    da2_spacing = float(get_grid_info(da2)[0])
+    assert da1_info[0] is not None
+    assert da2_info[0] is not None
+    da1_spacing: float = da1_info[0]
+    da2_spacing: float = da2_info[0]
 
     # extract regions of both grids
-    da1_reg = get_grid_info(da1)[1]
-    da2_reg = get_grid_info(da2)[1]
-
+    da1_reg = da1_info[1]
+    da1_reg = typing.cast(tuple[float, float, float, float], da1_reg)
+    da2_reg = da2_info[1]
+    da2_reg = typing.cast(tuple[float, float, float, float], da2_reg)
     # if spacing and region match, no resampling
     if (da1_spacing == da2_spacing) and (da1_reg == da2_reg):
         grid1 = da1
@@ -748,6 +919,9 @@ def grd_compare(
         # get minimum grid spacing of both grids
         if da1_spacing != da2_spacing:
             spacing = min(da1_spacing, da2_spacing)
+            logging.info(
+                "grid spacings don't match, using smaller spacing (%s m).",
+                spacing,
             )
         else:
             spacing = da1_spacing
@@ -757,6 +931,8 @@ def grd_compare(
             w = min(da1_reg[1], da2_reg[1])
             n = max(da1_reg[2], da2_reg[2])
             s = min(da1_reg[3], da2_reg[3])
+            region = (e, w, n, s)
+            logging.info("grid regions dont match, using inner region %s", region)
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
@@ -770,7 +946,7 @@ def grd_compare(
             spacing=spacing,
             region=region,
             registration=registration,
-            verbose=kwargs.get("verbose", "e"),
+            verbose=verbose,
         )
 
         grid2 = fetch.resample_grid(
@@ -778,7 +954,7 @@ def grd_compare(
             spacing=spacing,
             region=region,
             registration=registration,
-            verbose=kwargs.get("verbose", "e"),
+            verbose=verbose,
         )
 
     dif = grid1 - grid2
@@ -789,27 +965,31 @@ def grd_compare(
 
     diff_maxabs = kwargs.get("diff_maxabs", True)
     if diff_maxabs is False:
-        diff_lims = get_min_max(dif, shp_mask, robust=robust)
+        diff_lims: typing.Any = get_min_max(dif, shp_mask, robust=robust)
     else:
         diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust=robust))
         diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
-    vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-    vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+    vmin: typing.Any = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
+    vmax: typing.Any = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
+            title += f", RMSE: {round(rmse(dif),kwargs.get('RMSE_decimals', 2))}"
 
         if plot_type == "pygmt":
-            fig_height = kwargs.get("fig_height", 10)
-            coast = kwargs.get("coast", True)
+            fig_height = kwargs.get("fig_height", 12)
+            coast = kwargs.get("coast", False)
             origin_shift = kwargs.get("origin_shift", "xshift")
             cmap = kwargs.get("cmap", "viridis")
             subplot_labels = kwargs.get("subplot_labels", False)
 
             new_kwargs = {
+                key: value
+                for key, value in kwargs.items()
+                if key
                 not in [
                     "cmap",
                     "region",
@@ -822,6 +1002,9 @@ def grd_compare(
                 ]
             }
             diff_kwargs = {
+                key: value
+                for key, value in new_kwargs.items()
+                if key
                 not in [
                     "reverse_cpt",
                     "cbar_label",
@@ -963,7 +1146,7 @@ def grd_compare(
                 a.set_ylabel("")
                 a.set_aspect("equal")
                 if kwargs.get("points", None) is not None:
-                    a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")
+                    a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")  # type: ignore[union-attr]
                 if kwargs.get("show_region", None) is not None:
                     show_region = kwargs.get("show_region", None)
                     a.add_patch(
@@ -980,10 +1163,11 @@ def grd_compare(
 
 
 def make_grid(
+    region: tuple[float, float, float, float],
     spacing: float,
     value: float,
     name: str,
-):
+) -> xr.DataArray:
     """
     Create a grid with 1 variable by defining a region, spacing, name and constant value
 
@@ -1005,12 +1189,16 @@ def make_grid(
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) * value
+    return vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name)
 
 
 def raps(
+    data: pd.DataFrame | xr.DataArray | xr.Dataset,
+    names: NDArray,
     plot_type: str = "mpl",
-    **kwargs,
-):
+    filter_str: str | None = None,
+    **kwargs: typing.Any,
+) -> None:
     """
     Compute and plot the Radially Averaged Power Spectrum input data.
 
@@ -1082,9 +1270,11 @@ def raps(
             data.to_netcdf("tmp_outputs/fft.nc")
             pygmt.grdfill("tmp_outputs/fft.nc", mode="n", outgrid="tmp_outputs/fft.nc")
             grid = "tmp_outputs/fft.nc"
+        if filter_str is not None:
             with pygmt.clib.Session() as session:
                 fin = grid
                 fout = "tmp_outputs/fft.nc"
+                args = f"{fin} -F{filter_str} -D0 -G{fout}"
                 session.call_module("grdfilter", args)
             grid = "tmp_outputs/fft.nc"
         with pygmt.clib.Session() as session:
@@ -1093,14 +1283,18 @@ def raps(
             args = f"{fin} -Er+wk -Na+d -G{fout}"
             session.call_module("grdfft", args)
         if plot_type == "mpl":
+            raps_df = pd.read_csv(
                 "tmp_outputs/raps.txt",
                 header=None,
                 delimiter="\t",
                 names=("wavelength", "power", "stdev"),
             )
+            ax = sns.lineplot(x=raps_df.wavelength, y=raps_df.power, label=j)
+            ax = sns.scatterplot(x=raps_df.wavelength, y=raps_df.power)
             ax.set_xlabel("Wavelength (km)")
             ax.set_ylabel("Radially Averaged Power ($mGal^{2}km$)")
         elif plot_type == "pygmt":
+            color = f"{random.randrange(255)}/{random.randrange(255)}/{random.randrange(255)}"  # noqa: E501
             spec.plot("tmp_outputs/raps.txt", pen=f"1p,{color}")
             spec.plot(
                 "tmp_outputs/raps.txt",
@@ -1122,7 +1316,11 @@ def raps(
     # plt.legend()
 
 
-def coherency(grids: list, label: str, **kwargs):
+def coherency(
+    grids: tuple[xr.DataArray | str | pd.DataFrame, xr.DataArray | str | pd.DataFrame],
+    label: str,
+    **kwargs: typing.Any,
+) -> typing.Any:
     """
     Compute and plot the Radially Averaged Power Spectrum input data.
 
@@ -1190,8 +1388,7 @@ def coherency(grids: list, label: str, **kwargs):
     if isinstance(grids[0], (str, xr.DataArray)):
         pygmt.grdfill(grids[0], mode="n", outgrid="tmp_outputs/fft_1.nc")
         pygmt.grdfill(grids[1], mode="n", outgrid="tmp_outputs/fft_2.nc")
-
-    elif isinstance(grids[0], pd.DataFrame):
+    elif isinstance(grids[0], pd.DataFrame):  # type: ignore[unreachable]
         grid1 = pygmt.xyz2grd(
             grids[0],
             registration="p",
@@ -1238,16 +1435,18 @@ def coherency(grids: list, label: str, **kwargs):
             "stdev_c",
         ),
     )
-    ax = sns.lineplot(df["Wavelength (km)"], df.coherency, label=label)
+    ax = sns.lineplot(df["Wavelength (km)"], df.coherency, label=label)  # pylint: disable=too-many-function-args
     ax = sns.scatterplot(x=df["Wavelength (km)"], y=df.coherency)
 
     ax.invert_xaxis()
     ax.set_yscale("log")
     ax.set_xscale("log")
     ax.set_xlim(2000, 10)
+
     return ax
 
 
+def square_subplots(n: int) -> tuple[int, int]:
     """
     From https://github.com/matplotlib/grid-strategy/blob/master/src/grid_strategy/strategies.py
     Calculate the number of rows and columns based on the total number of items (n) to
@@ -1265,6 +1464,7 @@ def coherency(grids: list, label: str, **kwargs):
         example a 3 x 2 grid would be represented as ``(3, 3)``, because there are 2
         rows of length 3.
     """
+    special_cases = {
         1: (1, 1),
         2: (1, 2),
         3: (2, 2),
@@ -1275,6 +1475,8 @@ def coherency(grids: list, label: str, **kwargs):
         8: (3, 3),
         9: (3, 3),
     }
+    if n in special_cases:
+        return special_cases[n]
 
     # May not work for very large n
     n_sqrtf = np.sqrt(n)
@@ -1300,7 +1502,8 @@ def coherency(grids: list, label: str, **kwargs):
 
     if n == x * y:
         # There are no deficient rows, so we can just return from here
-        return tuple(x for i in range(y))
+        val = tuple(x for i in range(y))
+        return typing.cast(tuple[int, int], val)
 
     # If exactly one of these is odd, make it the rows
     if (x % 2) != (y % 2) and (x % 2):
@@ -1309,7 +1512,7 @@ def coherency(grids: list, label: str, **kwargs):
     return x, y
 
 
-def random_color():
+def random_color() -> str:
     """
     generate a random color in format R/G/B
 
@@ -1318,6 +1521,7 @@ def random_color():
     str
         returns a random color string
     """
+    return (
         f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
         f"/{int(np.random.random() * 256)}"
     )
@@ -1325,8 +1529,9 @@ def random_color():
 
 def get_min_max(
     grid: xr.DataArray,
+    shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
-):
+) -> tuple[float, float]:
     """
     Get a grids max and min values.
     Parameters
@@ -1361,7 +1566,7 @@ def get_min_max(
     return (v_min, v_max)
 
 
-def shapes_to_df(shapes: list):
+def shapes_to_df(shapes: list[float]) -> pd.DataFrame:
     """
     convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe
     of x and y points
@@ -1379,15 +1584,15 @@ def shapes_to_df(shapes: list):
 
     df = pd.DataFrame()
     for i, j in enumerate(shapes):
-        lon = [coord[0] for coord in j]
-        lat = [coord[1] for coord in j]
+        lon = [coord[0] for coord in j]  # type: ignore[attr-defined]
+        lat = [coord[1] for coord in j]  # type: ignore[attr-defined]
         shape = pd.DataFrame({"lon": lon, "lat": lat, "shape_num": i})
         df = pd.concat((df, shape))
 
+    return latlon_to_epsg3031(df)
 
 
-
-def polygon_to_region(polygon: list):
+def polygon_to_region(polygon: list[float]) -> tuple[float, float, float, float]:
     """
     convert the output of `regions.draw_region` to bounding region in EPSG:3031
 
@@ -1405,16 +1610,25 @@ def polygon_to_region(polygon: list):
     df = shapes_to_df(polygon)
 
     if df.shape_num.max() > 0:
+        logging.info(
+            "supplied dataframe has multiple polygons, only using the first one."
+        )
         df = df[df.shape_num == 0]
 
+    reg: tuple[float, float, float, float] = vd.get_region((df.x, df.y))
+
+    return reg
 
 
 def mask_from_polygon(
-    polygon: list,
+    polygon: list[float],
     invert: bool = False,
     drop_nans: bool = False,
-    **kwargs,
-):
+    grid: str | xr.DataArray | None = None,
+    region: tuple[float, float, float, float] | None = None,
+    spacing: int | None = None,
+    **kwargs: typing.Any,
+) -> xr.DataArray:
     """
     convert the output of `regions.draw_region` to a mask or use it to mask a grid
 
@@ -1445,6 +1659,9 @@ def mask_from_polygon(
 
     # remove additional polygons
     if df.shape_num.max() > 0:
+        logging.info(
+            "supplied dataframe has multiple polygons, only using the first one."
+        )
         df = df[df.shape_num == 0]
 
     # if grid given as filename, load it
@@ -1483,7 +1700,7 @@ def mask_from_polygon(
     return masked
 
 
-def change_reg(grid):
+def change_reg(grid: xr.DataArray) -> xr.DataArray:
     """
     Use GMT grdedit to change the registration type in the metadata.
 
@@ -1497,6 +1714,7 @@ def change_reg(grid):
     xr.DataArray
         returns a xr.DataArray with switch reg type.
     """
+    with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_grid(grid) as f_in:
             # send the output to a file so that we can read it
@@ -1510,7 +1728,7 @@ def change_reg(grid):
 def grd_blend(
     grid1: xr.DataArray,
     grid2: xr.DataArray,
-):
+) -> xr.DataArray:
     """
     Use GMT grdblend to blend 2 grids into 1.
 
@@ -1527,6 +1745,7 @@ def grd_blend(
     xr.DataArray
         returns a blended grid.
     """
+    with pygmt.clib.Session() as session:  # noqa: SIM117
         with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
             # store the input grids in a virtual files so GMT can read it from
             # dataarrays
@@ -1540,6 +1759,7 @@ def grd_blend(
     return pygmt.load_dataarray(infile1)  # if outgrid == tmpfile.name else None
 
 
+def get_fig_width() -> float:
     """
     Get the width of the current PyGMT figure instance.
 
@@ -1548,12 +1768,14 @@ def grd_blend(
     float
         width of the figure
     """
+    with pygmt.clib.Session() as session:  # noqa: SIM117
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Ww ->{tmpfile.name}")
             map_width = tmpfile.read().strip()
     return float(map_width)
 
 
+def get_fig_height() -> float:
     """
     Get the height of the current PyGMT figure instance.
 
@@ -1562,12 +1784,14 @@ def grd_blend(
     float
         height of the figure
     """
+    with pygmt.clib.Session() as session:  # noqa: SIM117
         with pygmt.helpers.GMTTempFile() as tmpfile:
             session.call_module("mapproject", f"-Wh ->{tmpfile.name}")
             map_height = tmpfile.read().strip()
     return float(map_height)
 
 
+def gmt_str_to_list(region: tuple[float, float, float, float]) -> str:
     """
     convert a tuple of floats representing the boundaries of a region into a GMT-style
     region string
@@ -1586,6 +1810,13 @@ def grd_blend(
 
 
 def grd_mask(
+    df: pd.DataFrame,
+    spacing: float,
+    region: tuple[float, float, float, float],
+    clobber: str = "o",
+    values: str = "0/0/1",
+    radius: str = "0c",
+) -> xr.DataArray:
     """
     Wrapper for GMT grdmask function
 
@@ -1609,11 +1840,13 @@ def grd_mask(
     xr.DataArray
         _description_
     """
+    with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
         with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
             # send the output to a file so that we can read it
             with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
                 args = (
+                    f"{f_in} -I{spacing} -R{gmt_str_to_list(region)!s}",
                     f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
                 )
                 ses.call_module("grdmask", args)
