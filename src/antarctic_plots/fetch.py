@@ -69,7 +69,7 @@ def resample_grid(
     region: tuple[float, float, float, float] | None = None,
     registration: str | None = None,
     **kwargs: dict[str, str],
-) -> xr.DataArray:
+) -> str | xr.DataArray:
     """
     Resample a grid to a new spacing, region, and/or registration. Method of resampling
     depends on comparison with initial and supplied values for spacing, region, and
@@ -95,8 +95,9 @@ def resample_grid(
 
     Returns
     -------
-    xr.DataArray
-        grid, either resampled or same as original depending on inputs.
+    str | xr.DataArray
+        grid, either resampled or same as original depending on inputs. If no
+        resampling, and supplied grid is a filepath, returns filepath.
     """
     # get coordinate names
     # original_dims = list(grid.sizes.keys())
@@ -279,7 +280,7 @@ def sample_shp(name: str) -> str:
 
 def mass_change(
     version: str = "ais_dhdt_floating",
-) -> xr.DataArray:
+) -> typing.Any:
     """
     Ice-sheet height and thickness changes from ICESat to ICESat-2.
     from Smith et al. “Pervasive Ice Sheet Mass Loss Reflects Competing Ocean and
@@ -339,7 +340,7 @@ def mass_change(
     )
 
 
-def basal_melt(variable: str = "w_b") -> xr.DataArray:
+def basal_melt(variable: str = "w_b") -> typing.Any:
     """
     Antarctic ice shelf basal melt rates for 1994-2018 from satellite radar altimetry.
     from Adusumilli et al. “Interannual Variations in Meltwater Input to the Southern
@@ -441,7 +442,7 @@ def ice_vel(
 
     Parameters
     ----------
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : float,
         grid spacing to resample the loaded grid to, by default 5e3, original spacing
@@ -506,6 +507,7 @@ def ice_vel(
                     registration=initial_registration,
                     **kwargs,
                 )
+                vx_5k = typing.cast(xr.DataArray, vx_5k)
                 vy_5k = resample_grid(
                     ds.VY,
                     initial_spacing=initial_spacing,
@@ -516,6 +518,8 @@ def ice_vel(
                     registration=initial_registration,
                     **kwargs,
                 )
+                vy_5k = typing.cast(xr.DataArray, vy_5k)
+
                 processed_lowres = (vx_5k**2 + vy_5k**2) ** 0.5
                 # Save to disk
                 processed_lowres.to_netcdf(fname_processed)
@@ -551,7 +555,7 @@ def ice_vel(
     )
 
     with xr.open_dataarray(path) as grid:
-        return resample_grid(
+        resampled = resample_grid(
             grid,
             initial_spacing=initial_spacing,
             initial_region=initial_region,
@@ -561,6 +565,8 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
+
+        return typing.cast(xr.DataArray, resampled)
 
 
 def modis_moa(
@@ -606,7 +612,7 @@ def modis_moa(
     return path
 
 
-def imagery() -> xr.DataArray:
+def imagery() -> str:
     """
     Load the file path of Antarctic imagery geotiff from LIMA:
     https://lima.usgs.gov/fullcontinent.php
@@ -627,7 +633,7 @@ def imagery() -> xr.DataArray:
         known_hash=None,
         progressbar=True,
     )
-    return next(p for p in path if p.endswith(".tif"))
+    return typing.cast(str, next(p for p in path if p.endswith(".tif")))
 
 
 def geomap(
@@ -646,7 +652,7 @@ def geomap(
     version : str, optional
         choose which version to retrieve, "faults", "units", "sources", or "quality",
         by default "faults"
-    region : list, optional
+    region : tuple[float, float, float, float], optional
         return only data within this region, by default None
 
     Returns
@@ -956,15 +962,17 @@ def basement(
 
     grid = xr.load_dataarray(path)
 
-    return resample_grid(
+    resampled = resample_grid(
         grid,
-        initial_spacing,
-        initial_region,
-        initial_registration,
-        spacing,
-        region,
-        registration,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def sediment_thickness(
@@ -1007,7 +1015,7 @@ def sediment_thickness(
     ----------
     version : str,
         choose which version of data to fetch.
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1250,7 +1258,7 @@ def sediment_thickness(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def ibcso_coverage(
@@ -1324,7 +1332,7 @@ def ibcso(
     layer : str
         choose which layer to fetch:
         'surface', 'bed'
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default
@@ -1416,10 +1424,14 @@ def ibcso(
                 region=utils.alter_region(regions.antarctica, zoom=-5e3)[0],
                 registration="p",
             )
+            cut = typing.cast(xr.DataArray, cut)
+
             logging.info(utils.get_grid_info(cut))
 
             # set the projection
             cut = cut.rio.write_crs("EPSG:9354")
+
+            cut = typing.cast(xr.DataArray, cut)
 
             # reproject to EPSG:3031
             reprojected = cut.rio.reproject("epsg:3031")
@@ -1487,7 +1499,7 @@ def ibcso(
 
     grid = xr.load_dataset(path).z
 
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -1496,6 +1508,8 @@ def ibcso(
         region=region,
         registration=registration,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def bedmachine(
@@ -1541,7 +1555,7 @@ def bedmachine(
     reference : str
         choose whether heights are referenced to 'eigen-6c4' geoid or the
         'ellipsoid' (WGS84), by default is eigen-6c4'
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1627,8 +1641,7 @@ def bedmachine(
             msg = "invalid reference string"
             raise ValueError(msg)
 
-    # resample grid to users input
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -1636,8 +1649,9 @@ def bedmachine(
         spacing=spacing,
         region=region,
         registration=registration,
-        **kwargs,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def bedmap_points(
@@ -1670,7 +1684,7 @@ def bedmap_points(
     ----------
     version : str
         choose between 'bedmap1', 'bedmap2', or 'bedmap3' point data
-    region : list, optional
+    region : tuple[float, float, float, float], optional
         add a GMT region to subset the data by, by default None
 
     Returns
@@ -1772,7 +1786,7 @@ def bedmap2(
     reference : str
         choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
         ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -1998,8 +2012,7 @@ def bedmap2(
             msg = "invalid reference string"
             raise ValueError(msg)
 
-    # resample grid to users input
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -2007,8 +2020,9 @@ def bedmap2(
         spacing=spacing,
         region=region,
         registration=registration,
-        **kwargs,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def rema(
@@ -2033,7 +2047,7 @@ def rema(
     ----------
     version : str, optional,
         choose which resolution to fetch, either "1km" or "500m", by default is "1km"
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2122,7 +2136,7 @@ def rema(
     # load zarr as a dataarray
     grid = xr.open_zarr(zarr_file)["surface"]
 
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -2132,12 +2146,14 @@ def rema(
         registration=registration,
     )
 
+    return typing.cast(xr.DataArray, resampled)
+
 
 def deepbedmap(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
-) -> xr.DataArray:
+) -> str:
     """
     Load DeepBedMap data,  from Leong and Horgan, 2020:
     https://doi.org/10.5194/tc-14-3687-2020
@@ -2145,15 +2161,15 @@ def deepbedmap(
 
     Parameters
     ----------
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
 
     Returns
     -------
-    xr.DataArray
-        Returns a loaded, and optional clip/resampled grid of DeepBedMap.
+    str
+        Returns the filepath of DeepBedMap.
     """
 
     # found with utils.get_grid_info()
@@ -2168,7 +2184,7 @@ def deepbedmap(
     if registration is None:
         registration = initial_registration
 
-    path = pooch.retrieve(
+    path: str = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         fname="deepbedmap.tif",
         path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
@@ -2176,17 +2192,19 @@ def deepbedmap(
         progressbar=True,
     )
 
-    grid = xr.load_dataarray(path).squeeze()
+    # with xr.open_dataarray(path) as da:
+    #     grid = da.squeeze()
 
-    return resample_grid(
-        grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
-        spacing=spacing,
-        region=region,
-        registration=registration,
-    )
+    return path
+    # return resample_grid(
+    #     grid,
+    #     initial_spacing=initial_spacing,
+    #     initial_region=initial_region,
+    #     initial_registration=initial_registration,
+    #     spacing=spacing,
+    #     region=region,
+    #     registration=registration,
+    # )
 
 
 def gravity(
@@ -2221,7 +2239,7 @@ def gravity(
     ----------
     version : str
         choose which version of gravity data to fetch.
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2437,7 +2455,7 @@ def gravity(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def etopo(
@@ -2455,7 +2473,7 @@ def etopo(
     Parameters
     ----------
 
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2514,7 +2532,7 @@ def etopo(
 
     grid = xr.load_dataarray(path)
 
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -2523,6 +2541,8 @@ def etopo(
         region=region,
         registration=registration,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def geoid(
@@ -2546,7 +2566,7 @@ def geoid(
     Parameters
     ----------
 
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -2605,7 +2625,7 @@ def geoid(
 
     grid = xr.load_dataarray(path)
 
-    return resample_grid(
+    resampled = resample_grid(
         grid,
         initial_spacing=initial_spacing,
         initial_region=initial_region,
@@ -2615,6 +2635,8 @@ def geoid(
         registration=registration,
         **kwargs,
     )
+
+    return typing.cast(xr.DataArray, resampled)
 
 
 def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
@@ -2829,7 +2851,7 @@ def magnetics(
     spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
-) -> xr.DataArray:
+) -> xr.DataArray | None:
     """
     Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
     from  Golynsky et al. (2018). New magnetic anomaly map of the Antarctic. Geophysical
@@ -2852,8 +2874,7 @@ def magnetics(
     ----------
     version : str
         Either 'admap1', 'admap2', or 'admap2_gdb'
-
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
@@ -3015,7 +3036,7 @@ def magnetics(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def ghf(
@@ -3068,7 +3089,7 @@ def ghf(
     ----------
     version : str
         Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3496,7 +3517,7 @@ def ghf(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def gia(
@@ -3504,7 +3525,7 @@ def gia(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
-) -> xr.DataArray:
+) -> xr.DataArray | None:
     """
     Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
 
@@ -3518,7 +3539,7 @@ def gia(
     ----------
     version : str
         For now the only option is 'stal-2020',
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3566,7 +3587,7 @@ def gia(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def crustal_thickness(
@@ -3574,7 +3595,7 @@ def crustal_thickness(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
-) -> xr.DataArray:
+) -> xr.DataArray | None:
     """
     Load 1 of x 'versions' of Antarctic crustal thickness grids.
 
@@ -3602,7 +3623,7 @@ def crustal_thickness(
         Either 'shen-2018',
         will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes', 'pappa', 'stal'
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3614,84 +3635,88 @@ def crustal_thickness(
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
     """
     if version == "shen-2018":
-        # was in lat long, so just using standard values here
-        initial_region = regions.antarctica
-        initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration = "g"
+        msg = "the link to the shen-2018 data appears to be broken"
+        raise ValueError(msg)
+        # # was in lat long, so just using standard values here
+        # initial_region = regions.antarctica
+        # initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
+        # initial_registration = "g"
 
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
+        # if region is None:
+        #     region = initial_region
+        # if spacing is None:
+        #     spacing = initial_spacing
+        # if registration is None:
+        #     registration = initial_registration
 
-        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .dat file, grid it, and save it back as a .nc"
-            fname1 = Path(fname)
+        # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+        #     "Load the .dat file, grid it, and save it back as a .nc"
+        #     fname1 = Path(fname)
 
-            # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+        #     # Rename to the file to ***_preprocessed.nc
+        #     fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
+        #     fname_processed = fname_pre.with_suffix(".nc")
 
-            # Only recalculate if new download or the processed file doesn't exist yet
-            if action in ("download", "update") or not fname_processed.exists():
-                # load data
-                df = pd.read_csv(
-                    fname1,
-                    delim_whitespace=True,
-                    header=None,
-                    names=["lon", "lat", "thickness"],
-                )
-                # convert to meters
-                df.thickness = df.thickness * 1000
+        #     # Only recalculate if new download or the processed file doesn't exist yet
+        #     if action in ("download", "update") or not fname_processed.exists():
+        #         # load data
+        #         df = pd.read_csv(
+        #             fname1,
+        #             delim_whitespace=True,
+        #             header=None,
+        #             names=["lon", "lat", "thickness"],
+        #         )
+        #         # convert to meters
+        #         df.thickness = df.thickness * 1000
 
-                # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
-                )
+        #         # re-project to polar stereographic
+        #         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
+        #         df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence # noqa: E501
+        #             df.lat.tolist(), df.lon.tolist()
+        #         )
 
-                # block-median and grid the data
-                df = pygmt.blockmedian(
-                    df[["x", "y", "thickness"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
-                )
-                processed = pygmt.surface(
-                    data=df[["x", "y", "thickness"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
-                    maxradius="1c",
-                )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
-            return str(fname_processed)
+        #         # block-median and grid the data
+        #         df = pygmt.blockmedian(
+        #             df[["x", "y", "thickness"]],
+        #             spacing=initial_spacing,
+        #             region=initial_region,
+        #             registration=initial_registration,
+        #         )
+        #         processed = pygmt.surface(
+        #             data=df[["x", "y", "thickness"]],
+        #             spacing=initial_spacing,
+        #             region=initial_region,
+        #             registration=initial_registration,
+        #             maxradius="1c",
+        #         )
+        #         # Save to disk
+        #         processed.to_netcdf(fname_processed)
+        #     return str(fname_processed)
 
-        path = pooch.retrieve(
-            url="https://weisen.wustl.edu/For_Comrades/for_self/moho.WCANT.dat",
-            known_hash=None,
-            fname="shen_2018_crustal_thickness.dat",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
-            processor=preprocessing,
-            progressbar=True,
-        )
+        # url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
 
-        grid = xr.load_dataarray(path)
+        # path = pooch.retrieve(
+        #     url=url,
+        #     known_hash=None,
+        #     fname="shen_2018_crustal_thickness.dat",
+        #     path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
+        #     processor=preprocessing,
+        #     progressbar=True,
+        # )
 
-        resampled = resample_grid(
-            grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
-        )
+        # grid = xr.load_dataarray(path)
 
-    elif version == "an-2015":
+        # resampled = resample_grid(
+        #     grid,
+        #     initial_spacing,
+        #     initial_region,
+        #     initial_registration,
+        #     spacing,
+        #     region,
+        #     registration,
+        # )
+
+    if version == "an-2015":
         # was in lat long, so just using standard values here
         initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
         initial_spacing = 5e3
@@ -3765,7 +3790,7 @@ def crustal_thickness(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
 
 
 def moho(
@@ -3773,7 +3798,7 @@ def moho(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
-) -> xr.DataArray:
+) -> xr.DataArray | None:
     """
     Load 1 of x 'versions' of Antarctic Moho depth grids.
 
@@ -3803,7 +3828,7 @@ def moho(
         Either 'shen-2018', 'an-2015', 'pappa-2019',
         will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes',
-    region : str or NDArray, optional
+    region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
@@ -3910,7 +3935,7 @@ def moho(
         if registration is None:
             registration = initial_registration
 
-        grid = crustal_thickness(version="an-2015") * -1
+        grid = crustal_thickness(version="an-2015") * -1  # type: ignore[operator]
 
         resampled = resample_grid(
             grid,
@@ -3965,4 +3990,4 @@ def moho(
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return resampled
+    return typing.cast(xr.DataArray, resampled)
