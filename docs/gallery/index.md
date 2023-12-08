@@ -1,30 +1,81 @@
-# 
+# 📚 Gallery
 
 ## Maps
-[Basic map](basic_map.ipynb)                            | [Use with PyGMT](extend_pygmt.ipynb)
-:------------------------------------------------------:|:-------------------------------------------------------:
-![](outputs/basic_map.png)                              | ![](outputs/extend_pygmt.png)
 
-[Define projection](setting_projection.ipynb)           | [3D stack](3D_stack.ipynb)
-:------------------------------------------------------:|:-------------------------------------------------------:
-![](outputs/setting_projection.png)                     | ![](outputs/3D_stack.png)
+Here are some examples for use the module `Maps`.
 
-[Create subplots](subplots.ipynb)                       | [Subplot layout](subplot_layout.ipynb)
-:------------------------------------------------------:|:-------------------------------------------------------:
-![](outputs/subplots.png)                               |![](outputs/subplot_layout.png)
-
+```{nbgallery}
+---
+---
+basic_map
+extend_pygmt
+setting_projection
+3D_stack
+subplots
+subplot_layout
+```
 
 ## Profiles
-[Sample and plot profile](profile.ipynb)                | [Add map to profile](profile_with_map.ipynb)
-:------------------------------------------------------:|:-------------------------------------------------------:
-![](outputs/profile.png)                                | ![](outputs/profile_with_map.png)
 
-[Add data to profile](profile_with_data.ipynb)          |
-:-------------------------------------------------------:
-![](outputs/profile_with_data.png)
+Here are some examples for use the module `Profile`.
 
+```{nbgallery}
+---
+---
+profile
+profile_with_map
+profile_with_data
+```
 
 ## Utils
-[Mask grids with shapefiles](mask_from_shp.ipynb)       |
-:-------------------------------------------------------:
-![](outputs/mask_from_shp.png)
+
+Here are some examples for use the module `Utils`.
+
+```{nbgallery}
+---
+---
+mask_from_shp
+```
+
+## <!-- ```{nblinkgallery}
+
+caption: Maps name: maps-gallery
+
+---
+
+basic_map extend_pygmt setting_projection 3D_stack subplots subplot_layout
+
+````
+
+```{nblinkgallery}
+---
+caption: Profiles
+name: profiles-gallery
+---
+profile
+profile_with_map
+profile_with_data
+````
+
+````{nblinkgallery}
+---
+caption: Utils
+name: utils-gallery
+---
+mask_from_shp
+``` -->
+
+<!-- ```{nbgallery}
+---
+caption: 📚 Gallery
+maxdepth: 1
+glob:
+---
+basic_map
+extend_pygmt
+setting_projection
+3D_stack
+subplots
+subplot_layout
+``` -->
+````
