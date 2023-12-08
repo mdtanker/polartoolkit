@@ -11,10 +11,12 @@ Projection (EPSG:3031). The format is (East, West, North, South), in meters.
 """
 from __future__ import annotations
 
+import typing
+
 import pandas as pd
 import verde as vd
 
-from antarctic_plots import maps, regions, utils
+from antarctic_plots import maps, regions, utils  # noqa: PLW0406
 
 try:
     import ipyleaflet
@@ -80,6 +82,7 @@ ross_sea = (-500e3, 450e3, -2100e3, -1300e3)
 # ice catchements
 
 
+def get_regions() -> dict[str, tuple[float, float, float, float]]:
     """
     get all the regions defined in this module.
 
@@ -102,15 +105,16 @@ ross_sea = (-500e3, 450e3, -2100e3, -1300e3)
         "combine_regions",
         "draw_region",
         "get_regions",
+        "annotations",
+        "typing",
+        "display",
     ]
 
-    regions_dict = {
+    return {
         k: v
         for k, v in vars(regions).items()
         if (k not in exclude_list) & (not k.startswith("_"))
     }
-
-    return regions_dict
 
 
 def combine_regions(
@@ -141,7 +145,7 @@ def combine_regions(
     return reg
 
 
-def draw_region(**kwargs):
+def draw_region(**kwargs: typing.Any) -> typing.Any:
     """
     Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle
     and get the bounding region. Verticles will be returned as the output of the
@@ -166,13 +170,13 @@ def draw_region(**kwargs):
 
     m = maps.interactive_map(**kwargs, show=False)
 
-    def clear_m():
-        global poly
-        poly = list()
+    def clear_m() -> None:
+        global poly  # noqa: PLW0603 # pylint: disable=global-variable-undefined
+        poly = []  # type: ignore[name-defined]
 
     clear_m()
 
-    myDrawControl = ipyleaflet.DrawControl(
+    mydrawcontrol = ipyleaflet.DrawControl(
         polygon={
             "shapeOptions": {
                 "fillColor": "#fca45d",
@@ -185,19 +189,19 @@ def draw_region(**kwargs):
         rectangle={},
     )
 
-    def handle_rect_draw(self, action, geo_json):
-        global poly
+    def handle_rect_draw(self: typing.Any, action: str, geo_json: typing.Any) -> None:  # noqa: ARG001 # pylint: disable=unused-argument
+        global poly  # noqa: PLW0602 # pylint: disable=global-variable-not-assigned
         shapes = []
         for coords in geo_json["geometry"]["coordinates"][0][:-1][:]:
             shapes.append(list(coords))
         shapes = list(shapes)
         if action == "created":
-            poly.append(shapes)
+            poly.append(shapes)  # type: ignore[name-defined]
 
-    myDrawControl.on_draw(handle_rect_draw)
-    m.add_control(myDrawControl)
+    mydrawcontrol.on_draw(handle_rect_draw)
+    m.add_control(mydrawcontrol)
 
     clear_m()
-    display(m)  # noqa
+    display(m)  # pylint: disable=undefined-variable # type: ignore[name-defined]
 
-    return poly
+    return poly  # type: ignore[name-defined]
