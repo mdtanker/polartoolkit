@@ -258,7 +258,7 @@ def region_xy_to_ll(
 
 
 def region_to_bounding_box(
-    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
     Convert GMT region in format [e, w, n, s] to bounding box format used for icepyx:

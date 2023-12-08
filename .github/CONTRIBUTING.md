@@ -34,11 +34,11 @@ contributions.
 * [Editing the Documentation](#editing-the-documentation)
 * [Contributing Code](#contributing-code)
   - [Setting up your environment](#setting-up-your-environment)
-  - [Code style](#code-style)
+  - [Code style and linting](#code-style-and-linting)
   - [Testing your code](#testing-your-code)
   - [Documentation](#documentation)
   - [Code Review](#code-review)
-* [Publish a new release](#release-a-new-version)
+* [Publish a new release](#publish-a-new-release)
 * [Update the Dependencies](#update-the-dependencies)
 * [Set up Binder](#set-up-the-binder-configuration)
 
@@ -79,8 +79,7 @@ download and install anything:
 * Fill out the two fields under "Commit changes": the first is a short title describing
   your fixes; the second is a more detailed description of the changes. Try to be as
   detailed as possible and describe *why* you changed something.
-* Click on the "Commit changes" button to open a
-  [pull request (see below)](#pull-requests).
+* Click on the "Commit changes" button to open a pull request (see below).
 * We'll review your changes and then merge them in if everything is OK.
 * Done 🎉🍺
 
@@ -91,7 +90,7 @@ example scripts. See [Contributing Code](#contributing-code) for instructions.
 
 **Is this your first contribution?**
 Please take a look at these resources to learn about git and pull requests (don't
-hesitate to ask questions in the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions):
+hesitate to ask questions in the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions)):
 
 * [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
 * Aaron Meurer's [tutorial on the git workflow](http://www.asmeurer.com/git-workflow/)
@@ -337,7 +336,7 @@ If you add a dependency necessary for using the package, make sure to add it to 
 
 To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `/binder/environment.yml`. This file reflects the latest release on Conda-Forge. Update it with the following commands.
 
-    make conda install
+    make conda_install
 
     conda activate antarctic_plots
 
