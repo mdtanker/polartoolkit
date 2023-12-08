@@ -21,8 +21,14 @@ if TYPE_CHECKING:
 from antarctic_plots import fetch, maps, utils
 
 try:
+    from IPython.display import display
+except ImportError:
+    display = None
+
+try:
     import ipyleaflet
 except ImportError:
+    ipyleaflet = None
 
 
 def create_profile(
@@ -1311,6 +1317,18 @@ def draw_lines(**kwargs):
     typing.Any
         Returns a list of list of vertices for each polyline in lat long.
     """
+
+    if ipyleaflet is None:
+        msg = """
+            Missing optional dependency 'ipyleaflet' required for interactive plotting.
+        """
+        raise ImportError(msg)
+
+    if display is None:
+        msg = """
+            Missing optional dependency 'ipython' required for interactive plotting.
+        """
+        raise ImportError(msg)
 
     m = maps.interactive_map(**kwargs, show=False)
 

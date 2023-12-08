@@ -21,17 +21,29 @@ import xarray as xr
 from antarctic_plots import fetch, regions, utils
 
 try:
+    from IPython.display import display
+except ImportError:
+    display = None
+
+try:
     import geoviews as gv
 except ImportError:
+    gv = None
 
 try:
     from cartopy import crs
 except ImportError:
+    crs = None
 
 try:
     import ipyleaflet
+except ImportError:
+    ipyleaflet = None
+
+try:
     import ipywidgets
 except ImportError:
+    ipywidgets = None
 
 
 def basemap(
@@ -1008,6 +1020,24 @@ def interactive_map(
         by default 'BlueMarble'
     """
 
+    if ipyleaflet is None:
+        msg = """
+            Missing optional dependency 'ipyleaflet' required for interactive plotting.
+        """
+        raise ImportError(msg)
+
+    if ipywidgets is None:
+        msg = """
+            Missing optional dependency 'ipywidgets' required for interactive plotting.
+        """
+        raise ImportError(msg)
+
+    if display is None:
+        msg = """
+            Missing optional dependency 'ipython' required for interactive plotting.
+        """
+        raise ImportError(msg)
+
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
         height=kwargs.get("height", None),
@@ -1390,6 +1420,14 @@ def interactive_data(
     #     ... points_z = 'GHF',
     #     ... )
     #     >>> image
+    if gv is None:
+        msg = (
+            "Missing optional dependency 'geoviews' required for interactive plotting."
+        )
+        raise ImportError(msg)
+    if crs is None:
+        msg = "Missing optional dependency 'cartopy' required for interactive plotting."
+        raise ImportError(msg)
 
     # set the plot style
     gv.extension("bokeh")
@@ -1512,6 +1550,14 @@ def geoviews_points(
         _description_
 
     """
+    if gv is None:
+        msg = (
+            "Missing optional dependency 'geoviews' required for interactive plotting."
+        )
+        raise ImportError(msg)
+    if crs is None:
+        msg = "Missing optional dependency 'cartopy' required for interactive plotting."
+        raise ImportError(msg)
 
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color

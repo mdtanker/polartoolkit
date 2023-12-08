@@ -19,9 +19,14 @@ from antarctic_plots import maps, regions, utils
 try:
     import ipyleaflet
 except ImportError:
-    _has_ipyleaflet = False
-else:
-    _has_ipyleaflet = True
+    ipyleaflet = None
+
+
+try:
+    from IPython.display import display
+except ImportError:
+    display = None
+
 
 # regions
 antarctica = [-2800e3, 2800e3, -2800e3, 2800e3]
@@ -146,6 +151,17 @@ def draw_region(**kwargs):
     typing.Any
         Returns a list of list of vertices for each polyline.
     """
+    if ipyleaflet is None:
+        msg = """
+            Missing optional dependency 'ipyleaflet' required for interactive plotting.
+        """
+        raise ImportError(msg)
+
+    if display is None:
+        msg = """
+            Missing optional dependency 'ipython' required for interactive plotting.
+        """
+        raise ImportError(msg)
 
     m = maps.interactive_map(**kwargs, show=False)
 
