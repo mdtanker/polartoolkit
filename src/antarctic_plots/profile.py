@@ -643,7 +643,8 @@ def plot_profile(
                 if isinstance(color, list):
                     color = color[i]
                 if color is None:
-                    color = v["color"]
+                    # color = v["color"]
+                    color = "black"
 
                 style = kwargs.get("layers_pen_style", None)
                 if isinstance(style, list):
