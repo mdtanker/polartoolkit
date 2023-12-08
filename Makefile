@@ -34,6 +34,9 @@ pylint:
 
 style: format check lint pylint
 
+mypy:
+	mypy src/antarctic_plots
+
 release_check:
 	semantic-release --noop version
 
