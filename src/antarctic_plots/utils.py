@@ -26,6 +26,9 @@ from antarctic_plots import fetch, maps
 try:
     import seaborn as sns
 except ImportError:
+    sns = None
+
+
     """
     function to give the root mean/median squared error (RMSE) of data
 
@@ -1033,6 +1036,10 @@ def raps(
     spacing : float
         grid spacing if input is not a grid
     """
+    # Check if seaborn is installed
+    if sns is None:
+        msg = "Missing optional dependency 'seaborn' required for plotting."
+        raise ImportError(msg)
 
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
@@ -1169,6 +1176,12 @@ def coherency(grids: list, label: str, **kwargs):
             label='3'
             )
     """
+
+    # Check if seaborn is installed
+    if sns is None:
+        msg = "Missing optional dependency 'seaborn' required for plotting."
+        raise ImportError(msg)
+
     region = kwargs.get("region", None)
     spacing = kwargs.get("spacing", None)
 
