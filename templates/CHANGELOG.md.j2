@@ -5,12 +5,14 @@
 ## Unreleased
 
 {% for type_, commits in context.history.unreleased | dictsort %}
-{% if type_ == "fix" %}
+{% if type_ == "feature" %}
+### 🚀 Features
+{% elif type_ == "fix" %}
 ### 🐛 Bug Fixes
 {% elif type_ == "chore" %}
 ### 🧰 Chores / Maintenance
-{% elif type_ == "feature" %}
-### 🚀 Features
+{% elif type_ == "refactor" %}
+###  🎨 Refactor
 {% elif type_ == "documentation" %}
 ### 📖 Documentation
 {% elif type_ == "style" %}
@@ -37,12 +39,14 @@
 {% if version in ["0.0.0", "0.0.1", "0.0.3", "0.0.4", "0.0.6"] %}
 {% else %}
 {% for type_, commits in release["elements"] | dictsort %}
-{% if type_ == "fix" %}
+{% if type_ == "feature" %}
+### 🚀 Features
+{% elif type_ == "fix" %}
 ### 🐛 Bug Fixes
 {% elif type_ == "chore" %}
 ### 🧰 Chores / Maintenance
-{% elif type_ == "feature" %}
-### 🚀 Features
+{% elif type_ == "refactor" %}
+###  🎨 Refactor
 {% elif type_ == "documentation" %}
 ### 📖 Documentation
 {% elif type_ == "style" %}
