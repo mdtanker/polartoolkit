@@ -304,17 +304,18 @@ def basal_melt(variable="w_b") -> xr.DataArray:
 
     fname = "ANT_iceshelf_melt_rates_CS2_2010-2018_v0.h5"
 
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Download the .h5 file, save to .zarr and return fname"
-        fname = Path(fname)
+        fname1 = Path(fname)
 
         # Rename to the file to ***.zarr
-        fname_processed = fname.with_suffix(".zarr")
+        fname_processed = fname1.with_suffix(".zarr")
 
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load .h5 file
             grid = xr.load_dataset(
-                fname,
+                fname1,
                 engine="netcdf4",
                 # engine='h5netcdf',
                 # phony_dims='sort',
@@ -393,10 +394,11 @@ def ice_vel(
     original_spacing = 450
 
     # preprocessing for full, 450m resolution
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, calculate velocity magnitude, save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_fullres")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
@@ -406,10 +408,11 @@ def ice_vel(
         return str(fname_processed)
 
     # preprocessing for filtered 5k resolution
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, calculate velocity magnitude, resample to 5k, save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed_5k.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_5k")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             grid = xr.load_dataset(fname)
@@ -900,22 +903,23 @@ def sediment_thickness(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
             path = pooch.Unzip(
                 extract_dir="Baranov_2021_sediment_thickness",
-            )(fname, action, pooch2)
-            fname = Path(fname)
+            )(fname, action, _pooch2)
+            fname1 = next(p for p in path if p.endswith(".dat"))
+            fname2 = Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname2,
                     header=None,
                     delim_whitespace=True,
                     names=["x_100km", "y_100km", "thick_km"],
@@ -1039,20 +1043,21 @@ def sediment_thickness(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the grid, and save it back as a .nc"
             path = pooch.Unzip(
                 extract_dir="GlobSed",
-            )(fname, action, pooch2)
-            fname = Path(fname)
+            )(fname, action, _pooch2)
+            fname1 = next(p for p in path if p.endswith("GlobSed-v3.nc"))
+            fname2 = Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname2.with_stem(fname2.stem + "_preprocessed")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                grid = xr.load_dataarray(fname)
+                grid = xr.load_dataarray(fname2)
 
                 # write the current projection
 
@@ -1222,19 +1227,22 @@ def sediment_thickness(
     original_spacing = 500
 
     # preprocessing for full, 500m resolution
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_fullres")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
+            logging.warning(
                 "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
             # load grid
-            grid = xr.load_dataset(fname).z
+            grid = xr.load_dataset(fname1).z
+            logging.info(utils.get_grid_info(grid))
 
             # subset to a smaller region (buffer by 1 cell width)
             cut = pygmt.grdcut(
@@ -1268,19 +1276,22 @@ def sediment_thickness(
         return str(fname_processed)
 
     # preprocessing for filtered 5k resolution
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject and resample to 5km, and save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed_5k")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
+            logging.warning(
                 "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
             # load grid
-            grid = xr.load_dataset(fname).z
+            grid = xr.load_dataset(fname1).z
+            logging.info(utils.get_grid_info(grid))
 
             # cut and change spacing, with 1 cell buffer
             cut = resample_grid(
@@ -1717,28 +1728,29 @@ def bedmap2(
     if registration is None:
         registration = initial_registration
 
-    def preprocessing(fname, action, pooch2):
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Unzip the folder, convert the tiffs to compressed .zarr files"
         # extract each layer to it's own folder
         if layer == "gl04c_geiod_to_WGS84":
             member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
         else:
             member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
-        fname = pooch.Unzip(
+        fname1 = pooch.Unzip(
             extract_dir=f"bedmap2_{layer}",
             members=member,
+        )(fname, action, _pooch2)[0]
         # get the path to the layer's tif file
-        fname = Path(fname)
+        fname2 = Path(fname1)
 
         # Rename to the file to ***.zarr
-        fname_processed = fname.with_suffix(".zarr")
+        fname_processed = fname2.with_suffix(".zarr")
 
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load data
             grid = (
                 xr.load_dataarray(
-                    fname,
+                    fname2,
                     engine="rasterio",
                 )
                 .squeeze()
@@ -1950,10 +1962,10 @@ def bedmap2(
     if registration is None:
         registration = initial_registration
 
-    def preprocessing(fname, action, pooch2):
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Untar the folder, convert the tiffs to compressed .zarr files"
         # extract the files and get the surface grid
-        path = pooch.Untar(members=members)(fname, action, pooch2)[0]
+        path = pooch.Untar(members=members)(fname, action, _pooch2)[0]
         # fname = [p for p in path if p.endswith("dem.tif")]#[0]
         tiff_file = Path(path)
         # Rename to the file to ***.zarr
@@ -2183,20 +2195,21 @@ def gravity(
         available_anomalies = ["FA", "DG", "BA", "Err"]
         if anomaly_type not in available_anomalies:
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            path = pooch.Unzip()(fname, action, pooch2)
-            fname = Path(fname)
+            path = pooch.Unzip()(fname, action, _pooch2)
+            fname1 = next(p for p in path if p.endswith(".dat"))
+            fname2 = Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + f"_{anomaly_type}_preprocessed")
+            fname_pre = fname2.with_stem(fname2.stem + f"_{anomaly_type}_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname2,
                     delim_whitespace=True,
                     skiprows=3,
                     names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
@@ -2256,14 +2269,15 @@ def gravity(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .nc file, reproject, and save it back"
-            fname = Path(fname)
+            fname1 = Path(fname)
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
-                grid = xr.load_dataset(fname).gravity
+                grid = xr.load_dataset(fname1).gravity
 
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
@@ -2349,14 +2363,15 @@ def etopo(
     if registration is None:
         registration = initial_registration
 
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
-            grid = xr.load_dataset(fname).topography
+            grid = xr.load_dataset(fname1).topography
 
             # reproject to polar stereographic
             grid2 = pygmt.grdproject(
@@ -2446,14 +2461,15 @@ def geoid(
     if registration is None:
         registration = initial_registration
 
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname = Path(fname)
+        fname1 = Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
-            grid = xr.load_dataset(fname).geoid
+            grid = xr.load_dataset(fname1).geoid
 
             # reproject to polar stereographic
             grid2 = pygmt.grdproject(
@@ -2749,20 +2765,24 @@ def magnetics(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            fname = pooch.Unzip()(fname, action, pooch2)[0]
-            fname = Path(fname)
+            path = pooch.Unzip(
+                # extract_dir="Baranov_2021_sediment_thickness",
+            )(fname, action, _pooch2)
+            fname1 = next(p for p in path if p.endswith(".dat"))
+            fname2 = Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
+                logging.info("unzipping %s", fname)
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname1,
                     delim_whitespace=True,
                     header=None,
                     names=["lat", "lon", "nT"],
@@ -2824,17 +2844,18 @@ def magnetics(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "convert geosoft grd to xarrya dataarray and save it back as a .nc"
-            fname = Path(fname)
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # convert to dataarray
-                processed = hm.load_oasis_montaj_grid(fname)
+                processed = hm.load_oasis_montaj_grid(fname1)
                 # Save to disk
                 processed.to_netcdf(fname_processed)
             return str(fname_processed)
@@ -2958,19 +2979,19 @@ def ghf(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the .nc file, and save it back"
-            fname = pooch.Untar()(fname, action, pooch2)[0]
-            fname = Path(fname)
+            fname = pooch.Untar()(fname, action, _pooch2)[0]
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
-                grid = xr.load_dataarray(fname)
+                grid = xr.load_dataarray(fname1)
 
                 # write the current projection
 
@@ -3028,18 +3049,19 @@ def ghf(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .xyz file, grid it, and save it back as a .nc"
-            fname = Path(fname)
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load the data
                 df = pd.read_csv(
-                    fname, header=None, delim_whitespace=True, names=["x", "y", "GHF"]
+                    fname1, header=None, delim_whitespace=True, names=["x", "y", "GHF"]
                 )
 
                 # grid the data
@@ -3171,17 +3193,18 @@ def ghf(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname = Path(fname)
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                df = pd.read_csv(fname)
+                df = pd.read_csv(fname1)
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
@@ -3282,18 +3305,19 @@ def ghf(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname = Path(fname)
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname1,
                     delim_whitespace=True,
                     header=None,
                     names=["lon", "lat", "GHF"],
@@ -3482,18 +3506,19 @@ def crustal_thickness(
         if registration is None:
             registration = initial_registration
 
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .dat file, grid it, and save it back as a .nc"
-            fname = Path(fname)
+            fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem("shen_2018_crustal_thickness_preprocessed")
+            fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname1,
                     delim_whitespace=True,
                     header=None,
                     names=["lon", "lat", "thickness"],
@@ -3557,18 +3582,18 @@ def crustal_thickness(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the .nc file, and save it back"
             path = pooch.Untar(
                 extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
-            )(fname, action, pooch2)
-            fname = Path(path[0])
+            )(fname, action, _pooch2)
+            fname1 = Path(path[0])
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname.with_stem(fname.stem + "_preprocessed")
+            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
-                grid = xr.load_dataarray(fname)
+                grid = xr.load_dataarray(fname1)
 
                 # convert to meters
                 grid = grid * 1000
@@ -3683,22 +3708,23 @@ def moho(
         if registration is None:
             registration = initial_registration
 
-        def preprocessing(fname, action, pooch2):
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .dat file, grid it, and save it back as a .nc"
             path = pooch.Untar(
                 extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
-            )(fname, action, pooch2)
-            fname = Path(fname)
+            )(fname, action, _pooch2)
+            fname1 = next(p for p in path if p.endswith("moho.final.dat"))
+            fname2 = Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname.with_stem(fname.stem + "_preprocessed")
+            fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".nc")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(
-                    fname,
+                    fname2,
                     delim_whitespace=True,
                     header=None,
                     names=["lon", "lat", "depth"],
