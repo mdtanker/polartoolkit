@@ -8,6 +8,9 @@
 #
 from __future__ import annotations
 
+import logging
+import pathlib
+import typing
 import warnings
 from math import floor, log10
 
@@ -47,8 +50,12 @@ except ImportError:
 
 
 def basemap(
+    region: tuple[float, float, float, float] | None = None,
     fig_height: float = 15,
+    fig_width: float | None = None,
     origin_shift: str = "initialize",
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
     """
     create a blank basemap figure, or add a basemape to an existing figure / subplot.
 
@@ -138,6 +145,9 @@ def basemap(
     if kwargs.get("inset", False) is True:
         # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key
             not in [
                 "fig",
             ]
@@ -178,12 +188,14 @@ def basemap(
 
 
 def plot_grd(
-    cmap: str = "viridis",
+    grid: str | xr.DataArray | None,
+    cmap: str | bool = "viridis",
+    region: tuple[float, float, float, float] | None = None,
     coast: bool = False,
     origin_shift: str = "initialize",
-    **kwargs,
-):
-    """
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
+    r"""
     Helps easily create PyGMT maps, individually or as subplots.
 
     Parameters
@@ -262,7 +274,13 @@ def plot_grd(
     if region is None:
         try:
             region = utils.get_grid_info(grid)[1]
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # pygmt.exceptions.GMTInvalidInput:
+            logging.exception(e)
+            logging.warning("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
+
+    region = typing.cast(tuple[float, float, float, float], region)
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
@@ -286,6 +304,7 @@ def plot_grd(
         fig = kwargs.get("fig")
 
         if origin_shift == "xshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -294,12 +313,14 @@ def plot_grd(
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
             )
         elif origin_shift == "yshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
             )
             fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
         elif origin_shift == "both_shift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -315,6 +336,8 @@ def plot_grd(
             )
 
         else:
+            msg = "invalid string for origin shift"
+            raise ValueError(msg)
 
     cmap_region = kwargs.get("cmap_region", region)
     show_region = kwargs.get("show_region", None)
@@ -395,6 +418,10 @@ def plot_grd(
                 reverse=reverse_cpt,
                 verbose="e",
             )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # pygmt.exceptions.GMTInvalidInput:
+            logging.exception(e)
+            logging.warning("grid region can't be extracted.")
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -457,6 +484,9 @@ def plot_grd(
     if inset is True:
         # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key
             not in [
                 "fig",
             ]
@@ -493,6 +523,9 @@ def plot_grd(
     if colorbar is True:
         # removed duplicate kwargs before passing to add_colorbar
         cbar_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key
             not in [
                 "cpt_lims",
                 "fig_width",
@@ -505,7 +538,7 @@ def plot_grd(
             fig,
             hist=kwargs.get("hist", False),
             grid=grid,
-            cpt_lims=[zmin, zmax],
+            cpt_lims=(zmin, zmax),
             fig_width=fig_width,
             region=region,
             **cbar_kwargs,
@@ -524,9 +557,10 @@ def plot_grd(
 def add_colorbar(
     fig: pygmt.Figure,
     hist: bool = False,
-    cbar_frame=None,
-    **kwargs,
-):
+    cpt_lims: tuple[float, float] | None = None,
+    cbar_frame: list[str] | str | None = None,
+    **kwargs: typing.Any,
+) -> None:
     """
     Add a colorbar and optionally a histogram based on the last cmap used by PyGMT.
 
@@ -542,6 +576,7 @@ def add_colorbar(
         default None
     """
     # get the current figure width
+    fig_width = utils.get_fig_width()
 
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
@@ -577,14 +612,19 @@ def add_colorbar(
             ),
             frame=cbar_frame,
             scale=kwargs.get("cbar_scale", 1),
-            Q=kwargs.get("cbar_log", None),
+            log=kwargs.get("cbar_log", None),
         )
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropriate value
+    if hist is True:
         # get grid to use
         grid = kwargs.get("grid", None)
+
+        if grid is None:
+            msg = "if hist is True, grid must be provided."
+            raise ValueError(msg)
 
         # clip grid to plot region
         region = kwargs.get("region", None)
@@ -602,25 +642,33 @@ def add_colorbar(
             grid_clipped = grid.sel(
                 {
                     list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
+                    list(grid.sizes.keys())[0]: slice(max(ns), min(ns)),  # noqa: RUF015
                 }
             )
             # if subplotting, region will be in figure units and grid will be clipped
             # incorrectly, hacky solution is to check if clipped figure is smaller than
             # a few data points, if so, use grids full region
+            if len(grid_clipped[list(grid_clipped.sizes.keys())[0]].values) < 5:  # noqa: RUF015
                 reg = kwargs.get("region", None)
                 if reg is None:
+                    msg = (
+                        "Issue with detecting figure region for adding colorbar "
+                        "histogram, please provide region kwarg."
                     )
+                    raise ValueError(msg)
                 grid_clipped = grid.sel(
                     {
                         list(grid.sizes.keys())[1]: slice(reg[0], reg[1]),
+                        list(grid.sizes.keys())[0]: slice(reg[2], reg[3]),  # noqa: RUF015
                     }
                 )
             grid = grid_clipped
 
-        if grid is None:
         if (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
                 "getting max/min values from grid, if cpt_lims were used to create the "
+                "colorscale, histogram will not properly align with colorbar!",
+                stacklevel=2,
             )
             zmin, zmax = utils.get_min_max(
                 grid, kwargs.get("shp_mask", None), robust=kwargs.get("robust", False)
@@ -673,6 +721,12 @@ def add_colorbar(
 
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
+        try:
+            fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError as e:
+            logging.warning(e)
+            logging.warning("issue with plotting histogram, skipping...")
+
         # plot histograms above colorbar
         try:
             fig.histogram(
@@ -693,17 +747,26 @@ def add_colorbar(
                 series=f"{zmin}/{zmax}/{bin_width}",
                 histtype=hist_type,
             )
-        except pygmt.exceptions.GMTCLibError:
+        except pygmt.exceptions.GMTCLibError as e:
+            logging.warning(e)
+            logging.warning("issue with plotting histogram, skipping...")
 
         # shift figure back
+        try:
+            fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
+        except pygmt.exceptions.GMTCLibError as e:
+            logging.warning(e)
+            logging.warning("issue with plotting histogram, skipping...")
 
 
 def add_coast(
     fig: pygmt.Figure,
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
     no_coast: bool = False,
-    pen=None,
-    version="depoorter-2013",
-):
+    pen: str | None = None,
+    version: str = "depoorter-2013",
+) -> None:
     """
     add coastline and groundingline to figure.
 
@@ -746,8 +809,10 @@ def add_coast(
 
 def add_gridlines(
     fig: pygmt.Figure,
-    **kwargs,
-):
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
+    **kwargs: typing.Any,
+) -> None:
     """
     add lat lon grid lines and annotations to a figure. Use kwargs x_spacing and
     y_spacing to customize the interval of gridlines and annotations.
@@ -825,10 +890,12 @@ def add_gridlines(
 
 def add_inset(
     fig: pygmt.Figure,
+    region: tuple[float, float, float, float] | None = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
-    **kwargs,
-):
+    inset_reg: tuple[float, float, float, float] = (-2800e3, 2800e3, -2800e3, 2800e3),
+    **kwargs: typing.Any,
+) -> None:
     """
     add an inset map showing the figure region relative to the Antarctic continent.
 
@@ -845,13 +912,14 @@ def add_inset(
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
 
+    fig_width = utils.get_fig_width()
 
     inset_map = f"X{fig_width*inset_width}c"
 
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = list(lib.extract_region())
+            region = tuple(lib.extract_region())
             assert len(region) == 4
 
     with fig.inset(
@@ -883,8 +951,10 @@ def add_inset(
 
 def add_scalebar(
     fig: pygmt.Figure,
-    **kwargs,
-):
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
+    **kwargs: typing.Any,
+) -> None:
     """
     add a scalebar to a figure.
 
@@ -900,20 +970,21 @@ def add_scalebar(
 
     """
     font_color = kwargs.get("font_color", "black")
-    scale_length = kwargs.get("scale_length")
+    scale_length = kwargs.get("scale_length", None)
     length_perc = kwargs.get("length_perc", 0.25)
     position = kwargs.get("position", "n.5/.05")
 
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = list(lib.extract_region())
+            region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    def round_to_1(x):
+    def round_to_1(x: float) -> float:
         return round(x, -int(floor(log10(abs(x)))))
 
     if scale_length is None:
+        scale_length = typing.cast(float, scale_length)
         scale_length = round_to_1((abs(region[1] - region[0])) / 1000 * length_perc)
 
     with pygmt.config(
@@ -933,8 +1004,10 @@ def add_scalebar(
 
 def add_north_arrow(
     fig: pygmt.Figure,
-    **kwargs,
-):
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
+    **kwargs: typing.Any,
+) -> None:
     """
     add a north arrow to a figure
 
@@ -956,7 +1029,7 @@ def add_north_arrow(
     # if no region supplied, get region of current PyGMT figure
     if region is None:
         with pygmt.clib.Session() as lib:
-            region = list(lib.extract_region())
+            region = tuple(lib.extract_region())
             assert len(region) == 4
 
     rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
@@ -973,8 +1046,9 @@ def add_north_arrow(
 
 def add_box(
     fig: pygmt.Figure,
-    pen="2p,black",
-):
+    box: tuple[float, float, float, float],
+    pen: str = "2p,black",
+) -> None:
     """
     Plot a GMT region as a box.
 
@@ -995,11 +1069,14 @@ def add_box(
 
 
 def interactive_map(
+    center_yx: list[float] | None = None,
     zoom: float = 0,
     display_xy: bool = True,
     show: bool = True,
-    **kwargs,
-):
+    points: pd.DataFrame | None = None,
+    basemap_type: str = "BlueMarble",
+    **kwargs: typing.Any,
+) -> ipyleaflet.Map:
     """
     Plot an interactive map with satellite imagery. Clicking gives the cursor location
     in EPSG:3031 [x,y]. Requires ipyleaflet
@@ -1070,13 +1147,23 @@ def interactive_map(
     if center_yx is not None:
         center_ll = utils.epsg3031_to_latlon(center_yx)
 
+    if basemap_type == "BlueMarble":
+        base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3031  # pylint: disable=no-member
+        proj = ipyleaflet.projections.EPSG3031.NASAGIBS
+    elif basemap_type == "Imagery":
+        base = ipyleaflet.basemaps.Esri.AntarcticImagery  # pylint: disable=no-member
+        proj = ipyleaflet.projections.EPSG3031.ESRIImagery
+    elif basemap_type == "Basemap":
+        base = ipyleaflet.basemaps.Esri.AntarcticBasemap  # pylint: disable=no-member
+        proj = ipyleaflet.projections.EPSG3031.ESRIBasemap
+
     # create the map
     m = ipyleaflet.Map(
         center=center_ll,
         zoom=zoom,
         layout=layout,
-        basemap=ipyleaflet.basemaps.NASAGIBS.BlueMarble3031,
-        crs=ipyleaflet.projections.EPSG3031,
+        basemap=base,
+        crs=proj,
         dragging=True,
     )
 
@@ -1086,8 +1173,9 @@ def interactive_map(
     m.default_style = {"cursor": "crosshair"}
     if display_xy is True:
         label_xy = ipywidgets.Label()
+        display(label_xy)  # pylint: disable=undefined-variable # type: ignore[name-defined]
 
-        def handle_click(**kwargs):
+        def handle_click(**kwargs: typing.Any) -> None:
             if kwargs.get("type") == "click":
                 latlon = kwargs.get("coordinates")
                 label_xy.value = str(utils.latlon_to_epsg3031(latlon))
@@ -1095,14 +1183,17 @@ def interactive_map(
     m.on_interaction(handle_click)
 
     if show is True:
+        display(m)  # pylint: disable=undefined-variable # type: ignore[name-defined]
 
     return m
 
 
 def subplots(
-    grids: list,
-    **kwargs,
-):
+    grids: list[xr.DataArray],
+    region: tuple[float, float, float, float] | None = None,
+    dims: tuple[int, int] | None = None,
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
     """
     Plot a series of grids as individual suplots. This will automatically configure the
     layout to be closest to a square. Add any parameters from `plot_grd()` here as
@@ -1128,18 +1219,27 @@ def subplots(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # pygmt.exceptions.GMTInvalidInput:
+            logging.exception(e)
+            logging.warning("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
 
+    region = typing.cast(tuple[float, float, float, float], region)
+
     # get square dimensions for subplot
+    subplot_dimensions = utils.square_subplots(len(grids)) if dims is None else dims
 
     # set subplot projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if kwargs.get("fig_width", None) is None:
+        _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=kwargs.pop("fig_height", 15),
         )
     # if fig_width is set, use it to set projection
     else:
+        _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=kwargs.get("fig_width", None),
         )
@@ -1208,13 +1308,18 @@ def subplots(
 
 
 def plot_3d(
-    grids: list,
-    cmaps: list,
-    exaggeration: list,
-    colorbar=True,
-    grd2cpt=True,
-    **kwargs,
-):
+    grids: list[xr.DataArray],
+    cmaps: list[str],
+    exaggeration: list[float],
+    view: tuple[float, float] = (170, 30),
+    vlims: tuple[float, float] = (-10000, 1000),
+    region: tuple[float, float, float, float] | None = None,
+    shp_mask: str | gpd.GeoDataFrame | None = None,
+    polygon_mask: list[float] | None = None,
+    colorbar: bool = True,
+    grd2cpt: bool = True,
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
     """
     create a 3D perspective plot of a list of grids
 
@@ -1251,21 +1356,31 @@ def plot_3d(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # pygmt.exceptions.GMTInvalidInput:
+            logging.exception(e)
+            logging.warning(
+                "first grids' region can't be extracted, using antarctic region."
+            )
             region = regions.antarctica
+
+    region = typing.cast(tuple[float, float, float, float], region)
 
     # set figure projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if fig_width is None:
+        proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=fig_height,
         )
     # if fig_width is set, use it to set projection
     else:
+        proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=fig_width,
         )
     # set vertical limits
-    region = region + vlims
+    new_region = region + vlims
 
     # initialize the figure
     fig = pygmt.Figure()
@@ -1283,6 +1398,7 @@ def plot_3d(
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]
+            pathlib.Path("tmp.nc").unlink()
         # if provided, mask grid with polygon from interactive map via
         # regions.draw_region
         elif polygon_mask is not None:
@@ -1315,6 +1431,10 @@ def plot_3d(
                     continuous=True,
                     series=(zmin, zmax),
                 )
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                # pygmt.exceptions.GMTInvalidInput:
+                logging.exception(e)
+                logging.warning("grid region can't be extracted.")
                 pygmt.makecpt(
                     cmap=cmaps[i],
                     background=True,
@@ -1323,13 +1443,14 @@ def plot_3d(
 
         # set transparency values
         transparencies = kwargs.get("transparencies", None)
+        transparency = 0 if transparencies is None else transparencies[i]
 
         # plot as perspective view
         fig.grdview(
             grid=grid,
             cmap=True,
             projection=proj,
-            region=region,
+            region=new_region,
             frame=None,
             perspective=view,
             zsize=f"{exaggeration[i]}c",
@@ -1344,10 +1465,13 @@ def plot_3d(
             cbar_xshift = kwargs.get("cbar_xshift", None)
             cbar_yshift = kwargs.get("cbar_yshift", None)
 
+            xshift = 0 if cbar_xshift is None else cbar_xshift[i]
 
+            yshift = fig_height / 2 if cbar_yshift is None else cbar_yshift[i]
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             cbar_labels = kwargs.get("cbar_labels", None)
+            cbar_label = " " if cbar_labels is None else cbar_labels[i]
             fig.colorbar(
                 cmap=True,
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
@@ -1358,10 +1482,11 @@ def plot_3d(
             fig.shift_origin(yshift=f"{-yshift}c", xshift=f"{-xshift}c")
 
         # shift up for next grid
-        if kwargs.get("zshifts", None) is None:
+        zshifts: list[float] | None = kwargs.get("zshifts", None)
+        if zshifts is None:
             fig.shift_origin(yshift=f"{fig_height/2}c")
         else:
-            fig.shift_origin(yshift=f"{kwargs.get('zshifts')[i]}c")
+            fig.shift_origin(yshift=f"{zshifts[i]}c")
 
     return fig
 
@@ -1371,10 +1496,11 @@ def interactive_data(
     grid: xr.DataArray = None,
     grid_cmap: str = "inferno",
     points: pd.DataFrame = None,
+    points_z: str | None = None,
     points_color: str = "red",
     points_cmap: str = "viridis",
-    **kwargs,
-):
+    **kwargs: typing.Any,
+) -> typing.Any:
     """
     plot points or grids on an interactive map using GeoViews
 
@@ -1434,18 +1560,18 @@ def interactive_data(
     gv.extension("bokeh")
 
     # initialize figure with coastline
-    coast = gv.Path(
+    coast_fig = gv.Path(
         gpd.read_file(fetch.groundingline()),
         crs=crs.SouthPolarStereo(),
     )
     # set projection, and change groundingline attributes
-    coast.opts(
+    coast_fig.opts(
         projection=crs.SouthPolarStereo(),
         color=kwargs.get("coast_color", "black"),
         data_aspect=1,
     )
 
-    figure = coast
+    figure = coast_fig
 
     # display grid
     if grid is not None:
@@ -1519,7 +1645,7 @@ def interactive_data(
 
     # optionally plot coast again, so it's on top
     if coast is True:
-        figure = figure * coast
+        figure = figure * coast_fig
 
     # trying to get datashader to auto scale colormap based on current map extent
     # from holoviews.operation.datashader import regrid
@@ -1529,8 +1655,12 @@ def interactive_data(
 
 
 def geoviews_points(
+    points: pd.DataFrame,
+    points_z: str | None = None,
     points_color: str = "red",
     points_cmap: str = "viridis",
+    **kwargs: typing.Any,
+) -> gv.Points:
     """
     _summary_
 
