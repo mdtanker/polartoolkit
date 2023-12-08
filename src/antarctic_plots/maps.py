@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 # Copyright (c) 2022 The Antarctic-Plots Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
@@ -36,6 +37,26 @@ except ImportError:
 def basemap(
     fig_height: float = 15,
     origin_shift: str = "initialize",
+    """
+    create a blank basemap figure, or add a basemape to an existing figure / subplot.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float] | None, optional
+        bounding region in GMT format, by default None
+    fig_height : float, optional
+        height of figure, by default 15
+    fig_width : float | None, optional
+        width of figure, by default None
+    origin_shift : str, optional
+        choose to start new figure, or shift origin of existing figure to add a subplt,
+        by default "initialize"
+
+    Returns
+    -------
+    pygmt.Figure
+        a new or update figure instance with a basemap.
+    """
     # if region not set, use antarctic region
     if region is None:
         region = regions.antarctica
@@ -127,7 +148,7 @@ def basemap(
             position=kwargs.get("scale_position", "n.5/.05"),
         )
 
-    # blank plotting call to reset projection to EPSG:3031, optionall add title
+    # blank plotting call to reset projection to EPSG:3031, optionally add title
     if kwargs.get("title", None) is None:
         fig.basemap(
             region=region,
@@ -157,9 +178,9 @@ def plot_grd(
     ----------
     grid : Union[str or xr.DataArray]
         grid file to plot, either loaded xr.DataArray or string of a filename
-    cmap : str, optional
+    cmap : str or bool, optional
         GMT color scale to use, by default 'viridis'
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         region to plot, by default is extent of input grid
     coast : bool, optional
         choose whether to plot Antarctic coastline and grounding line, by default False
@@ -201,6 +222,7 @@ def plot_grd(
         `maps.add_scalebar` for additional kwargs.
     colorbar: bool
         choose to add a colorbar to the plot, by default is True
+
     Returns
     -------
     PyGMT.Figure()
@@ -209,7 +231,7 @@ def plot_grd(
 
     Example
     -------
-    >>> from antarctic_plots import maps
+    >>> from antarctic\_plots import maps
     ...
     >>> fig = maps.plot_grd('grid1.nc')
     >>> fig = maps.plot_grd(
@@ -501,7 +523,7 @@ def add_colorbar(
         pygmt figure instance to add to
     hist : bool, optional
         choose whether to add a colorbar histogram, by default False
-    cpt_lims : list, optional
+    cpt_lims : tuple[float, float], optional
         cpt lims to use for the colorbar histogram, must match those used to create the
         colormap. If not supplied, will attempt to get values from kwargs `grid`, by
         default None
@@ -547,7 +569,7 @@ def add_colorbar(
 
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
-    # `hist_ymax` to an appropiate value
+    # `hist_ymax` to an appropriate value
         # get grid to use
         grid = kwargs.get("grid", None)
 
@@ -675,7 +697,7 @@ def add_coast(
     Parameters
     ----------
     fig : pygmt.Figure
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         region for the figure, by default is last used by PyGMT
     projection : str, optional
         GMT projection string, by default is last used by PyGMT
@@ -720,7 +742,7 @@ def add_gridlines(
     Parameters
     ----------
     fig : pygmt.Figure instance
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         region for the figure
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
@@ -800,13 +822,13 @@ def add_inset(
     Parameters
     ----------
     fig : pygmt.Figure instance
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         region for the figure
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
     inset_width : float, optional
         Inset width as percentage of the total figure width, by default is 25% (0.25)
-    inset_reg : list, optional
+    inset_reg : tuple[float, float, float, float], optional
         Region of Antarctica to plot for the inset map, by default is whole continent
     """
 
@@ -856,7 +878,7 @@ def add_scalebar(
     Parameters
     ----------
     fig : pygmt.Figure instance
-    region : np.ndarray, optional
+    region : tuple[float, float, float, float], optional
         region for the figure
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
@@ -906,7 +928,7 @@ def add_north_arrow(
     Parameters
     ----------
     fig : pygmt.Figure instance
-    region : np.ndarray, optional
+    region : tuple[float, float, float, float], optional
         region for the figure
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
@@ -947,7 +969,7 @@ def add_box(
     ----------
     fig : pygmt.Figure
         Figure to plot on
-    box : Union[list or np.ndarray]
+    box : tuple[float, float, float, float]
         region in EPSG3031 in format [e,w,n,s] in meters
     pen : str, optional
         GMT pen string used for the box, by default "2p,black"
@@ -980,9 +1002,11 @@ def interactive_map(
     show : bool, optional
         choose whether to displat the map, by default True
     points : pd.DataFrame, optional
-        choose to plot points suppied as columns x, y, in EPSG:3031 in a dataframe
+        choose to plot points supplied as columns x, y, in EPSG:3031 in a dataframe
+    basemap_type : str, optional
+        choose what basemap to plot, options are 'BlueMarble', 'Imagery', and 'Basemap',
+        by default 'BlueMarble'
     """
-
 
     layout = ipywidgets.Layout(
         width=kwargs.get("width", "auto"),
@@ -1057,7 +1081,7 @@ def subplots(
     ----------
     grids : list
         list of xr.DataArray's to be plotted
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         choose to subset the grids to a specified region, by default None
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
@@ -1175,7 +1199,7 @@ def plot_3d(
         list of azimuth and elevation angles for the view, by default [170, 30]
     vlims : list, optional
         list of vertical limits for the plot, by default [-10000, 1000]
-    region : Union[str or np.ndarray], optional
+    region : tuple[float, float, float, float], optional
         region for the plot, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
@@ -1321,55 +1345,51 @@ def interactive_data(
     **kwargs,
 ):
     """
-        plot points or grids on an interactive map using GeoViews
+    plot points or grids on an interactive map using GeoViews
 
-        Parameters
-        ----------
-        coast : bool, optional
-            choose whether to plot Antarctic coastline data, by default True
-        grid : xr.DataArray, optional
-            display a grid on the map, by default None
-        grid_cmap : str, optional
-            colormap to use for the grid, by default 'inferno'
-        points : pd.DataFrame, optional
-            points to display on the map, must have columns 'x' and 'y', by default None
-        points_z : str, optional
-            name of column to color points by, by default None
-        points_color : str, optional
-            if no `points_z` supplied, color to use for all points, by default 'red'
-        points_cmap : str, optional
-            colormap to use for the points, by default 'viridis'
+    Parameters
+    ----------
+    coast : bool, optional
+        choose whether to plot Antarctic coastline data, by default True
+    grid : xr.DataArray, optional
+        display a grid on the map, by default None
+    grid_cmap : str, optional
+        colormap to use for the grid, by default 'inferno'
+    points : pd.DataFrame, optional
+        points to display on the map, must have columns 'x' and 'y', by default None
+    points_z : str, optional
+        name of column to color points by, by default None
+    points_color : str, optional
+        if no `points_z` supplied, color to use for all points, by default 'red'
+    points_cmap : str, optional
+        colormap to use for the points, by default 'viridis'
 
-        Example
-        -------
-
-
-
-
-    image = maps.interactive_data(
-        grid = bedmap2_bed,
-        points = point_data,
-        points_z = 'z_ellipsoidal',
-        )
-
-    image
-        >>> from antarctic_plots import maps, regions, fetch
-        ...
-        >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
-        >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
-        ...
-        >>> image = maps.interactive_data(
-        ... grid = bedmap2_bed,
-        ... points = GHF_point_data[['x','y','GHF']],
-        ... points_z = 'GHF',
-        ... )
-        >>> image
-
-        Returns
-        -------
-        holoviews.Overlay
-            holoview/geoviews map instance
+    Returns
+    -------
+    holoviews.Overlay
+        holoview/geoviews map instance
     """
+    # Example
+    # -------
+
+    # image = maps.interactive_data(
+    #     grid = bedmap2_bed,
+    #     points = point_data,
+    #     points_z = 'z_ellipsoidal',
+    #     )
+
+    # image
+    #     >>> from antarctic\_plots import maps, regions, fetch
+    #     ...
+    #     >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
+    #     >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
+    #     ...
+    #     >>> image = maps.interactive_data(
+    #     ... grid = bedmap2_bed,
+    #     ... points = GHF_point_data[['x','y','GHF']],
+    #     ... points_z = 'GHF',
+    #     ... )
+    #     >>> image
 
     # set the plot style
     gv.extension("bokeh")
@@ -1472,6 +1492,26 @@ def interactive_data(
 def geoviews_points(
     points_color: str = "red",
     points_cmap: str = "viridis",
+    """
+    _summary_
+
+    Parameters
+    ----------
+    points : pd.DataFrame
+        _description_, by default None
+    points_z : str | None, optional
+        _description_, by default None
+    points_color : str, optional
+        _description_, by default "red"
+    points_cmap : str, optional
+        _description_, by default "viridis"
+
+    Returns
+    -------
+    gv.Points
+        _description_
+
+    """
 
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color

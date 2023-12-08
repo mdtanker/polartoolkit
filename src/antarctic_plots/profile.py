@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 # Copyright (c) 2022 The Antarctic-Plots Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
@@ -115,11 +116,13 @@ def sample_grids(
         "coor_names".
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
+    sampled_name : str,
         Name for sampled column
 
     Returns
     -------
     pd.DataFrame
+        Dataframe with new column (sampled_name) of sample values from (grid)
     """
 
     # drop name column if it already exists
@@ -177,9 +180,9 @@ def fill_nans(df):
     ----------
     df : pd.DataFrame
         Dataframe to shorten and recalculate distance, must contain 'x', 'y', 'dist'
-    max_dist : int, optional
+    max_dist : float, optional
         remove rows with dist>max_dist, by default None
-    min_dist : int, optional
+    min_dist : float, optional
         remove rows with dist<min_dist, by default None
 
     Returns
@@ -217,6 +220,7 @@ def make_data_dict(
         colors to plot data
     axes : list[int]
         y axes to use for each data. By default all data are on axis 0.
+
     Returns
     -------
     dict[dict]
@@ -240,9 +244,15 @@ def default_layers(
     ----------
     version : str
         choose between 'bedmap2' and 'bedmachine' layers
+    reference : str, optional
+        choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap2),
+        for an elevation reference frame, by default None
+    region : tuple[float], optional
+        bounding region to subset grids by, by default None
 
     Returns
     -------
+    dict[str, dict[str, str | xr.DataArray]]
         Nested dictionary of earth layers and attributes
     """
 
@@ -275,10 +285,12 @@ def default_layers(
 
     Parameters
     ----------
+    region : tuple[float, float, float, float], optional
+        bounding region to subset grids by, by default None
 
     Returns
     -------
-    dict[dict]
+    dict[typing.Any, typing.Any]
         Nested dictionary of data and attributes
     """
     mag = fetch.magnetics(
@@ -1280,7 +1292,7 @@ def cum_dist(df: pd.DataFrame, **kwargs):
     Returns
     -------
     pd.DataFrame
-        Returns orignal dataframe with additional column dist
+        Returns original dataframe with additional column dist
     """
     reverse = kwargs.get("reverse", False)
     df1 = df.copy()
@@ -1296,8 +1308,8 @@ def draw_lines(**kwargs):
 
     Returns
     -------
-    tuple
-        Returns a tuple of list of vertices for each polyline in lat long.
+    typing.Any
+        Returns a list of list of vertices for each polyline in lat long.
     """
 
     m = maps.interactive_map(**kwargs, show=False)
