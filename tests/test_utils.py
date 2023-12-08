@@ -15,11 +15,12 @@ import numpy as np
 import pandas as pd
 import pytest
 import verde as vd
+import xarray as xr
 
 from antarctic_plots import regions, utils
 
 
-def dummy_grid():
+def dummy_grid() -> xr.Dataset:
     (x, y, z) = vd.grid_coordinates(
         region=(-100, 100, 200, 400),
         spacing=100,
@@ -203,9 +204,6 @@ def test_latlon_to_epsg3031_region():
     reg = utils.latlon_to_epsg3031(df_ll, reg=True)
 
     assert reg == pytest.approx(regions.ross_ice_shelf, abs=10)
-
-
-test_latlon_to_epsg3031_region()
 
 
 def test_epsg3031_to_latlon():
