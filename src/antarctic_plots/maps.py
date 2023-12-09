@@ -374,6 +374,9 @@ def plot_grd(
     elif grd2cpt is True:
         if cpt_lims is None and isinstance(grid, (xr.DataArray)):
             zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+        elif cpt_lims is None and isinstance(grid, (str)):
+            with xr.load_dataarray(grid) as da:
+                zmin, zmax = utils.get_min_max(da, shp_mask, robust=robust)
         else:
             zmin, zmax = cpt_lims
         pygmt.grd2cpt(
@@ -415,6 +418,9 @@ def plot_grd(
         try:
             if isinstance(grid, (xr.DataArray)):
                 zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+            else:
+                with xr.load_dataarray(grid) as da:
+                    zmin, zmax = utils.get_min_max(da, shp_mask, robust=robust)
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
