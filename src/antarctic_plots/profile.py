@@ -535,7 +535,7 @@ def plot_profile(
         # with redirect_stdout(None), redirect_stderr(None):
         layers_dict = default_layers(
             layers_version,
-            region=vd.get_region((points.x, points.y)),
+            # region=vd.get_region((points.x, points.y)),
             reference=kwargs.get("default_layers_reference", None),
             spacing=kwargs.get("default_layers_spacing", None),
         )
