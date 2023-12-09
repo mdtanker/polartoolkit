@@ -187,7 +187,7 @@ resample_test = [
 ]
 
 
-@pytest.mark.working()
+@pytest.mark.fetch()
 @pytest.mark.parametrize(("test_input", "expected"), resample_test)
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_resample_grid(test_input, expected):
@@ -321,7 +321,6 @@ def test_imagery():
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basement():
     grid = fetch.basement()
@@ -516,6 +515,7 @@ ibcso_test = [
 
 
 @pytest.mark.fetch()
+@pytest.mark.issue()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), ibcso_test)
 def test_ibcso(test_input, expected):
@@ -804,7 +804,6 @@ def test_bedmap_points():
 
 
 # @pytest.mark.fetch()
-# @pytest.mark.working()
 # @pytest.mark.slow()
 # @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 # def test_deepbedmap():
@@ -866,7 +865,6 @@ gravity_test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), gravity_test)
 def test_gravity(test_input, expected):
@@ -978,7 +976,6 @@ magnetics_test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), magnetics_test)
 def test_magnetics(test_input, expected):
@@ -1112,7 +1109,6 @@ ghf_test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), ghf_test)
 def test_ghf(test_input, expected):
@@ -1127,7 +1123,6 @@ def test_ghf(test_input, expected):
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
     expected = [
@@ -1217,7 +1212,6 @@ crust_test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), crust_test)
 def test_crustal_thickness(test_input, expected):
@@ -1261,7 +1255,6 @@ moho_test = [
 
 
 @pytest.mark.fetch()
-@pytest.mark.working()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), moho_test)
 def test_moho(test_input, expected):
