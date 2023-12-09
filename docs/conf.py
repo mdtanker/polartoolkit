@@ -93,7 +93,7 @@ html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/mdtanker/antarctic_plots",
     "repository_branch": "main",
-    "path_to_docs": "doc",
+    "path_to_docs": "docs",
     "launch_buttons": {
         "binderhub_url": "https://mybinder.org",
         "notebook_interface": "jupyterlab",
