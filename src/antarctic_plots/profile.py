@@ -18,7 +18,11 @@ import pyogrio
 import verde as vd
 import xarray as xr
 
+# import antarctic_plots.fetch as fetch
 from antarctic_plots import fetch, maps, utils
+
+# import antarctic_plots.maps as maps
+# import antarctic_plots.utils as utils
 
 try:
     from IPython.display import display

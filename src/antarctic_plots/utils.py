@@ -23,7 +23,10 @@ import xarray as xr
 from nptyping import NDArray
 from pyproj import Transformer
 
+# import antarctic_plots.fetch as fetch
 from antarctic_plots import fetch, maps
+
+# import antarctic_plots.maps as maps
 
 if typing.TYPE_CHECKING:
     import geopandas as gpd

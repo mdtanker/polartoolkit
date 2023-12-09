@@ -31,7 +31,11 @@ import zarr
 from dotenv import load_dotenv
 from pyproj import Transformer
 
+# import antarctic_plots.fetch as fetch
 from antarctic_plots import fetch, regions, utils  # noqa: PLW0406
+
+# import antarctic_plots.regions as regions
+# import antarctic_plots.utils as utils
 
 load_dotenv()
 

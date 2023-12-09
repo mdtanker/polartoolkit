@@ -21,7 +21,11 @@ import pygmt
 import verde as vd
 import xarray as xr
 
+# import antarctic_plots.fetch as fetch
 from antarctic_plots import fetch, regions, utils
+
+# import antarctic_plots.regions as regions
+# import antarctic_plots.utils as utils
 
 try:
     from IPython.display import display
@@ -93,8 +97,6 @@ def basemap(
             region,
             fig_width=fig_width,
         )
-
-    fig_width = typing.cast(float, fig_width)
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
