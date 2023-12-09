@@ -303,6 +303,7 @@ def default_layers(
     version: str,
     reference: str | None = None,
     region: tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
     verbose: str = "q",
 ) -> dict[str, dict[str, str | xr.DataArray]]:
     """
@@ -317,6 +318,8 @@ def default_layers(
         for an elevation reference frame, by default None
     region : tuple[float], optional
         bounding region to subset grids by, by default None
+    spacing : float, optional
+        grid spacing to resample the grids to, by default None
 
     Returns
     -------
@@ -332,6 +335,7 @@ def default_layers(
             fill_nans=True,
             region=region,
             reference=reference,
+            spacing=spacing,
             verbose=verbose,
         )
         icebase = fetch.bedmap2(
@@ -339,21 +343,40 @@ def default_layers(
             fill_nans=True,
             region=region,
             reference=reference,
+            spacing=spacing,
             verbose=verbose,
         )
-        bed = fetch.bedmap2("bed", region=region, reference=reference, verbose=verbose)
+        bed = fetch.bedmap2(
+            "bed",
+            region=region,
+            reference=reference,
+            spacing=spacing,
+            verbose=verbose,
+        )
 
     elif version == "bedmachine":
         if reference is None:
             reference = "eigen-6c4"
         surface = fetch.bedmachine(
-            "surface", region=region, reference=reference, verbose=verbose
+            "surface",
+            region=region,
+            reference=reference,
+            spacing=spacing,
+            verbose=verbose,
         )
         icebase = fetch.bedmachine(
-            "icebase", region=region, reference=reference, verbose=verbose
+            "icebase",
+            region=region,
+            reference=reference,
+            spacing=spacing,
+            verbose=verbose,
         )
         bed = fetch.bedmachine(
-            "bed", region=region, reference=reference, verbose=verbose
+            "bed",
+            region=region,
+            reference=reference,
+            spacing=spacing,
+            verbose=verbose,
         )
 
     layer_names = [
@@ -506,6 +529,7 @@ def plot_profile(
             layers_version,
             region=vd.get_region((points.x, points.y)),
             reference=kwargs.get("default_layers_reference", None),
+            spacing=kwargs.get("default_layers_spacing", None),
         )
 
     # create default data dictionary
