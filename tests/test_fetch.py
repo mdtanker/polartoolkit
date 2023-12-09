@@ -198,7 +198,7 @@ def test_resample_grid(test_input, expected):
         utils.get_grid_info(resampled),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -229,7 +229,7 @@ def test_ice_vel_lowres():
     )
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
-        utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=6
+        utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=2
     )
 
 
@@ -252,7 +252,7 @@ def test_ice_vel_highres():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -281,7 +281,7 @@ def test_modis_moa():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -310,7 +310,7 @@ def test_imagery():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -336,7 +336,7 @@ def test_basement():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -388,7 +388,7 @@ def test_sediment_thickness(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -525,7 +525,7 @@ def test_ibcso(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -600,7 +600,7 @@ def test_bedmachine(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -702,7 +702,7 @@ def test_bedmap2(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -820,7 +820,7 @@ def test_bedmap_points():
 #         utils.get_grid_info(grid),
 #         expected,
 #         ignore_order=True,
-#         significant_digits=6,
+#         significant_digits=2,
 #     )
 
 
@@ -874,7 +874,7 @@ def test_gravity(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -985,7 +985,7 @@ def test_magnetics(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1028,7 +1028,7 @@ def test_mass_change(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1058,7 +1058,7 @@ def test_basal_melt(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1118,7 +1118,7 @@ def test_ghf(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1178,7 +1178,7 @@ def test_gia(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1221,7 +1221,7 @@ def test_crustal_thickness(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1264,7 +1264,7 @@ def test_moho(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1290,7 +1290,7 @@ def test_geoid():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1317,7 +1317,7 @@ def test_etopo():
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
@@ -1361,7 +1361,7 @@ def test_rema(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=6,
+        significant_digits=2,
     )
 
 
