@@ -220,6 +220,7 @@ messages_control.disable = [
   "line-too-long",
   "missing-module-docstring",
   "wrong-import-position",
+  "cyclic-import",
 ]
 
 

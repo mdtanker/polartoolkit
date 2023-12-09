@@ -16,7 +16,11 @@ import typing
 import pandas as pd
 import verde as vd
 
-from antarctic_plots import maps, regions, utils  # noqa: PLW0406
+from antarctic_plots import (  # pylint: disable=import-self
+    maps,
+    regions,  # noqa: PLW0406
+    utils,
+)
 
 # import antarctic_plots.maps as maps
 # import antarctic_plots.regions as regions
