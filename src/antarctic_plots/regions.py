@@ -87,6 +87,8 @@ ross_sea = (-500e3, 450e3, -2100e3, -1300e3)
 # bellinghausen_sea
 # weddell_sea
 
+# subglacial lakes
+lake_vostok = (1100e3, 1535e3, -470e3, -230e3)
 # ice catchements
 
 
