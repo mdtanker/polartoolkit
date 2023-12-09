@@ -969,11 +969,24 @@ def plot_profile(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd becauseit reset projection
+        if kwargs.get("map_grd2cpt", False) is True:
+            pygmt.grd2cpt(
+                cmap=kwargs.get("map_cmap", "earth"),
+                grid=kwargs.get("map_background", fetch.imagery()),
+                region=map_reg,
+                background=True,
+                continuous=True,
+                verbose="q",
+            )
+            cmap = True
+        else:
+            cmap = kwargs.get("map_cmap", "earth")
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
             grid=kwargs.get("map_background", fetch.imagery()),
-            cmap=kwargs.get("map_cmap", "earth"),
+            shading=kwargs.get("map_shading", False),
+            cmap=cmap,
             verbose="q",
         )
 
@@ -1346,11 +1359,24 @@ def plot_data(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd becauseit reset projection
+        if kwargs.get("map_grd2cpt", False) is True:
+            pygmt.grd2cpt(
+                cmap=kwargs.get("map_cmap", "earth"),
+                grid=kwargs.get("map_background", fetch.imagery()),
+                region=map_reg,
+                background=True,
+                continuous=True,
+                verbose="q",
+            )
+            cmap = True
+        else:
+            cmap = kwargs.get("map_cmap", "earth")
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
             grid=kwargs.get("map_background", fetch.imagery()),
-            cmap=kwargs.get("map_cmap", "earth"),
+            shading=kwargs.get("map_shading", False),
+            cmap=cmap,
             verbose="q",
         )
 
