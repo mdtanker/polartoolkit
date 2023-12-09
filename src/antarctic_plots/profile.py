@@ -327,6 +327,14 @@ def default_layers(
         Nested dictionary of earth layers and attributes
     """
 
+    if (spacing is not None) or (reference is not None) or (region is not None):
+        logging.warning(
+            "Supplying any spacing, reference, or region to `default_layers` will "
+            "result in resampling of the grids, which will likely take longer than "
+            "just using the full-resolution defaults."
+        )
+
+
     if version == "bedmap2":
         if reference is None:
             reference = "eigen-gl04c"
