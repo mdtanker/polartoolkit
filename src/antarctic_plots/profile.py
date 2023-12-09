@@ -388,9 +388,9 @@ def default_layers(
         )
 
     layer_names = [
-        "surface",
-        "icebase",
-        "bed",
+        "ice",
+        "water",
+        "earth",
     ]
     layer_colors = [
         "lightskyblue",
