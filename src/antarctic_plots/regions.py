@@ -18,6 +18,10 @@ import verde as vd
 
 from antarctic_plots import maps, regions, utils  # noqa: PLW0406
 
+# import antarctic_plots.maps as maps
+# import antarctic_plots.regions as regions
+# import antarctic_plots.utils as utils
+
 try:
     import ipyleaflet
 except ImportError:
