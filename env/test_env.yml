@@ -12,7 +12,7 @@ dependencies:
   - openpyxl
   - pooch
   - tqdm
-  - verde
+  - verde>=1.8.0
   - xarray
   - netcdf4
   - h5netcdf
@@ -47,5 +47,6 @@ dependencies:
   - sphinx-book-theme>=0.3
   - sphinx-design
   - nbsphinx
+  - nbconvert
   - pip:
     - ../.
