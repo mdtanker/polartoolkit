@@ -280,7 +280,8 @@ def make_data_dict(
     colors : list[str]
         colors to plot data
     axes : list[int]
-        y axes to use for each data. By default all data are on axis 0.
+        y axes to use for each data. By default all data are on axis 0. Only 0 and 1 are
+        used, if you supply values > 1, they will use the same axis as 1.
 
     Returns
     -------
@@ -333,7 +334,6 @@ def default_layers(
             "result in resampling of the grids, which will likely take longer than "
             "just using the full-resolution defaults."
         )
-
 
     if version == "bedmap2":
         if reference is None:
