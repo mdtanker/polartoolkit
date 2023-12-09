@@ -94,6 +94,8 @@ def basemap(
             fig_width=fig_width,
         )
 
+    fig_width = typing.cast(float, fig_width)
+
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
         fig = pygmt.Figure()
