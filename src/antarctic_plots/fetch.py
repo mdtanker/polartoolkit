@@ -1566,7 +1566,7 @@ def bedmachine(
     region : tuple[float, float, float, float], optional
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3
+        grid spacing to resample the loaded grid to, by default 500m
 
     Returns
     -------
