@@ -45,20 +45,12 @@ def tests(session: nox.Session) -> None:
     session.conda_install("pygmt", "geopandas")
     session.install(".[test]")
 
-    # run tests with numba jit disabled to get real coverage
-    session.run(
-        "pytest",
-        *session.posargs,
-        env={"NUMBA_DISABLE_JIT": "1"},
-    )
-
-    # run just the numba tests with numba jit enabled
+    # run the tests
     session.run(
         "pytest",
         "-m",
-        "use_numba",
+        "not earthdata and not issue",
         *session.posargs,
-        env={"NUMBA_DISABLE_JIT": "0"},
     )
 
 
