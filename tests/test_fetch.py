@@ -26,6 +26,7 @@ import pandas as pd
 import pytest
 from dotenv import load_dotenv
 from geopandas.testing import assert_geodataframe_equal
+
 from polartoolkit import fetch, regions, utils
 
 load_dotenv()

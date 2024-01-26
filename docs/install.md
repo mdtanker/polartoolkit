@@ -25,8 +25,8 @@ Activate the environment:
 
 ### Pip
 
-Instead, you can use pip to install polartoolkit, but first you need to
-install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
+Instead, you can use pip to install polartoolkit, but first you need to install
+a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
 `Cartopy` all rely on C packages, which can only be install with conda/mamba and
 not with pip. ere I use mamba, but conda will work as well, just replace any
 `mamba` with `conda`:

@@ -64,9 +64,8 @@ update PolarToolkit to a newer version.
 
 I welcome any feedback, ideas, or contributions! Please contact us on the
 [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)
-or submit an
-[issue on GitHub](https://github.com/mdtanker/polartoolkit/issues) for
-problems or feature ideas.
+or submit an [issue on GitHub](https://github.com/mdtanker/polartoolkit/issues)
+for problems or feature ideas.
 
 <!-- SPHINX-START2 -->
 
@@ -98,8 +97,7 @@ I really welcome all forms of contribution! If you have any questions, comments
 or suggestions, please open a [discussion]() or [issue (feature request)]() on
 the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
 
-Also, please feel free to share how you're using PolarToolkit, I'd love to
-know.
+Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
 Please, read our
 [Contributor Guide](https://github.com/mdtanker/polartoolkit/blob/main/.github/CONTRIBUTING.md)
