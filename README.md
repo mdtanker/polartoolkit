@@ -70,8 +70,9 @@ for problems or feature ideas.
 
 The **PolarToolkit** python package provides some basic tools to help in
 conducting polar research. You can use it to download common datasets (i.e.
-BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica (soon Greenland and the Arctic as well),
-and visualize data with multiple methods.
+BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica
+(soon Greenland and the Arctic as well), and visualize data with multiple
+methods.
 
 Feel free to use, share, modify, and
 [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html)
