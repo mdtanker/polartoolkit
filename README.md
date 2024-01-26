@@ -1,5 +1,5 @@
 <h1 align="center">PolarToolkit</h1>
-<h2 align="center">Functions to automate Antarctic data visualization</h2>
+<h2 align="center">Helpful tools for polar researchers</h2>
 
 <p align="center">
 <a href="https://antarctic-plots.readthedocs.io"><strong>Documentation Link</strong></a>
@@ -69,14 +69,14 @@ for problems or feature ideas.
 <!-- SPHINX-START2 -->
 
 The **PolarToolkit** python package provides some basic tools to help in
-conducting Antarctic research. You can use it to download common datasets (i.e.
-BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica,
+conducting polar research. You can use it to download common datasets (i.e.
+BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica (soon Greenland and the Arctic as well),
 and visualize data with multiple methods.
 
 Feel free to use, share, modify, and
 [contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html)
 to this project. I've mostly made this for personal usage so expect significant
-changes. Hopefully I'll implement more tests and Gallery examples soon.
+changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
 ## Project goals
 
@@ -85,7 +85,7 @@ a feature request through
 [GitHub Issues](https://github.com/mdtanker/polartoolkit/issues/new/choose).
 
 - Create 3D interactive models to help visualize data.
-- Include more Antarctic datasets to aid in download and storage.
+- Include more datasets to aid in downloading and storage.
 - Additional projections and possible support for the Arctic region as well.
 
 <!-- SPHINX-END2 -->

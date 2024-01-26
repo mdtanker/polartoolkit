@@ -1,6 +1,6 @@
 # PolarToolkit
 
-Functions to automate Antarctic data visualization
+Helpful tools for polar researchers
 
 ```{include} ../README.md
 :start-after: <!-- SPHINX-START1 -->
