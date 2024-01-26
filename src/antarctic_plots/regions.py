@@ -15,7 +15,6 @@ import typing
 
 import pandas as pd
 import verde as vd
-
 from polartoolkit import (  # pylint: disable=import-self
     maps,
     regions,  # noqa: PLW0406
