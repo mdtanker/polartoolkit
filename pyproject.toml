@@ -3,7 +3,7 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "antarctic_plots"
+name = "polartoolkit"
 authors = [
     {name = "Matt Tankersley", email = "matt.d.tankersley@gmail.com"},
 ]
@@ -78,7 +78,7 @@ docs = [
   "nbconvert",
 ]
 dev = [
-    "antarctic-plots[interactive,viz,test,docs]",
+    "polartoolkit[interactive,viz,test,docs]",
     "ruff",
     "nox",
     "pre-commit",
@@ -89,18 +89,18 @@ dev = [
     "mypy",
 ]
 all = [
-  "antarctic-plots[interactive,viz,test,dev,docs]",
+  "polartoolkit[interactive,viz,test,dev,docs]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/mdtanker/antarctic_plots"
+Homepage = "https://github.com/mdtanker/polartoolkit"
 Documentation = "https://antarctic-plots.readthedocs.io/"
-"Bug Tracker" = "https://github.com/mdtanker/antarctic_plots/issues"
-Discussions = "https://github.com/mdtanker/antarctic_plots/discussions"
+"Bug Tracker" = "https://github.com/mdtanker/polartoolkit/issues"
+Discussions = "https://github.com/mdtanker/polartoolkit/discussions"
 Changelog = "https://antarctic-plots.readthedocs.io/en/latest/changelog.html"
 
 [tool.coverage]
-run.source = ["antarctic_plots"]
+run.source = ["polartoolkit"]
 port.exclude_lines = [
   'pragma: no cover',
   '\.\.\.',
@@ -147,7 +147,7 @@ disallow_incomplete_defs = false
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "antarctic_plots.*"
+module = "polartoolkit.*"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
@@ -199,7 +199,7 @@ line-length = 88 # Set the maximum line length to 88.
 lint.flake8-unused-arguments.ignore-variadic-names = true
 # lint.isort.required-imports = ["from __future__ import annotations"]
 # Uncomment if using a _compat.typing backport
-# typing-modules = ["antarctic_plots._compat.typing"]
+# typing-modules = ["polartoolkit._compat.typing"]
 extend-include = ["*.ipynb"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["T20"]
@@ -224,7 +224,7 @@ messages_control.disable = [
 
 
 [tool.semantic_release]
-version_variables = ["src/antarctic_plots/__init__.py:__version__"]
+version_variables = ["src/polartoolkit/__init__.py:__version__"]
 version_toml = ["pyproject.toml:project.version"]
 major_on_zero = false
 build_command = """

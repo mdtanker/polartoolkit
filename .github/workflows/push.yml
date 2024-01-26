@@ -18,7 +18,7 @@ jobs:
       contents: write
     environment:
       name: testpypi
-      url: https://pypi.org/p/antarctic-plots
+      url: https://pypi.org/p/polartoolkit
     steps:
       # checkout the repo and supply a PAT for the changelog update commit.
       - id: checkout

@@ -1,6 +1,6 @@
 # 🔎 Overview
 
-Antarctic-Plots is a Python package developed to help with conducting Antarctic
+PolarToolkit is a Python package developed to help with conducting Antarctic
 science. The 5 modules shown here provide tools to help with a variety of common
 tasks.
 

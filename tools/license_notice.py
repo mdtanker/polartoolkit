@@ -1,9 +1,9 @@
-# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Copyright (c) 2022 The PolarToolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """
 Add license notice to every source file if not present
@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pathspec import PathSpec
 
-PROJECT = "Antarctic-Plots"
+PROJECT = "PolarToolkit"
 YEAR = "2022"
 NOTICE = f"""
 # Copyright (c) {YEAR} The {PROJECT.title()} Developers.
@@ -23,7 +23,7 @@ NOTICE = f"""
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """.strip()
 CHECK_HELP = """

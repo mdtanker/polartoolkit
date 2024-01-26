@@ -1,9 +1,9 @@
-# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Copyright (c) 2022 The PolarToolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """
 Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic
@@ -16,15 +16,15 @@ import typing
 import pandas as pd
 import verde as vd
 
-from antarctic_plots import (  # pylint: disable=import-self
+from polartoolkit import (  # pylint: disable=import-self
     maps,
     regions,  # noqa: PLW0406
     utils,
 )
 
-# import antarctic_plots.maps as maps
-# import antarctic_plots.regions as regions
-# import antarctic_plots.utils as utils
+# import polartoolkit.maps as maps
+# import polartoolkit.regions as regions
+# import polartoolkit.utils as utils
 
 try:
     import ipyleaflet

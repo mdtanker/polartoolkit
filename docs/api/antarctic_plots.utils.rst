@@ -1,6 +1,6 @@
 antarctic\_plots.utils
 ----------------------
-.. automodule:: antarctic_plots.utils
+.. automodule:: polartoolkit.utils
    :members:
    :undoc-members:
    :show-inheritance:

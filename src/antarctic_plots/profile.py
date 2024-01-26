@@ -1,10 +1,10 @@
 # pylint: disable=too-many-lines
-# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Copyright (c) 2022 The PolarToolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 from __future__ import annotations
 
@@ -18,11 +18,11 @@ import pyogrio
 import verde as vd
 import xarray as xr
 
-# import antarctic_plots.fetch as fetch
-from antarctic_plots import fetch, maps, utils
+# import polartoolkit.fetch as fetch
+from polartoolkit import fetch, maps, utils
 
-# import antarctic_plots.maps as maps
-# import antarctic_plots.utils as utils
+# import polartoolkit.maps as maps
+# import polartoolkit.utils as utils
 
 try:
     from IPython.display import display

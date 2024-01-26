@@ -20,149 +20,149 @@ updated-dependencies:
   update-type: version-update:semver-major
 ...
 
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`aa2f220`](https://github.com/mdtanker/antarctic_plots/commit/aa2f2205239f83db802d8e7e6e3ebd839d680ad6))
-* fix path to docs ([`4bbbd96`](https://github.com/mdtanker/antarctic_plots/commit/4bbbd9639a75a50305e28c8102afdda58b774534))
-* add ipython to interactive deps ([`4c706ad`](https://github.com/mdtanker/antarctic_plots/commit/4c706ad43cbeb2fb5547669a65115ba911f83061))
-* remove isort required import ([`a82ea7a`](https://github.com/mdtanker/antarctic_plots/commit/a82ea7a8da80abd57825f7b3fa50a9fefac23a3b))
-* add jupyterlab to dev deps ([`b370b6f`](https://github.com/mdtanker/antarctic_plots/commit/b370b6f5856a1be5d4feb894a10d0a0fa3aac615))
-* configure pytest ([`6c7f351`](https://github.com/mdtanker/antarctic_plots/commit/6c7f351fa186267ff7f0cd709042d890cbcdb06f))
-* update pyproject.toml deps and info ([`5653436`](https://github.com/mdtanker/antarctic_plots/commit/5653436e601f5babed7deb2de265ad0fcab5678e))
-* update env folder ([`9a4fa68`](https://github.com/mdtanker/antarctic_plots/commit/9a4fa685d000db6969af2c15e64d4ca2106bd0de))
-* update github actions ([`a1c5644`](https://github.com/mdtanker/antarctic_plots/commit/a1c5644c22c40f8425363eb6026204da7da46e9b))
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`aa2f220`](https://github.com/mdtanker/polartoolkit/commit/aa2f2205239f83db802d8e7e6e3ebd839d680ad6))
+* fix path to docs ([`4bbbd96`](https://github.com/mdtanker/polartoolkit/commit/4bbbd9639a75a50305e28c8102afdda58b774534))
+* add ipython to interactive deps ([`4c706ad`](https://github.com/mdtanker/polartoolkit/commit/4c706ad43cbeb2fb5547669a65115ba911f83061))
+* remove isort required import ([`a82ea7a`](https://github.com/mdtanker/polartoolkit/commit/a82ea7a8da80abd57825f7b3fa50a9fefac23a3b))
+* add jupyterlab to dev deps ([`b370b6f`](https://github.com/mdtanker/polartoolkit/commit/b370b6f5856a1be5d4feb894a10d0a0fa3aac615))
+* configure pytest ([`6c7f351`](https://github.com/mdtanker/polartoolkit/commit/6c7f351fa186267ff7f0cd709042d890cbcdb06f))
+* update pyproject.toml deps and info ([`5653436`](https://github.com/mdtanker/polartoolkit/commit/5653436e601f5babed7deb2de265ad0fcab5678e))
+* update env folder ([`9a4fa68`](https://github.com/mdtanker/polartoolkit/commit/9a4fa685d000db6969af2c15e64d4ca2106bd0de))
+* update github actions ([`a1c5644`](https://github.com/mdtanker/polartoolkit/commit/a1c5644c22c40f8425363eb6026204da7da46e9b))
 ### 🧰 Chores / Maintenance
 
-* reduce sig figs of fetch tests ([`15e5c3d`](https://github.com/mdtanker/antarctic_plots/commit/15e5c3d7b09e4df2b68fd96637e4b0bb332faef3))
-* match test env to pyproject ([`155f1cf`](https://github.com/mdtanker/antarctic_plots/commit/155f1cf44fe9917a2806175b57d0be7d7a2aee61))
-* switch python 3.8 to 3.9 for CI testing ([`1a17424`](https://github.com/mdtanker/antarctic_plots/commit/1a17424fa5bcb3d6ad542ecb8c23ec8c5c7fede3))
-* exclude some tests for CI ([`ac535d9`](https://github.com/mdtanker/antarctic_plots/commit/ac535d93cb90c1c7a7f733b7b5bf9aa24ab097d8))
-* update binder env and links ([`fe80114`](https://github.com/mdtanker/antarctic_plots/commit/fe801140093564356fff7c3d535c4eb2d53bbc4e))
-* type checking fixes ([`6ec45e1`](https://github.com/mdtanker/antarctic_plots/commit/6ec45e1629314dc47c42bfbbed0ba1852b721600))
-* update changelog template ([`1418eb8`](https://github.com/mdtanker/antarctic_plots/commit/1418eb877aecc666e9427954fa58dd0d9772b25e))
-* add refactor to changelog template ([`8738126`](https://github.com/mdtanker/antarctic_plots/commit/8738126c46fa40bf44c8f3c98e379d314a6b133d))
-* add mypy to dev deps ([`8102792`](https://github.com/mdtanker/antarctic_plots/commit/810279299a717447652f9a7560ea04078f8c6207))
-* add mypy make command ([`ed80102`](https://github.com/mdtanker/antarctic_plots/commit/ed801021a2ec2ebead4cc7651325a7b99e2cdfe8))
-* add run_notebook make command ([`1272361`](https://github.com/mdtanker/antarctic_plots/commit/12723612dc6efd020a73cde15297689d7477e9dd))
-* add types-request to mypy ([`6e14d17`](https://github.com/mdtanker/antarctic_plots/commit/6e14d17847dd4ef7753503c88908ad1fb3758f95))
-* ignore contrib guide in pre-commit ([`be24667`](https://github.com/mdtanker/antarctic_plots/commit/be24667985e56628703e5d54f8b4af055c065f99))
-* remove RTD mock imports ([`80d6d0f`](https://github.com/mdtanker/antarctic_plots/commit/80d6d0f46fcd9991df59d7c1282847ef062e82fd))
-* remove dynamic version ([`53f018b`](https://github.com/mdtanker/antarctic_plots/commit/53f018bb6d37e91fa4dbfc892b77b8bdca9c52b3))
-* update license notice file ([`c51b7b1`](https://github.com/mdtanker/antarctic_plots/commit/c51b7b15826abb4e2525cc9a04551fff17893e93))
-* add changelog template ([`855691e`](https://github.com/mdtanker/antarctic_plots/commit/855691efa9403fc3ec6570c3556182401fca10f6))
-* update project urls ([`4cf10f8`](https://github.com/mdtanker/antarctic_plots/commit/4cf10f8facb43f3d356118b065918bfeb95dc45d))
+* reduce sig figs of fetch tests ([`15e5c3d`](https://github.com/mdtanker/polartoolkit/commit/15e5c3d7b09e4df2b68fd96637e4b0bb332faef3))
+* match test env to pyproject ([`155f1cf`](https://github.com/mdtanker/polartoolkit/commit/155f1cf44fe9917a2806175b57d0be7d7a2aee61))
+* switch python 3.8 to 3.9 for CI testing ([`1a17424`](https://github.com/mdtanker/polartoolkit/commit/1a17424fa5bcb3d6ad542ecb8c23ec8c5c7fede3))
+* exclude some tests for CI ([`ac535d9`](https://github.com/mdtanker/polartoolkit/commit/ac535d93cb90c1c7a7f733b7b5bf9aa24ab097d8))
+* update binder env and links ([`fe80114`](https://github.com/mdtanker/polartoolkit/commit/fe801140093564356fff7c3d535c4eb2d53bbc4e))
+* type checking fixes ([`6ec45e1`](https://github.com/mdtanker/polartoolkit/commit/6ec45e1629314dc47c42bfbbed0ba1852b721600))
+* update changelog template ([`1418eb8`](https://github.com/mdtanker/polartoolkit/commit/1418eb877aecc666e9427954fa58dd0d9772b25e))
+* add refactor to changelog template ([`8738126`](https://github.com/mdtanker/polartoolkit/commit/8738126c46fa40bf44c8f3c98e379d314a6b133d))
+* add mypy to dev deps ([`8102792`](https://github.com/mdtanker/polartoolkit/commit/810279299a717447652f9a7560ea04078f8c6207))
+* add mypy make command ([`ed80102`](https://github.com/mdtanker/polartoolkit/commit/ed801021a2ec2ebead4cc7651325a7b99e2cdfe8))
+* add run_notebook make command ([`1272361`](https://github.com/mdtanker/polartoolkit/commit/12723612dc6efd020a73cde15297689d7477e9dd))
+* add types-request to mypy ([`6e14d17`](https://github.com/mdtanker/polartoolkit/commit/6e14d17847dd4ef7753503c88908ad1fb3758f95))
+* ignore contrib guide in pre-commit ([`be24667`](https://github.com/mdtanker/polartoolkit/commit/be24667985e56628703e5d54f8b4af055c065f99))
+* remove RTD mock imports ([`80d6d0f`](https://github.com/mdtanker/polartoolkit/commit/80d6d0f46fcd9991df59d7c1282847ef062e82fd))
+* remove dynamic version ([`53f018b`](https://github.com/mdtanker/polartoolkit/commit/53f018bb6d37e91fa4dbfc892b77b8bdca9c52b3))
+* update license notice file ([`c51b7b1`](https://github.com/mdtanker/polartoolkit/commit/c51b7b15826abb4e2525cc9a04551fff17893e93))
+* add changelog template ([`855691e`](https://github.com/mdtanker/polartoolkit/commit/855691efa9403fc3ec6570c3556182401fca10f6))
+* update project urls ([`4cf10f8`](https://github.com/mdtanker/polartoolkit/commit/4cf10f8facb43f3d356118b065918bfeb95dc45d))
 * switches version management system
 
-changes from setuptools_scm to python-semantic-release ([`46df13d`](https://github.com/mdtanker/antarctic_plots/commit/46df13d314d9ec364dc541dfc45a6d826a37b31c))
-* add pylint config ([`91dfa92`](https://github.com/mdtanker/antarctic_plots/commit/91dfa926754ecfac1f67b29d6b83a74a538112c5))
-* add ruff config ([`5688ab9`](https://github.com/mdtanker/antarctic_plots/commit/5688ab992bea44a422dcd5cec9d6abca3565c12b))
-* add mypy config ([`cd1805b`](https://github.com/mdtanker/antarctic_plots/commit/cd1805b135e9701ca63ee136d5cc0b347365b802))
-* move regions to src ([`c22281f`](https://github.com/mdtanker/antarctic_plots/commit/c22281fbd547737f697066624052dc65fca64ae7))
-* move utils to src ([`39e477d`](https://github.com/mdtanker/antarctic_plots/commit/39e477d6115ccf1445591399b1f06b6eb4f934c5))
-* move profile to src ([`0c6a014`](https://github.com/mdtanker/antarctic_plots/commit/0c6a014cdd13d803d457f40c3180efba4dd3dd27))
-* move maps to src ([`e2e561d`](https://github.com/mdtanker/antarctic_plots/commit/e2e561dfd26ed246409ee1b00a9e02af4378a1a4))
-* move fetch to src ([`5a915b6`](https://github.com/mdtanker/antarctic_plots/commit/5a915b6439ea48e5155ff08fa92ff06d013b69d0))
-* move init to src ([`d3f229f`](https://github.com/mdtanker/antarctic_plots/commit/d3f229f7f144f95c3fe3b4ff9f03e3aba9770aad))
-* remove test init ([`a381570`](https://github.com/mdtanker/antarctic_plots/commit/a381570352279bc2cbe98324dadea6888d814eb8))
-* add github/matchers file ([`99ed168`](https://github.com/mdtanker/antarctic_plots/commit/99ed16885b8c2cdd14b2c8fd52c1e18246d65965))
-* pre-commit ignore .github files ([`ffb36c9`](https://github.com/mdtanker/antarctic_plots/commit/ffb36c99bd34f90347ce6ccb30ce26973bcdc342))
-* add noxfile ([`6cac09d`](https://github.com/mdtanker/antarctic_plots/commit/6cac09d7d46d9bf9a7359cab79e7316f5de7082e))
-* update makefile ([`d619207`](https://github.com/mdtanker/antarctic_plots/commit/d6192070f8dcb163ec577807cdeab100fa8b0a4a))
-* add pre-commit config ([`8c33642`](https://github.com/mdtanker/antarctic_plots/commit/8c33642542d752ebc28b135a0986fa9788573a1b))
-* update gitignore ([`5912c52`](https://github.com/mdtanker/antarctic_plots/commit/5912c52ac5ef20384df18d0106af0b0cdd0247af))
-* move tests outside src ([`e7b30e9`](https://github.com/mdtanker/antarctic_plots/commit/e7b30e9f23da359c0911c0c091fe2e9da1b3b87f))
+changes from setuptools_scm to python-semantic-release ([`46df13d`](https://github.com/mdtanker/polartoolkit/commit/46df13d314d9ec364dc541dfc45a6d826a37b31c))
+* add pylint config ([`91dfa92`](https://github.com/mdtanker/polartoolkit/commit/91dfa926754ecfac1f67b29d6b83a74a538112c5))
+* add ruff config ([`5688ab9`](https://github.com/mdtanker/polartoolkit/commit/5688ab992bea44a422dcd5cec9d6abca3565c12b))
+* add mypy config ([`cd1805b`](https://github.com/mdtanker/polartoolkit/commit/cd1805b135e9701ca63ee136d5cc0b347365b802))
+* move regions to src ([`c22281f`](https://github.com/mdtanker/polartoolkit/commit/c22281fbd547737f697066624052dc65fca64ae7))
+* move utils to src ([`39e477d`](https://github.com/mdtanker/polartoolkit/commit/39e477d6115ccf1445591399b1f06b6eb4f934c5))
+* move profile to src ([`0c6a014`](https://github.com/mdtanker/polartoolkit/commit/0c6a014cdd13d803d457f40c3180efba4dd3dd27))
+* move maps to src ([`e2e561d`](https://github.com/mdtanker/polartoolkit/commit/e2e561dfd26ed246409ee1b00a9e02af4378a1a4))
+* move fetch to src ([`5a915b6`](https://github.com/mdtanker/polartoolkit/commit/5a915b6439ea48e5155ff08fa92ff06d013b69d0))
+* move init to src ([`d3f229f`](https://github.com/mdtanker/polartoolkit/commit/d3f229f7f144f95c3fe3b4ff9f03e3aba9770aad))
+* remove test init ([`a381570`](https://github.com/mdtanker/polartoolkit/commit/a381570352279bc2cbe98324dadea6888d814eb8))
+* add github/matchers file ([`99ed168`](https://github.com/mdtanker/polartoolkit/commit/99ed16885b8c2cdd14b2c8fd52c1e18246d65965))
+* pre-commit ignore .github files ([`ffb36c9`](https://github.com/mdtanker/polartoolkit/commit/ffb36c99bd34f90347ce6ccb30ce26973bcdc342))
+* add noxfile ([`6cac09d`](https://github.com/mdtanker/polartoolkit/commit/6cac09d7d46d9bf9a7359cab79e7316f5de7082e))
+* update makefile ([`d619207`](https://github.com/mdtanker/polartoolkit/commit/d6192070f8dcb163ec577807cdeab100fa8b0a4a))
+* add pre-commit config ([`8c33642`](https://github.com/mdtanker/polartoolkit/commit/8c33642542d752ebc28b135a0986fa9788573a1b))
+* update gitignore ([`5912c52`](https://github.com/mdtanker/polartoolkit/commit/5912c52ac5ef20384df18d0106af0b0cdd0247af))
+* move tests outside src ([`e7b30e9`](https://github.com/mdtanker/polartoolkit/commit/e7b30e9f23da359c0911c0c091fe2e9da1b3b87f))
 ### 📖 Documentation
 
-* update notebooks ([`7851e53`](https://github.com/mdtanker/antarctic_plots/commit/7851e53b9f4afa1cb592a1cbecf28ffb52aecfa7))
-* rerun gallery examples ([`3c6f4c0`](https://github.com/mdtanker/antarctic_plots/commit/3c6f4c0577f7db42538c46a8c3733964386615cb))
-* rerun tutorials ([`e61324a`](https://github.com/mdtanker/antarctic_plots/commit/e61324aab0a0e7bc53e2747a0aa831f119f32b2f))
-* update cover_fig ([`1377bf0`](https://github.com/mdtanker/antarctic_plots/commit/1377bf000ca4d37c0c9708806d7cd3c067e89226))
-* fixes small issues ([`e8339ed`](https://github.com/mdtanker/antarctic_plots/commit/e8339ed83aea8dcc0a0abc794328fd050fc23444))
-* add/fix all docstrings ([`7c670d9`](https://github.com/mdtanker/antarctic_plots/commit/7c670d97da47937ed9e127580f9ec39457fd894c))
-* setup nbgallery for docs ([`48f061a`](https://github.com/mdtanker/antarctic_plots/commit/48f061a78d5bf2eab1ffb2c3b05ba0525fbc0e12))
-* update contrib guide ([`69663f9`](https://github.com/mdtanker/antarctic_plots/commit/69663f907ab34467d52685863c4d2ca6be2641e4))
-* update README and index ([`fea2b09`](https://github.com/mdtanker/antarctic_plots/commit/fea2b09e764c57135791322dc8ce86bc83a0fd28))
-* remove notebook output files ([`4a8c78b`](https://github.com/mdtanker/antarctic_plots/commit/4a8c78b3c5866a740235fcea2fc373ce4d0416fe))
-* add module descriptions to overview ([`92edec5`](https://github.com/mdtanker/antarctic_plots/commit/92edec57f5356431b10430d83a075306b3ca81c2))
-* pin RTD python version ([`f25810d`](https://github.com/mdtanker/antarctic_plots/commit/f25810ddb2b2aca142b4f6499c9fb87935897bfa))
-* move changelog ([`50c5439`](https://github.com/mdtanker/antarctic_plots/commit/50c54392a5ab596e7e77e3fe607018ee92c6f889))
-* add citing, overview, references ([`f27a893`](https://github.com/mdtanker/antarctic_plots/commit/f27a893f62ea0a832ab5c3cfe6bb283f2f4eb85b))
-* rename tutorials.md ([`5134420`](https://github.com/mdtanker/antarctic_plots/commit/5134420d48c072a745468d8225e3352ca83127c2))
-* rename gallery.md ([`4371781`](https://github.com/mdtanker/antarctic_plots/commit/43717813fd60066cced567744d01ceef69476a73))
-* update api docs with template ([`116f06e`](https://github.com/mdtanker/antarctic_plots/commit/116f06e27de8431ebcfd2b82e54114b8042b776a))
-* rename install file ([`4b97d66`](https://github.com/mdtanker/antarctic_plots/commit/4b97d66dc5d08de824b62add59ca577161a6b94a))
-* switch docs theme ([`c1a5d5a`](https://github.com/mdtanker/antarctic_plots/commit/c1a5d5a00ce3f2579e291498818cf75e9d89bc3b))
-* move contrib guide ([`d4e47ca`](https://github.com/mdtanker/antarctic_plots/commit/d4e47ca386b873e9570da71f6ea203fe2c143b49))
-* combine index and readme ([`1f4bfc1`](https://github.com/mdtanker/antarctic_plots/commit/1f4bfc1d0c37980079a9d51d9d4572441acb820f))
-* change RTD config ([`e17be26`](https://github.com/mdtanker/antarctic_plots/commit/e17be2690af1e2b583f94211f244607b9e0579cd))
+* update notebooks ([`7851e53`](https://github.com/mdtanker/polartoolkit/commit/7851e53b9f4afa1cb592a1cbecf28ffb52aecfa7))
+* rerun gallery examples ([`3c6f4c0`](https://github.com/mdtanker/polartoolkit/commit/3c6f4c0577f7db42538c46a8c3733964386615cb))
+* rerun tutorials ([`e61324a`](https://github.com/mdtanker/polartoolkit/commit/e61324aab0a0e7bc53e2747a0aa831f119f32b2f))
+* update cover_fig ([`1377bf0`](https://github.com/mdtanker/polartoolkit/commit/1377bf000ca4d37c0c9708806d7cd3c067e89226))
+* fixes small issues ([`e8339ed`](https://github.com/mdtanker/polartoolkit/commit/e8339ed83aea8dcc0a0abc794328fd050fc23444))
+* add/fix all docstrings ([`7c670d9`](https://github.com/mdtanker/polartoolkit/commit/7c670d97da47937ed9e127580f9ec39457fd894c))
+* setup nbgallery for docs ([`48f061a`](https://github.com/mdtanker/polartoolkit/commit/48f061a78d5bf2eab1ffb2c3b05ba0525fbc0e12))
+* update contrib guide ([`69663f9`](https://github.com/mdtanker/polartoolkit/commit/69663f907ab34467d52685863c4d2ca6be2641e4))
+* update README and index ([`fea2b09`](https://github.com/mdtanker/polartoolkit/commit/fea2b09e764c57135791322dc8ce86bc83a0fd28))
+* remove notebook output files ([`4a8c78b`](https://github.com/mdtanker/polartoolkit/commit/4a8c78b3c5866a740235fcea2fc373ce4d0416fe))
+* add module descriptions to overview ([`92edec5`](https://github.com/mdtanker/polartoolkit/commit/92edec57f5356431b10430d83a075306b3ca81c2))
+* pin RTD python version ([`f25810d`](https://github.com/mdtanker/polartoolkit/commit/f25810ddb2b2aca142b4f6499c9fb87935897bfa))
+* move changelog ([`50c5439`](https://github.com/mdtanker/polartoolkit/commit/50c54392a5ab596e7e77e3fe607018ee92c6f889))
+* add citing, overview, references ([`f27a893`](https://github.com/mdtanker/polartoolkit/commit/f27a893f62ea0a832ab5c3cfe6bb283f2f4eb85b))
+* rename tutorials.md ([`5134420`](https://github.com/mdtanker/polartoolkit/commit/5134420d48c072a745468d8225e3352ca83127c2))
+* rename gallery.md ([`4371781`](https://github.com/mdtanker/polartoolkit/commit/43717813fd60066cced567744d01ceef69476a73))
+* update api docs with template ([`116f06e`](https://github.com/mdtanker/polartoolkit/commit/116f06e27de8431ebcfd2b82e54114b8042b776a))
+* rename install file ([`4b97d66`](https://github.com/mdtanker/polartoolkit/commit/4b97d66dc5d08de824b62add59ca577161a6b94a))
+* switch docs theme ([`c1a5d5a`](https://github.com/mdtanker/polartoolkit/commit/c1a5d5a00ce3f2579e291498818cf75e9d89bc3b))
+* move contrib guide ([`d4e47ca`](https://github.com/mdtanker/polartoolkit/commit/d4e47ca386b873e9570da71f6ea203fe2c143b49))
+* combine index and readme ([`1f4bfc1`](https://github.com/mdtanker/polartoolkit/commit/1f4bfc1d0c37980079a9d51d9d4572441acb820f))
+* change RTD config ([`e17be26`](https://github.com/mdtanker/polartoolkit/commit/e17be2690af1e2b583f94211f244607b9e0579cd))
 ### 🚀 Features
 
-* add grd2cpt and shading to profile map ([`2440c27`](https://github.com/mdtanker/antarctic_plots/commit/2440c277aab205ac6463269e25976549f8005b37))
-* add spacing option to default layers ([`69d72f4`](https://github.com/mdtanker/antarctic_plots/commit/69d72f464b4b142eb860d2de49016871762fd79e))
-* add lake vostok region ([`69b5ff6`](https://github.com/mdtanker/antarctic_plots/commit/69b5ff66b4bcb4d5469f05e20014f01b51aea73d))
-* pass scalebar kwargs to plot_grd ([`e733241`](https://github.com/mdtanker/antarctic_plots/commit/e733241d15d229c0d3e7d006167db28fddb11e3e))
-* add get_fetches function ([`b0312c2`](https://github.com/mdtanker/antarctic_plots/commit/b0312c2254e5781668cf6fbba563e1dec00b473d))
+* add grd2cpt and shading to profile map ([`2440c27`](https://github.com/mdtanker/polartoolkit/commit/2440c277aab205ac6463269e25976549f8005b37))
+* add spacing option to default layers ([`69d72f4`](https://github.com/mdtanker/polartoolkit/commit/69d72f464b4b142eb860d2de49016871762fd79e))
+* add lake vostok region ([`69b5ff6`](https://github.com/mdtanker/polartoolkit/commit/69b5ff66b4bcb4d5469f05e20014f01b51aea73d))
+* pass scalebar kwargs to plot_grd ([`e733241`](https://github.com/mdtanker/polartoolkit/commit/e733241d15d229c0d3e7d006167db28fddb11e3e))
+* add get_fetches function ([`b0312c2`](https://github.com/mdtanker/polartoolkit/commit/b0312c2254e5781668cf6fbba563e1dec00b473d))
 ### 🐛 Bug Fixes
 
-* change default layer names in profile ([`801611f`](https://github.com/mdtanker/antarctic_plots/commit/801611f196c1b10a0f95c8829dbcf0370c890ccf))
-* avoid resampling default layers for profile ([`1f75666`](https://github.com/mdtanker/antarctic_plots/commit/1f75666f7f7a18393a2bc9839e3d70344d5f0fda))
-* warning for resampling default layers ([`543fe60`](https://github.com/mdtanker/antarctic_plots/commit/543fe60a9e74c1282230813a7ccaef5e7d9fbef7))
-* issue with plot_grd cpt_lims ([`548da1d`](https://github.com/mdtanker/antarctic_plots/commit/548da1d66354b739f39deb7911c51b80d18d762f))
-* fixing self imports ([`3e806df`](https://github.com/mdtanker/antarctic_plots/commit/3e806df8840ce4653a3f438b87140bd26afab37b))
-* switch module import style ([`c61552a`](https://github.com/mdtanker/antarctic_plots/commit/c61552a7aadf01bdb15611518ae98ca77ad06a50))
-* fixing typing cast ([`0405ad3`](https://github.com/mdtanker/antarctic_plots/commit/0405ad3e68ebcbf01b4beec134dd47a6e27d530a))
-* specify kwargs to shorten function ([`acaf8d9`](https://github.com/mdtanker/antarctic_plots/commit/acaf8d98a8f8c617d0c028393ac1b0a27b50c45c))
-* increase default colorbar font size ([`fc86e93`](https://github.com/mdtanker/antarctic_plots/commit/fc86e93bd194b997ab41bca02834f3029e94aaf7))
+* change default layer names in profile ([`801611f`](https://github.com/mdtanker/polartoolkit/commit/801611f196c1b10a0f95c8829dbcf0370c890ccf))
+* avoid resampling default layers for profile ([`1f75666`](https://github.com/mdtanker/polartoolkit/commit/1f75666f7f7a18393a2bc9839e3d70344d5f0fda))
+* warning for resampling default layers ([`543fe60`](https://github.com/mdtanker/polartoolkit/commit/543fe60a9e74c1282230813a7ccaef5e7d9fbef7))
+* issue with plot_grd cpt_lims ([`548da1d`](https://github.com/mdtanker/polartoolkit/commit/548da1d66354b739f39deb7911c51b80d18d762f))
+* fixing self imports ([`3e806df`](https://github.com/mdtanker/polartoolkit/commit/3e806df8840ce4653a3f438b87140bd26afab37b))
+* switch module import style ([`c61552a`](https://github.com/mdtanker/polartoolkit/commit/c61552a7aadf01bdb15611518ae98ca77ad06a50))
+* fixing typing cast ([`0405ad3`](https://github.com/mdtanker/polartoolkit/commit/0405ad3e68ebcbf01b4beec134dd47a6e27d530a))
+* specify kwargs to shorten function ([`acaf8d9`](https://github.com/mdtanker/polartoolkit/commit/acaf8d98a8f8c617d0c028393ac1b0a27b50c45c))
+* increase default colorbar font size ([`fc86e93`](https://github.com/mdtanker/polartoolkit/commit/fc86e93bd194b997ab41bca02834f3029e94aaf7))
 * various fixes to fetch.py
 
-leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`4da7fc1`](https://github.com/mdtanker/antarctic_plots/commit/4da7fc11f2630240a8f439b05cd060321e6e81f3))
+leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`4da7fc1`](https://github.com/mdtanker/polartoolkit/commit/4da7fc11f2630240a8f439b05cd060321e6e81f3))
 * various fixes to maps.py
 
-leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`6b7b25c`](https://github.com/mdtanker/antarctic_plots/commit/6b7b25c85b82391dcc2e7da221008cc572512aca))
+leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`6b7b25c`](https://github.com/mdtanker/polartoolkit/commit/6b7b25c85b82391dcc2e7da221008cc572512aca))
 * various fixes to utils.py
 
-leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`02d105d`](https://github.com/mdtanker/antarctic_plots/commit/02d105d19a0c33e4c78787795ef7b926decd4ddc))
+leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`02d105d`](https://github.com/mdtanker/polartoolkit/commit/02d105d19a0c33e4c78787795ef7b926decd4ddc))
 * various fixes to profile.py
 
-leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`aa43a85`](https://github.com/mdtanker/antarctic_plots/commit/aa43a85c3cae6ee7d3b3ee89a93ba305869a7715))
+leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`aa43a85`](https://github.com/mdtanker/polartoolkit/commit/aa43a85c3cae6ee7d3b3ee89a93ba305869a7715))
 * various fixes to regions.py
 
-leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`4f732aa`](https://github.com/mdtanker/antarctic_plots/commit/4f732aa2385ddefd072b977edd63b63c5487ddea))
-* change default layer pen to black ([`b2c1e74`](https://github.com/mdtanker/antarctic_plots/commit/b2c1e74f1d32b6b06aedbcd69eb3e2a5bf6ec00a))
-* change default inset region box to red ([`627b2bd`](https://github.com/mdtanker/antarctic_plots/commit/627b2bd5aabe9c18edbd2ed65c6059b04d6c695c))
+leftover fixes after refactoring code to pass new formatting / linting / type checking procedures ([`4f732aa`](https://github.com/mdtanker/polartoolkit/commit/4f732aa2385ddefd072b977edd63b63c5487ddea))
+* change default layer pen to black ([`b2c1e74`](https://github.com/mdtanker/polartoolkit/commit/b2c1e74f1d32b6b06aedbcd69eb3e2a5bf6ec00a))
+* change default inset region box to red ([`627b2bd`](https://github.com/mdtanker/polartoolkit/commit/627b2bd5aabe9c18edbd2ed65c6059b04d6c695c))
 ###  🎨 Refactor
 
 * fix issues with fetch tests
 
-swaps pytest.approx with DeepDiff, adds ignore RuntimeWarning to many tests. ([`3b1bf49`](https://github.com/mdtanker/antarctic_plots/commit/3b1bf497becf92d408ae701258051bb0491ad44c))
-* switch regions from lists to tuples ([`65d7d92`](https://github.com/mdtanker/antarctic_plots/commit/65d7d9234a4177f131d3e0e7c7e0415d25e71208))
-* update optional deps import check ([`9926a59`](https://github.com/mdtanker/antarctic_plots/commit/9926a59ff5bb1856057241c93588ed96cdc649dc))
+swaps pytest.approx with DeepDiff, adds ignore RuntimeWarning to many tests. ([`3b1bf49`](https://github.com/mdtanker/polartoolkit/commit/3b1bf497becf92d408ae701258051bb0491ad44c))
+* switch regions from lists to tuples ([`65d7d92`](https://github.com/mdtanker/polartoolkit/commit/65d7d9234a4177f131d3e0e7c7e0415d25e71208))
+* update optional deps import check ([`9926a59`](https://github.com/mdtanker/polartoolkit/commit/9926a59ff5bb1856057241c93588ed96cdc649dc))
 * standardize preprocessing calls
 
-increments filename variabls since they change type, and standardizes the format of the preprocessors. ([`4f5656f`](https://github.com/mdtanker/antarctic_plots/commit/4f5656fa58ab155dffb00cdc114ce18fd04686d1))
+increments filename variabls since they change type, and standardizes the format of the preprocessors. ([`4f5656f`](https://github.com/mdtanker/polartoolkit/commit/4f5656fa58ab155dffb00cdc114ce18fd04686d1))
 ### ✏️ Formatting
 
-* formatting ([`429b998`](https://github.com/mdtanker/antarctic_plots/commit/429b9984ec407e21ed07956b3491f97722a48b15))
-* formatting ([`ddb0e42`](https://github.com/mdtanker/antarctic_plots/commit/ddb0e42987e6d4557ecbe9ae9c1414c78525af00))
-* fix spelling error ([`ea3ed50`](https://github.com/mdtanker/antarctic_plots/commit/ea3ed501603d79afc34c14e561df08ad64bdbb95))
-* formatting test_utils ([`cf83691`](https://github.com/mdtanker/antarctic_plots/commit/cf83691db1711c66e7b5d68d3731ad6d89790b8c))
-* formatting ([`e1e5aa8`](https://github.com/mdtanker/antarctic_plots/commit/e1e5aa8f4cce375578c74590de23ce8af8e5db75))
-* formatting ([`abbae80`](https://github.com/mdtanker/antarctic_plots/commit/abbae80f153674078a188af85fda92dad36f22db))
-* formatting ([`68f78aa`](https://github.com/mdtanker/antarctic_plots/commit/68f78aa1238446ab114d757dd51207b1ab30d546))
-* formatting ([`f9f82f8`](https://github.com/mdtanker/antarctic_plots/commit/f9f82f8201e08212e61c431a9259075884f1b4c5))
+* formatting ([`429b998`](https://github.com/mdtanker/polartoolkit/commit/429b9984ec407e21ed07956b3491f97722a48b15))
+* formatting ([`ddb0e42`](https://github.com/mdtanker/polartoolkit/commit/ddb0e42987e6d4557ecbe9ae9c1414c78525af00))
+* fix spelling error ([`ea3ed50`](https://github.com/mdtanker/polartoolkit/commit/ea3ed501603d79afc34c14e561df08ad64bdbb95))
+* formatting test_utils ([`cf83691`](https://github.com/mdtanker/polartoolkit/commit/cf83691db1711c66e7b5d68d3731ad6d89790b8c))
+* formatting ([`e1e5aa8`](https://github.com/mdtanker/polartoolkit/commit/e1e5aa8f4cce375578c74590de23ce8af8e5db75))
+* formatting ([`abbae80`](https://github.com/mdtanker/polartoolkit/commit/abbae80f153674078a188af85fda92dad36f22db))
+* formatting ([`68f78aa`](https://github.com/mdtanker/polartoolkit/commit/68f78aa1238446ab114d757dd51207b1ab30d546))
+* formatting ([`f9f82f8`](https://github.com/mdtanker/polartoolkit/commit/f9f82f8201e08212e61c431a9259075884f1b4c5))
 ### Other
 
-*  ([`90302ba`](https://github.com/mdtanker/antarctic_plots/commit/90302ba4e059c6688dad9468c42cb38c62ad6540))
+*  ([`90302ba`](https://github.com/mdtanker/polartoolkit/commit/90302ba4e059c6688dad9468c42cb38c62ad6540))
 
-*  ([`12a5299`](https://github.com/mdtanker/antarctic_plots/commit/12a5299d590c3ce16e797fd3efd18ea8e7b2234c))
+*  ([`12a5299`](https://github.com/mdtanker/polartoolkit/commit/12a5299d590c3ce16e797fd3efd18ea8e7b2234c))
 
-*  ([`c962e56`](https://github.com/mdtanker/antarctic_plots/commit/c962e56ca0eca300b9f45bd4104861cd9fdf67dd))
+*  ([`c962e56`](https://github.com/mdtanker/polartoolkit/commit/c962e56ca0eca300b9f45bd4104861cd9fdf67dd))
 
-*  ([`95ad63c`](https://github.com/mdtanker/antarctic_plots/commit/95ad63c9af3c9b305fdbc97c984ac6bee952c3bf))
+*  ([`95ad63c`](https://github.com/mdtanker/polartoolkit/commit/95ad63c9af3c9b305fdbc97c984ac6bee952c3bf))
 
-*  ([`30ea5aa`](https://github.com/mdtanker/antarctic_plots/commit/30ea5aaea6cf599299e0cc7253eaf136b1e54a59))
+*  ([`30ea5aa`](https://github.com/mdtanker/polartoolkit/commit/30ea5aaea6cf599299e0cc7253eaf136b1e54a59))
 
-*  ([`d8c821e`](https://github.com/mdtanker/antarctic_plots/commit/d8c821ee79f146bc74171ae358a331815ba1ac7d))
+*  ([`d8c821e`](https://github.com/mdtanker/polartoolkit/commit/d8c821ee79f146bc74171ae358a331815ba1ac7d))
 
-*  ([`f1249f0`](https://github.com/mdtanker/antarctic_plots/commit/f1249f0d7cb848f489bd25f8364d1693e704f886))
+*  ([`f1249f0`](https://github.com/mdtanker/polartoolkit/commit/f1249f0d7cb848f489bd25f8364d1693e704f886))
 
 
 
@@ -227,7 +227,7 @@ Everything below is from prior to the implementation of Python Semaintic Release
 ## Release v0.0.4
 
 ### 💫 Highlights
-* New mapping function `antarctic_plots.maps`
+* New mapping function `polartoolkit.maps`
 * Pre-set regions for commonly plotted areas
 * Added Gallery examples
 * Created a Binder environment
@@ -260,17 +260,17 @@ Everything below is from prior to the implementation of Python Semaintic Release
 * Added tutorial for modules `fetch` and `region`
 
 ### ⛔ Maintenance
-* Closed [Issue #6](https://github.com/mdtanker/antarctic_plots/issues/6): Create gallery examples
-* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9): Code formatting
-* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13): Specify dependency version
-* Closed [Issue #15](https://github.com/mdtanker/antarctic_plots/issues/15): Add inset map of Antarctica
-* Closed [Issue #16](https://github.com/mdtanker/antarctic_plots/issues/16): Add Welcome Bot message to first time contributors
-* Closed [Issue #20](https://github.com/mdtanker/antarctic_plots/issues/20): Add options to use the package online
-* Closed [Issue #25](https://github.com/mdtanker/antarctic_plots/issues/25): Add GHF data to fetch module
-* Closed [Issue #26](https://github.com/mdtanker/antarctic_plots/issues/26): Add BedMachine Data to fetch
-* Closed [Issue #27](https://github.com/mdtanker/antarctic_plots/issues/27): fetch.bedmap2 issue with xarray
-* Closed [Issue #28](https://github.com/mdtanker/antarctic_plots/issues/28): Set region strings for commonly plotted areas
-* Closed [Issue #22](https://github.com/mdtanker/antarctic_plots/issues/22): Create Zenodo DOI
+* Closed [Issue #6](https://github.com/mdtanker/polartoolkit/issues/6): Create gallery examples
+* Closed [Issue #9](https://github.com/mdtanker/polartoolkit/issues/9): Code formatting
+* Closed [Issue #13](https://github.com/mdtanker/polartoolkit/issues/13): Specify dependency version
+* Closed [Issue #15](https://github.com/mdtanker/polartoolkit/issues/15): Add inset map of Antarctica
+* Closed [Issue #16](https://github.com/mdtanker/polartoolkit/issues/16): Add Welcome Bot message to first time contributors
+* Closed [Issue #20](https://github.com/mdtanker/polartoolkit/issues/20): Add options to use the package online
+* Closed [Issue #25](https://github.com/mdtanker/polartoolkit/issues/25): Add GHF data to fetch module
+* Closed [Issue #26](https://github.com/mdtanker/polartoolkit/issues/26): Add BedMachine Data to fetch
+* Closed [Issue #27](https://github.com/mdtanker/polartoolkit/issues/27): fetch.bedmap2 issue with xarray
+* Closed [Issue #28](https://github.com/mdtanker/polartoolkit/issues/28): Set region strings for commonly plotted areas
+* Closed [Issue #22](https://github.com/mdtanker/polartoolkit/issues/22): Create Zenodo DOI
 
 ### 🧑‍🤝‍🧑 Contributors
 
@@ -289,7 +289,7 @@ Everything below is from prior to the implementation of Python Semaintic Release
 
 ### ⛔ Maintenance
 
-* Closed [Issue #7](https://github.com/mdtanker/antarctic_plots/issues/7)
+* Closed [Issue #7](https://github.com/mdtanker/polartoolkit/issues/7)
 
 ### 🧑‍🤝‍🧑 Contributors
 
@@ -315,9 +315,9 @@ Everything below is from prior to the implementation of Python Semaintic Release
 
 ### ⛔ Maintenance
 
-* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13)
-* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9)
-* Closed [Issue #2](https://github.com/mdtanker/antarctic_plots/issues/2)
+* Closed [Issue #13](https://github.com/mdtanker/polartoolkit/issues/13)
+* Closed [Issue #9](https://github.com/mdtanker/polartoolkit/issues/9)
+* Closed [Issue #2](https://github.com/mdtanker/polartoolkit/issues/2)
 
 
 ### 🧑‍🤝‍🧑 Contributors

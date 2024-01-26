@@ -1,5 +1,5 @@
 # Requirements for building the documentation
-name: antarctic_plots
+name: polartoolkit
 channels:
   - conda-forge
   - defaults

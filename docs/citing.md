@@ -1,4 +1,4 @@
-# Citing Antarctic-Plots
+# Citing PolarToolkit
 
 ```{warning}
 Citation info still to come ...

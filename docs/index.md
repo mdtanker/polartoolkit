@@ -1,4 +1,8 @@
-# Antarctic-Plots
+```{image} logo.png
+:alt: logo
+:width: 400px
+:align: center
+```
 
 Functions to automate Antarctic data visualization
 
@@ -16,7 +20,7 @@ Functions to automate Antarctic data visualization
 ```{admonition} Early-stages of development
 :class: seealso
 
-This package is in early stages of development! This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update Antarctic-Plots to a newer version.
+This package is in early stages of development! This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update polartoolkit to a newer version.
 ```
 
 
@@ -29,11 +33,11 @@ This package is in early stages of development! This means that we are still add
 ```{admonition} How to contribute
 :class: seealso
 
-I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion]() or [issue (feature request)]() on the [GitHub page](https://github.com/mdtanker/antarctic_plots/)!
+I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion]() or [issue (feature request)]() on the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
 
-Also, please feel free to share how you're using Antarctic-Plots, I'd love to know.
+Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
-Please, read our [Contributor Guide](https://github.com/mdtanker/antarctic_plots/blob/main/.github/CONTRIBUTING.md) to learn
+Please, read our [Contributor Guide](https://github.com/mdtanker/polartoolkit/blob/main/.github/CONTRIBUTING.md) to learn
 how you can contribute to the project.
 ```
 
@@ -87,7 +91,7 @@ tips.ipynb
 :maxdepth: 2
 :hidden:
 :caption: 📖 Reference documentation
-api/antarctic_plots
+api/polartoolkit
 citing.md
 changelog.md
 references.rst
@@ -98,14 +102,14 @@ references.rst
 :hidden:
 :caption: ℹ️ Other resources
 contributing.md
-Source code on GitHub <https://github.com/mdtanker/antarctic_plots>
+Source code on GitHub <https://github.com/mdtanker/polartoolkit>
 ```
 
 
 ::::{grid} 2
 :::{grid-item-card} {octicon}`rocket` Getting started?
 :text-align: center
-New to Antarctic-Plots? Start here!
+New to PolarToolkit? Start here!
 ```{button-ref} overview
     :click-parent:
     :color: primary
@@ -117,7 +121,7 @@ New to Antarctic-Plots? Start here!
 :::{grid-item-card} {octicon}`comment-discussion` Need help?
 :text-align: center
 Start a discussion on GitHub!
-```{button-link} https://github.com/mdtanker/antarctic_plots/discussions
+```{button-link} https://github.com/mdtanker/polartoolkit/discussions
     :click-parent:
     :color: primary
     :outline:
@@ -129,7 +133,7 @@ Start a discussion on GitHub!
 :::{grid-item-card} {octicon}`file-badge` Reference documentation
 :text-align: center
 A list of modules and functions
-```{button-ref} api/antarctic_plots
+```{button-ref} api/polartoolkit
     :click-parent:
     :color: primary
     :outline:
@@ -137,7 +141,7 @@ A list of modules and functions
 ```
 :::
 
-:::{grid-item-card} {octicon}`bookmark` Using Antarctic-Plots for research?
+:::{grid-item-card} {octicon}`bookmark` Using PolarToolkit for research?
 :text-align: center
 Citations help support our work
 ```{button-ref} citing

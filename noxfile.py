@@ -34,7 +34,7 @@ def pylint(session: nox.Session) -> None:
     # This needs to be installed into the package environment, and is slower
     # than a pre-commit check
     session.install(".", "pylint")
-    session.run("pylint", "antarctic_plots", *session.posargs)
+    session.run("pylint", "polartoolkit", *session.posargs)
 
 
 @nox.session(venv_backend="mamba", python="3.11")
@@ -113,7 +113,7 @@ def build_api_docs(session: nox.Session) -> None:
         "--force",
         "--separate",
         "--templatedir=_templates/",
-        "../src/antarctic_plots",
+        "../src/polartoolkit",
     )
 
 

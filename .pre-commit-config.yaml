@@ -5,12 +5,12 @@ ci:
 exclude: |
   (?x)^(
       docs/index.md|
-      docs/api/antarctic_plots.rst|
-      docs/api/antarctic_plots.fetch.rst|
-      docs/api/antarctic_plots.maps.rst|
-      docs/api/antarctic_plots.profile.rst|
-      docs/api/antarctic_plots.regions.rst|
-      docs/api/antarctic_plots.utils.rst|
+      docs/api/polartoolkit.rst|
+      docs/api/polartoolkit.fetch.rst|
+      docs/api/polartoolkit.maps.rst|
+      docs/api/polartoolkit.profile.rst|
+      docs/api/polartoolkit.regions.rst|
+      docs/api/polartoolkit.utils.rst|
       CHANGELOG.md|
       .github/ISSUE_TEMPLATE/bug_report.md|
       .github/ISSUE_TEMPLATE/feature_request.md|
