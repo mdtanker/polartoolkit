@@ -223,7 +223,7 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 
 #### Check the build manually (optional)
 
-You can build the docs using:
+You can build the docs using, but this will require pandoc to be install on your machine:
 
 ```bash
 nox -s docs
@@ -232,8 +232,9 @@ nox -s docs
 You can see a preview with:
 
 ```bash
-nox -s docs -- serve
+nox -s docs -- --serve
 ```
+
 #### Automatically build the docs
 
 Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
