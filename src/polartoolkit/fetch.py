@@ -29,6 +29,7 @@ import requests
 import xarray as xr
 import zarr
 from dotenv import load_dotenv
+from pyproj import Transformer
 
 # import polartoolkit.fetch as fetch
 from polartoolkit import (  # pylint: disable=import-self
@@ -36,7 +37,6 @@ from polartoolkit import (  # pylint: disable=import-self
     regions,
     utils,
 )
-from pyproj import Transformer
 
 # import polartoolkit.regions as regions
 # import polartoolkit.utils as utils
