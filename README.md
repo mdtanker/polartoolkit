@@ -8,7 +8,7 @@
 <!-- SPHINX-START1 -->
 
 <p align="center">
-<a href="https://mybinder.org/v2/gh/mdtanker/antarctic_plots/main">
+<a href="https://mybinder.org/v2/gh/mdtanker/polartoolkit/main">
  <img src="https://mybinder.org/badge_logo.svg" alt="Binder link"></a>
  </p>
 
@@ -25,9 +25,9 @@ src="https://img.shields.io/conda/vn/conda-forge/polartoolkit.svg?style=flat-squ
 alt="Latest version on conda-forge"
 />
 </a>
-<a href="https://codecov.io/gh/mdtanker/antarctic_plots">
+<a href="https://codecov.io/gh/mdtanker/polartoolkit">
 <img
-src="https://img.shields.io/codecov/c/github/mdtanker/antarctic_plots/main.svg?style=flat-square"
+src="https://img.shields.io/codecov/c/github/mdtanker/polartoolkit/main.svg?style=flat-square"
 alt="Test coverage status"
 />
 
