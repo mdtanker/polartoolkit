@@ -1,5 +1,4 @@
-![](docs/logo.png)
-
+<h1 align="center">PolarToolkit</h1>
 <h2 align="center">Functions to automate Antarctic data visualization</h2>
 
 <p align="center">

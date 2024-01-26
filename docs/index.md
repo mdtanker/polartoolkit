@@ -1,8 +1,4 @@
-```{image} logo.png
-:alt: logo
-:width: 400px
-:align: center
-```
+# PolarToolkit
 
 Functions to automate Antarctic data visualization
 

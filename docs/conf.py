@@ -89,7 +89,8 @@ add_function_parentheses = False
 # HTML output configuration
 # -----------------------------------------------------------------------------
 html_title = f'{project} <span class="project-version">{version}</span>'
-# html_logo = "_static/harmonica-logo.png"
+html_logo = "logo.png"
+html_static_path = ["_static"]
 # html_favicon = "_static/favicon.png"
 html_last_updated_fmt = "%b %d, %Y"
 html_copy_source = True
@@ -110,4 +111,8 @@ html_theme_options = {
     "use_repository_button": True,
     "use_download_button": True,
     "home_page_in_toc": False,
+    "logo": {
+        "link": "https://github.com/mdtanker/polartoolkit",
+        "alt_text": "PolarToolkit Logo - GitHub",
+    },
 }
