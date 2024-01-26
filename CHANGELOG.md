@@ -3,6 +3,74 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## v0.2.0 (2024-01-26)
+### Other
+
+* force a major version bump.
+
+BREAKING CHANGE: ([`cc2ecda`](https://github.com/mdtanker/polartoolkit/commit/cc2ecdaae48b4300ae6d41485076273fa612ce64))
+### 📦️ Build
+
+* bump hynek/build-and-inspect-python-package from 1 to 2
+
+Bumps [hynek/build-and-inspect-python-package](https://github.com/hynek/build-and-inspect-python-package) from 1 to 2.
+- [Release notes](https://github.com/hynek/build-and-inspect-python-package/releases)
+- [Changelog](https://github.com/hynek/build-and-inspect-python-package/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/hynek/build-and-inspect-python-package/compare/v1...v2)
+
+---
+updated-dependencies:
+- dependency-name: hynek/build-and-inspect-python-package
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`62c0385`](https://github.com/mdtanker/polartoolkit/commit/62c0385647af79f390717fa18fa472ac715903f1))
+* bump actions/download-artifact from 3 to 4
+
+Bumps [actions/download-artifact](https://github.com/actions/download-artifact) from 3 to 4.
+- [Release notes](https://github.com/actions/download-artifact/releases)
+- [Commits](https://github.com/actions/download-artifact/compare/v3...v4)
+
+---
+updated-dependencies:
+- dependency-name: actions/download-artifact
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`d577c09`](https://github.com/mdtanker/polartoolkit/commit/d577c09a7947e3b372a3b4b367cfaf361c3ffa80))
+* bump actions/setup-python from 4 to 5
+
+Bumps [actions/setup-python](https://github.com/actions/setup-python) from 4 to 5.
+- [Release notes](https://github.com/actions/setup-python/releases)
+- [Commits](https://github.com/actions/setup-python/compare/v4...v5)
+
+---
+updated-dependencies:
+- dependency-name: actions/setup-python
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`ba46d15`](https://github.com/mdtanker/polartoolkit/commit/ba46d155f11b1b187df4c8fa806924a8c42a1417))
+### 🧰 Chores / Maintenance
+
+* fixes ([`d1cc66a`](https://github.com/mdtanker/polartoolkit/commit/d1cc66a98a2653db0b57593cabec9ca6da2e3878))
+* formatting ([`f9ffa54`](https://github.com/mdtanker/polartoolkit/commit/f9ffa54b599ab1ab38af8d267a3daf1c98ae8bc0))
+* formatting ([`52fd5bb`](https://github.com/mdtanker/polartoolkit/commit/52fd5bb3cf08927f5211ae7b4f2a14dacc310dbf))
+* rename module ([`70f7d18`](https://github.com/mdtanker/polartoolkit/commit/70f7d18b7973ededb3b90ca809774160f2c8a1b4))
+* formatting ([`6e30c4c`](https://github.com/mdtanker/polartoolkit/commit/6e30c4ca30a44ea7cd1353f5703fd4414816ae7e))
+* switch from antarctic-plots to polartoolkit ([`bac23a9`](https://github.com/mdtanker/polartoolkit/commit/bac23a9a4c0c5e7059c42edc0892c96174dcc0dc))
+### 📖 Documentation
+
+* update descriptions to not only focus on Antarctica ([`b08a509`](https://github.com/mdtanker/polartoolkit/commit/b08a509cf25956586282e905a3786d081461ae6e))
+* add favicon and dark and light logos ([`77f9835`](https://github.com/mdtanker/polartoolkit/commit/77f9835fc76d9415b0ace6d93829560900d8eb72))
+* add logo to docs ([`c26f850`](https://github.com/mdtanker/polartoolkit/commit/c26f8502ced995515b4ee40440c062b67b329b6b))
+* fix changelog template ([`31083e3`](https://github.com/mdtanker/polartoolkit/commit/31083e3d729cd4fb17f2149665610c5ba7fcd2c0))
+### ✏️ Formatting
+
+* formatting ([`d15fe92`](https://github.com/mdtanker/polartoolkit/commit/d15fe924d6097c64b410e4a0802b63774e17074e))
 ## v0.1.0 (2023-12-10)
 ### 📦️ Build
 
@@ -227,7 +295,7 @@ Everything below is from prior to the implementation of Python Semaintic Release
 ## Release v0.0.4
 
 ### 💫 Highlights
-* New mapping function `polartoolkit.maps`
+* New mapping function `antarctic_plots.maps`
 * Pre-set regions for commonly plotted areas
 * Added Gallery examples
 * Created a Binder environment
@@ -260,17 +328,17 @@ Everything below is from prior to the implementation of Python Semaintic Release
 * Added tutorial for modules `fetch` and `region`
 
 ### ⛔ Maintenance
-* Closed [Issue #6](https://github.com/mdtanker/polartoolkit/issues/6): Create gallery examples
-* Closed [Issue #9](https://github.com/mdtanker/polartoolkit/issues/9): Code formatting
-* Closed [Issue #13](https://github.com/mdtanker/polartoolkit/issues/13): Specify dependency version
-* Closed [Issue #15](https://github.com/mdtanker/polartoolkit/issues/15): Add inset map of Antarctica
-* Closed [Issue #16](https://github.com/mdtanker/polartoolkit/issues/16): Add Welcome Bot message to first time contributors
-* Closed [Issue #20](https://github.com/mdtanker/polartoolkit/issues/20): Add options to use the package online
-* Closed [Issue #25](https://github.com/mdtanker/polartoolkit/issues/25): Add GHF data to fetch module
-* Closed [Issue #26](https://github.com/mdtanker/polartoolkit/issues/26): Add BedMachine Data to fetch
-* Closed [Issue #27](https://github.com/mdtanker/polartoolkit/issues/27): fetch.bedmap2 issue with xarray
-* Closed [Issue #28](https://github.com/mdtanker/polartoolkit/issues/28): Set region strings for commonly plotted areas
-* Closed [Issue #22](https://github.com/mdtanker/polartoolkit/issues/22): Create Zenodo DOI
+* Closed [Issue #6](https://github.com/mdtanker/antarctic_plots/issues/6): Create gallery examples
+* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9): Code formatting
+* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13): Specify dependency version
+* Closed [Issue #15](https://github.com/mdtanker/antarctic_plots/issues/15): Add inset map of Antarctica
+* Closed [Issue #16](https://github.com/mdtanker/antarctic_plots/issues/16): Add Welcome Bot message to first time contributors
+* Closed [Issue #20](https://github.com/mdtanker/antarctic_plots/issues/20): Add options to use the package online
+* Closed [Issue #25](https://github.com/mdtanker/antarctic_plots/issues/25): Add GHF data to fetch module
+* Closed [Issue #26](https://github.com/mdtanker/antarctic_plots/issues/26): Add BedMachine Data to fetch
+* Closed [Issue #27](https://github.com/mdtanker/antarctic_plots/issues/27): fetch.bedmap2 issue with xarray
+* Closed [Issue #28](https://github.com/mdtanker/antarctic_plots/issues/28): Set region strings for commonly plotted areas
+* Closed [Issue #22](https://github.com/mdtanker/antarctic_plots/issues/22): Create Zenodo DOI
 
 ### 🧑‍🤝‍🧑 Contributors
 
@@ -289,7 +357,7 @@ Everything below is from prior to the implementation of Python Semaintic Release
 
 ### ⛔ Maintenance
 
-* Closed [Issue #7](https://github.com/mdtanker/polartoolkit/issues/7)
+* Closed [Issue #7](https://github.com/mdtanker/antarctic_plots/issues/7)
 
 ### 🧑‍🤝‍🧑 Contributors
 
@@ -300,7 +368,7 @@ Everything below is from prior to the implementation of Python Semaintic Release
 ## Release v0.0.2
 
 ### 💫 Highlights
-* Created a [website for the documentation!](https://antarctic-plots.readthedocs.io/en/latest/installation.html#)
+* Created a [website for the documentation!](https://antarctic_plots.readthedocs.io/en/latest/installation.html#)
 
 * Added `NumPy` formatted docstrings to the modules
 
@@ -315,9 +383,9 @@ Everything below is from prior to the implementation of Python Semaintic Release
 
 ### ⛔ Maintenance
 
-* Closed [Issue #13](https://github.com/mdtanker/polartoolkit/issues/13)
-* Closed [Issue #9](https://github.com/mdtanker/polartoolkit/issues/9)
-* Closed [Issue #2](https://github.com/mdtanker/polartoolkit/issues/2)
+* Closed [Issue #13](https://github.com/mdtanker/antarctic_plots/issues/13)
+* Closed [Issue #9](https://github.com/mdtanker/antarctic_plots/issues/9)
+* Closed [Issue #2](https://github.com/mdtanker/antarctic_plots/issues/2)
 
 
 ### 🧑‍🤝‍🧑 Contributors
