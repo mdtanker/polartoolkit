@@ -76,6 +76,7 @@ docs = [
   "sphinx_design",
   "nbsphinx",
   "nbconvert",
+  "pandoc",
 ]
 dev = [
     "polartoolkit[interactive,viz,test,docs]",
@@ -87,6 +88,7 @@ dev = [
     "ipykernel",
     "jupyterlab",
     "mypy",
+    "pathspec",
 ]
 all = [
   "polartoolkit[interactive,viz,test,dev,docs]",

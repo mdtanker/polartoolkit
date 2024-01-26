@@ -1,11 +1,11 @@
-# pylint: disable=too-many-lines
-# Copyright (c) 2022 The PolarToolkit Developers.
+# Copyright (c) 2022 The Polartoolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import logging

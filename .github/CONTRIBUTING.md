@@ -223,11 +223,17 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 
 #### Check the build manually (optional)
 
-    make build_docs
+You can build the docs using:
 
-This will run the `.ipynb` files, and convert them to markdown to be included in the docs.
-Check for returned errors and open `index.html` in docs/_build/html/ to view the docs.
+```bash
+nox -s docs
+```
 
+You can see a preview with:
+
+```bash
+nox -s docs -- serve
+```
 #### Automatically build the docs
 
 Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
