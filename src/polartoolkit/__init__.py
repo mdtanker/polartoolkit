@@ -5,7 +5,7 @@
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
-"""Functions to automate Antarctic data visualization"""
+"""Helpful tools for polar researchers"""
 
 from __future__ import annotations
 
