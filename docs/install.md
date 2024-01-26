@@ -17,15 +17,15 @@ of the `gallery` or `tutorial` examples.
 The easiest way to install this package and it's dependencies is with conda or
 mamba into a new virtual environment:
 
-    mamba create --name antarctic_plots --yes --force antarctic-plots
+    mamba create --name polartoolkit --yes --force polartoolkit
 
 Activate the environment:
 
-    conda activate antarctic_plots
+    conda activate polartoolkit
 
 ### Pip
 
-Instead, you can use pip to install antarctic-plots, but first you need to
+Instead, you can use pip to install polartoolkit, but first you need to
 install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
 `Cartopy` all rely on C packages, which can only be install with conda/mamba and
 not with pip. ere I use mamba, but conda will work as well, just replace any
@@ -33,12 +33,12 @@ not with pip. ere I use mamba, but conda will work as well, just replace any
 
 Create a new virtual environment:
 
-    mamba create --name antarctic_plots --yes --force pygmt geopandas cartopy
+    mamba create --name polartoolkit --yes --force pygmt geopandas cartopy
 
-Pip install antarctic-plots
+Pip install polartoolkit
 
-    mamba activate antarctic_plots
-    pip install antarctic-plots
+    mamba activate polartoolkit
+    pip install polartoolkit
 
 If you don't have Python set up on your computer, I recommend setting up python
 with Miniconda. See the install instructions
@@ -49,12 +49,12 @@ with Miniconda. See the install instructions
 You can use pip, with the above created environment, to install the latest
 source from GitHub:
 
-    pip install git+https://github.com/mdtanker/antarctic_plots.git
+    pip install git+https://github.com/mdtanker/polartoolkit.git
 
 Or you can clone the repository and install:
 
-    git clone https://github.com/mdtanker/antarctic_plots.git
-    cd antarctic_plots
+    git clone https://github.com/mdtanker/polartoolkit.git
+    cd polartoolkit
     pip install .
 
 ## Common errors

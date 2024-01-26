@@ -1,6 +1,6 @@
 antarctic\_plots.profile
 ------------------------
-.. automodule:: antarctic_plots.profile
+.. automodule:: polartoolkit.profile
    :members:
    :undoc-members:
    :show-inheritance:

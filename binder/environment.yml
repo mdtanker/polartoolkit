@@ -1,11 +1,11 @@
-name: antarctic_plots
+name: polartoolkit
 channels:
   - conda-forge
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
   - affine=2.4.0
-  - antarctic-plots=0.0.6
+  - polartoolkit=0.0.6
   - asciitree=0.3.3
   - attrs=23.1.0
   - aws-c-auth=0.7.7
@@ -257,4 +257,4 @@ dependencies:
   - zipp=3.17.0
   - zlib=1.2.13
   - zstd=1.5.5
-prefix: /home/matt/mambaforge/envs/antarctic_plots
+prefix: /home/matt/mambaforge/envs/polartoolkit

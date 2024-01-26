@@ -72,7 +72,7 @@ jobs:
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: antarctic_plots
+          activate-environment: polartoolkit
           environment-file: env/test_env.yml
           python-version: ${{ matrix.python-version }}
           channels: conda-forge,nodefaults

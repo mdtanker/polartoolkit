@@ -1,9 +1,9 @@
-# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Copyright (c) 2022 The PolarToolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """
 Tests for utils module.
@@ -17,7 +17,7 @@ import pytest
 import verde as vd
 import xarray as xr
 
-from antarctic_plots import regions, utils
+from polartoolkit import regions, utils
 
 
 def dummy_grid() -> xr.Dataset:

@@ -3,7 +3,7 @@
 
 <sub>Adapted from the great contribution guidelines of the [Fatiando a Terra](https://www.fatiando.org/) packages<sub>.
 
-> This document contains some general guidlines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions)!
+> This document contains some general guidlines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)!
 
 Any kind of help would be much appreciated. Here are a few ways to contribute:
 * 🐛 Submitting bug reports and feature requests
@@ -90,7 +90,7 @@ example scripts. See [Contributing Code](#contributing-code) for instructions.
 
 **Is this your first contribution?**
 Please take a look at these resources to learn about git and pull requests (don't
-hesitate to ask questions in the [GitHub discussions page](https://github.com/mdtanker/antarctic_plots/discussions)):
+hesitate to ask questions in the [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)):
 
 * [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
 * Aaron Meurer's [tutorial on the git workflow](http://www.asmeurer.com/git-workflow/)
@@ -111,12 +111,12 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 To get the latest version clone the github repo:
 
 ```
-git clone https://github.com/mdtanker/antarctic_plots.git
+git clone https://github.com/mdtanker/polartoolkit.git
 ```
 Change into the directory:
 
 ```
-cd antarctic_plots
+cd polartoolkit
 ```
 
 Run the following command to make a new environment and install the package dependencies:
@@ -124,15 +124,15 @@ Run the following command to make a new environment and install the package depe
 ```
   make create
 ```
-Activate the environement:
+Activate the environment:
 ```
-    conda activate antarctic_plots
+    conda activate polartoolkit
 ```
 Install your local version:
 ```
   make install
 ```
-This environment now contains your local, editable version of Antarctic-Plots, meaning if you alter code in the package, it will automatically include those changes in your environement (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
+This environment now contains your local, editable version of PolarToolkit, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 > **Note:** You'll need to activate the environment every time you start a new terminal.
 
@@ -257,7 +257,7 @@ This includes running both the unit tests as well as code linters.
 GitHub will show the status of these checks on the pull request.
 Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
-[post on the GH discussions page](https://github.com/mdtanker/antarctic_plots/discussions).
+[post on the GH discussions page](https://github.com/mdtanker/polartoolkit/discussions).
 
 ## Publish a new release
 
@@ -266,7 +266,7 @@ This will almost always be done by the developers, but as a guide for them, here
 Follow all the above instructions for formating and building the docs
 
 ### PyPI (pip)
-Manually increment the version in antarctic_plots/__init__.py:
+Manually increment the version in polartoolkit/__init__.py:
 
   version = "X.Y.Z"
 
@@ -283,11 +283,11 @@ This should automatically find the TestPyPI username and token from a `.pypirc` 
 Make a new environment and activate it:
 
     make test_pypi_env
-    mamba activate antarctic_plots_test_pypi
+    mamba activate polartoolkit_test_pypi
 
  and run the following, replacing the asterisks with the version number:
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ antarctic-plots==******
+    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ polartoolkit==******
 
 Run a few gallery examples to make sure this env works, then its ready to publish to the real PyPI:
 
@@ -298,17 +298,17 @@ Now push the changes to GitHub and make a release with the matching version numb
 ### Conda-Forge
 Once the new version is on PyPI, we can update the conda-forge feedstock.
 
-Fork the [conda-forge antarctic-plots feedstock](https://github.com/conda-forge/antarctic-plots-feedstock) on github:
+Fork the [conda-forge polartoolkit feedstock](https://github.com/conda-forge/polartoolkit-feedstock) on github:
 
 Clone the fork and checkout a new branch
 
-    git clone https://github.com/mdtanker/antarctic-plots-feedstock
+    git clone https://github.com/mdtanker/polartoolkit-feedstock
 
     git checkout -b update
 
 Update the `meta.yaml` with the new PyPI version with `grayskull`
 
-  grayskull pypi antarctic-plots
+  grayskull pypi polartoolkit
 
 Copy the new contents into the old `meta.yaml` file.
 
@@ -316,7 +316,7 @@ Push the changes to GitHub
 
     git add .
 
-    git commit -m "updating antarctic-plots"
+    git commit -m "updating polartoolkit"
 
     git push origin update
 
@@ -338,8 +338,8 @@ To run this package online, Read the Docs will automatically create a Binder ins
 
     make conda_install
 
-    conda activate antarctic_plots
+    conda activate polartoolkit
 
     make binder_env
 
-Now, when submitting a PR, RTD will automatically build the docs and update the Binder environement.
+Now, when submitting a PR, RTD will automatically build the docs and update the Binder environment.

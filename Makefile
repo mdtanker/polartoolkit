@@ -1,5 +1,5 @@
 # Build, package, test, and clean
-PROJECT=antarctic_plots
+PROJECT=polartoolkit
 STYLE_CHECK_FILES=.
 
 create:
@@ -12,7 +12,7 @@ install:
 	pip install -e .[all]
 
 install_test:
-	pip install antarctic-plots[all]
+	pip install polartoolkit[all]
 
 remove:
 	mamba remove --name $(PROJECT) --all
@@ -30,12 +30,12 @@ lint:
 	pre-commit run --all-files
 
 pylint:
-	pylint antarctic_plots
+	pylint polartoolkit
 
 style: format check lint pylint
 
 mypy:
-	mypy src/antarctic_plots
+	mypy src/polartoolkit
 
 release_check:
 	semantic-release --noop version
@@ -63,8 +63,8 @@ run_notebooks: run_gallery run_tutorials run_doc_files
 
 # install with conda
 conda_install:
-	mamba create --name antarctic_plots --yes --force antarctic-plots
+	mamba create --name polartoolkit --yes --force polartoolkit
 
 # create binder yml
 binder_env:
-	mamba env export --name antarctic_plots --no-builds > binder/environment.yml
+	mamba env export --name polartoolkit --no-builds > binder/environment.yml

@@ -1,10 +1,10 @@
 # pylint: disable=too-many-lines
-# Copyright (c) 2022 The Antarctic-Plots Developers.
+# Copyright (c) 2022 The PolarToolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
-# Antarctic-plots (https://github.com/mdtanker/antarctic_plots)
+# PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 from __future__ import annotations
 
@@ -31,15 +31,15 @@ import zarr
 from dotenv import load_dotenv
 from pyproj import Transformer
 
-# import antarctic_plots.fetch as fetch
-from antarctic_plots import (  # pylint: disable=import-self
+# import polartoolkit.fetch as fetch
+from polartoolkit import (  # pylint: disable=import-self
     fetch,  # noqa: PLW0406
     regions,
     utils,
 )
 
-# import antarctic_plots.regions as regions
-# import antarctic_plots.utils as utils
+# import polartoolkit.regions as regions
+# import polartoolkit.utils as utils
 
 load_dotenv()
 
@@ -277,8 +277,8 @@ def sample_shp(name: str) -> str:
         file path as a string
     """
     path = pooch.retrieve(
-        url=f"https://github.com/mdtanker/antarctic_plots/raw/main/data/{name}.zip",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles",
+        url=f"https://github.com/mdtanker/polartoolkit/raw/main/data/{name}.zip",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
         processor=pooch.Unzip(),
         known_hash=None,
     )
@@ -329,7 +329,7 @@ def mass_change(
     path = pooch.retrieve(
         url=url,
         fname=zip_fname,
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_mass",
         known_hash=None,
         progressbar=True,
         processor=pooch.Unzip(
@@ -420,7 +420,7 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
     path = pooch.retrieve(
         url=url,
         fname=fname,
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_mass/Admusilli_2020",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_mass/Admusilli_2020",
         known_hash=None,
         progressbar=True,
         processor=preprocessing,
@@ -555,7 +555,7 @@ def ice_vel(
     path = pooch.retrieve(
         url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",
         fname="measures_ice_vel_phase_map.nc",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/ice_velocity",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity",
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
@@ -597,7 +597,7 @@ def modis_moa(
         path: str = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz",
             fname="moa125.tif.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
             known_hash=None,
@@ -607,7 +607,7 @@ def modis_moa(
         path = pooch.retrieve(
             url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz",
             fname="moa750.tif.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
             known_hash=None,
@@ -636,7 +636,7 @@ def imagery() -> str:
     path = pooch.retrieve(
         url="https://lima.usgs.gov/tiff_90pct.zip",
         fname="lima.zip",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/imagery",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
         processor=pooch.Unzip(),
         known_hash=None,
         progressbar=True,
@@ -674,7 +674,7 @@ def geomap(
     path = pooch.retrieve(
         url=url,
         fname=fname,
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/geomap",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/geomap",
         known_hash=None,
         processor=pooch.Unzip(extract_dir="geomap"),
         progressbar=True,
@@ -777,7 +777,7 @@ def groundingline(
         path = pooch.retrieve(
             url="https://doi.pangaea.de/10013/epic.42133.d001",
             fname="groundingline_depoorter_2013.d001",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/depoorter-2013",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/depoorter-2013",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True,
@@ -793,7 +793,7 @@ def groundingline(
             "GroundingLine_Antarctica_v02.xml": None,
         }
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
-        path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
+        path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
         pup = pooch.create(
             path=path,
             base_url=base_url,
@@ -841,7 +841,7 @@ def measures_boundaries(
         file path
     """
     # path to store the downloaded files
-    path = f"{pooch.os_cache('pooch')}/antarctic_plots/shapefiles/measures"
+    path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
 
     # coastline shapefile is in a different directory
     if version == "Coastline":
@@ -963,7 +963,7 @@ def basement(
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",
         fname="basement.nc",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/basement",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/basement",
         known_hash=None,
         progressbar=True,
     )
@@ -1092,7 +1092,7 @@ def sediment_thickness(
         path = pooch.retrieve(
             url="https://www.itpz-ran.ru/wp-content/uploads/2021/04/0.1_lim_b.dat_.zip",
             fname="ANTASed.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1126,7 +1126,7 @@ def sediment_thickness(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_sediment.nc",
             fname="tankersley_2022_sediment_thickness.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
             known_hash=None,
             progressbar=True,
         )
@@ -1159,7 +1159,7 @@ def sediment_thickness(
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",
             fname="lindeque_2016_total_sediment_thickness.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
             known_hash=None,
             progressbar=True,
         )
@@ -1244,7 +1244,7 @@ def sediment_thickness(
         path = pooch.retrieve(
             url="https://ngdc.noaa.gov/mgg/sedthick/data/version3/GlobSed.zip",
             fname="GlobSed.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/sediment_thickness",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1293,7 +1293,7 @@ def ibcso_coverage(
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg",
         fname="IBCSO_v2_coverage.gpkg",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         known_hash=None,
         progressbar=True,
     )
@@ -1487,7 +1487,7 @@ def ibcso(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc",
             fname="IBCSO_ice_surface.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             progressbar=True,
             processor=preprocessor,
@@ -1496,7 +1496,7 @@ def ibcso(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.nc",
             fname="IBCSO_bed.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             progressbar=True,
             processor=preprocessor,
@@ -1595,7 +1595,7 @@ def bedmachine(
     path = pooch.retrieve(
         url=url,
         fname="bedmachine_v3.nc",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         downloader=EarthDataDownloader(),
         known_hash=None,
         progressbar=True,
@@ -1710,7 +1710,7 @@ def bedmap_points(
         fname = pooch.retrieve(
             url=url,
             fname="BEDMAP1_1966-2000_AIR_BM1.csv",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             progressbar=True,
         )
@@ -1905,7 +1905,7 @@ def bedmap2(
         fname = pooch.retrieve(
             url=url,
             fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1918,7 +1918,7 @@ def bedmap2(
         fname = pooch.retrieve(
             url=url,
             fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1950,7 +1950,7 @@ def bedmap2(
         fname = pooch.retrieve(
             url=url,
             fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -1977,7 +1977,7 @@ def bedmap2(
             fname = pooch.retrieve(
                 url=url,
                 fname="bedmap2_tiff.zip",
-                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
                 known_hash=None,
                 processor=preprocessing,
                 progressbar=True,
@@ -1994,7 +1994,7 @@ def bedmap2(
             fname = pooch.retrieve(
                 url=url,
                 fname="bedmap2_tiff.zip",
-                path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
                 known_hash=None,
                 processor=preprocessing,
                 progressbar=True,
@@ -2135,7 +2135,7 @@ def rema(
     zarr_file = pooch.retrieve(
         url=url,
         fname=fname,
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography/REMA",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography/REMA",
         known_hash=None,
         progressbar=True,
         processor=preprocessing,
@@ -2195,7 +2195,7 @@ def deepbedmap(
     path: str = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         fname="deepbedmap.tif",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         known_hash=None,
         progressbar=True,
     )
@@ -2284,7 +2284,7 @@ def gravity(
         path = pooch.retrieve(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
             fname="antgg.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             progressbar=True,
         )
@@ -2379,7 +2379,7 @@ def gravity(
         path = pooch.retrieve(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
             fname="antgg_update.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -2440,7 +2440,7 @@ def gravity(
         path = pooch.retrieve(
             url="doi:10.5281/zenodo.5882207/earth-gravity-10arcmin.nc",
             fname="eigen.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -2532,7 +2532,7 @@ def etopo(
     path = pooch.retrieve(
         url="doi:10.5281/zenodo.5882203/earth-topography-10arcmin.nc",
         fname="etopo.nc",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/topography",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         known_hash=None,
         progressbar=True,
         processor=preprocessing,
@@ -2625,7 +2625,7 @@ def geoid(
     path = pooch.retrieve(
         url="doi:10.5281/zenodo.5882204/earth-geoid-10arcmin.nc",
         fname="eigen_geoid.nc",
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/geoid",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/geoid",
         known_hash=None,
         progressbar=True,
         processor=preprocessing,
@@ -2682,7 +2682,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",
             fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             progressbar=True,
             processor=pooch.Unzip(),
@@ -2696,7 +2696,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",
             fname="ROSETTA_2019_grav.csv",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             progressbar=True,
         )
@@ -2711,7 +2711,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
         path = pooch.retrieve(
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/Density/rs_2019_density.csv",
             fname="rs_2019_density.csv",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gravity",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
             known_hash=None,
             progressbar=True,
         )
@@ -2754,7 +2754,7 @@ def rosetta_magnetics() -> pd.DataFrame:
     path = pooch.retrieve(
         url=url,
         fname=fname,
-        path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
         known_hash="6a87e59b86888a2cd669012c6ad49ea5e563d1a9759da574d5a9f9b5aa978b70",
         progressbar=True,
     )
@@ -2803,7 +2803,7 @@ def rosetta_magnetics() -> pd.DataFrame:
 #         path = pooch.retrieve(
 #             url=url,
 #             fname=fname,
-#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             path=f"{pooch.os_cache('pooch')}/polartoolkit/ROSETTA_radar_data",
 #             known_hash=known_hash,
 #             progressbar=True,
 #         )
@@ -2818,7 +2818,7 @@ def rosetta_magnetics() -> pd.DataFrame:
 #         path = pooch.retrieve(
 #             url=url,
 #             fname=fname,
-#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             path=f"{pooch.os_cache('pooch')}/polartoolkit/ROSETTA_radar_data",
 #             known_hash=known_hash,
 #             progressbar=True,
 #         )
@@ -2844,7 +2844,7 @@ def rosetta_magnetics() -> pd.DataFrame:
 #         path = pooch.retrieve(
 #             url=url,
 #             fname=fname,
-#             path=f"{pooch.os_cache('pooch')}/antarctic_plots/ROSETTA_radar_data",
+#             path=f"{pooch.os_cache('pooch')}/polartoolkit/ROSETTA_radar_data",
 #             known_hash=known_hash,
 #             progressbar=True,
 #         )
@@ -2959,7 +2959,7 @@ def magnetics(
         path = pooch.retrieve(
             url="http://admap.kopri.re.kr/admapdata/ant_new.zip",
             fname="admap1.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -3011,7 +3011,7 @@ def magnetics(
         path = pooch.retrieve(
             url=url,
             fname=fname,
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
             known_hash="87db037e0b8c134ec4198f261d85c75c2bd5d144d8358ca37759cf8b87ae8c40",
             progressbar=True,
             processor=preprocessing,
@@ -3034,7 +3034,7 @@ def magnetics(
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
             fname="admap2_gdb.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/magnetics",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
             known_hash=None,
             processor=pooch.Unzip(),
             progressbar=True,
@@ -3163,7 +3163,7 @@ def ghf(
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
             fname="an_2015_.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -3224,7 +3224,7 @@ def ghf(
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz",
             fname="martos_2017.xyz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -3258,7 +3258,7 @@ def ghf(
         path = pooch.retrieve(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
             fname="burton_johnson_2020.zip",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             processor=pooch.Unzip(extract_dir="burton_johnson_2020"),
             progressbar=True,
@@ -3269,7 +3269,7 @@ def ghf(
             file = pooch.retrieve(
                 url=url,
                 fname="ANT_GHF_DB_V004.xlsx",
-                path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
                 known_hash=None,
                 progressbar=True,
             )
@@ -3313,7 +3313,7 @@ def ghf(
             try:
                 new_file = shutil.copyfile(
                     file,
-                    f"{pooch.os_cache('pooch')}/antarctic_plots/ghf/burton_johnson_2020/Mean.tif",
+                    f"{pooch.os_cache('pooch')}/polartoolkit/ghf/burton_johnson_2020/Mean.tif",
                 )
             except shutil.SameFileError:
                 new_file = file
@@ -3394,7 +3394,7 @@ def ghf(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
             fname="losing_ebbing_2021_ghf.csv",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -3428,7 +3428,7 @@ def ghf(
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             fname="aq1.nc",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             progressbar=True,
         )
@@ -3503,7 +3503,7 @@ def ghf(
         path = pooch.retrieve(
             url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",
             fname="shen_2020_ghf.xyz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/ghf",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             processor=preprocessing,
             progressbar=True,
@@ -3575,7 +3575,7 @@ def gia(
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
             fname="stal_2020_gia.tiff",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/gia",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gia",
             known_hash=None,
             progressbar=True,
         )
@@ -3707,7 +3707,7 @@ def crustal_thickness(
         #     url=url,
         #     known_hash=None,
         #     fname="shen_2018_crustal_thickness.dat",
-        #     path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
+        #     path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
         #     processor=preprocessing,
         #     progressbar=True,
         # )
@@ -3776,7 +3776,7 @@ def crustal_thickness(
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
             fname="an_2015_crustal_thickness.tar.gz",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/crustal_thickness",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -3912,7 +3912,7 @@ def moho(
         path = pooch.retrieve(
             url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
             fname="shen_2018_moho.tar",
-            path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -3961,7 +3961,7 @@ def moho(
         # resampled = pooch.retrieve(
         #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",  # noqa: E501
         #     fname="pappa_moho.zip",
-        #     path=f"{pooch.os_cache('pooch')}/antarctic_plots/moho",
+        #     path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
         #     known_hash=None,
         #     progressbar=True,
         #     processor=pooch.Unzip(extract_dir="pappa_moho"),

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import antarctic_plots
+import polartoolkit
 
-project = "antarctic_plots"
+project = "polartoolkit"
 copyright = "2023, Matt Tankersley"
 author = "Matt Tankersley"
-version = release = antarctic_plots.__version__
+version = release = polartoolkit.__version__
 extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
@@ -75,7 +75,7 @@ add_function_parentheses = False
 #     "members": True,
 #     "show-inheritance": True,
 # }
-# apidoc_module_dir = '../src/antarctic_plots'
+# apidoc_module_dir = '../src/polartoolkit'
 # apidoc_excluded_paths = ['tests']
 # apidoc_separate_modules = False
 
@@ -91,7 +91,7 @@ html_show_sphinx = True
 html_show_copyright = False
 html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "repository_url": "https://github.com/mdtanker/antarctic_plots",
+    "repository_url": "https://github.com/mdtanker/polartoolkit",
     "repository_branch": "main",
     "path_to_docs": "docs",
     "launch_buttons": {
