@@ -1,11 +1,11 @@
-# pylint: disable=too-many-lines
-# Copyright (c) 2022 The PolarToolkit Developers.
+# Copyright (c) 2022 The Polartoolkit Developers.
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 #
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import logging
@@ -1349,41 +1349,6 @@ def coherency(
         grid region if input is pd.DataFrame
     spacing : float
         grid spacing if input is pd.DataFrame
-
-    Examples
-    --------
-    utils.coherency(
-    grids = [
-        iter_corrections[['x','y','iter_1_initial_top']],
-        df_inversion[['x','y','Gobs']]],
-        spacing=grav_spacing,
-        region=inv_reg,
-        label='0'
-        )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_1_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='1'
-            )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_2_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='2'
-            )
-    utils.coherency(
-        grids = [
-            iter_corrections[['x','y','iter_3_final_top']],
-            df_inversion[['x','y','Gobs']]],
-            spacing=grav_spacing,
-            region=inv_reg,
-            label='3'
-            )
     """
 
     # Check if seaborn is installed
@@ -1545,6 +1510,7 @@ def get_min_max(
 ) -> tuple[float, float]:
     """
     Get a grids max and min values.
+
     Parameters
     ----------
     grid : xr.DataArray

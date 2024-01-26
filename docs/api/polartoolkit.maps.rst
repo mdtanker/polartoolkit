@@ -1,5 +1,5 @@
-antarctic\_plots.maps
----------------------
+polartoolkit.maps
+-----------------
 .. automodule:: polartoolkit.maps
    :members:
    :undoc-members:
