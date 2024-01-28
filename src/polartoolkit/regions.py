@@ -158,7 +158,7 @@ def combine_regions(
 def draw_region(**kwargs: typing.Any) -> typing.Any:
     """
     Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle
-    and get the bounding region. Verticles will be returned as the output of the
+    and get the bounding region. Vertices will be returned as the output of the
     function.
 
     Returns

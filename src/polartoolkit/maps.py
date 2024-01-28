@@ -61,7 +61,7 @@ def basemap(
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
-    create a blank basemap figure, or add a basemape to an existing figure / subplot.
+    create a blank basemap figure, or add a basemap to an existing figure / subplot.
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ def basemap(
     fig_width : float | None, optional
         width of figure, by default None
     origin_shift : str, optional
-        choose to start new figure, or shift origin of existing figure to add a subplt,
+        choose to start new figure, or shift origin of existing figure to add a subplot,
         by default "initialize"
 
     Returns

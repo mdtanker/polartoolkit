@@ -54,7 +54,7 @@ def create_profile(
     start : tuple[float, float], optional
         Coordinates for starting point of profile, by default None
     stop : tuple[float, float], optional
-        Coordinates for eding point of profile, by default None
+        Coordinates for ending point of profile, by default None
     num : int, optional
         Number of points to sample at, for "points" by default is 100, for other methods
         num by default is determined by shapefile or dataframe
@@ -155,7 +155,7 @@ def sample_grids(
     ----------
     df : pd.DataFrame
         Dataframe containing columns 'x', 'y', or columns with names defined by kwarg
-        "coor_names".
+        "coord_names".
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
     sampled_name : str,
@@ -976,7 +976,7 @@ def plot_profile(
             raise ValueError(msg)
 
         # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd becauseit reset projection
+        # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=kwargs.get("map_cmap", "earth"),
@@ -1366,7 +1366,7 @@ def plot_data(
             raise ValueError(msg)
 
         # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd becauseit reset projection
+        # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=kwargs.get("map_cmap", "earth"),
@@ -1547,7 +1547,7 @@ def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
 def draw_lines(**kwargs: typing.Any) -> typing.Any:
     """
     Plot an interactive map, and use the "Draw a Polyline" button to create vertices of
-    a line. Verticles will be returned as the output of the function.
+    a line. Vertices will be returned as the output of the function.
 
     Returns
     -------
