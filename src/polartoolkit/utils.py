@@ -720,7 +720,7 @@ def grd_trend(
 
     # convert grid to a dataframe
     df0 = vd.grid_to_table(da).astype("float64")
-    df = df0.dropna()
+    df = df0.dropna().copy()
 
     # define a trend
     trend = vd.Trend(degree=deg).fit((df[coords[0]], df[coords[1]]), df[coords[2]])
