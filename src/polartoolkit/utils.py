@@ -247,7 +247,7 @@ def region_xy_to_ll(
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in GMT format; [e, w, n, s] in meters
     dms: bool, False
-        if True, will return results as deg:min:sec iinstead of decimal degrees
+        if True, will return results as deg:min:sec instead of decimal degrees
 
     Returns
     -------
@@ -610,7 +610,7 @@ def alter_region(
     n_shift : float, optional
         shift north, or south if negative, in meters, by default 0
     w_shift : float, optional
-        shift west, or eash if negative, in meters, by default 0
+        shift west, or east if negative, in meters, by default 0
     buffer : float, optional
         create new region which is zoomed out in all direction, in meters, by default 0
     print_reg : bool, optional
