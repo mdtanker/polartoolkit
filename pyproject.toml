@@ -45,7 +45,7 @@ dependencies = [
     "rioxarray",
     "scipy",
     "numpy",
-    "pygmt>=0.10.0", # need paramter "log" for colorbar
+    "pygmt>=0.10.0", # need parameter "log" for colorbar
     "geopandas",
     "zarr",
     "python-dotenv",
