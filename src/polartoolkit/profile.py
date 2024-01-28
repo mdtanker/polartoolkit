@@ -774,7 +774,7 @@ def plot_profile(
             fig.plot(
                 x=df_layers.dist,
                 y=df_layers[k],
-                close="+yb", # close the polygons,
+                close="+yb",  # close the polygons,
                 fill=v["color"],
                 frame=kwargs.get("layers_frame", ["nSew", "a"]),
                 transparency=kwargs.get(

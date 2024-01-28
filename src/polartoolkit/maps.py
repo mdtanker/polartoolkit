@@ -849,7 +849,7 @@ def add_gridlines(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region = utils.gmt_str_to_list(region)+"+ue"
+    region_converted = (*region, "+ue")  # codespell-ignore
 
     if x_spacing is None:
         x_frames = ["xag", "xa"]
@@ -884,7 +884,7 @@ def add_gridlines(
         # plot semi-transparent lines and annotations with black font and white shadow
         fig.basemap(
             projection=projection,
-            region=region,
+            region=region_converted,
             frame=[
                 "NSWE",
                 x_frames[0],
@@ -897,7 +897,7 @@ def add_gridlines(
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
             fig.basemap(
                 projection=projection,
-                region=region,
+                region=region_converted,
                 frame=[
                     "NSWE",
                     x_frames[0],
@@ -999,7 +999,7 @@ def add_scalebar(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region_str = utils.gmt_str_to_list(region)+"+ue"
+    region_converted = (*region, "+ue")  # codespell-ignore
 
     def round_to_1(x: float) -> float:
         return round(x, -int(floor(log10(abs(x)))))
@@ -1015,7 +1015,7 @@ def add_scalebar(
         MAP_TICK_PEN_PRIMARY=f"0.5p,{font_color}",
     ):
         fig.basemap(
-            region=region_str,
+            region=region_converted,
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
             # verbose="e",
@@ -1053,12 +1053,12 @@ def add_north_arrow(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region = utils.gmt_str_to_list(region)+"+ue"
+    region_converted = (*region, "+ue")  # codespell-ignore
 
     rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
 
     fig.basemap(
-        region=region,
+        region=region_converted,
         projection=projection,
         rose=rose_str,
         verbose="e",
