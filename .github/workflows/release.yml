@@ -12,16 +12,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Always build & lint package. Need to re-checkout after semantic-release in case it
+  # Always build package. Need to re-checkout after semantic-release in case it
   # made a commit
   build-package:
-    name: Build & verify package
+    name: Build package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: hynek/build-and-inspect-python-package@v2
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Build SDist and wheel
+      run: pipx run build
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Packages
+        path: dist/*
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
 
   # Upload to Test PyPI.
   release-test-pypi:
