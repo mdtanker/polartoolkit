@@ -3,6 +3,27 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## v0.2.1 (2024-01-29)
+### 📦️ Build
+
+* add antarctic_plots package for import warning ([`bb4c134`](https://github.com/mdtanker/polartoolkit/commit/bb4c134b6e78377d426781ef1f601a5ba171000b))
+* add lower version limit to PyGMT ([`4f3a837`](https://github.com/mdtanker/polartoolkit/commit/4f3a837de38852697ee85ffb341aadeaa9bb8c9b))
+### 📖 Documentation
+
+* clicking on logo directs to homepage ([`841e9e5`](https://github.com/mdtanker/polartoolkit/commit/841e9e5f38dcfce0fb847bebb7bcad050ce87069))
+* rerun notebooks ([`eb5e47d`](https://github.com/mdtanker/polartoolkit/commit/eb5e47d53ee793688b461b374c6ee1e32bc00d82))
+* update binder env, links, and codecov link ([`4854853`](https://github.com/mdtanker/polartoolkit/commit/4854853a2072632dbdbd3000f657cf717b7f6d15))
+### 🐛 Bug Fixes
+
+* add &#34;+ue&#34; unit to regions in meters for lat long projections ([`fa67b53`](https://github.com/mdtanker/polartoolkit/commit/fa67b5367a94f362e040c210c547202d05976922))
+* fixes lines between layers in cross-sections ([`7eaaf64`](https://github.com/mdtanker/polartoolkit/commit/7eaaf64629847a168d4249096b18e336e3c5a5a2))
+* fix pandas copy warning ([`48ce7a7`](https://github.com/mdtanker/polartoolkit/commit/48ce7a7bf109868ddf23f04ba55d23898e2246e2))
+### ✏️ Formatting
+
+* line too long ([`51e0143`](https://github.com/mdtanker/polartoolkit/commit/51e0143b571a8e8d901f9adaab6e3843fed8e823))
+* spelling and formatting ([`a7347ba`](https://github.com/mdtanker/polartoolkit/commit/a7347ba6ca94185414ac3d0a0eec1bb1ef095bfb))
+* spelling  mistakes ([`4c29294`](https://github.com/mdtanker/polartoolkit/commit/4c2929402b66903b2ddc0688333b932c44bba978))
+*  ignore binder env file in pre-commit ([`9aa1c30`](https://github.com/mdtanker/polartoolkit/commit/9aa1c309352965131c40b3d88c4e16afbcdf48a6))
 ## v0.2.0 (2024-01-26)
 ### Other
 
