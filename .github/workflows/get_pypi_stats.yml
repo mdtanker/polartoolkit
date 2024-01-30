@@ -18,23 +18,23 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v3
-      with:
-        ref: "traffic"
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          ref: "traffic"
 
-    # Calculates pypi stats and clones and stores in CSV file
-    - name: Update pypi stats files
-      run: |
-        pip install -U pip
-        pip install pypistats pandas seaborn matplotlib
-        python ./docs/tracking/stats.py
+      # Calculates pypi stats and clones and stores in CSV file
+      - name: Update pypi stats files
+        run: |
+          pip install -U pip
+          pip install pypistats pandas seaborn matplotlib
+          python ./docs/tracking/stats.py
 
-    # Commits files to repository
-    - name: Commit changes
-      uses: EndBug/add-and-commit@v9
-      with:
-        author_name: pypistats
-        message: "Pypi stats auto-update"
-        add: "./docs/tracking/*"
+      # Commits files to repository
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: pypistats
+          message: "Pypi stats auto-update"
+          add: "./docs/tracking/*"
 #         add: "./pypistats/*"
