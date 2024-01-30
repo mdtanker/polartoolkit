@@ -50,6 +50,7 @@ dependencies = [
     "zarr",
     "python-dotenv",
     "nptyping",
+    "requests",
 ]
 
 [project.optional-dependencies]
