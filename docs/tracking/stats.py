@@ -14,28 +14,28 @@ Adapted from the package icepyx: https://github.com/icesat2py/icepyx
 https://github.com/icesat2py/icepyx/blob/6c187bd35358d88083a5163d3491118aa1aad45c/doc/source/tracking/pypistats/get_pypi_stats.py
 """
 
-import os
-import pypistats
-import pandas as pd
-import seaborn as sns
+import pathlib
+
 import matplotlib.pyplot as plt
+import pandas as pd
+import pypistats
+import seaborn as sns
+
 sns.set_theme()
 
-cwd = os.getcwd()
+cwd = pathlib.Path.cwd()
 
 trackpath = f"{cwd}/docs/tracking/"
 downloadfn = "downloads_data.csv"
 sysdownloadfn = "sys_downloads_data.csv"
 
 antarctic_plots_downloads = pypistats.overall(
-    "antarctic_plots",
-    total=True,
-    format="pandas").drop(columns=["percent"])
+    "antarctic_plots", total=True, format="pandas"
+).drop(columns=["percent"])
 
 polartoolkit_downloads = pypistats.overall(
-    "polartoolkit",
-    total=True,
-    format="pandas").drop(columns=["percent"])
+    "polartoolkit", total=True, format="pandas"
+).drop(columns=["percent"])
 
 downloads = pd.concat([antarctic_plots_downloads, polartoolkit_downloads])
 
@@ -47,7 +47,7 @@ try:
     dl_data = downloads.merge(
         exist_downloads, how="outer", on=["category", "date", "downloads"]
     )
-except:
+except NameError:
     dl_data = downloads
 
 total_downloads = dl_data.downloads.sum()
@@ -76,7 +76,10 @@ dl_data = dl_data.groupby("category").get_group("without_mirrors").sort_values("
 
 
 chart = dl_data.plot(
-    x="date", y="downloads", figsize=(10, 2), legend=False,
+    x="date",
+    y="downloads",
+    figsize=(10, 2),
+    legend=False,
 )
 
 chart.set_ylabel("Downloads")
@@ -87,7 +90,7 @@ chart.set_title(
 )
 
 chart.text(
-    0,1, f"{total_downloads} total downloads",
-    va="top", transform=plt.gca().transAxes)
+    0, 1, f"{total_downloads} total downloads", va="top", transform=plt.gca().transAxes
+)
 
 chart.figure.savefig(trackpath + "downloads.png")
