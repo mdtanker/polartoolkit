@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python==3.11
+  - pygmt
+  - pip
   - pip:
     - ../.[docs]
-prefix: /home/mdtanker/miniforge3/envs/RTD_env
