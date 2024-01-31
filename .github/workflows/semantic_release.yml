@@ -1,4 +1,4 @@
-name: push
+name: semantic_release
 
 # define when this workflow is triggered
 on:
@@ -9,16 +9,13 @@ on:
 
 jobs:
   # determine appropriate version number, update changelog, and create a release commit
-  release:
+  semantic-release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    concurrency: release
+    # concurrency: release
     permissions:
       id-token: write
       contents: write
-    environment:
-      name: testpypi
-      url: https://pypi.org/p/polartoolkit
     steps:
       # checkout the repo and supply a PAT for the changelog update commit.
       - id: checkout
@@ -32,3 +29,6 @@ jobs:
         uses: python-semantic-release/python-semantic-release@master
         with:
           github_token: ${{ secrets.PAT }}
+          changelog: "true"
+          push: "true"
+
