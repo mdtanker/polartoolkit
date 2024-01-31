@@ -11,6 +11,7 @@ exclude: |
       docs/api/polartoolkit.profile.rst|
       docs/api/polartoolkit.regions.rst|
       docs/api/polartoolkit.utils.rst|
+      docs/_polartoolkit_refs.bib|
       CHANGELOG.md|
       .github/ISSUE_TEMPLATE/bug_report.md|
       .github/ISSUE_TEMPLATE/feature_request.md|

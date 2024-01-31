@@ -239,6 +239,15 @@ nox -s docs -- --serve
 
 Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
 
+In each PR, you will see section of the checks for RTD. Click on this to preview the docs for the PR.
+
+RTD uses the conda environment specified in `env/RTD_env.yml` when it's building.
+To create or update this file based on the necessary dependencies in [docs] of `pyproject.toml`, run the following command:
+
+```
+make RTD_env
+```
+
 ### Code Review
 
 After you've submitted a pull request, you should expect to hear at least a comment

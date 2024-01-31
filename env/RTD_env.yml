@@ -1,40 +1,9 @@
-# Requirements for building the documentation
-name: polartoolkit
+name: RTD_env
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.9
-  - pip
-  # Run-time
-  - pandas
-  - openpyxl
-  - pooch
-  - tqdm
-  - verde
-  - xarray
-  - netcdf4
-  - h5netcdf
-  - harmonica>=0.6.0
-  - pyproj
-  - matplotlib
-  - pyogrio
-  - rioxarray
-  - scipy
-  - numpy
+  - python==3.11
   - pygmt
-  - geopandas
-  - zarr
-  - python-dotenv
-  - nptyping
-  # docs
-  - sphinx>=4.0
-  - myst-parser
-  - sphinx-copybutton
-  - sphinx-autodoc-typehints
-  - sphinx-book-theme>=0.3
-  - sphinx-design
-  - nbsphinx
-  - nbconvert
+  - pip
   - pip:
-      - ../.
+    - ../.[docs]
