@@ -13,5 +13,12 @@ build:
 sphinx:
   configuration: docs/conf.py
 
-conda:
-  environment: env/RTD_env.yml
+# conda:
+#   environment: env/RTD_env.yml
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
