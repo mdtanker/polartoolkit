@@ -5,6 +5,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ## Unreleased
 
 ### 📦️ Build
+* update dependabot config ([`5544a8b`](https://github.com/mdtanker/polartoolkit/commit/5544a8b5d55818772de2906a1f3ce2ff28c98b5e))
 * bump codecov/codecov-action from 3.1.4 to 3.1.5
 
 Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3.1.4 to 3.1.5.
@@ -24,6 +25,7 @@ Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`9c43e68`](https://g
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* automatically updating changelog [skip ci] ([`8f92bcb`](https://github.com/mdtanker/polartoolkit/commit/8f92bcb81b74afeec2391af30b63936199df4789))
 * automatically updating changelog [skip ci] ([`d200e9a`](https://github.com/mdtanker/polartoolkit/commit/d200e9a06d59106e75a6a93d4eff590b82814b43))
 * add skip ci  to changelog commit message ([`6b665ae`](https://github.com/mdtanker/polartoolkit/commit/6b665aed5085b9f9166c996b2bf1cea91c8a5661))
 * update changelog an main pushes ([`2dca0fc`](https://github.com/mdtanker/polartoolkit/commit/2dca0fc619b303c9b73c6c69ee15d14165e6be51))
