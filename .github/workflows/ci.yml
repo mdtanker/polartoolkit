@@ -32,6 +32,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{secrets.PAT}}
+          ref: ${{ github.head_ref || github.ref_name }}
       - name: update changelog
         run: |
           pip install -U pip
