@@ -1,0 +1,56 @@
+name: semantic_release
+
+# define when this workflow is triggered
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  # update the changelog and create a commit
+  changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    steps:
+      # checkout the repo and supply a PAT for the changelog update commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{secrets.PAT}}
+          # ref: ${{ github.head_ref || github.ref_name }}
+      - name: update changelog
+        run: |
+          pip install -U pip
+          pip install python-semantic-release >=8
+          semantic-release changelog
+      # Commits files to repository
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: semantic-release
+          message: "chore: automatically updating changelog [skip ci]"
+          add: "./CHANGELOG.md"
+  # determine appropriate version number, update changelog, and create a release commit
+  semantic-release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    # concurrency: release
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      # checkout the repo and supply a PAT for the changelog update commit.
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{secrets.PAT}}
+
+      # use semantic-release
+      - id: semantic-release
+        uses: python-semantic-release/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.PAT }}
+          changelog: "true"
+          push: "true"

@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   # dry run of semantic release without changing anything
-  release:
+  semantic-release-check:
     name: Semantic Release Check
     runs-on: ubuntu-latest
     steps:
