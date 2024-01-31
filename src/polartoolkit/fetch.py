@@ -291,8 +291,7 @@ def mass_change(
 ) -> typing.Any:
     """
     Ice-sheet height and thickness changes from ICESat to ICESat-2.
-    from Smith et al. ,Pervasive ice sheet mass loss reflects competing ocean and
-    atmosphere processes.Science368,1239-1242(2020).DOI:10.1126/science.aaz5845
+    from :footcite:t:`smithpervasive2020`.
 
     Choose a version of the data to download with the format: "ais_VERSION_TYPE" where
     VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
@@ -305,10 +304,19 @@ def mass_change(
 
     Units are in m/yr
 
+    Parameters
+    ----------
+    version : str, optional
+        choose which version to retrieve, by default "ais_dhdt_floating"
+
     Returns
     -------
     xr.DataArray
         Returns a calculated grid of Antarctic ice mass change in meters/year.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # This is the path to the processed (magnitude) grid
@@ -350,9 +358,7 @@ def mass_change(
 def basal_melt(variable: str = "w_b") -> typing.Any:
     """
     Antarctic ice shelf basal melt rates for 1994-2018 from satellite radar altimetry.
-    from Adusumilli et al. “Interannual Variations in Meltwater Input to the Southern
-    Ocean from Antarctic Ice Shelves.” Nature Geoscience 13, no. 9 (September 2020):
-    616-20. https://doi.org/10.1038/s41561-020-0616-z.
+    from :footcite:t:`adusumilliinterannual2020`.
 
     accessed from http://library.ucsd.edu/dc/object/bb0448974g
 
@@ -371,6 +377,10 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
     -------
     xr.DataArray
         Returns a dataarray of basal melt rate values
+
+    References
+    ----------
+    .. footbibliography::
     """
     # This is the path to the processed (magnitude) grid
     url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
@@ -437,11 +447,9 @@ def ice_vel(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1:
-    from Mouginot, Rignot, and Scheuchl 2019. MEaSUREs Phase-Based Antarctica Ice
-    Velocity Map, Version 1. Boulder, Colorado USA. NASA National Snow and Ice Data
-    Center Distributed Active Archive Center.
-    https://doi.org/10.5067/PZ3NJ5RXRH10.
+    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1 from
+    :footcite:t:`mouginotcontinent2019` and :footcite:t:`mouginotmeasures2019`.
+
     accessed from https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
     Data part of https://doi.org/10.1029/2019GL083826
 
@@ -455,14 +463,20 @@ def ice_vel(
         grid spacing to resample the loaded grid to, by default 5e3, original spacing
         is 450m
     registration : str, optional
-        set either 'p' for pixel or 'g' for gridline registration, by default is 'g'
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
+    kwargs : typing.Any
+        additional keyword arguments to pass to resample_grid
 
     Returns
     -------
     xr.DataArray
         Returns a calculated grid of ice velocity in meters/year.
-    """
 
+    References
+    ----------
+    .. footbibliography::
+    """
     original_spacing = 450
 
     # preprocessing for full, 450m resolution
@@ -580,7 +594,10 @@ def modis_moa(
     version: str = "750m",
 ) -> str:
     """
-    Load the MODIS MoA imagery in either "750m" or "125m" resolutions.
+    Load the MODIS MoA imagery in either "750m" or "125m" resolutions from
+    :footcite:t:`modis2021` and :footcite:t:`scambosmodisbased2007`.
+
+    accessed from https://nsidc.org/data/nsidc-0593/versions/2
 
     Parameters
     ----------
@@ -591,6 +608,10 @@ def modis_moa(
     -------
     str
        filepath for either 750m or 125m MODIS MoA Imagery
+
+    References
+    ----------
+    .. footbibliography::
     """
     if version == "125m":
         path: str = pooch.retrieve(
@@ -621,8 +642,10 @@ def modis_moa(
 
 def imagery() -> str:
     """
-    Load the file path of Antarctic imagery geotiff from LIMA:
-    https://lima.usgs.gov/fullcontinent.php
+    Load the file path of Antarctic imagery geotiff from LIMA from
+    :footcite:t:`bindschadlerlandsat2008`.
+    accessed from https://lima.usgs.gov/
+
     will replace with below once figured out login issue with pooch
     MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
     Assessed from https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0730_MEASURES_MOA2014_v01/geotiff/
@@ -631,6 +654,10 @@ def imagery() -> str:
     -------
     str
         file path
+
+    References
+    ----------
+    .. footbibliography::
     """
     path = pooch.retrieve(
         url="https://lima.usgs.gov/tiff_90pct.zip",
@@ -648,11 +675,10 @@ def geomap(
     region: tuple[float, float, float, float] | None = None,
 ) -> gpd.GeodataFrame:
     """
-    Data from GeoMAP
-    accessed from https://doi.pangaea.de/10.1594/PANGAEA.951482?format=html#download
+    Data from GeoMAP accessed from
+    https://doi.pangaea.de/10.1594/PANGAEA.951482?format=html#download
 
-    from Cox et al. (2023): A continent-wide detailed geological map dataset of
-    Antarctica. Scientific Data, 10(1), 250, https://doi.org/10.1038/s41597-023-02152-9
+    from :footcite:t:`coxcontinentwide2023` and :footcite:t:`coxgeomap2023`.
 
     Parameters
     ----------
@@ -666,6 +692,10 @@ def geomap(
     -------
     gpd.GeoDataFrame
         Returns a geodataframe
+
+    References
+    ----------
+    .. footbibliography::
     """
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
@@ -752,14 +782,11 @@ def groundingline(
     Load the file path of two versions of groundingline shapefiles
 
     version = "depoorter-2013"
-    from https://doi.pangaea.de/10.1594/PANGAEA.819147
-    Supplement to Depoorter et al. 2013: https://doi.org/10.1038/nature12567
+    from :footcite:t:`depoorterantarctic2013`.
+    Supplement to :footcite:t:`depoortercalving2013`.
 
     version = "measures-v2"
-    from Mouginot, J., B. Scheuchl, and E. Rignot. (2017). MEaSUREs Antarctic Boundaries
-    for IPY 2007-2009 from Satellite Radar, Version 2 [Data Set]. Boulder, Colorado USA.
-    NASA National Snow and Ice Data Center Distributed Active Archive Center.
-    https://doi.org/10.5067/AXE4121732AD.
+    from :footcite:t:`mouginotmeasures2017`.
     accessed at https://nsidc.org/data/nsidc-0709/versions/2
 
     Parameters
@@ -771,6 +798,10 @@ def groundingline(
     -------
     str
         file path
+
+    References
+    ----------
+    .. footbibliography::
     """
     if version == "depoorter-2013":
         path = pooch.retrieve(
@@ -821,10 +852,7 @@ def measures_boundaries(
     """
     Load various files from the MEaSUREs Antarctic Boundaries for IPY 2007-2009
 
-    from Mouginot, J., B. Scheuchl, and E. Rignot. (2017). MEaSUREs Antarctic Boundaries
-    for IPY 2007-2009 from Satellite Radar, Version 2 [Data Set]. Boulder, Colorado USA.
-    NASA National Snow and Ice Data Center Distributed Active Archive Center.
-    https://doi.org/10.5067/AXE4121732AD.
+    from :footcite:t:`mouginotmeasures2017`.
     accessed at https://nsidc.org/data/nsidc-0709/versions/2
 
     Parameters
@@ -838,6 +866,10 @@ def measures_boundaries(
     -------
     str
         file path
+
+    References
+    ----------
+    .. footbibliography::
     """
     # path to store the downloaded files
     path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
@@ -931,20 +963,29 @@ def basement(
     """
     Load a grid of basement topography.
     Offshore and sub-Ross Ice Shelf basement topography.
-    from Tankersley et al. 2022:
-    https://onlinelibrary.wiley.com/doi/10.1029/2021GL097371
-    accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238
-    offshore data from Lindeque et al. 2016: https://doi.org/10.1002/2016GC006401
+    from :footcite:t:`tankersleybasement2022`, :footcite:t:`tankersleybasement2022a` and
+    :footcite:t:`lindequepreglacial2016a`.
 
-    Elevations are referenced to WGS84 (? need to check this!)
+    Elevations are referenced to WGS84 ellipsoid.
 
     Parameters
     ----------
+    region : tuple[float, float, float, float], optional
+        bounding region to clip the loaded grid to, by default doesn't clip
+    spacing : float, optional
+        grid spacing to resample the loaded grid to, by default 5e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
         dataarray of basement depths
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # found with utils.get_grid_info()
@@ -992,30 +1033,17 @@ def sediment_thickness(
     Load 1 of 4 'versions' of sediment thickness data.
 
     version='ANTASed'
-    From Baranov A, Morelli A and Chuvaev A (2021) ANTASed; An Updated Sediment Model
-    for Antarctica. Front. Earth Sci. 9:722699.
-    doi: 10.3389/feart.2021.722699
+    From :footcite:t:`baranovantased2021`.
     Accessed from https://www.itpz-ran.ru/en/activity/current-projects/antased-a-new-sediment-model-for-antarctica/
 
     version='tankersley-2022'
-    From Tankersley, Matthew; Horgan, Huw J; Siddoway, Christine S; Caratori Tontini,
-    Fabio; Tinto, Kirsty (2022): Basement topography and sediment thickness beneath
-    Antarctica's Ross Ice Shelf. Geophysical Research Letters.
-    https://doi.org/10.1029/2021GL097371
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.941238?format=html#download
+    From :footcite:t:`tankersleybasement2022`, :footcite:t:`tankersleybasement2022a`.
 
     version='lindeque-2016'
-    From Lindeque, A et al. (2016): Preglacial to glacial sediment thickness grids for
-    the Southern Pacific Margin of West Antarctica. Geochemistry, Geophysics,
-    Geosystems, 17(10), 4276-4285.
-    https://doi.org/10.1002/2016GC006401
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.864906
+    From :footcite:t:`lindequepreglacial2016a` and :footcite:t:`lindequepreglacial2016`.
 
     version='GlobSed'
-    From  Straume, E. O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker,
-    J. M., et al. (2019). GlobSed: Updated total sediment thickness in the world's
-    oceans. Geochemistry, Geophysics, Geosystems, 20, 1756- 1772.
-    https://doi.org/10.1029/2018GC008115
+    From  :footcite:t:`straumeglobsed2019`.
     Accessed from https://ngdc.noaa.gov/mgg/sedthick/
 
     Parameters
@@ -1026,11 +1054,18 @@ def sediment_thickness(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of sediment thickness.
+
+    References
+    ----------
+    .. footbibliography::
     """
     if version == "ANTASed":
         # found with df.describe()
@@ -1272,11 +1307,8 @@ def ibcso_coverage(
     region: tuple[float, float, float, float],
 ) -> gpd.GeoDataFrame:
     """
-    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart
-    of the Southern Ocean Version 2. Scientific Data, 9(1), 275,
-    https://doi.org/10.1038/s41597-022-01366-7
-
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
+    Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
+    :footcite:t:`dorschelinternational2022a`.
 
     Parameters
     ----------
@@ -1287,6 +1319,10 @@ def ibcso_coverage(
     -------
     gpd.GeoDataFrame
         Returns a geodataframe of a subset of IBCSO v2 point measurement locations
+
+    References
+    ----------
+    .. footbibliography::
     """
     # download / retrieve the geopackage file
     path = pooch.retrieve(
@@ -1328,11 +1364,8 @@ def ibcso(
     registration: str | None = None,
 ) -> xr.DataArray:
     """
-    Load IBCSO v2 data,  from Dorschel et al. 2022: The International Bathymetric Chart
-    of the Southern Ocean Version 2. Scientific Data, 9(1), 275,
-    https://doi.org/10.1038/s41597-022-01366-7
-
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.937574?format=html#download
+    Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
+    :footcite:t:`dorschelinternational2022a`.
 
     Parameters
     ----------
@@ -1343,11 +1376,18 @@ def ibcso(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of IBCSO data.
+
+    References
+    ----------
+    .. footbibliography::
     """
     original_spacing = 500
 
@@ -1528,12 +1568,7 @@ def bedmachine(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Load BedMachine v3 data,  from Morlighem et al. 2020:
-    https://doi.org/10.1038/s41561-019-0510-8
-
-    Cited as: Morlighem, M. 2022. MEaSUREs BedMachine Antarctica, Version 3.
-    [Indicate subset used]. Boulder, Colorado USA. NASA National Snow and Ice Data
-    Center Distributed Active Archive Center. https://doi.org/10.5067/FPSU0V1MWUB6
+    Load BedMachine v3 data,  from :footcite:t:`morlighemmeasures2022`.
 
     Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
     Also available from
@@ -1544,8 +1579,8 @@ def bedmachine(
     fetch call.
 
     Surface and ice thickness are in ice equivalents. Actual snow surface is from
-    REMA (Howat et al. 2019), and has had firn thickness added(?) to it to get
-    Bedmachine Surface.
+    REMA :footcite:p:`howatreference2019`, and has had firn thickness added(?) to it to
+    get Bedmachine Surface.
 
     To get snow surface: surface+firn
     To get firn and ice thickness: thickness+firn
@@ -1566,11 +1601,20 @@ def bedmachine(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 500m
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
+    kwargs : typing.Any
+        additional kwargs to pass to resample_grid
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmachine.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # found with utils.get_grid_info()
@@ -1669,23 +1713,17 @@ def bedmap_points(
     Load bedmap point data, choose from Bedmap 1, 2 or 3
 
     version == 'bedmap1'
-        from Lythe, M. B. and Vaughan, D. G. 2000. BEDMAP-bed topography of the
-        Antarctic, British Antarctic Survey, Natural Environment Research Council
-        DOI:  https://doi.org/10.5285/f64815ec-4077-4432-9f55-0ce230f46029
+        from :footcite:t:`lythebedmap2001`.
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01619
 
     version == 'bedmap2'
-        from Fretwell et al. 2013. Bedmap2: improved ice bed, surface and thickness
-        datasets for Antarctica, The Cryosphere, 7, 375-393
-        DOI: https://doi.org/10.5285/2fd95199-365e-4da1-ae26-3b6d48b3e6ac
+        from :footcite:t:`fretwellbedmap22013`.
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01616
 
 
     version == 'bedmap3'
-        Publication not released yet
-        DOI: https://doi.org/10.5285/91523ff9-d621-46b3-87f7-ffb6efcd1847
+        from :footcite:t:`fremandbedmap32022`.
         accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01614
-
 
     Parameters
     ----------
@@ -1698,6 +1736,10 @@ def bedmap_points(
     -------
     pd.DataFrame
         Return a dataframe, optionally subset by a region
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "bedmap1":
@@ -1766,10 +1808,7 @@ def bedmap2(
 ) -> xr.DataArray:
     """
     Load bedmap2 data as xarray.DataArrays
-    from Fretwell et a. 2022: BEDMAP2 - Ice thickness, bed and surface elevation for
-    Antarctica - gridding products (Version 1.0) [Data set]. NERC EDS UK Polar Data
-    Centre.
-    DOI: https://doi.org/10.5285/FA5D606C-DC95-47EE-9016-7A82E446F2F2
+    from :footcite:t:`fretwellbedmap22013`.
     accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=fa5d606c-dc95-47ee-9016-7a82e446f2f2.
 
     All grids are by default referenced to the EIGEN-GL04C geoid. Use the
@@ -1804,11 +1843,17 @@ def bedmap2(
         choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
         to reference to the geoid, will fill nan's before conversion, by default is
         False
+    kwargs : typing.Any
+        additional kwargs to pass to resample_grid
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # download url
@@ -2039,14 +2084,11 @@ def rema(
     registration: str | None = None,
 ) -> xr.DataArray:
     """
-    Load the REMA surface elevation data. The data are in EPSG3031 and reference to the
-    WGS84 ellipsoid. To convert the data to be geoid-referenced, subtract a geoid model,
-    which you can get from fetch.geoid().
+    Load the REMA surface elevation data from :footcite:t:`howatreference2019`. The data
+    are in EPSG3031 and reference to the WGS84 ellipsoid. To convert the data to be
+    geoid-referenced, subtract a geoid model, which you can get from fetch.geoid().
 
     Choose between "1km" or "500m" resolutions with parameter `version`.
-
-    from Howat et al. 2019: The Reference Elevation Model of Antarctica, The Cryosphere,
-    13, 665-674, https://doi.org/10.5194/tc-13-665-2019.
 
     accessed from https://www.pgc.umn.edu/data/rema/
 
@@ -2058,11 +2100,18 @@ def rema(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of the REMA DEM.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "500m":
@@ -2162,9 +2211,8 @@ def deepbedmap(
     registration: str | None = None,
 ) -> str:
     """
-    Load DeepBedMap data,  from Leong and Horgan, 2020:
-    https://doi.org/10.5194/tc-14-3687-2020
-    Accessed from https://zenodo.org/record/4054246#.Ysy344RByp0
+    Load DeepBedMap data,  from :footcite:t:`leongdeepbedmap2020` and
+    :footcite:t:`leongdeepbedmap2020a`.
 
     Parameters
     ----------
@@ -2172,11 +2220,18 @@ def deepbedmap(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     str
         Returns the filepath of DeepBedMap.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # found with utils.get_grid_info()
@@ -2226,9 +2281,7 @@ def gravity(
 
     version='antgg'
     Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne
-    data, from Scheinert et al. 2016: New Antarctic gravity anomaly grid for enhanced
-    geodetic and geophysical studies in Antarctica.
-    DOI: https://doi.org/10.1002/2015GL067439
+    data, from :footcite:t:`scheinertnew2016`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.848168
 
     version='antgg-update'
@@ -2238,9 +2291,9 @@ def gravity(
 
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
-    (ellipsoidal) height.
-    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa: E501
-    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin # noqa: E501
+    (ellipsoidal) height from :footcite:t:`forsteeigen6c42014`.
+    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-gravity-10arcmin
 
     Parameters
     ----------
@@ -2250,6 +2303,11 @@ def gravity(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
+    kwargs : typing.Any
+        additional kwargs to pass to resample_grid and set the anomaly_type.
 
     Keyword Args
     ------------
@@ -2263,7 +2321,11 @@ def gravity(
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of either observed, free-air
         or Bouguer gravity anomalies.
-    """  # noqa: E501
+
+    References
+    ----------
+    .. footbibliography::
+    """
 
     anomaly_type = kwargs.get("anomaly_type", None)
 
@@ -2471,11 +2533,11 @@ def etopo(
     registration: str | None = None,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic topography from ETOPO1. Originally at 10 arc-min
-    resolution, reference to mean sea-level
+    Loads a grid of Antarctic topography from ETOPO1 from :footcite:t:`etopo12009`.
+    Originally at 10 arc-min resolution, reference to mean sea-level.
 
-    originally from https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316 # noqa: E501
-    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-topography-10arcmin # noqa: E501
+    originally from https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-topography-10arcmin
 
     Parameters
     ----------
@@ -2484,12 +2546,19 @@ def etopo(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of topography.
-    """  # noqa: E501
+
+    References
+    ----------
+    .. footbibliography::
+    """
     initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
     initial_spacing = 5e3
     initial_registration = "g"
@@ -2559,16 +2628,17 @@ def geoid(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 spherical
-    harmonic model of Earth's gravity field. Originally at 10 arc-min resolution.
+    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 from
+    :footcite:t:`forsteeigen6c42014` spherical harmonic model of Earth's gravity field.
+    Originally at 10 arc-min resolution.
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
     To convert a topographic grid which is referenced to the geoid to be reference to
     the ellipsoid, subtract this grid.
 
-    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897 # noqa: E501
-    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin # noqa: E501
+    originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
+    Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin
 
     Parameters
     ----------
@@ -2577,12 +2647,21 @@ def geoid(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
+    kwargs : typing.Any
+        additional kwargs to pass to resample_grid
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of geoid height.
-    """  # noqa: E501
+
+    References
+    ----------
+    .. footbibliography::
+    """
     initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
     initial_spacing = 5e3
     initial_registration = "g"
@@ -2651,9 +2730,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
     Load either a shapefile of ROSETTA-ice flightlines, a dataframe of ROSETTA-Ice
     airborne gravity data over the Ross Ice Shelf, or a dataframe of ROSETTA-Ice density
     values from the density inversion.
-    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
-    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441- 449.
-    https://doi.org/10.1038/s41561-019-0370-2
+    from :footcite:t:`tintoross2019`.
     Accessed from https://www.usap-dc.org/view/project/p0010035
     This is only data from the first 2 of the 3 field seasons.
     Columns:
@@ -2675,6 +2752,10 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
     -------
     pd.DataFrame
         Returns a dataframe containing the gravity, density, or flightline data
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "shapefile":
@@ -2727,9 +2808,8 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
 def rosetta_magnetics() -> pd.DataFrame:
     """
     Load  a dataframe of ROSETTA-Ice airborne magnetics data over the Ross Ice Shelf
-    from Tinto et al. (2019). Ross Ice Shelf response to climate driven by the tectonic
-    imprint on seafloor bathymetry. Nature Geoscience, 12( 6), 441- 449.
-    https://doi.org/10.1038/s41561-019-0370-2
+    from :footcite:t:`tintoross2019`.
+
     Accessed from https://www.usap-dc.org/view/project/p0010035
     Columns:
     Line Number: The ROSETTA-Ice survey line number, >1000 are tie lines
@@ -2746,6 +2826,10 @@ def rosetta_magnetics() -> pd.DataFrame:
     -------
     pd.DataFrame
         Returns a dataframe containing the data
+
+    References
+    ----------
+    .. footbibliography::
     """
     url = "http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Magnetics/rs_2019_mag.csv"
     fname = "rs_2019_mag.csv"
@@ -2861,21 +2945,20 @@ def magnetics(
 ) -> xr.DataArray | None:
     """
     Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
-    from  Golynsky et al. (2018). New magnetic anomaly map of the Antarctic. Geophysical
-    Research Letters, 45, 6437- 6449. https://doi.org/10.1029/2018GL078153
+    from :footcite:t:`golynskynew2018` and :footcite:t:`golynskyadmap2006`.
 
     version='admap1'
     ADMAP-2001 magnetic anomaly compilation of Antarctica.
-    Accessed from https://admap.kongju.ac.kr/databases.html
+    Accessed from http://admap.kopri.re.kr/databases.html
 
     version='admap2'
-    ADMAP2 magnetic anomaly compilation of Antarctica.
+    ADMAP2 magnetic anomaly compilation of Antarctica from
+    :footcite:t:`golynskyadmap22018a`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892723?format=html#download
 
     version='admap2_gdb'
-    Geosoft-specific .gdb abridged files.
-    Accessed from
-    https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
+    Geosoft-specific .gdb abridged files :footcite:t:`golynskyadmap22018`.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
     Parameters
     ----------
@@ -2885,13 +2968,21 @@ def magnetics(
         GMT-format region to clip the loaded grid to, by default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
+    kwargs : typing.Any
+        key word arguments to pass to resample_grid.
 
     Returns
     -------
     xr.DataArray
         Returns a loaded, and optional clip/resampled grid of magnetic anomalies.
-    """
 
+    References
+    ----------
+    .. footbibliography::
+    """
     if version == "admap1":
         # was in lat long, so just using standard values here
         initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
@@ -3057,40 +3148,29 @@ def ghf(
     Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
 
     version='an-2015'
-    From At et al. 2015: Temperature, lithosphere-asthenosphere boundary, and heat flux
-    beneath the Antarctic Plate inferred from seismic velocities
-    http://dx.doi.org/doi:10.1002/2015JB011917
+    From :footcite:t:`antemperature2015`.
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
 
     version='martos-2017'
-    From Martos et al. 2017: Heat flux distribution of Antarctica unveiled. Geophysical
-    Research Letters, 44(22), 11417-11426, https://doi.org/10.1002/2017GL075609
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.882503
+    From :footcite:t:`martosheat2017` and :footcite:t:`martosantarctic2017`.
 
     version='shen-2020':
-    From Shen et al. 2020; A Geothermal Heat Flux Map of Antarctica Empirically
-    Constrained by Seismic Structure. https://doi.org/ 10.1029/2020GL086955
+    From :footcite:t:`shengeothermal2020`.
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
     Used https://paperform.co/templates/apps/direct-download-link-google-drive/ to
     generate a direct download link from google drive page.
     https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR
 
     version='burton-johnson-2020'
-    From Burton-Johnson et al. 2020: Review article: Geothermal heat flow in Antarctica:
-    current and future directions, https://doi.org/10.5194/tc-14-3843-2020
+    From :footcite:t:`burton-johnsongeothermal2020`.
     Accessed from supplementary material
     Choose for either of grid, or the point measurements
 
     version='losing-ebbing-2021'
-    From Losing and Ebbing 2021: Predicting Geothermal Heat Flow in Antarctica With a
-    Machine Learning Approach. Journal of Geophysical Research: Solid Earth, 126(6),
-    https://doi.org/10.1029/2020JB021499
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
+    From :footcite:t:`losingpredicting2021` and :footcite:t:`losingpredicted2021`.
 
     version='aq1'
-    From Stal et al. 2021: Antarctic Geothermal Heat Flow Model: Aq1. DOI:
-    https://doi.org/10.1029/2020GC009428
-    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
+    From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
 
     Parameters
     ----------
@@ -3101,11 +3181,21 @@ def ghf(
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
+    kwargs : typing.Any
+        if version='burton-johnson-2020', then kwargs are passed to return point
+        measurements instead of the grid.
 
     Returns
     -------
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of GHF data.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "an-2015":
@@ -3537,10 +3627,7 @@ def gia(
     Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
 
     version='stal-2020'
-    From Stal et al. 2020: Review article: The Antarctic crust and upper mantle: a
-    flexible 3D model and framework for interdisciplinary research,
-    https://doi.org/10.5194/tc-14-3843-2020
-    Accessed from https://doi.org/10.5281/zenodo.4003423
+    From :footcite:t:`stalantarctic2020` and :footcite:t:`stalantarctic2020b`.
 
     Parameters
     ----------
@@ -3551,11 +3638,18 @@ def gia(
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of GIA data.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "stal-2020":
@@ -3607,16 +3701,12 @@ def crustal_thickness(
     Load 1 of x 'versions' of Antarctic crustal thickness grids.
 
     version='shen-2018'
-    Crustal thickness (excluding ice layer) from Shen et al. 2018: The crust and upper
-    mantle structure of central and West Antarctica from Bayesian inversion of Rayleigh
-    wave and receiver functions. https://doi.org/10.1029/2017JB015346
+    Crustal thickness (excluding ice layer) from :footcite:t:`shencrust2018`.
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
 
     version='an-2015'
     Crustal thickness (distance from solid (ice and rock) top to Moho discontinuity)
-    from An et al. 2015:  S-velocity Model and Inferred Moho Topography beneath the
-    Antarctic Plate from Rayleigh Waves. J. Geophys. Res., 120(1),359-383,
-    doi:10.1002/2014JB011332
+    from :footcite:t:`ansvelocity2015`.
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
     File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses
     referred to below are the distance from the solid surface to the Moho. We note that
@@ -3635,11 +3725,18 @@ def crustal_thickness(
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is None.
 
     Returns
     -------
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
+
+    References
+    ----------
+    .. footbibliography::
     """
     if version == "shen-2018":
         msg = "the link to the shen-2018 data appears to be broken"
@@ -3811,22 +3908,18 @@ def moho(
 
     version='shen-2018'
     Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)
-    from Shen et al. 2018: The crust and upper mantle structure of central and West
-    Antarctica from Bayesian inversion of Rayleigh wave and receiver functions.
-    https://doi.org/10.1029/2017JB015346
+    from :footcite:t:`shencrust2018`.
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
     Appears to be almost identical to crustal thickness from Shen et al. 2018
 
     version='an-2015'
     This is fetch.crustal_thickness(version='an-2015)* -1
-    Documentation is unclear whether the An crust model is crustal thickness or moho
-    depths, or whether it makes a big enough difference to matter.
+    Documentation is unclear whether the An crust model from
+    :footcite:t:`ansvelocity2015` is crustal thickness or moho depths, or whether it
+    makes a big enough difference to matter.
 
     version='pappa-2019'
-    from  Pappa, F., Ebbing, J., & Ferraccioli, F. (2019). Moho depths of Antarctica:
-    Comparison of seismic, gravity, and isostatic results. Geochemistry, Geophysics,
-    Geosystems, 20, 1629- 1645.
-    https://doi.org/10.1029/2018GC008111
+    from :footcite:t:`pappamoho2019`.
     Accessed from supplement material
 
     Parameters
@@ -3840,11 +3933,18 @@ def moho(
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
 
     Returns
     -------
     xr.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     if version == "shen-2018":
