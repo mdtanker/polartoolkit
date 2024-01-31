@@ -68,3 +68,10 @@ conda_install:
 # create binder yml
 binder_env:
 	mamba env export --name polartoolkit --no-builds > binder/environment.yml
+
+# create ReadTheDocs yml
+create_RTD_env:
+	conda create --name RTD_env --yes --force python==3.11
+
+export_RTD_env:
+	mamba env export --name RTD_env --no-builds > env/RTD_env.yml
