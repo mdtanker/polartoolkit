@@ -1,4 +1,4 @@
-name: release
+name: pypi_release
 
 # define when this workflow is triggered
 on:
