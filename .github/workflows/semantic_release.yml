@@ -31,4 +31,3 @@ jobs:
           github_token: ${{ secrets.PAT }}
           changelog: "true"
           push: "true"
-
