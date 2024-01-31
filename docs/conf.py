@@ -24,6 +24,7 @@ extensions = [
     "sphinx_design",
     "nbsphinx",
     "sphinx.ext.viewcode",
+    "sphinxcontrib.bibtex",
     # "sphinx.ext.autosummary",
 ]
 source_suffix = [".rst", ".md"]
@@ -35,6 +36,8 @@ exclude_patterns = [
     ".env",
     ".venv",
 ]
+
+bibtex_bibfiles = ["_polartoolkit_refs.bib"]
 
 nbsphinx_execute = "never"
 
