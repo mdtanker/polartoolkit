@@ -93,7 +93,7 @@ add_function_parentheses = False
 # -----------------------------------------------------------------------------
 html_title = f'{project} <span class="project-version">{version}</span>'
 # html_logo = "logo.png"
-html_static_path = ["_static"]
+html_static_path = []
 html_favicon = "logo_dark.png"
 html_last_updated_fmt = "%b %d, %Y"
 html_copy_source = True
