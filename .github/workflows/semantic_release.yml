@@ -29,7 +29,7 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           author_name: semantic-release
-          message: "chore: automatically updating changelog"
+          message: "chore: automatically updating changelog [skip ci]"
           add: "./CHANGELOG.md"
   # determine appropriate version number, update changelog, and create a release commit
   semantic-release:
