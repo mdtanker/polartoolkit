@@ -2,6 +2,21 @@
 Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
+## Unreleased
+
+### 📦️ Build
+* add requests to deps ([`15ea6e8`](https://github.com/mdtanker/polartoolkit/commit/15ea6e838a980f7c7383819122013fc103b9005f))
+* switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
+* explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
+### 🧰 Chores / Maintenance
+* add skip ci  to changelog commit message ([`6b665ae`](https://github.com/mdtanker/polartoolkit/commit/6b665aed5085b9f9166c996b2bf1cea91c8a5661))
+* update changelog an main pushes ([`2dca0fc`](https://github.com/mdtanker/polartoolkit/commit/2dca0fc619b303c9b73c6c69ee15d14165e6be51))
+* editing workflows ([`a059f50`](https://github.com/mdtanker/polartoolkit/commit/a059f50061eb8e4399e2aebed5b1491f44dd0e89))
+* collect usage stats ([`b5d16ac`](https://github.com/mdtanker/polartoolkit/commit/b5d16ac3792e3ef7791138274d1c069a108cc110))
+### ✏️ Formatting
+* formatting ([`0b294a1`](https://github.com/mdtanker/polartoolkit/commit/0b294a18d71d909bcbbd398dc0634b548faf7165))
+* fix style errors ([`639ba42`](https://github.com/mdtanker/polartoolkit/commit/639ba42c996db46125b5889e5ae35e09217296d7))
+* fix indent ([`efee6d7`](https://github.com/mdtanker/polartoolkit/commit/efee6d702e7db92b5f32d4136be2b0b18eeaf54a))
 
 ## v0.2.1 (2024-01-29)
 ### 📦️ Build
