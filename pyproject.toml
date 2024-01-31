@@ -27,7 +27,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 readme = "README.md"
-version = "0.2.0"
+version = "0.2.1"
 license = {file = "LICENSE"}
 
 keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting", "pygmt", "cross-section"]
@@ -45,11 +45,12 @@ dependencies = [
     "rioxarray",
     "scipy",
     "numpy",
-    "pygmt",
+    "pygmt>=0.10.0", # need parameter "log" for colorbar
     "geopandas",
     "zarr",
     "python-dotenv",
     "nptyping",
+    "requests",
 ]
 
 [project.optional-dependencies]
@@ -99,6 +100,11 @@ Documentation = "https://antarctic-plots.readthedocs.io/"
 "Bug Tracker" = "https://github.com/mdtanker/polartoolkit/issues"
 Discussions = "https://github.com/mdtanker/polartoolkit/discussions"
 Changelog = "https://antarctic-plots.readthedocs.io/en/latest/changelog.html"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["antarctic_plots", "polartoolkit"]
+namespaces = false
 
 [tool.coverage]
 run.source = ["polartoolkit"]

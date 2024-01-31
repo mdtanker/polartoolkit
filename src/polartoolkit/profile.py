@@ -54,7 +54,7 @@ def create_profile(
     start : tuple[float, float], optional
         Coordinates for starting point of profile, by default None
     stop : tuple[float, float], optional
-        Coordinates for eding point of profile, by default None
+        Coordinates for ending point of profile, by default None
     num : int, optional
         Number of points to sample at, for "points" by default is 100, for other methods
         num by default is determined by shapefile or dataframe
@@ -155,7 +155,7 @@ def sample_grids(
     ----------
     df : pd.DataFrame
         Dataframe containing columns 'x', 'y', or columns with names defined by kwarg
-        "coor_names".
+        "coord_names".
     grid : str or xr.DataArray
         Grid to sample, either file name or xr.DataArray
     sampled_name : str,
@@ -769,25 +769,26 @@ def plot_profile(
 
     # plot colored df_layers
     for i, (k, v) in enumerate(layers_dict.items()):
+        # fill in layers and draw lines between
         if kwargs.get("fill_layers", True) is True:
             fig.plot(
                 x=df_layers.dist,
                 y=df_layers[k],
-                # close the polygons,
-                close="+yb",
+                close="+yb",  # close the polygons,
                 fill=v["color"],
                 frame=kwargs.get("layers_frame", ["nSew", "a"]),
                 transparency=kwargs.get(
                     "layer_transparency", [0] * len(layers_dict.items())
                 )[i],
-                label=v["name"],
             )
             # plot lines between df_layers
             layers_pen = kwargs.get("layers_pen")
             if isinstance(layers_pen, list):
                 layers_pen = layers_pen[i]
+            # if pen properties supplied, use then
             if layers_pen is not None:
                 pen = layers_pen
+            # if not, get pen properties from kwargs
             else:
                 thick = kwargs.get("layers_pen_thickness", 1)
                 if isinstance(thick, (float, int)):
@@ -797,7 +798,6 @@ def plot_profile(
                 if isinstance(color, list):
                     color = color[i]
                 if color is None:
-                    # color = v["color"]
                     color = "black"
 
                 style = kwargs.get("layers_pen_style", None)
@@ -805,19 +805,27 @@ def plot_profile(
                     style = style[i]
                 if style is None:
                     style = ""
-            pen = f"{thick[i]}p,{color},{style}"
+                pen = f"{thick[i]}p,{color},{style}"
 
             layers_line_style = kwargs.get("layers_line_style", None)
             if isinstance(layers_line_style, list):
                 layers_line_style = layers_line_style[i]
-
+            # plot lines between df_layers
             fig.plot(
                 x=df_layers.dist,
                 y=df_layers[k],
                 pen=pen,
                 style=layers_line_style,
             )
-
+            # plot transparent lines to get legend
+            fig.plot(
+                x=df_layers.dist,
+                y=df_layers[k],
+                pen=f"5p,{v['color']}",
+                label=v["name"],
+                transparency=100,
+            )
+        # dont fill layers, just draw lines
         else:
             if kwargs.get("layers_line_cmap", None) is None:
                 # get pen properties
@@ -842,7 +850,7 @@ def plot_profile(
                         style = style[i]
                     if style is None:
                         style = ""
-                pen = f"{thick[i]}p,{color},{style}"
+                    pen = f"{thick[i]}p,{color},{style}"
 
                 fig.plot(
                     x=df_layers.dist,
@@ -865,7 +873,7 @@ def plot_profile(
                     y=df_layers[k],
                     pen=f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,+z",  # noqa: E501
                     frame=kwargs.get("layers_frame", ["nSew", "a"]),
-                    label=v["name"],
+                    # label=v["name"],
                     cmap=True,
                     zvalue=v["color"],
                 )
@@ -968,7 +976,7 @@ def plot_profile(
             raise ValueError(msg)
 
         # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd becauseit reset projection
+        # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=kwargs.get("map_cmap", "earth"),
@@ -1358,7 +1366,7 @@ def plot_data(
             raise ValueError(msg)
 
         # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd becauseit reset projection
+        # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=kwargs.get("map_cmap", "earth"),
@@ -1539,7 +1547,7 @@ def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
 def draw_lines(**kwargs: typing.Any) -> typing.Any:
     """
     Plot an interactive map, and use the "Draw a Polyline" button to create vertices of
-    a line. Verticles will be returned as the output of the function.
+    a line. Vertices will be returned as the output of the function.
 
     Returns
     -------

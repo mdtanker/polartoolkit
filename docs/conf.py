@@ -112,8 +112,8 @@ html_theme_options = {
     "use_download_button": True,
     "home_page_in_toc": False,
     "logo": {
-        "link": "https://github.com/mdtanker/polartoolkit",
-        "alt_text": "PolarToolkit Logo - GitHub",
+        # "link": "https://github.com/mdtanker/polartoolkit",
+        "alt_text": "PolarToolkit Logo - Homepage",
         "image_light": "logo_light.png",
         "image_dark": "logo_dark.png",
     },

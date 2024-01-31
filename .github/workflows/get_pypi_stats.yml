@@ -1,0 +1,40 @@
+# adapted from icepyx's workflow:
+# https://github.com/icesat2py/icepyx/blob/6c187bd35358d88083a5163d3491118aa1aad45c/.github/workflows/get_pypi_stats.yml
+
+name: Get PyPi Stats
+on:
+  schedule:
+    # runs once a month on the first: "min hr day-of-month month day-of-week"
+    - cron: "00 12 1 * *"
+  # Trigger manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "pypi_stats"
+  pypi_stats:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'polartoolkit'
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          ref: "traffic"
+
+      # Calculates pypi stats and clones and stores in CSV file
+      - name: Update pypi stats files
+        run: |
+          pip install -U pip
+          pip install pypistats pandas seaborn matplotlib
+          python ./docs/tracking/stats.py
+
+      # Commits files to repository
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: pypistats
+          message: "Pypi stats auto-update"
+          add: "./docs/tracking/*"
+#         add: "./pypistats/*"

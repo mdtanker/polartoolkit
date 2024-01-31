@@ -61,7 +61,7 @@ def basemap(
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
-    create a blank basemap figure, or add a basemape to an existing figure / subplot.
+    create a blank basemap figure, or add a basemap to an existing figure / subplot.
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ def basemap(
     fig_width : float | None, optional
         width of figure, by default None
     origin_shift : str, optional
-        choose to start new figure, or shift origin of existing figure to add a subplt,
+        choose to start new figure, or shift origin of existing figure to add a subplot,
         by default "initialize"
 
     Returns
@@ -843,6 +843,14 @@ def add_gridlines(
     x_spacing = kwargs.get("x_spacing", None)
     y_spacing = kwargs.get("y_spacing", None)
 
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = tuple(lib.extract_region())
+            assert len(region) == 4
+
+    region_converted = (*region, "+ue")  # codespell-ignore
+
     if x_spacing is None:
         x_frames = ["xag", "xa"]
     else:
@@ -876,26 +884,26 @@ def add_gridlines(
         # plot semi-transparent lines and annotations with black font and white shadow
         fig.basemap(
             projection=projection,
-            region=region,
+            region=region_converted,
             frame=[
                 "NSWE",
                 x_frames[0],
                 y_frames[0],
             ],
             transparency=50,
-            verbose="q",
+            # verbose="q",
         )
         # re-plot annotations with no transparency
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
             fig.basemap(
                 projection=projection,
-                region=region,
+                region=region_converted,
                 frame=[
                     "NSWE",
                     x_frames[0],
                     y_frames[0],
                 ],
-                verbose="q",
+                # verbose="q",
             )
 
 
@@ -938,7 +946,7 @@ def add_inset(
             f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c"
             f"+o{kwargs.get('inset_offset', '0/0')}"
         ),
-        verbose="q",
+        # verbose="q",
         box=kwargs.get("inset_box", False),
     ):
         gdf = gpd.read_file(fetch.groundingline())
@@ -991,6 +999,8 @@ def add_scalebar(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
+    region_converted = (*region, "+ue")  # codespell-ignore
+
     def round_to_1(x: float) -> float:
         return round(x, -int(floor(log10(abs(x)))))
 
@@ -1005,10 +1015,10 @@ def add_scalebar(
         MAP_TICK_PEN_PRIMARY=f"0.5p,{font_color}",
     ):
         fig.basemap(
-            region=region,
+            region=region_converted,
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
-            verbose="e",
+            # verbose="e",
             box=kwargs.get("scalebar_box", False),
         )
 
@@ -1043,10 +1053,12 @@ def add_north_arrow(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
+    region_converted = (*region, "+ue")  # codespell-ignore
+
     rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
 
     fig.basemap(
-        region=region,
+        region=region_converted,
         projection=projection,
         rose=rose_str,
         verbose="e",

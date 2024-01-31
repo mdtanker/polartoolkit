@@ -291,9 +291,8 @@ def mass_change(
 ) -> typing.Any:
     """
     Ice-sheet height and thickness changes from ICESat to ICESat-2.
-    from Smith et al. “Pervasive Ice Sheet Mass Loss Reflects Competing Ocean and
-    Atmosphere Processes.” Science, April 30, 2020, eaaz5845.
-    https://doi.org/10.1126/science.aaz5845.
+    from Smith et al. ,Pervasive ice sheet mass loss reflects competing ocean and
+    atmosphere processes.Science368,1239-1242(2020).DOI:10.1126/science.aaz5845
 
     Choose a version of the data to download with the format: "ais_VERSION_TYPE" where
     VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
@@ -2991,7 +2990,7 @@ def magnetics(
             registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "convert geosoft grd to xarrya dataarray and save it back as a .nc"
+            "convert geosoft grd to xarray dataarray and save it back as a .nc"
             fname1 = Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
@@ -3058,7 +3057,7 @@ def ghf(
     Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
 
     version='an-2015'
-    From At et al. 2015: emperature, lithosphere-asthenosphere boundary, and heat flux
+    From At et al. 2015: Temperature, lithosphere-asthenosphere boundary, and heat flux
     beneath the Antarctic Plate inferred from seismic velocities
     http://dx.doi.org/doi:10.1002/2015JB011917
     Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html
