@@ -18,6 +18,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * fix style errors ([`639ba42`](https://github.com/mdtanker/polartoolkit/commit/639ba42c996db46125b5889e5ae35e09217296d7))
 * fix indent ([`efee6d7`](https://github.com/mdtanker/polartoolkit/commit/efee6d702e7db92b5f32d4136be2b0b18eeaf54a))
 ### Other
+*  ([`9d3ca22`](https://github.com/mdtanker/polartoolkit/commit/9d3ca22633154874f521ca1e60a87ed40501bd89))
 *  ([`fc76a60`](https://github.com/mdtanker/polartoolkit/commit/fc76a604babef030fc32e70cf48470d80c7abeaa))
 
 ## v0.2.1 (2024-01-29)
