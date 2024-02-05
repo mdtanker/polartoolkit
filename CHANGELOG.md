@@ -5,6 +5,36 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ## Unreleased
 
 ### 📦️ Build
+* bump codecov/codecov-action from 3.1.5 to 4.0.1
+
+Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3.1.5 to 4.0.1.
+- [Release notes](https://github.com/codecov/codecov-action/releases)
+- [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/codecov/codecov-action/compare/v3.1.5...v4.0.1)
+
+---
+updated-dependencies:
+- dependency-name: codecov/codecov-action
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`69679aa`](https://github.com/mdtanker/polartoolkit/commit/69679aa4c149feb6c6e1aa2cb978aab789532085))
+* bump actions/checkout from 3 to 4
+
+Bumps [actions/checkout](https://github.com/actions/checkout) from 3 to 4.
+- [Release notes](https://github.com/actions/checkout/releases)
+- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/actions/checkout/compare/v3...v4)
+
+---
+updated-dependencies:
+- dependency-name: actions/checkout
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`e67349b`](https://github.com/mdtanker/polartoolkit/commit/e67349b7d506d8c0c005e32bcf9e49ffd1b88944))
 * update dependabot config ([`5544a8b`](https://github.com/mdtanker/polartoolkit/commit/5544a8b5d55818772de2906a1f3ce2ff28c98b5e))
 * bump codecov/codecov-action from 3.1.4 to 3.1.5
 
@@ -25,6 +55,7 @@ Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`9c43e68`](https://g
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* automatically updating changelog [skip ci] ([`3edbaeb`](https://github.com/mdtanker/polartoolkit/commit/3edbaeb2f52e4f76f19a649d22e5cff0e1cd7e54))
 * fix _static path warning ([`257f6e7`](https://github.com/mdtanker/polartoolkit/commit/257f6e728e6fd24d695b3b8ee5acc3140b260aa7))
 * automatically updating changelog [skip ci] ([`5dd0a40`](https://github.com/mdtanker/polartoolkit/commit/5dd0a40ba6289c35091615f443e74a9a7ce20af0))
 * automatically updating changelog [skip ci] ([`8f92bcb`](https://github.com/mdtanker/polartoolkit/commit/8f92bcb81b74afeec2391af30b63936199df4789))
