@@ -24,7 +24,9 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 {% else %}
 ### Other
 {% endif%}
-{% for commit in commits %}{% if type_ != "unknown" %}
+{% for commit in commits %}
+{% if "dependabot" in commit.message.rstrip() %}
+{% elif type_ != "unknown" %}
 {% set msg = commit.message.rstrip() %}
 {% set msg_no_ID = msg[msg.index(':')+2:] %}
 * {{ msg_no_ID }} ([`{{ commit.short_hash }}`]({{ commit.hexsha | commit_hash_url }}))
@@ -58,8 +60,9 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 {% else %}
 ### Other
 {% endif%}
-
-{% for commit in commits %}{% if type_ != "unknown" %}
+{% for commit in commits %}
+{% if "dependabot" in commit.message.rstrip() %}
+{% elif type_ != "unknown" %}
 {% set msg = commit.message.rstrip() %}
 {% set msg_no_ID = msg[msg.index(':')+2:] %}
 * {{ msg_no_ID }} ([`{{ commit.short_hash }}`]({{ commit.hexsha | commit_hash_url }}))
