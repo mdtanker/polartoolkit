@@ -5,56 +5,12 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ## Unreleased
 
 ### 📦️ Build
-* bump codecov/codecov-action from 3.1.5 to 4.0.1
-
-Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3.1.5 to 4.0.1.
-- [Release notes](https://github.com/codecov/codecov-action/releases)
-- [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/codecov/codecov-action/compare/v3.1.5...v4.0.1)
-
----
-updated-dependencies:
-- dependency-name: codecov/codecov-action
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`69679aa`](https://github.com/mdtanker/polartoolkit/commit/69679aa4c149feb6c6e1aa2cb978aab789532085))
-* bump actions/checkout from 3 to 4
-
-Bumps [actions/checkout](https://github.com/actions/checkout) from 3 to 4.
-- [Release notes](https://github.com/actions/checkout/releases)
-- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/actions/checkout/compare/v3...v4)
-
----
-updated-dependencies:
-- dependency-name: actions/checkout
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`e67349b`](https://github.com/mdtanker/polartoolkit/commit/e67349b7d506d8c0c005e32bcf9e49ffd1b88944))
-* update dependabot config ([`5544a8b`](https://github.com/mdtanker/polartoolkit/commit/5544a8b5d55818772de2906a1f3ce2ff28c98b5e))
-* bump codecov/codecov-action from 3.1.4 to 3.1.5
-
-Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3.1.4 to 3.1.5.
-- [Release notes](https://github.com/codecov/codecov-action/releases)
-- [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/codecov/codecov-action/compare/v3.1.4...v3.1.5)
-
----
-updated-dependencies:
-- dependency-name: codecov/codecov-action
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`9c43e68`](https://github.com/mdtanker/polartoolkit/commit/9c43e6845c00e14cd1dc44e4e7dc547983597a03))
 * add requests to deps ([`15ea6e8`](https://github.com/mdtanker/polartoolkit/commit/15ea6e838a980f7c7383819122013fc103b9005f))
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* remove dependa-bot commits from changelog ([`44a322c`](https://github.com/mdtanker/polartoolkit/commit/44a322c4059a69e9af735232799d6583f4b86e84))
+* automatically updating changelog [skip ci] ([`208dbd4`](https://github.com/mdtanker/polartoolkit/commit/208dbd4da9319361b876f05f49f80588141f9cc8))
 * automatically updating changelog [skip ci] ([`3edbaeb`](https://github.com/mdtanker/polartoolkit/commit/3edbaeb2f52e4f76f19a649d22e5cff0e1cd7e54))
 * fix _static path warning ([`257f6e7`](https://github.com/mdtanker/polartoolkit/commit/257f6e728e6fd24d695b3b8ee5acc3140b260aa7))
 * automatically updating changelog [skip ci] ([`5dd0a40`](https://github.com/mdtanker/polartoolkit/commit/5dd0a40ba6289c35091615f443e74a9a7ce20af0))
@@ -81,78 +37,28 @@ Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`9c43e68`](https://g
 
 ## v0.2.1 (2024-01-29)
 ### 📦️ Build
-
 * add antarctic_plots package for import warning ([`bb4c134`](https://github.com/mdtanker/polartoolkit/commit/bb4c134b6e78377d426781ef1f601a5ba171000b))
 * add lower version limit to PyGMT ([`4f3a837`](https://github.com/mdtanker/polartoolkit/commit/4f3a837de38852697ee85ffb341aadeaa9bb8c9b))
 ### 📖 Documentation
-
 * clicking on logo directs to homepage ([`841e9e5`](https://github.com/mdtanker/polartoolkit/commit/841e9e5f38dcfce0fb847bebb7bcad050ce87069))
 * rerun notebooks ([`eb5e47d`](https://github.com/mdtanker/polartoolkit/commit/eb5e47d53ee793688b461b374c6ee1e32bc00d82))
 * update binder env, links, and codecov link ([`4854853`](https://github.com/mdtanker/polartoolkit/commit/4854853a2072632dbdbd3000f657cf717b7f6d15))
 ### 🐛 Bug Fixes
-
 * add &#34;+ue&#34; unit to regions in meters for lat long projections ([`fa67b53`](https://github.com/mdtanker/polartoolkit/commit/fa67b5367a94f362e040c210c547202d05976922))
 * fixes lines between layers in cross-sections ([`7eaaf64`](https://github.com/mdtanker/polartoolkit/commit/7eaaf64629847a168d4249096b18e336e3c5a5a2))
 * fix pandas copy warning ([`48ce7a7`](https://github.com/mdtanker/polartoolkit/commit/48ce7a7bf109868ddf23f04ba55d23898e2246e2))
 ### ✏️ Formatting
-
 * line too long ([`51e0143`](https://github.com/mdtanker/polartoolkit/commit/51e0143b571a8e8d901f9adaab6e3843fed8e823))
 * spelling and formatting ([`a7347ba`](https://github.com/mdtanker/polartoolkit/commit/a7347ba6ca94185414ac3d0a0eec1bb1ef095bfb))
 * spelling  mistakes ([`4c29294`](https://github.com/mdtanker/polartoolkit/commit/4c2929402b66903b2ddc0688333b932c44bba978))
 *  ignore binder env file in pre-commit ([`9aa1c30`](https://github.com/mdtanker/polartoolkit/commit/9aa1c309352965131c40b3d88c4e16afbcdf48a6))
 ## v0.2.0 (2024-01-26)
 ### Other
-
 * force a major version bump.
 
 BREAKING CHANGE: ([`cc2ecda`](https://github.com/mdtanker/polartoolkit/commit/cc2ecdaae48b4300ae6d41485076273fa612ce64))
 ### 📦️ Build
-
-* bump hynek/build-and-inspect-python-package from 1 to 2
-
-Bumps [hynek/build-and-inspect-python-package](https://github.com/hynek/build-and-inspect-python-package) from 1 to 2.
-- [Release notes](https://github.com/hynek/build-and-inspect-python-package/releases)
-- [Changelog](https://github.com/hynek/build-and-inspect-python-package/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/hynek/build-and-inspect-python-package/compare/v1...v2)
-
----
-updated-dependencies:
-- dependency-name: hynek/build-and-inspect-python-package
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`62c0385`](https://github.com/mdtanker/polartoolkit/commit/62c0385647af79f390717fa18fa472ac715903f1))
-* bump actions/download-artifact from 3 to 4
-
-Bumps [actions/download-artifact](https://github.com/actions/download-artifact) from 3 to 4.
-- [Release notes](https://github.com/actions/download-artifact/releases)
-- [Commits](https://github.com/actions/download-artifact/compare/v3...v4)
-
----
-updated-dependencies:
-- dependency-name: actions/download-artifact
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`d577c09`](https://github.com/mdtanker/polartoolkit/commit/d577c09a7947e3b372a3b4b367cfaf361c3ffa80))
-* bump actions/setup-python from 4 to 5
-
-Bumps [actions/setup-python](https://github.com/actions/setup-python) from 4 to 5.
-- [Release notes](https://github.com/actions/setup-python/releases)
-- [Commits](https://github.com/actions/setup-python/compare/v4...v5)
-
----
-updated-dependencies:
-- dependency-name: actions/setup-python
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`ba46d15`](https://github.com/mdtanker/polartoolkit/commit/ba46d155f11b1b187df4c8fa806924a8c42a1417))
 ### 🧰 Chores / Maintenance
-
 * fixes ([`d1cc66a`](https://github.com/mdtanker/polartoolkit/commit/d1cc66a98a2653db0b57593cabec9ca6da2e3878))
 * formatting ([`f9ffa54`](https://github.com/mdtanker/polartoolkit/commit/f9ffa54b599ab1ab38af8d267a3daf1c98ae8bc0))
 * formatting ([`52fd5bb`](https://github.com/mdtanker/polartoolkit/commit/52fd5bb3cf08927f5211ae7b4f2a14dacc310dbf))
@@ -160,32 +66,14 @@ Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`ba46d15`](https://g
 * formatting ([`6e30c4c`](https://github.com/mdtanker/polartoolkit/commit/6e30c4ca30a44ea7cd1353f5703fd4414816ae7e))
 * switch from antarctic-plots to polartoolkit ([`bac23a9`](https://github.com/mdtanker/polartoolkit/commit/bac23a9a4c0c5e7059c42edc0892c96174dcc0dc))
 ### 📖 Documentation
-
 * update descriptions to not only focus on Antarctica ([`b08a509`](https://github.com/mdtanker/polartoolkit/commit/b08a509cf25956586282e905a3786d081461ae6e))
 * add favicon and dark and light logos ([`77f9835`](https://github.com/mdtanker/polartoolkit/commit/77f9835fc76d9415b0ace6d93829560900d8eb72))
 * add logo to docs ([`c26f850`](https://github.com/mdtanker/polartoolkit/commit/c26f8502ced995515b4ee40440c062b67b329b6b))
 * fix changelog template ([`31083e3`](https://github.com/mdtanker/polartoolkit/commit/31083e3d729cd4fb17f2149665610c5ba7fcd2c0))
 ### ✏️ Formatting
-
 * formatting ([`d15fe92`](https://github.com/mdtanker/polartoolkit/commit/d15fe924d6097c64b410e4a0802b63774e17074e))
 ## v0.1.0 (2023-12-10)
 ### 📦️ Build
-
-* bump conda-incubator/setup-miniconda from 2 to 3
-
-Bumps [conda-incubator/setup-miniconda](https://github.com/conda-incubator/setup-miniconda) from 2 to 3.
-- [Release notes](https://github.com/conda-incubator/setup-miniconda/releases)
-- [Changelog](https://github.com/conda-incubator/setup-miniconda/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/conda-incubator/setup-miniconda/compare/v2...v3)
-
----
-updated-dependencies:
-- dependency-name: conda-incubator/setup-miniconda
-  dependency-type: direct:production
-  update-type: version-update:semver-major
-...
-
-Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`aa2f220`](https://github.com/mdtanker/polartoolkit/commit/aa2f2205239f83db802d8e7e6e3ebd839d680ad6))
 * fix path to docs ([`4bbbd96`](https://github.com/mdtanker/polartoolkit/commit/4bbbd9639a75a50305e28c8102afdda58b774534))
 * add ipython to interactive deps ([`4c706ad`](https://github.com/mdtanker/polartoolkit/commit/4c706ad43cbeb2fb5547669a65115ba911f83061))
 * remove isort required import ([`a82ea7a`](https://github.com/mdtanker/polartoolkit/commit/a82ea7a8da80abd57825f7b3fa50a9fefac23a3b))
@@ -195,7 +83,6 @@ Signed-off-by: dependabot[bot] &lt;support@github.com&gt; ([`aa2f220`](https://g
 * update env folder ([`9a4fa68`](https://github.com/mdtanker/polartoolkit/commit/9a4fa685d000db6969af2c15e64d4ca2106bd0de))
 * update github actions ([`a1c5644`](https://github.com/mdtanker/polartoolkit/commit/a1c5644c22c40f8425363eb6026204da7da46e9b))
 ### 🧰 Chores / Maintenance
-
 * reduce sig figs of fetch tests ([`15e5c3d`](https://github.com/mdtanker/polartoolkit/commit/15e5c3d7b09e4df2b68fd96637e4b0bb332faef3))
 * match test env to pyproject ([`155f1cf`](https://github.com/mdtanker/polartoolkit/commit/155f1cf44fe9917a2806175b57d0be7d7a2aee61))
 * switch python 3.8 to 3.9 for CI testing ([`1a17424`](https://github.com/mdtanker/polartoolkit/commit/1a17424fa5bcb3d6ad542ecb8c23ec8c5c7fede3))
@@ -235,7 +122,6 @@ changes from setuptools_scm to python-semantic-release ([`46df13d`](https://gith
 * update gitignore ([`5912c52`](https://github.com/mdtanker/polartoolkit/commit/5912c52ac5ef20384df18d0106af0b0cdd0247af))
 * move tests outside src ([`e7b30e9`](https://github.com/mdtanker/polartoolkit/commit/e7b30e9f23da359c0911c0c091fe2e9da1b3b87f))
 ### 📖 Documentation
-
 * update notebooks ([`7851e53`](https://github.com/mdtanker/polartoolkit/commit/7851e53b9f4afa1cb592a1cbecf28ffb52aecfa7))
 * rerun gallery examples ([`3c6f4c0`](https://github.com/mdtanker/polartoolkit/commit/3c6f4c0577f7db42538c46a8c3733964386615cb))
 * rerun tutorials ([`e61324a`](https://github.com/mdtanker/polartoolkit/commit/e61324aab0a0e7bc53e2747a0aa831f119f32b2f))
@@ -259,14 +145,12 @@ changes from setuptools_scm to python-semantic-release ([`46df13d`](https://gith
 * combine index and readme ([`1f4bfc1`](https://github.com/mdtanker/polartoolkit/commit/1f4bfc1d0c37980079a9d51d9d4572441acb820f))
 * change RTD config ([`e17be26`](https://github.com/mdtanker/polartoolkit/commit/e17be2690af1e2b583f94211f244607b9e0579cd))
 ### 🚀 Features
-
 * add grd2cpt and shading to profile map ([`2440c27`](https://github.com/mdtanker/polartoolkit/commit/2440c277aab205ac6463269e25976549f8005b37))
 * add spacing option to default layers ([`69d72f4`](https://github.com/mdtanker/polartoolkit/commit/69d72f464b4b142eb860d2de49016871762fd79e))
 * add lake vostok region ([`69b5ff6`](https://github.com/mdtanker/polartoolkit/commit/69b5ff66b4bcb4d5469f05e20014f01b51aea73d))
 * pass scalebar kwargs to plot_grd ([`e733241`](https://github.com/mdtanker/polartoolkit/commit/e733241d15d229c0d3e7d006167db28fddb11e3e))
 * add get_fetches function ([`b0312c2`](https://github.com/mdtanker/polartoolkit/commit/b0312c2254e5781668cf6fbba563e1dec00b473d))
 ### 🐛 Bug Fixes
-
 * change default layer names in profile ([`801611f`](https://github.com/mdtanker/polartoolkit/commit/801611f196c1b10a0f95c8829dbcf0370c890ccf))
 * avoid resampling default layers for profile ([`1f75666`](https://github.com/mdtanker/polartoolkit/commit/1f75666f7f7a18393a2bc9839e3d70344d5f0fda))
 * warning for resampling default layers ([`543fe60`](https://github.com/mdtanker/polartoolkit/commit/543fe60a9e74c1282230813a7ccaef5e7d9fbef7))
@@ -294,7 +178,6 @@ leftover fixes after refactoring code to pass new formatting / linting / type ch
 * change default layer pen to black ([`b2c1e74`](https://github.com/mdtanker/polartoolkit/commit/b2c1e74f1d32b6b06aedbcd69eb3e2a5bf6ec00a))
 * change default inset region box to red ([`627b2bd`](https://github.com/mdtanker/polartoolkit/commit/627b2bd5aabe9c18edbd2ed65c6059b04d6c695c))
 ###  🎨 Refactor
-
 * fix issues with fetch tests
 
 swaps pytest.approx with DeepDiff, adds ignore RuntimeWarning to many tests. ([`3b1bf49`](https://github.com/mdtanker/polartoolkit/commit/3b1bf497becf92d408ae701258051bb0491ad44c))
@@ -304,7 +187,6 @@ swaps pytest.approx with DeepDiff, adds ignore RuntimeWarning to many tests. ([`
 
 increments filename variabls since they change type, and standardizes the format of the preprocessors. ([`4f5656f`](https://github.com/mdtanker/polartoolkit/commit/4f5656fa58ab155dffb00cdc114ce18fd04686d1))
 ### ✏️ Formatting
-
 * formatting ([`429b998`](https://github.com/mdtanker/polartoolkit/commit/429b9984ec407e21ed07956b3491f97722a48b15))
 * formatting ([`ddb0e42`](https://github.com/mdtanker/polartoolkit/commit/ddb0e42987e6d4557ecbe9ae9c1414c78525af00))
 * fix spelling error ([`ea3ed50`](https://github.com/mdtanker/polartoolkit/commit/ea3ed501603d79afc34c14e561df08ad64bdbb95))
@@ -314,7 +196,6 @@ increments filename variabls since they change type, and standardizes the format
 * formatting ([`68f78aa`](https://github.com/mdtanker/polartoolkit/commit/68f78aa1238446ab114d757dd51207b1ab30d546))
 * formatting ([`f9f82f8`](https://github.com/mdtanker/polartoolkit/commit/f9f82f8201e08212e61c431a9259075884f1b4c5))
 ### Other
-
 *  ([`90302ba`](https://github.com/mdtanker/polartoolkit/commit/90302ba4e059c6688dad9468c42cb38c62ad6540))
 
 *  ([`12a5299`](https://github.com/mdtanker/polartoolkit/commit/12a5299d590c3ce16e797fd3efd18ea8e7b2234c))
