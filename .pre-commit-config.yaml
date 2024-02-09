@@ -24,6 +24,8 @@ exclude: |
       CONTRIBUTING.md|
       templates/CHANGELOG.md.j2|
       README.md|
+      paper/paper.bib|
+      paper/paper.md|
   )$
 
 repos:
