@@ -259,7 +259,7 @@ def plot_grd(
 
     Example
     -------
-    >>> from antarctic\_plots import maps
+    >>> from polartoolkit import maps
     ...
     >>> fig = maps.plot_grd('grid1.nc')
     >>> fig = maps.plot_grd(
@@ -442,7 +442,7 @@ def plot_grd(
             )
 
     # display grid
-    fig.grdimage(
+    fig.grdimage(  # type: ignore[union-attr]
         grid=grid,
         cmap=True,
         projection=proj,
@@ -458,7 +458,7 @@ def plot_grd(
 
     # add datapoints
     if points is not None:
-        fig.plot(
+        fig.plot(  # type: ignore[union-attr]
             x=points.x,
             y=points.y,
             style=kwargs.get("points_style", "c.2c"),
@@ -557,10 +557,10 @@ def plot_grd(
 
     # reset region and projection
     if title is None:
-        fig.basemap(region=region, projection=proj, frame="wesn")
+        fig.basemap(region=region, projection=proj, frame="wesn")  # type: ignore[union-attr]
     else:
         with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
-            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
+            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")  # type: ignore[union-attr]
 
     return fig
 
@@ -1557,7 +1557,7 @@ def interactive_data(
     #     )
 
     # image
-    #     >>> from antarctic\_plots import maps, regions, fetch
+    #     >>> from polartoolkit import maps, regions, fetch
     #     ...
     #     >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
     #     >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
