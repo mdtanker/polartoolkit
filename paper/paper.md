@@ -1,5 +1,5 @@
 ---
-title: "PolarToolkit: Python Tools for Conducting Polar Science"
+title: "PolarToolkit: Python Tools for Convenient, Reproducible, and Open Polar Science"
 tags:
   - python
   - cryosphere
@@ -18,71 +18,273 @@ affiliations:
   - name: GNS Science, New Zealand
     index: 2
 date:
-bibliography: _polartoolkit_refs.bib
+bibliography: paper.bib
+# header-includes:
+#     - \usepackage{multicol}
+#     - \newcommand{\hideFromPandoc}[1]{#1}
+#     - \hideFromPandoc{
+#         \let\Begin\begin
+#         \let\End\end
+#       }
 ---
 
-![PolarToolkit Logo](../docs/logo_dark.png){width=10%}
-
-<!-- Title options:
+<!--
+Title options:
+PolarToolkit: Helping Polar Researchers Conduct Science
+PolarToolkit: A Python Package for Polar Science
 PolarToolkit: Python Tools for Conducting Polar Science
 Cryospheric Insights Made Easy: Exploring PolarToolkit for Polar Studies
 PolarToolkit: A Comprehensive Software Suite for Antarctic Research
 PolarToolkit: Software for Cryospheric Mapping, Analysis, and Data Retrieval
 PolarToolkit: Software to Aide in Cryospheric Research
-PolarToolkit: Facilitating Cryospheric Research with Open-Source Software -->
+PolarToolkit: Facilitating Cryospheric Research with Open-Source Software
 
+-->
+
+<!--
+Typically 250-1000 words
+Your paper should include:
+
+A list of the authors of the software and their affiliations, using the correct format (see the example below).
+
+A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.
+
+A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work.
+
+A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
+
+Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
+
+Acknowledgement of any financial support.
+-->
 # Summary
+<!-- describing the high-level functionality and purpose of the software for a diverse, non-specialist audience. -->
+**PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible.
+The software does this by providing; 1) convenient functions for downloading and pre-processing a wide range of commonly used polar datasets, 2) tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions), and 3) code to easily create publication-quality maps, data profiles, and cross-sections.
+Additionally, `PolarToolkit` provides an easy means for exploring datasets. Users can chose pre-defined geographic regions to explore, or interactively chose a region by clicking on a map.
 
 # Statement of need
+<!-- clearly illustrates the research purpose of the software and places it in the context of related work. -->
+A common workflow for a geospatial scientist might be; navigate to a online repository and download a dataset, place this downloaded file in a local folder on their computer, perform some preprocessing steps, such a re-projecting, or interpolating the data, possibly using tools like GMT [@wesselgeneric2019], perform their scientific analysis on the data, and then include this data in a figure for a publication using a graphical user interface (GUI) such as QGIS [@qgisdevelopmentteamqgis2024].
+These workflows often require many separate tools; internet browser, file browser, spatial analysis software, and mapping software.
+These steps are often repeated many times 1) throughout a manuscript revision process, and 2) throughout the career of the scientist.
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+`PolarToolkit` aims to consolidate this entire workflow to be contained within Python, making it both easier and faster to perform all these steps. Scripting workflows like this have several advantages; 1) it decreases the chance of human errors in omitting or altering pre-processing steps, for example forgetting to switch a raster of elevation data from being geoid-referenced to ellipsoid-referenced, and 2) it allows entire workflows to be able to be shared easily between collaborators with a single `.py` file. A similar package exists, Antarctic Mapping Tools [@greeneantarctic2017] however it is written in MatLab, requiring licensing costs.
 
-`Gala` was designed to be used by both astronomical researchers and by students
-in courses on gravitational dynamics or astronomy. It has already been used in a
-number of scientific publications [@Pearson:2017] and has also been used in
-graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the _Gaia_ mission
-[@gaia] by students and experts alike.
+Written in easy-to-learn Python, and utilizing commonly geospatial data structures, `PolarToolkit` is designed to be familiar to use for experienced geospatial Python users, while also being approachable for beginner coders.
+It is build upon several open-source packages, such a [Pooch](https://www.fatiando.org/pooch/latest/) (for data downloading, @uiedapooch2020), [PyGMT](https://www.pygmt.org/latest/) (for creating figures, @uiedapygmt2021), [xarray](https://docs.xarray.dev/en/stable/) and [verde](https://www.fatiando.org/verde/latest/) (for geospatial data processing, @hoyerxarray2017, @uiedaverde2018).
 
-# Citations
+Comprehensive documentation, API reference, tutorials and how-to guides are available at [https://antarctic-plots.readthedocs.io/en/](https://antarctic-plots.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
 
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
 
-If you want to cite a software repository URL (e.g. something on GitHub without
-a preferred citation) then you can do it with the example BibTeX entry below for
-@fidgit.
+# PolarToolkit Modules
 
-For a quick reference, the following citation commands can be used:
+The key functionality of `PolarToolkit` is organized into five modules:
 
-- `@author:2001` -> "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al.,
-  2002)"
+| Module      | Description                                                                   |
+| ----------- | ----------------------------------------------------------------------------- |
+| **regions** | Pre-defined or interactively chosen geographic regions                        |
+| **fetch**   | Functions to download, pre-process, and retrieve cached data                  |
+| **maps**    | Create high-quality maps with functions specifically tailed to polar settings |
+| **profile** | Define a line, sample layers and data along it, and plot the results          |
+| **utils**   | Useful functions for common tasks (e.g. coordinate conversion, masking)       |
 
-# Figures
+# Example
+The below example demonstrates the functionality of `PolarToolkit`. Running the code will perform the following steps:
 
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png) and referenced
-from text using \autoref{fig:example}.
+1) Download (or retrieve previously downloaded) datasets from various online repositories:
+  * Bed elevation, and ice thickness data from Bedmap2 [@fretwellbedmap22013]
+  * Antarctic coastline and groundingline shapefiles [@depoorterantarctic2013]
+  * Antarctic ice shelf boundary shapefiles [@mouginotmeasures2017]
+  * Imagery data from LIMA [@bindschadlerlandsat2008]
+2) Pre-process the data
+  * convert the ice thickness and bed elevation `.tif` files into compressed `.zarr` files
+  * resample the grid resolutions from 1 km to 2 km
+  * extract the portion of the grids around the Saunders Coast region
+  * calculate the water column thickness
+  * mask the grid outside of the floating ice shelves
+3) Create a map
+  * plot a basemap of imagery
+  * plot water column thickness
+  * add a colorbar histogram to show data distribution
+  * add features like a scale bar, inset map and a title
 
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+```python
+# import modules
+from polartoolkit import fetch, regions, maps, utils
+
+# define a region
+region = regions.saunders_coast
+
+# download bedmap2 data and calculate water column thickness
+water_thickness = fetch.bedmap2(
+  layer="water_thickness",
+  region=region,
+  spacing=2000)
+
+# mask to ice shelf areas
+water_thickness = utils.mask_from_shp(
+    fetch.measures_boundaries(version="IceShelf"),
+    xr_grid=water_thickness,
+    masked=True,
+    invert=False)
+
+# plot map and set options
+fig = maps.plot_grd(
+    water_thickness,
+    cmap="dense",
+    title="Saunders Coast Ice Shelves",
+    cbar_label="Water column thickness (m)",
+    imagery_basemap=True,
+    coast=True,
+    inset=True,
+    scalebar=True,
+    hist=True)
+
+# display figure
+fig.show()
+```
+
+![Map resulting from the above code, showing the water column thickness [@fretwellbedmap22013] beneath the ice shelves of Antarctica's Saunders Coast. Inset map shows figure location. Grounding line and coastlines shown by black line [@depoorterantarctic2013]. Background imagery from LIMA [@bindschadlerlandsat2008]](example_figure.png){ width=80% }
 
 # Acknowledgements
+I would like to acknowledge the support in the early stages of this project from Wei Ji Leong, who spent countless hours helping me learn the skills necessary for developing this package, as well as the team at PyGMT, Fatiando a Terra, and the community of Software Underground for all the technical support and providing open-source software which helped inspire for this project.
 
-WeiJi, PyGMT, Fatiando a Terra, Software Underground,
+![](../docs/logo_light.png){ width=20% }
 
 # References
+
+<!-- \newpage
+
+\Begin{multicols}{2}
+
+```python
+from polartoolkit import fetch, regions, maps, utils
+
+# define a region
+region = regions.ronne_filchner_ice_shelf
+
+# download bedmap2 data and calculate water column thickness
+water_thickness = fetch.bedmap2(
+    layer="water_thickness",
+    region=region,
+)
+
+# mask to ice shelf areas
+water_thickness = utils.mask_from_shp(
+    fetch.measures_boundaries(version="IceShelf"),
+    xr_grid=water_thickness,
+    masked=True,
+    invert=False,
+)
+
+# plot map and set options
+fig = maps.plot_grd(
+    water_thickness,
+    cmap="dense",
+    grd2cpt=True,
+    title="Ronne-Filchner Ice Shelf",
+    cbar_label="Ocean cavity thickness (m)",
+    imagery_basemap=True,
+    coast=True,
+    inset=True,
+    scalebar=True,
+    hist=True,
+    add_faults=True,
+)
+
+# add legend
+fig.legend()
+
+# display figure
+fig.show()
+```
+\End{multicols}
+
+![](example_figure.png)
+
+\newpage -->
+
+
+<!--
+```python
+from polartoolkit import fetch, regions, maps
+# define a region
+region = regions.amery_ice_shelf
+# download Bedmap2 ice thickness data
+ice_thickness = fetch.bedmap2(
+    layer="thickness",
+    region=region,
+    spacing=2000,
+)
+
+# plot map and set options
+fig = maps.plot_grd(
+    ice_thickness,  # input data
+    cmap="dense",  # set the colormap
+    coast=True,  # plot grounding and coastlines
+    title="Amery Ice Shelf",  # add title
+    cbar_label="Ice thickness (m)",  # add label
+    inset=True,  # add inset map
+    scalebar=True,  # add scalebar
+    gridlines=True,  # add lat/lon gridlines
+    x_spacing=10, # lon interval (deg)
+    hist=True,  # add a histogram to the colorbar
+)
+# display figure
+fig.show()
+```
+-->
+
+
+<!--
++----------------------------------------------+--------------------------------------+
+|```python                                     |```python                             |
+|# define a region                             |# plot map and set options            |
+|region = regions.amery_ice_shelf              |fig = maps.plot_grd(                  |
+|                                              |    ice_thickness,                    |
+|# download Bedmap2 ice thickness data         |    cmap="dense",                     |
+|ice_thickness = fetch.bedmap2(                |    coast=True,                       |
+|    layer="thickness",                        |    title="Amery Ice Shelf",          |
+|    region=region,                            |    cbar_label="Ice thickness (m)",   |
+|    spacing=2000,                             |    inset=True,                       |
+|)                                             |    scalebar=True,                    |
+|```                                           |    gridlines=True,                   |
+|                                              |    x_spacing=10,                     |
+|                                              |    hist=True,                        |
+|                                              |)                                     |
+|                                              |# display figure                      |
+|                                              |fig.show()                            |
+|                                              |```                                   |
++----------------------------------------------+--------------------------------------+
+-->
+
+<!--
++--------------------------------------+-------------------------+
+|```python                             |                         |
+|# define a region                     |                         |
+|region = regions.amery_ice_shelf      |                         |
+|# download Bedmap2 ice thickness data |                         |
+|ice_thickness = fetch.bedmap2(        |                         |
+|    layer="thickness",                |                         |
+|    region=region,                    |                         |
+|    spacing=2000,                     |                         |
+|)                                     |                         |
+|# plot map and set options            |![](amery_ice_shelf.png) |
+|fig = maps.plot_grd(                  |                         |
+|    ice_thickness,                    |                         |
+|    cmap="dense",                     |                         |
+|    coast=True,                       |                         |
+|    title="Amery Ice Shelf",          |                         |
+|    cbar_label="Ice thickness (m)",   |                         |
+|    inset=True,                       |                         |
+|    scalebar=True,                    |                         |
+|    gridlines=True,                   |                         |
+|    x_spacing=10,                     |                         |
+|    hist=True,                        |                         |
+|)                                     |                         |
+|# display figure                      |                         |
+|fig.show()                            |                         |
+|```                                   |                         |
++--------------------------------------+-------------------------+
+-->
