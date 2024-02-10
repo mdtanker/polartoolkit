@@ -359,6 +359,14 @@ def plot_grd(
     colorbar = kwargs.get("colorbar", True)
     shp_mask = kwargs.get("shp_mask", None)
 
+    if kwargs.get("imagery_basemap", False) is True:
+        fig.grdimage(  # type: ignore[union-attr]
+            grid=fetch.imagery(),
+            cmap=None,
+            projection=proj,
+            region=region,
+        )
+
     # set cmap
     if cmap is True:
         # use cmap from most recent pygmt session
