@@ -490,6 +490,20 @@ def plot_grd(
             version=kwargs.get("coast_version", "depoorter-2013"),
         )
 
+    # plot faults
+    if kwargs.get("add_faults", False) is True:
+        add_faults(
+            fig=fig,
+            region=region,
+            projection=proj,
+            label=kwargs.get("fault_label", None),
+            pen=kwargs.get("fault_pen", None),
+            style=kwargs.get("fault_style", None),
+            fault_activity=kwargs.get("fault_activity", None),
+            fault_motion=kwargs.get("fault_motion", None),
+            fault_exposure=kwargs.get("fault_exposure", None),
+        )
+
     # add lat long grid lines
     if gridlines is True:
         add_gridlines(
@@ -914,6 +928,118 @@ def add_gridlines(
                 ],
                 # verbose="q",
             )
+
+
+def add_faults(
+    fig: pygmt.Figure,
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
+    fault_activity: str | None = None,
+    fault_motion: str | None = None,
+    fault_exposure: str | None = None,
+    pen: str | None = None,
+    style: str | None = None,
+    label: str | None = None,
+) -> None:
+    """
+    add various types of faults from GeoMap to a map, from
+    :footcite:t:`coxcontinentwide2023` and :footcite:t:`coxgeomap2023`
+
+    Parameters
+    ----------
+    fig : pygmt.Figure instance
+    region : tuple[float, float, float, float], optional
+        region for the figure
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
+    fault_activity : str, optional
+        type of fault activity, options are active or inactive, by default both
+    fault_motion : str, optional
+        type of fault motion, options are sinistral, dextral, normal, or reverse, by
+        default all
+    fault_exposure : str, optional
+        type of fault exposure, options are exposed or inferred, by default both
+    pen : str, optional
+        GMT pen string, by default "1p,magenta,-"
+    style : str, optional
+        GMT style string, by default None
+    label : str, optional
+        label to add to the legend, by default None
+    """
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = tuple(lib.extract_region())
+            assert len(region) == 4
+
+    faults = fetch.geomap(version="faults", region=region)
+
+    legend_label = "Fault types: "
+
+    # subset by activity type (active or inactive)
+    if fault_activity is None:
+        legend_label = legend_label + "active and inactive"
+    elif fault_activity == "active":
+        faults = faults[faults.ACTIVITY.isin(["active", "possibly active"])]
+        legend_label = legend_label + "active"
+    elif fault_activity == "inactive":
+        faults = faults[faults.ACTIVITY.isin(["inactive", "probably inactive"])]
+        legend_label = legend_label + "inactive"
+
+    # subset by motion type
+    if fault_motion is None:
+        legend_label = legend_label + " / all motion types"
+    elif fault_motion == "sinistral":  # left lateral
+        faults = faults[faults.TYPENAME.isin(["sinistral strike slip fault"])]
+        legend_label = legend_label + ", sinistral"
+        # if style is None:
+        #     #f for front,
+        #     # -1 for 1 arrow,
+        #     # .3c for size of arrow,
+        #     # +r for left side,
+        #     # +s45 for arrow angle
+        #     style = 'f-1c/.3c+r+s45'
+    elif fault_motion == "dextral":  # right lateral
+        faults = faults[faults.TYPENAME.isin(["dextral strike slip fault"])]
+        legend_label = legend_label + " / dextral"
+        # if style is None:
+        #     style = 'f-1c/.3c+l+s45'
+    elif fault_motion == "normal":
+        faults = faults[
+            faults.TYPENAME.isin(["normal fault", "high angle normal fault"])
+        ]
+        legend_label = legend_label + " / normal"
+    elif fault_motion == "reverse":
+        faults = faults[faults.TYPENAME.isin(["thrust fault", "high angle reverse"])]
+        legend_label = legend_label + " / reverse"
+
+    # subset by exposure type
+    if fault_exposure is None:
+        legend_label = legend_label + " / exposed and inferred"
+    elif fault_exposure == "exposed":
+        faults = faults[faults.EXPOSURE.isin(["exposed"])]
+        legend_label = legend_label + " / exposed"
+    elif fault_exposure == "inferred":
+        faults = faults[faults.EXPOSURE.isin(["concealed", "unknown"])]
+        legend_label = legend_label + " / inferred"
+
+    if pen is None:
+        pen = "1p,magenta,-"
+
+    # if no subsetting of faults, shorten the label
+    if all(x is None for x in [fault_activity, fault_motion, fault_exposure]):
+        legend_label = "Faults"
+
+    # if label supplied, use that
+    if label is None:
+        label = legend_label
+
+    fig.plot(
+        faults, projection=projection, region=region, pen=pen, label=label, style=style
+    )
 
 
 def add_inset(
