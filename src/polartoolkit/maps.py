@@ -172,6 +172,7 @@ def basemap(
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("scale_length_perc", 0.25),
             position=kwargs.get("scale_position", "n.5/.05"),
+            **kwargs,
         )
 
     # blank plotting call to reset projection to EPSG:3031, optionally add title
