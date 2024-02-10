@@ -165,9 +165,9 @@ def basemap(
     # add scalebar
     if kwargs.get("scalebar", False) is True:
         add_scalebar(
-            fig,
-            region,
-            proj_latlon,
+            fig=fig,
+            region=region,
+            projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("scale_length_perc", 0.25),
@@ -511,9 +511,9 @@ def plot_grd(
     # add scalebar
     if scalebar is True:
         add_scalebar(
-            fig,
-            region,
-            proj_latlon,
+            fig=fig,
+            region=region,
+            projection=proj_latlon,
             font_color=kwargs.get("font_color", "black"),
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("length_perc", 0.25),
