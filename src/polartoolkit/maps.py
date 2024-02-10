@@ -198,6 +198,7 @@ def plot_grd(
     region: tuple[float, float, float, float] | None = None,
     coast: bool = False,
     origin_shift: str = "initialize",
+    fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     r"""
@@ -217,6 +218,9 @@ def plot_grd(
         automatically will create a new figure, set to 'xshift' to instead add plot to
         right of previous plot, or 'yshift' to add plot above previous plot, by
         default 'initialize'.
+    fig : pygmt.Figure(), optional
+        supply figure instance for adding subplots or other PyGMT plotting methods, by
+        default None
 
     Keyword Args
     ------------
@@ -235,9 +239,6 @@ def plot_grd(
         GMT-format region to use to plot a bounding regions.
     cpt_lims : str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
-    fig : pygmt.Figure()
-        if adding subplots, set the first returned figure to a variable, and add that
-        variable as the kwargs 'fig' to subsequent calls to plot_grd.
     gridlines : bool
         choose to plot lat/long grid lines, by default is False
     inset : bool
@@ -306,15 +307,13 @@ def plot_grd(
                 fig_width=fig_width,
             )
     else:
-        fig = kwargs.get("fig")
-
         if origin_shift == "xshift":
             fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(
+            fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
             )
         elif origin_shift == "yshift":
@@ -323,14 +322,14 @@ def plot_grd(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
         elif origin_shift == "both_shift":
             fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(
+            fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
                 yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
             )
