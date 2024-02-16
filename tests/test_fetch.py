@@ -295,6 +295,7 @@ def test_modis_moa():
 
 @pytest.mark.fetch()
 @pytest.mark.slow()
+@pytest.mark.issue()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_imagery():
     grid = fetch.imagery()
@@ -1050,6 +1051,7 @@ basal_melt_test = [
 
 @pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
 @pytest.mark.fetch()
+@pytest.mark.issue()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
