@@ -114,10 +114,17 @@ html_theme_options = {
     "use_repository_button": True,
     "use_download_button": True,
     "home_page_in_toc": False,
-    "logo": {
-        # "link": "https://github.com/mdtanker/polartoolkit",
-        "alt_text": "PolarToolkit Logo - Homepage",
-        "image_light": "logo_light.png",
-        "image_dark": "logo_dark.png",
-    },
+    # "logo": {
+    #     # "link": "https://github.com/mdtanker/polartoolkit",
+    #     "alt_text": "PolarToolkit Logo - Homepage",
+    #     "image_light": "logo_light.png",
+    #     "image_dark": "logo_dark.png",
+    # },
+    # Announcement banner defined as a string of arbitrary HTML, temporarily
+    # displayed at the top of each page until the user begins scrolling.
+    "announcement": (
+        "<p>"
+        "⚠️ Antarctic-Plots has been renamed to PolarToolkit, please use the updated docs <a href='https://polartoolkit.readthedocs.io/'>here</a> ⚠️"  # noqa: E501
+        "</p>"
+    ),
 }
