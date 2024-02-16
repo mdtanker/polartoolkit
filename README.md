@@ -52,14 +52,14 @@ alt="Zenodo DOI"
 ## Disclaimer
 
 <p align="center">
-🚨 **This package is in early stages of development.** 🚨
+🚨 **Ready for daily use but still changing.** 🚨
 </p>
 
 This means that we are still adding a lot of new features and sometimes we make
 changes to the ones we already have while we try to improve the software based
 on users' experience, test new ideas, make better design decisions, etc. Some of
 these changes could be **backwards incompatible**. Keep that in mind before you
-update PolarToolkit to a newer version.
+update PolarToolkit to a new major version (i.e. from `v1.0.0` to `v2.0.0`).
 
 I welcome any feedback, ideas, or contributions! Please contact us on the
 [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)

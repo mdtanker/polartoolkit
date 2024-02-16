@@ -13,10 +13,10 @@ Helpful tools for polar researchers
 :align: center
 ```
 
-```{admonition} Early-stages of development
+```{admonition} Ready for daily use but still changing.
 :class: seealso
 
-This package is in early stages of development! This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update polartoolkit to a newer version.
+This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update polartoolkit to a new major version (i.e. from `v1.0.0` to `v2.0.0`).
 ```
 
 
