@@ -9,6 +9,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* automatically updating changelog [skip ci] ([`efa34a2`](https://github.com/mdtanker/polartoolkit/commit/efa34a23909fa0243c65c55abbc51c5c44addc4a))
 * mark test mass change as issue ([`a3bde43`](https://github.com/mdtanker/polartoolkit/commit/a3bde4376c336d82b1e600fdf7306e7cf580267b))
 * add issue marker to imagery and basal melt fetches ([`95bce69`](https://github.com/mdtanker/polartoolkit/commit/95bce69504dec80d3581b6ed864c9aaf892f70a9))
 * make fig an arg of plot_grd ([`e762a5a`](https://github.com/mdtanker/polartoolkit/commit/e762a5a7518932d5f630d7087517912055f3a0e3))
@@ -28,6 +29,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * editing workflows ([`a059f50`](https://github.com/mdtanker/polartoolkit/commit/a059f50061eb8e4399e2aebed5b1491f44dd0e89))
 * collect usage stats ([`b5d16ac`](https://github.com/mdtanker/polartoolkit/commit/b5d16ac3792e3ef7791138274d1c069a108cc110))
 ### 📖 Documentation
+* update RTD links to polartoolkit ([`e5376b3`](https://github.com/mdtanker/polartoolkit/commit/e5376b359e0b6bbadaaadb02cd8731be77033517))
 * fix disclaimer ([`8075024`](https://github.com/mdtanker/polartoolkit/commit/80750247c570b8d98774b02dcab64e33fd57d56c))
 * re-run all docs ([`0776879`](https://github.com/mdtanker/polartoolkit/commit/07768799052e77a59e36783bc2350e352d3ad4a7))
 * add pygmt and pip to RTD.env ([`9a8ae51`](https://github.com/mdtanker/polartoolkit/commit/9a8ae51b6cc51d9b798252e67932a05ec1148742))
