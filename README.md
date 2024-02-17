@@ -2,7 +2,7 @@
 <h2 align="center">Helpful tools for polar researchers</h2>
 
 <p align="center">
-<a href="https://antarctic-plots.readthedocs.io"><strong>Documentation Link</strong></a>
+<a href="https://polartoolkit.readthedocs.io"><strong>Documentation Link</strong></a>
 </p>
 
 <!-- SPHINX-START1 -->
@@ -42,7 +42,7 @@ alt="Compatible Python versions."
 alt="Zenodo DOI"
 />
 </a>
-<a href='https://readthedocs.org/projects/antarctic-plots/'><img src='https://readthedocs.org/projects/antarctic-plots/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
+<a href='https://readthedocs.org/projects/polartoolkit/'><img src='https://readthedocs.org/projects/polartoolkit/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
  </p>
 
 <!-- SPHINX-END1 -->
@@ -75,8 +75,8 @@ BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica
 methods.
 
 Feel free to use, share, modify, and
-[contribute](https://antarctic-plots.readthedocs.io/en/latest/contribute.html)
-to this project. I've mostly made this for personal usage so expect significant
+[contribute](https://polartoolkit.readthedocs.io/en/latest/contribute.html) to
+this project. I've mostly made this for personal usage so expect significant
 changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
 ## Project goals
