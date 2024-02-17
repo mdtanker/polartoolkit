@@ -9,6 +9,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* automatically updating changelog [skip ci] ([`248525e`](https://github.com/mdtanker/polartoolkit/commit/248525efe0e121676783067aa094f9fa756716cd))
 * remove dependa-bot commits from changelog ([`44a322c`](https://github.com/mdtanker/polartoolkit/commit/44a322c4059a69e9af735232799d6583f4b86e84))
 * automatically updating changelog [skip ci] ([`208dbd4`](https://github.com/mdtanker/polartoolkit/commit/208dbd4da9319361b876f05f49f80588141f9cc8))
 * automatically updating changelog [skip ci] ([`3edbaeb`](https://github.com/mdtanker/polartoolkit/commit/3edbaeb2f52e4f76f19a649d22e5cff0e1cd7e54))
