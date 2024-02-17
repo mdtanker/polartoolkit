@@ -1020,6 +1020,7 @@ mass_change_test = [
 
 
 @pytest.mark.fetch()
+@pytest.mark.issue()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), mass_change_test)
 def test_mass_change(test_input, expected):
