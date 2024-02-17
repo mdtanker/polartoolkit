@@ -9,6 +9,12 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
 * explicitly include packages ([`a76a0e9`](https://github.com/mdtanker/polartoolkit/commit/a76a0e99c2aaec43b0a35218136609a970450b64))
 ### 🧰 Chores / Maintenance
+* mark test mass change as issue ([`a3bde43`](https://github.com/mdtanker/polartoolkit/commit/a3bde4376c336d82b1e600fdf7306e7cf580267b))
+* add issue marker to imagery and basal melt fetches ([`95bce69`](https://github.com/mdtanker/polartoolkit/commit/95bce69504dec80d3581b6ed864c9aaf892f70a9))
+* make fig an arg of plot_grd ([`e762a5a`](https://github.com/mdtanker/polartoolkit/commit/e762a5a7518932d5f630d7087517912055f3a0e3))
+* add kwarg arg to add_scalebar ([`df374ba`](https://github.com/mdtanker/polartoolkit/commit/df374ba838dea59c454cca2314a0b93841d1370c))
+* specify args in functions ([`9febc0e`](https://github.com/mdtanker/polartoolkit/commit/9febc0e46b3d405c7c83a12653344a59c3fb629b))
+* automatically updating changelog [skip ci] ([`c4c3eae`](https://github.com/mdtanker/polartoolkit/commit/c4c3eaecd266451eb4d8ac7d9b3b8fbec6f37235))
 * automatically updating changelog [skip ci] ([`248525e`](https://github.com/mdtanker/polartoolkit/commit/248525efe0e121676783067aa094f9fa756716cd))
 * remove dependa-bot commits from changelog ([`44a322c`](https://github.com/mdtanker/polartoolkit/commit/44a322c4059a69e9af735232799d6583f4b86e84))
 * automatically updating changelog [skip ci] ([`208dbd4`](https://github.com/mdtanker/polartoolkit/commit/208dbd4da9319361b876f05f49f80588141f9cc8))
@@ -22,6 +28,8 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * editing workflows ([`a059f50`](https://github.com/mdtanker/polartoolkit/commit/a059f50061eb8e4399e2aebed5b1491f44dd0e89))
 * collect usage stats ([`b5d16ac`](https://github.com/mdtanker/polartoolkit/commit/b5d16ac3792e3ef7791138274d1c069a108cc110))
 ### 📖 Documentation
+* fix disclaimer ([`8075024`](https://github.com/mdtanker/polartoolkit/commit/80750247c570b8d98774b02dcab64e33fd57d56c))
+* re-run all docs ([`0776879`](https://github.com/mdtanker/polartoolkit/commit/07768799052e77a59e36783bc2350e352d3ad4a7))
 * add pygmt and pip to RTD.env ([`9a8ae51`](https://github.com/mdtanker/polartoolkit/commit/9a8ae51b6cc51d9b798252e67932a05ec1148742))
 * back to conda for RTD ([`d2a4c1f`](https://github.com/mdtanker/polartoolkit/commit/d2a4c1f7e8d610fefd358917d61459d6b38939c0))
 * switch RTD from mamba to python ([`aeab560`](https://github.com/mdtanker/polartoolkit/commit/aeab560cc1872299c9be10e27f5f8f5327349091))
@@ -30,7 +38,15 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * remove JOSS folder ([`dc0a421`](https://github.com/mdtanker/polartoolkit/commit/dc0a421e09ac8ad1926a7dea2ba078fc6e1e8e17))
 * add .bib and enable sphinxcontrib-bibtex ([`bf90dc0`](https://github.com/mdtanker/polartoolkit/commit/bf90dc0456a2284300fea0b0dd8f74fe361d913b))
 * add paper template for JOSS ([`22feca3`](https://github.com/mdtanker/polartoolkit/commit/22feca31678a6b0e68cf893bfe9d008b48649d04))
+### 🚀 Features
+* add plotting geomap faults function ([`3e87e60`](https://github.com/mdtanker/polartoolkit/commit/3e87e605b0dfa3805d94bbb6b3a20bca18c23a55))
+* add cmap arg to points of plot_grd ([`f4fc948`](https://github.com/mdtanker/polartoolkit/commit/f4fc94832c110df855705d2f93a186a41b7c8ee2))
+* add basemap imagery option to plot_grd ([`b7ad2ee`](https://github.com/mdtanker/polartoolkit/commit/b7ad2eecb08616f71126d1fc690b4315127922bc))
+* make default scalebar have white box ([`3c879d5`](https://github.com/mdtanker/polartoolkit/commit/3c879d5f477e94dfb9986f2c334da8433fd15036))
+* add water thickness layer to bedmap2 fetch ([`8f26e46`](https://github.com/mdtanker/polartoolkit/commit/8f26e461401e088ff707482151f4ba8e98696559))
+* add / update pre-defined regions ([`4ce3d8d`](https://github.com/mdtanker/polartoolkit/commit/4ce3d8d1b35ba8716a4e74713d20de86d502b45a))
 ### ✏️ Formatting
+* typos and type issues ([`5c478fb`](https://github.com/mdtanker/polartoolkit/commit/5c478fb124f93e3b1ff09ccd87dc1fa5af7ede74))
 * fixes and ignore .bib ([`c154f89`](https://github.com/mdtanker/polartoolkit/commit/c154f89b8ba97a3ce3359fa5d1fc266e51e8dcdd))
 * formatting ([`0b294a1`](https://github.com/mdtanker/polartoolkit/commit/0b294a18d71d909bcbbd398dc0634b548faf7165))
 * fix style errors ([`639ba42`](https://github.com/mdtanker/polartoolkit/commit/639ba42c996db46125b5889e5ae35e09217296d7))
