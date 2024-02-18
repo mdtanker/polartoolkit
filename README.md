@@ -75,7 +75,7 @@ BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica
 methods.
 
 Feel free to use, share, modify, and
-[contribute](https://polartoolkit.readthedocs.io/en/latest/contribute.html) to
+[contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to
 this project. I've mostly made this for personal usage so expect significant
 changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
@@ -100,5 +100,5 @@ the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
 Please, read our
-[Contributor Guide](https://github.com/mdtanker/polartoolkit/blob/main/.github/CONTRIBUTING.md)
+[Contributor Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html)
 to learn how you can contribute to the project.
