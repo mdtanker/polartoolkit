@@ -2,8 +2,8 @@
 Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
-## Unreleased
 
+## v0.3.0 (2024-02-18)
 ### 📦️ Build
 * add requests to deps ([`15ea6e8`](https://github.com/mdtanker/polartoolkit/commit/15ea6e838a980f7c7383819122013fc103b9005f))
 * switch GHA from hynek to build and twine ([`91c6ca9`](https://github.com/mdtanker/polartoolkit/commit/91c6ca9d11afd8197bf3fa043c7c8d2a5e9617d3))
@@ -46,7 +46,6 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * formatting ([`0b294a1`](https://github.com/mdtanker/polartoolkit/commit/0b294a18d71d909bcbbd398dc0634b548faf7165))
 * fix style errors ([`639ba42`](https://github.com/mdtanker/polartoolkit/commit/639ba42c996db46125b5889e5ae35e09217296d7))
 * fix indent ([`efee6d7`](https://github.com/mdtanker/polartoolkit/commit/efee6d702e7db92b5f32d4136be2b0b18eeaf54a))
-
 ## v0.2.1 (2024-01-29)
 ### 📦️ Build
 * add antarctic_plots package for import warning ([`bb4c134`](https://github.com/mdtanker/polartoolkit/commit/bb4c134b6e78377d426781ef1f601a5ba171000b))
