@@ -26,6 +26,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 {% endif%}
 {% for commit in commits %}
 {% if "dependabot" in commit.message.rstrip() %}
+{% elif "automatically updating changelog" in commit.message.rstrip() %}
 {% elif type_ != "unknown" %}
 {% set msg = commit.message.rstrip() %}
 {% set msg_no_ID = msg[msg.index(':')+2:] %}
@@ -62,6 +63,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 {% endif%}
 {% for commit in commits %}
 {% if "dependabot" in commit.message.rstrip() %}
+{% elif "automatically updating changelog" in commit.message.rstrip() %}
 {% elif type_ != "unknown" %}
 {% set msg = commit.message.rstrip() %}
 {% set msg_no_ID = msg[msg.index(':')+2:] %}
