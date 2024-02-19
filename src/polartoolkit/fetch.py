@@ -1828,7 +1828,8 @@ def bedmap2(
         choose which layer to fetch:
         "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
         "lakemask_vostok", "rockmask", "surface", "thickness",
-        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase"
+        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase",
+        "water_thickness"
     reference : str
         choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
         ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
@@ -1887,6 +1888,7 @@ def bedmap2(
         "thickness",
         "gl04c_geiod_to_WGS84",
         "icebase",
+        "water_thickness",
     ]:
         initial_region = (-3333000, 3333000, -3333000, 3333000)
         initial_spacing = 1e3
@@ -1970,13 +1972,19 @@ def bedmap2(
         # load zarr as a dataarray
         thickness = xr.open_zarr(fname)[layer]
 
-        # calculate icebase with the resampled surface and thickness
+        # calculate icebase
         grid = surface - thickness
 
         # reset layer variable
         layer = "icebase"
         logging.info("calculating icebase from surface and thickness grids")
+    elif layer == "water_thickness":
+        icebase = bedmap2(layer="icebase")
+        bed = bedmap2(layer="bed")
 
+        # calculate water thickness
+        grid = icebase - bed
+        logging.info("calculating water thickness from bed and icebase grids")
     elif layer in [
         "bed",
         "coverage",

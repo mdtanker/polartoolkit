@@ -165,13 +165,14 @@ def basemap(
     # add scalebar
     if kwargs.get("scalebar", False) is True:
         add_scalebar(
-            fig,
-            region,
-            proj_latlon,
+            fig=fig,
+            region=region,
+            projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("scale_length_perc", 0.25),
             position=kwargs.get("scale_position", "n.5/.05"),
+            **kwargs,
         )
 
     # blank plotting call to reset projection to EPSG:3031, optionally add title
@@ -197,6 +198,7 @@ def plot_grd(
     region: tuple[float, float, float, float] | None = None,
     coast: bool = False,
     origin_shift: str = "initialize",
+    fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     r"""
@@ -216,6 +218,9 @@ def plot_grd(
         automatically will create a new figure, set to 'xshift' to instead add plot to
         right of previous plot, or 'yshift' to add plot above previous plot, by
         default 'initialize'.
+    fig : pygmt.Figure(), optional
+        supply figure instance for adding subplots or other PyGMT plotting methods, by
+        default None
 
     Keyword Args
     ------------
@@ -234,9 +239,6 @@ def plot_grd(
         GMT-format region to use to plot a bounding regions.
     cpt_lims : str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
-    fig : pygmt.Figure()
-        if adding subplots, set the first returned figure to a variable, and add that
-        variable as the kwargs 'fig' to subsequent calls to plot_grd.
     gridlines : bool
         choose to plot lat/long grid lines, by default is False
     inset : bool
@@ -259,7 +261,7 @@ def plot_grd(
 
     Example
     -------
-    >>> from antarctic\_plots import maps
+    >>> from polartoolkit import maps
     ...
     >>> fig = maps.plot_grd('grid1.nc')
     >>> fig = maps.plot_grd(
@@ -305,15 +307,13 @@ def plot_grd(
                 fig_width=fig_width,
             )
     else:
-        fig = kwargs.get("fig")
-
         if origin_shift == "xshift":
             fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(
+            fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
             )
         elif origin_shift == "yshift":
@@ -322,14 +322,14 @@ def plot_grd(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
+            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
         elif origin_shift == "both_shift":
             fig_height = kwargs.get("fig_height", utils.get_fig_height())
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
             )
-            fig.shift_origin(
+            fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
                 yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
             )
@@ -358,6 +358,14 @@ def plot_grd(
     reverse_cpt = kwargs.get("reverse_cpt", False)
     colorbar = kwargs.get("colorbar", True)
     shp_mask = kwargs.get("shp_mask", None)
+
+    if kwargs.get("imagery_basemap", False) is True:
+        fig.grdimage(  # type: ignore[union-attr]
+            grid=fetch.imagery(),
+            cmap=None,
+            projection=proj,
+            region=region,
+        )
 
     # set cmap
     if cmap is True:
@@ -442,7 +450,7 @@ def plot_grd(
             )
 
     # display grid
-    fig.grdimage(
+    fig.grdimage(  # type: ignore[union-attr]
         grid=grid,
         cmap=True,
         projection=proj,
@@ -458,12 +466,13 @@ def plot_grd(
 
     # add datapoints
     if points is not None:
-        fig.plot(
+        fig.plot(  # type: ignore[union-attr]
             x=points.x,
             y=points.y,
             style=kwargs.get("points_style", "c.2c"),
             fill=kwargs.get("points_fill", "black"),
             pen=kwargs.get("points_pen", "1p,black"),
+            cmap=kwargs.get("points_cmap", None),
         )
 
     # add box showing region
@@ -479,6 +488,20 @@ def plot_grd(
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version", "depoorter-2013"),
+        )
+
+    # plot faults
+    if kwargs.get("add_faults", False) is True:
+        add_faults(
+            fig=fig,
+            region=region,
+            projection=proj,
+            label=kwargs.get("fault_label", None),
+            pen=kwargs.get("fault_pen", None),
+            style=kwargs.get("fault_style", None),
+            fault_activity=kwargs.get("fault_activity", None),
+            fault_motion=kwargs.get("fault_motion", None),
+            fault_exposure=kwargs.get("fault_exposure", None),
         )
 
     # add lat long grid lines
@@ -511,9 +534,9 @@ def plot_grd(
     # add scalebar
     if scalebar is True:
         add_scalebar(
-            fig,
-            region,
-            proj_latlon,
+            fig=fig,
+            region=region,
+            projection=proj_latlon,
             font_color=kwargs.get("font_color", "black"),
             scale_length=kwargs.get("scale_length"),
             length_perc=kwargs.get("length_perc", 0.25),
@@ -557,10 +580,10 @@ def plot_grd(
 
     # reset region and projection
     if title is None:
-        fig.basemap(region=region, projection=proj, frame="wesn")
+        fig.basemap(region=region, projection=proj, frame="wesn")  # type: ignore[union-attr]
     else:
         with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
-            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
+            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")  # type: ignore[union-attr]
 
     return fig
 
@@ -907,6 +930,118 @@ def add_gridlines(
             )
 
 
+def add_faults(
+    fig: pygmt.Figure,
+    region: tuple[float, float, float, float] | None = None,
+    projection: str | None = None,
+    fault_activity: str | None = None,
+    fault_motion: str | None = None,
+    fault_exposure: str | None = None,
+    pen: str | None = None,
+    style: str | None = None,
+    label: str | None = None,
+) -> None:
+    """
+    add various types of faults from GeoMap to a map, from
+    :footcite:t:`coxcontinentwide2023` and :footcite:t:`coxgeomap2023`
+
+    Parameters
+    ----------
+    fig : pygmt.Figure instance
+    region : tuple[float, float, float, float], optional
+        region for the figure
+    projection : str, optional
+        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        cartesian projection, you will need to provide a projection in lat/lon here, use
+        utils.set_proj() to make this projection.
+    fault_activity : str, optional
+        type of fault activity, options are active or inactive, by default both
+    fault_motion : str, optional
+        type of fault motion, options are sinistral, dextral, normal, or reverse, by
+        default all
+    fault_exposure : str, optional
+        type of fault exposure, options are exposed or inferred, by default both
+    pen : str, optional
+        GMT pen string, by default "1p,magenta,-"
+    style : str, optional
+        GMT style string, by default None
+    label : str, optional
+        label to add to the legend, by default None
+    """
+
+    # if no region supplied, get region of current PyGMT figure
+    if region is None:
+        with pygmt.clib.Session() as lib:
+            region = tuple(lib.extract_region())
+            assert len(region) == 4
+
+    faults = fetch.geomap(version="faults", region=region)
+
+    legend_label = "Fault types: "
+
+    # subset by activity type (active or inactive)
+    if fault_activity is None:
+        legend_label = legend_label + "active and inactive"
+    elif fault_activity == "active":
+        faults = faults[faults.ACTIVITY.isin(["active", "possibly active"])]
+        legend_label = legend_label + "active"
+    elif fault_activity == "inactive":
+        faults = faults[faults.ACTIVITY.isin(["inactive", "probably inactive"])]
+        legend_label = legend_label + "inactive"
+
+    # subset by motion type
+    if fault_motion is None:
+        legend_label = legend_label + " / all motion types"
+    elif fault_motion == "sinistral":  # left lateral
+        faults = faults[faults.TYPENAME.isin(["sinistral strike slip fault"])]
+        legend_label = legend_label + ", sinistral"
+        # if style is None:
+        #     #f for front,
+        #     # -1 for 1 arrow,
+        #     # .3c for size of arrow,
+        #     # +r for left side,
+        #     # +s45 for arrow angle
+        #     style = 'f-1c/.3c+r+s45'
+    elif fault_motion == "dextral":  # right lateral
+        faults = faults[faults.TYPENAME.isin(["dextral strike slip fault"])]
+        legend_label = legend_label + " / dextral"
+        # if style is None:
+        #     style = 'f-1c/.3c+l+s45'
+    elif fault_motion == "normal":
+        faults = faults[
+            faults.TYPENAME.isin(["normal fault", "high angle normal fault"])
+        ]
+        legend_label = legend_label + " / normal"
+    elif fault_motion == "reverse":
+        faults = faults[faults.TYPENAME.isin(["thrust fault", "high angle reverse"])]
+        legend_label = legend_label + " / reverse"
+
+    # subset by exposure type
+    if fault_exposure is None:
+        legend_label = legend_label + " / exposed and inferred"
+    elif fault_exposure == "exposed":
+        faults = faults[faults.EXPOSURE.isin(["exposed"])]
+        legend_label = legend_label + " / exposed"
+    elif fault_exposure == "inferred":
+        faults = faults[faults.EXPOSURE.isin(["concealed", "unknown"])]
+        legend_label = legend_label + " / inferred"
+
+    if pen is None:
+        pen = "1p,magenta,-"
+
+    # if no subsetting of faults, shorten the label
+    if all(x is None for x in [fault_activity, fault_motion, fault_exposure]):
+        legend_label = "Faults"
+
+    # if label supplied, use that
+    if label is None:
+        label = legend_label
+
+    fig.plot(
+        faults, projection=projection, region=region, pen=pen, label=label, style=style
+    )
+
+
 def add_inset(
     fig: pygmt.Figure,
     region: tuple[float, float, float, float] | None = None,
@@ -1019,7 +1154,7 @@ def add_scalebar(
             projection=projection,
             map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
             # verbose="e",
-            box=kwargs.get("scalebar_box", False),
+            box=kwargs.get("scalebar_box", "+gwhite"),
         )
 
 
@@ -1557,7 +1692,7 @@ def interactive_data(
     #     )
 
     # image
-    #     >>> from antarctic\_plots import maps, regions, fetch
+    #     >>> from polartoolkit import maps, regions, fetch
     #     ...
     #     >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
     #     >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
