@@ -4030,7 +4030,7 @@ def moho(
             url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
             fname="shen_2018_moho.tar",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-            known_hash="90c7f05100cbec280214e8d22c0f9fa1b8b5f87c35e139480b8b94f3bc7f4611",
+            known_hash=None,
             progressbar=True,
             processor=preprocessing,
         )
