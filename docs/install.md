@@ -10,39 +10,60 @@ gives full access the the package in an online environment.
 This Binder environment can also be accessed by clicking the Binder icon in any
 of the `gallery` or `tutorial` examples.
 
-## Install package
+## Install Python
+
+Before installing _PolarToolkit_, ensure you have Python downloaded. If you
+don't, I recommend setting up Python with Miniforge. See the install
+instructions [here](https://github.com/conda-forge/miniforge).
+
+## Install _PolarToolkit_ Locally
+
+There are 3 main ways to install `polartoolkit`. We show them here in order of
+simplest to hardest.
 
 ### Conda / Mamba
 
 The easiest way to install this package and it's dependencies is with conda or
 mamba into a new virtual environment:
 
-    mamba create --name polartoolkit --yes --force polartoolkit
+```
+mamba create --name polartoolkit --yes --force polartoolkit
+```
 
 Activate the environment:
 
-    conda activate polartoolkit
+```
+conda activate polartoolkit
+```
 
 ### Pip
 
-Instead, you can use pip to install polartoolkit, but first you need to install
-a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
+Instead, you can use pip to install `polartoolkit`, but first you need to
+install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
 `Cartopy` all rely on C packages, which can only be install with conda/mamba and
-not with pip. ere I use mamba, but conda will work as well, just replace any
-`mamba` with `conda`:
+not with pip.
+
+```{note}
+`conda` and `mamba` are interchangeable
+```
 
 Create a new virtual environment:
 
-    mamba create --name polartoolkit --yes --force pygmt geopandas cartopy
+```
+mamba create --name polartoolkit --yes --force pygmt geopandas cartopy
+```
 
-Pip install polartoolkit
+activate the environment and use `pip` to install `polartoolkit`:
 
-    mamba activate polartoolkit
-    pip install polartoolkit
+```
+mamba activate polartoolkit
+pip install polartoolkit
+```
 
-If you don't have Python set up on your computer, I recommend setting up python
-with Miniconda. See the install instructions
-[here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+```{note}
+to install the optional dependencies, use this instead:
+`pip install polartoolkit[all]`
+```
 
 ### Development version
 
