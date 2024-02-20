@@ -1,3 +1,3 @@
-```{include} ../.github/CONTRIBUTING.md
+```{include} ../CONTRIBUTING.md
 
 ```
