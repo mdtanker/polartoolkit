@@ -20,6 +20,9 @@ remove:
 test:
 	pytest -m "not earthdata and not issue and not fetch"
 
+test_fetch:
+	pytest -s -m fetch #-rp
+
 format:
 	ruff format $(STYLE_CHECK_FILES)
 
