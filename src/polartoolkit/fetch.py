@@ -276,12 +276,17 @@ def sample_shp(name: str) -> str:
     str
         file path as a string
     """
+    if name == "Disco_deep_transect":
+        known_hash = "70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e"
+    elif name == "Roosevelt_Island":
+        known_hash = "83434284808d067b8b18b649e41287a63f01eb2ce581b2c34ee44ae3a1a5ca2a"
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/polartoolkit/raw/main/data/{name}.zip",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
         processor=pooch.Unzip(),
-        known_hash=None,
+        known_hash=known_hash,
     )
+
     val: str = next(p for p in path if p.endswith(".shp"))
     return val
 
@@ -337,7 +342,7 @@ def mass_change(
         url=url,
         fname=zip_fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_mass",
-        known_hash=None,
+        known_hash="8d09ffcce4e84fba8cabbc85ee79fec4de36419f8b242ca1f95adacaa2f229e3",
         progressbar=True,
         processor=pooch.Unzip(
             extract_dir="Smith_2020",
@@ -430,7 +435,7 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_mass/Admusilli_2020",
-        known_hash=None,
+        known_hash="c14f7059876e6808e3869853a91a3a17a776c95862627c4a3d674c12e4477d2a",
         progressbar=True,
         processor=preprocessing,
     )
@@ -570,7 +575,7 @@ def ice_vel(
         fname="measures_ice_vel_phase_map.nc",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity",
         downloader=EarthDataDownloader(),
-        known_hash=None,
+        known_hash="fa0957618b8bd98099f4a419d7dc0e3a2c562d89e9791b4d0ed55e6017f52416",
         progressbar=True,
         processor=preprocessor,
     )
@@ -620,7 +625,7 @@ def modis_moa(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
-            known_hash=None,
+            known_hash="101fa22295f94f6eab487d208c051cf81c9af925355b124a04e3d96463af5b72",
             progressbar=True,
         )
     elif version == "750m":
@@ -630,7 +635,7 @@ def modis_moa(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
             downloader=EarthDataDownloader(),
             processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
-            known_hash=None,
+            known_hash="90d1718ea0971795ec102482c47f308ba08ba2b88383facb9fe210877e80282c",
             progressbar=True,
         )
     else:
@@ -664,7 +669,7 @@ def imagery() -> str:
         fname="lima.zip",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
         processor=pooch.Unzip(),
-        known_hash=None,
+        known_hash="7e7daa7af128f1ad18ac597d95d716ba26f745e75f8abb81c10049419a070c37",
         progressbar=True,
     )
     return typing.cast(str, next(p for p in path if p.endswith(".tif")))
@@ -704,7 +709,7 @@ def geomap(
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/geomap",
-        known_hash=None,
+        known_hash="0dd1ec3f276d7aec1bddface7280ae3c10a40d8dea1efd9271803284a1120f84",
         processor=pooch.Unzip(extract_dir="geomap"),
         progressbar=True,
     )
@@ -808,7 +813,7 @@ def groundingline(
             url="https://doi.pangaea.de/10013/epic.42133.d001",
             fname="groundingline_depoorter_2013.d001",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/depoorter-2013",
-            known_hash=None,
+            known_hash="e4c5918240e334680aed1329f109527efd8f43b6a277bb8e77b66f84f8c16619",
             processor=pooch.Unzip(),
             progressbar=True,
         )
@@ -1004,7 +1009,7 @@ def basement(
         url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_basement_filt.nc",
         fname="basement.nc",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/basement",
-        known_hash=None,
+        known_hash="2b4fd53d1bb766d265ba7d504bf446fe4e4c77a5f4ab568892908edf385d9c67",
         progressbar=True,
     )
 
@@ -1127,7 +1132,7 @@ def sediment_thickness(
             url="https://www.itpz-ran.ru/wp-content/uploads/2021/04/0.1_lim_b.dat_.zip",
             fname="ANTASed.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
-            known_hash=None,
+            known_hash="7ca77e5be871b1d2ff8a42166b2f9c4e779604fe2dfed5e70c029a2d03bc866b",
             processor=preprocessing,
             progressbar=True,
         )
@@ -1161,7 +1166,7 @@ def sediment_thickness(
             url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_sediment.nc",
             fname="tankersley_2022_sediment_thickness.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
-            known_hash=None,
+            known_hash="0a39e57875780e6f499b570f738a464588059cb195cb709785f2436934c1c4e7",
             progressbar=True,
         )
 
@@ -1194,7 +1199,7 @@ def sediment_thickness(
             url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",
             fname="lindeque_2016_total_sediment_thickness.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
-            known_hash=None,
+            known_hash="c156a9e9960d965e0599e449a393709f6720af1d1a25c22613c6be7726a213d7",
             progressbar=True,
         )
 
@@ -1279,7 +1284,7 @@ def sediment_thickness(
             url="https://ngdc.noaa.gov/mgg/sedthick/data/version3/GlobSed.zip",
             fname="GlobSed.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/sediment_thickness",
-            known_hash=None,
+            known_hash="e063ee6603d65c9cee6420cb52a4c6afb520143711b12d618f1a2f591d248bd9",
             processor=preprocessing,
             progressbar=True,
         )
@@ -1329,7 +1334,7 @@ def ibcso_coverage(
         url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg",
         fname="IBCSO_v2_coverage.gpkg",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-        known_hash=None,
+        known_hash="b89e54f26c03b74f0b0f8d826f0f130573eac2c8240de2eb178c8840f0aa99a0",
         progressbar=True,
     )
 
@@ -1527,7 +1532,7 @@ def ibcso(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc",
             fname="IBCSO_ice_surface.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash="7748a79fffa41024c175cff7142066940b3e88f710eaf4080193c46b2b59e1f0",
             progressbar=True,
             processor=preprocessor,
         )
@@ -1536,7 +1541,7 @@ def ibcso(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.nc",
             fname="IBCSO_bed.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash="74d55acb219deb87dc5be019d6dafeceb7b1ebcf9095866f257671d12670a5e2",
             progressbar=True,
             processor=preprocessor,
         )
@@ -1640,7 +1645,7 @@ def bedmachine(
         fname="bedmachine_v3.nc",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         downloader=EarthDataDownloader(),
-        known_hash=None,
+        known_hash="d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159",
         progressbar=True,
     )
 
@@ -1752,7 +1757,7 @@ def bedmap_points(
             url=url,
             fname="BEDMAP1_1966-2000_AIR_BM1.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash="77d10a0c41ff3401a2a3da1467ba292861a919c6a43a933c91a51d2e1ebe5f6e",
             progressbar=True,
         )
 
@@ -1864,7 +1869,7 @@ def bedmap2(
         "+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016"
         "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
     )
-
+    known_hash = None
     # Declare initial grid values, of .nc files not .tiff files
     # use utils.get_grid_info(xr.load_dataset(file).band_data
     # several of the layers have different values
@@ -1952,7 +1957,7 @@ def bedmap2(
             url=url,
             fname="bedmap2_tiff.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash=known_hash,
             processor=preprocessing,
             progressbar=True,
         )
@@ -1965,7 +1970,7 @@ def bedmap2(
             url=url,
             fname="bedmap2_tiff.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash=known_hash,
             processor=preprocessing,
             progressbar=True,
         )
@@ -2003,7 +2008,7 @@ def bedmap2(
             url=url,
             fname="bedmap2_tiff.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=None,
+            known_hash=known_hash,
             processor=preprocessing,
             progressbar=True,
         )
@@ -2030,7 +2035,7 @@ def bedmap2(
                 url=url,
                 fname="bedmap2_tiff.zip",
                 path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-                known_hash=None,
+                known_hash=known_hash,
                 processor=preprocessing,
                 progressbar=True,
             )
@@ -2047,7 +2052,7 @@ def bedmap2(
                 url=url,
                 fname="bedmap2_tiff.zip",
                 path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-                known_hash=None,
+                known_hash=known_hash,
                 processor=preprocessing,
                 progressbar=True,
             )
@@ -2134,6 +2139,7 @@ def rema(
         )
         fname = "rema_mosaic_500m_v2.0_filled_cop30.tar.gz"
         members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
+        known_hash = "dd59df24d1ee570654d79afc099c260aeb4128f67232f8c7258a8a7803ef3e0c"
     elif version == "1km":
         # found with utils.get_grid_info(grid)
         initial_region = (-2700500.0, 2750500.0, -2500500.0, 3342500.0)
@@ -2146,6 +2152,7 @@ def rema(
         )
         fname = "rema_mosaic_1km_v2.0_filled_cop30.tar.gz"
         members = ["rema_mosaic_1km_v2.0_filled_cop30_dem.tif"]
+        known_hash = "143ab56b79a0fdcae6769a895202af117fb0dbfe1fa2a0a17db9df2091338d21"
     else:
         msg = "invalid version"
         raise ValueError(msg)
@@ -2192,7 +2199,7 @@ def rema(
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography/REMA",
-        known_hash=None,
+        known_hash=known_hash,
         progressbar=True,
         processor=preprocessing,
     )
@@ -2258,7 +2265,7 @@ def deepbedmap(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         fname="deepbedmap.tif",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-        known_hash=None,
+        known_hash="d8bca00bf6e999d6f77490943454d730f519ebd04b8a9511b9913313c7d954b1",
         progressbar=True,
     )
 
@@ -2354,7 +2361,7 @@ def gravity(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
             fname="antgg.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="ad94d16f7e4895c5a09bbf9ca9d64750f1edd9b01f2bff21ca49e10b6fe47d72",
             progressbar=True,
         )
 
@@ -2449,7 +2456,7 @@ def gravity(
             url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
             fname="antgg_update.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="1013a8fa610c16198bc3c901039fd535cf939e4f21f99e6434849bb505094974",
             processor=preprocessing,
             progressbar=True,
         )
@@ -2510,7 +2517,7 @@ def gravity(
             url="doi:10.5281/zenodo.5882207/earth-gravity-10arcmin.nc",
             fname="eigen.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="d55134501da0d984f318c0f92e1a15a8472176ec7babde5edfdb58855190273e",
             progressbar=True,
             processor=preprocessing,
         )
@@ -2609,7 +2616,7 @@ def etopo(
         url="doi:10.5281/zenodo.5882203/earth-topography-10arcmin.nc",
         fname="etopo.nc",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-        known_hash=None,
+        known_hash="e45628a3f559ec600a4003587a2b575402d22986651ee48806930aa909af4cf6",
         progressbar=True,
         processor=preprocessing,
     )
@@ -2712,7 +2719,7 @@ def geoid(
         url="doi:10.5281/zenodo.5882204/earth-geoid-10arcmin.nc",
         fname="eigen_geoid.nc",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/geoid",
-        known_hash=None,
+        known_hash="e98dd544c8b4b8e5f11d1a316684dfbc2612e2860af07b946df46ed9f782a0f6",
         progressbar=True,
         processor=preprocessing,
     )
@@ -2771,7 +2778,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/GridInformation/Shapefile/ROSETTA-Ice_Grid_Flown_Shapefile.zip",
             fname="ROSETTA-Ice_Grid_Flown_Shapefile.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="17e0026fe386503d74c679a6091235e2394fb269030f5555372e55bdf61f6946",
             progressbar=True,
             processor=pooch.Unzip(),
         )
@@ -2785,7 +2792,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/Gravity/rs_2019_grav.csv",
             fname="ROSETTA_2019_grav.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="d4fdfcc293ac13e6222938bfa9e1e9ccc781ea7556a13d356e9f1b4aba809928",
             progressbar=True,
         )
 
@@ -2800,7 +2807,7 @@ def rosetta_gravity(version: str = "gravity") -> pd.DataFrame:
             url="http://wonder.ldeo.columbia.edu/data/ROSETTA-Ice/DerivedProducts/Density/rs_2019_density.csv",
             fname="rs_2019_density.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash="8c3d6f69087095ab1a184d0517a136ebd59e4761110601b30da1ef3685883617",
             progressbar=True,
         )
 
@@ -3058,7 +3065,7 @@ def magnetics(
             url="http://admap.kopri.re.kr/admapdata/ant_new.zip",
             fname="admap1.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
-            known_hash=None,
+            known_hash="3fe567c4dfe75be9d5a7772623c72cd27fa386b09a82f03bdb0153a7d64e8524",
             processor=preprocessing,
             progressbar=True,
         )
@@ -3133,7 +3140,7 @@ def magnetics(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
             fname="admap2_gdb.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
-            known_hash=None,
+            known_hash="a587555677350257dadbbf615838deac67e7d183a16525996ea0954eb23d83e8",
             processor=pooch.Unzip(),
             progressbar=True,
         )
@@ -3261,7 +3268,7 @@ def ghf(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
             fname="an_2015_.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="9834439cdf99d5ee62fb88a008fa34dbc8d1848e9b00a1bd9cbc33194dd7d402",
             progressbar=True,
             processor=preprocessing,
         )
@@ -3322,7 +3329,7 @@ def ghf(
             url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz",
             fname="martos_2017.xyz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="a5814bd0432986e111d0d48bfbd950cce66ba247b26b37f9a7499e66d969eb1f",
             progressbar=True,
             processor=preprocessing,
         )
@@ -3356,7 +3363,7 @@ def ghf(
             url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
             fname="burton_johnson_2020.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="66b1f7acd06eeb6a6362c89b05db07034f510c81e3115cefbd4d11a584f143b2",
             processor=pooch.Unzip(extract_dir="burton_johnson_2020"),
             progressbar=True,
         )
@@ -3367,7 +3374,7 @@ def ghf(
                 url=url,
                 fname="ANT_GHF_DB_V004.xlsx",
                 path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-                known_hash=None,
+                known_hash="192ad3862770de66f7ba82e9bc0bf1156ae3fccaabc76e9791edfb6c8fd4ff5f",
                 progressbar=True,
             )
 
@@ -3492,7 +3499,7 @@ def ghf(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
             fname="losing_ebbing_2021_ghf.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="ecdae882083d8eb3503fab5be2ef862c96229f89ecbae1f95e56a8f43fb912e2",
             progressbar=True,
             processor=preprocessing,
         )
@@ -3526,7 +3533,7 @@ def ghf(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             fname="aq1.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="946ae69e0a3d15a7500d7252fe0ce4f5cb126eaeb6170555ade0acdc38b86d7f",
             progressbar=True,
         )
         grid = xr.load_dataset(path)["Q"]
@@ -3601,7 +3608,7 @@ def ghf(
             url="https://drive.google.com/uc?export=download&id=1Fz7dAHTzPnlytuyRNctk6tAugCAjiqzR",
             fname="shen_2020_ghf.xyz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash=None,
+            known_hash="d6164c3680da52f8f03584293b1a271c937852df9a64f3c98d68debc44e02533",
             processor=preprocessing,
             progressbar=True,
         )
@@ -3677,7 +3684,7 @@ def gia(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
             fname="stal_2020_gia.tiff",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gia",
-            known_hash=None,
+            known_hash="cb579c9606f98dfd28239183ba28de33e6e288a4256b27da7249c3741a24b7e8",
             progressbar=True,
         )
         grid = xr.load_dataarray(path).squeeze()
@@ -3881,7 +3888,7 @@ def crustal_thickness(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
             fname="an_2015_crustal_thickness.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
-            known_hash=None,
+            known_hash="486da67ccbe76bb7f79725981c6078a0429a2cd2797d447702b90302e2b7b1e5",
             progressbar=True,
             processor=preprocessing,
         )
@@ -4020,7 +4027,7 @@ def moho(
             url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
             fname="shen_2018_moho.tar",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-            known_hash=None,
+            known_hash="90c7f05100cbec280214e8d22c0f9fa1b8b5f87c35e139480b8b94f3bc7f4611",
             progressbar=True,
             processor=preprocessing,
         )
