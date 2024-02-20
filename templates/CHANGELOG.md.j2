@@ -4,8 +4,8 @@ Automatically updated by
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 {% if context.history.unreleased | length > 0 %}
 {# UNRELEASED #}
-## Unreleased
 
+## Unreleased
 {% for type_, commits in context.history.unreleased | dictsort %}
 {% if type_ == "feature" %}
 ### 🚀 Features
@@ -39,6 +39,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 {% if version in ["0.0.0", "0.0.1", "0.0.3", "0.0.4", "0.0.6"] %}
 {% else %}
 {# RELEASED #}
+
 ## {{ version.as_semver_tag() }} ({{ release.tagged_date.strftime("%Y-%m-%d") }})
 {% endif %}
 {% if version in ["0.0.0", "0.0.1", "0.0.3", "0.0.4", "0.0.6"] %}
@@ -70,7 +71,6 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * {{ msg_no_ID }} ([`{{ commit.short_hash }}`]({{ commit.hexsha | commit_hash_url }}))
 {% else %}
 * {{ msg }} ([`{{ commit.short_hash }}`]({{ commit.hexsha | commit_hash_url }}))
-
 {% endif %}
 {% endfor %}
 {% endfor %}
