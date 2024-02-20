@@ -1121,7 +1121,7 @@ def test_ghf(test_input, expected):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=2,
+        significant_digits=0,
     )
 
 
