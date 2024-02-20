@@ -73,7 +73,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: polartoolkit
-          environment-file: env/test_env.yml
+          environment-file: env/testing_env.yml
           python-version: ${{ matrix.python-version }}
           channels: conda-forge,nodefaults
           channel-priority: strict
