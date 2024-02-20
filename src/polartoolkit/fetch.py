@@ -3253,6 +3253,9 @@ def ghf(
                 reprojected.to_netcdf("tmp.nc")
                 processed = xr.load_dataset("tmp.nc").z
 
+                # remove tmp file
+                pathlib.Path("tmp.nc").unlink()
+
                 # get just antarctica region and save to disk
                 pygmt.grdsample(
                     processed,
