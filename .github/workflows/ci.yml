@@ -83,13 +83,13 @@ jobs:
           use-mamba: true
           auto-activate-base: false
 
-      # Show installed pkg information for postmortem diagnostic
-      - name: List installed packages
-        run: mamba list
-
       # Install the package in editable mode
       - name: Install local package
         run: pip install -e .
+
+        # Show installed pkg information for postmortem diagnostic
+      - name: List installed packages
+        run: mamba list
 
       - name: Run the tests
         run: >-
