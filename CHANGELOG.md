@@ -3,6 +3,10 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 🧰 Chores / Maintenance
+* fix semantic release action ([`6b12799`](https://github.com/mdtanker/polartoolkit/commit/6b12799d984917e9e4693bf8003c6869fc7f350d))
+
 
 ## v0.3.1 (2024-02-22)
 ### 📦️ Build
