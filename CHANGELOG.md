@@ -2,10 +2,29 @@
 Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
-## Unreleased
 
+## Unreleased
+### 📦️ Build
+* extend support to python 3.12 ([`f68def9`](https://github.com/mdtanker/polartoolkit/commit/f68def9b1156f020d4e222bf27279293eddda51f))
+### 🧰 Chores / Maintenance
+* remove shen-2018 hash ([`fbefe40`](https://github.com/mdtanker/polartoolkit/commit/fbefe4031c2b241fdde5b6375bc16b504ec6b9ac))
+* fix test ghf ([`c7c66f6`](https://github.com/mdtanker/polartoolkit/commit/c7c66f60fce00b50524abc6eca01238f40b932e1))
+* update changelog template ([`e4bd1d9`](https://github.com/mdtanker/polartoolkit/commit/e4bd1d923fb635ac2c9724a9c8babbe3cd9a4660))
+* reduce sig figs for test_ghf ([`393aadc`](https://github.com/mdtanker/polartoolkit/commit/393aadc4394bc0da73d4eb38e1318bc04f374636))
+* list packages after installing local for test GHA ([`51250b4`](https://github.com/mdtanker/polartoolkit/commit/51250b4dfa2a8c59380fe16d5f00e68edf453e2d))
+* update testing_env and add make command ([`4ee6945`](https://github.com/mdtanker/polartoolkit/commit/4ee6945f06c39447a6447f3563898c867696fb5c))
+* add hashes to all fetch calls ([`91eb9a8`](https://github.com/mdtanker/polartoolkit/commit/91eb9a83fcdd247b7a55491b0654ae5734c46fed))
+* move contributing file ([`05dff10`](https://github.com/mdtanker/polartoolkit/commit/05dff10fb72fa82a4e24ecf6e47a73d40cdc9c63))
+* add test_fetch make command ([`2a0adb3`](https://github.com/mdtanker/polartoolkit/commit/2a0adb30cdc669b602d6b0f5cdc402b3f5306872))
+* add ignores to pre-commit ([`3fffd15`](https://github.com/mdtanker/polartoolkit/commit/3fffd15defb6de572e2f8caa1e0380a760ac74dd))
+* fix changelog template spacing ([`cabc14a`](https://github.com/mdtanker/polartoolkit/commit/cabc14a644d10bf7eafe26c223a5542e17f10bf4))
 ### 📖 Documentation
+* update install instructions ([`70faf04`](https://github.com/mdtanker/polartoolkit/commit/70faf0485d1157dda42e3f40ca462d89d87fafad))
 * fix links to contrib guide ([`5c6af8d`](https://github.com/mdtanker/polartoolkit/commit/5c6af8de8ab984fa645f868ba23eadd492f0d4b7))
+### 🐛 Bug Fixes
+* increase timeout for shen-2018 moho fetch ([`8d9e183`](https://github.com/mdtanker/polartoolkit/commit/8d9e183de4aca1cc985a4824414b3107c50905e6))
+* delete tmp.nc file in fetch call ([`ee16bdc`](https://github.com/mdtanker/polartoolkit/commit/ee16bdc10f000d1d05cabc889890548fd2f72dbe))
+
 
 ## v0.3.0 (2024-02-18)
 ### 📦️ Build
@@ -50,6 +69,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * formatting ([`0b294a1`](https://github.com/mdtanker/polartoolkit/commit/0b294a18d71d909bcbbd398dc0634b548faf7165))
 * fix style errors ([`639ba42`](https://github.com/mdtanker/polartoolkit/commit/639ba42c996db46125b5889e5ae35e09217296d7))
 * fix indent ([`efee6d7`](https://github.com/mdtanker/polartoolkit/commit/efee6d702e7db92b5f32d4136be2b0b18eeaf54a))
+
 ## v0.2.1 (2024-01-29)
 ### 📦️ Build
 * add antarctic_plots package for import warning ([`bb4c134`](https://github.com/mdtanker/polartoolkit/commit/bb4c134b6e78377d426781ef1f601a5ba171000b))
@@ -67,8 +87,9 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * spelling and formatting ([`a7347ba`](https://github.com/mdtanker/polartoolkit/commit/a7347ba6ca94185414ac3d0a0eec1bb1ef095bfb))
 * spelling  mistakes ([`4c29294`](https://github.com/mdtanker/polartoolkit/commit/4c2929402b66903b2ddc0688333b932c44bba978))
 *  ignore binder env file in pre-commit ([`9aa1c30`](https://github.com/mdtanker/polartoolkit/commit/9aa1c309352965131c40b3d88c4e16afbcdf48a6))
+
 ## v0.2.0 (2024-01-26)
-### Other
+### 💥 Breaking Changes
 * force a major version bump.
 
 BREAKING CHANGE: ([`cc2ecda`](https://github.com/mdtanker/polartoolkit/commit/cc2ecdaae48b4300ae6d41485076273fa612ce64))
@@ -87,6 +108,7 @@ BREAKING CHANGE: ([`cc2ecda`](https://github.com/mdtanker/polartoolkit/commit/cc
 * fix changelog template ([`31083e3`](https://github.com/mdtanker/polartoolkit/commit/31083e3d729cd4fb17f2149665610c5ba7fcd2c0))
 ### ✏️ Formatting
 * formatting ([`d15fe92`](https://github.com/mdtanker/polartoolkit/commit/d15fe924d6097c64b410e4a0802b63774e17074e))
+
 ## v0.1.0 (2023-12-10)
 ### 📦️ Build
 * fix path to docs ([`4bbbd96`](https://github.com/mdtanker/polartoolkit/commit/4bbbd9639a75a50305e28c8102afdda58b774534))
@@ -212,19 +234,12 @@ increments filename variabls since they change type, and standardizes the format
 * formatting ([`f9f82f8`](https://github.com/mdtanker/polartoolkit/commit/f9f82f8201e08212e61c431a9259075884f1b4c5))
 ### Other
 *  ([`90302ba`](https://github.com/mdtanker/polartoolkit/commit/90302ba4e059c6688dad9468c42cb38c62ad6540))
-
 *  ([`12a5299`](https://github.com/mdtanker/polartoolkit/commit/12a5299d590c3ce16e797fd3efd18ea8e7b2234c))
-
 *  ([`c962e56`](https://github.com/mdtanker/polartoolkit/commit/c962e56ca0eca300b9f45bd4104861cd9fdf67dd))
-
 *  ([`95ad63c`](https://github.com/mdtanker/polartoolkit/commit/95ad63c9af3c9b305fdbc97c984ac6bee952c3bf))
-
 *  ([`30ea5aa`](https://github.com/mdtanker/polartoolkit/commit/30ea5aaea6cf599299e0cc7253eaf136b1e54a59))
-
 *  ([`d8c821e`](https://github.com/mdtanker/polartoolkit/commit/d8c821ee79f146bc74171ae358a331815ba1ac7d))
-
 *  ([`f1249f0`](https://github.com/mdtanker/polartoolkit/commit/f1249f0d7cb848f489bd25f8364d1693e704f886))
-
 
 
 > **Note:**
