@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
-## Unreleased
+
+## v0.3.1 (2024-02-22)
 ### 📦️ Build
 * extend support to python 3.12 ([`f68def9`](https://github.com/mdtanker/polartoolkit/commit/f68def9b1156f020d4e222bf27279293eddda51f))
 ### 🧰 Chores / Maintenance
@@ -24,7 +25,6 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ### 🐛 Bug Fixes
 * increase timeout for shen-2018 moho fetch ([`8d9e183`](https://github.com/mdtanker/polartoolkit/commit/8d9e183de4aca1cc985a4824414b3107c50905e6))
 * delete tmp.nc file in fetch call ([`ee16bdc`](https://github.com/mdtanker/polartoolkit/commit/ee16bdc10f000d1d05cabc889890548fd2f72dbe))
-
 
 ## v0.3.0 (2024-02-18)
 ### 📦️ Build
