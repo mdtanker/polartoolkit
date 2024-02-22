@@ -4033,6 +4033,7 @@ def moho(
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
+            downloader=pooch.HTTPDownloader(timeout=30),
         )
 
         grid = xr.load_dataarray(path)
