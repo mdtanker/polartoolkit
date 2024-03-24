@@ -21,6 +21,7 @@ exclude: |
       templates/CHANGELOG.md.j2|
       paper/paper.bib|
       paper/paper.md|
+      templates/CHANGELOG.md.j2|
   )$
 
 repos:
