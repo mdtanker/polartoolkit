@@ -4,6 +4,7 @@ Automatically updated by
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
 ## Unreleased
+### 📦️ Build
 ### 🧰 Chores / Maintenance
 * remove pre-commit updates from changelog ([`611ff84`](https://github.com/mdtanker/polartoolkit/commit/611ff84c3ba5a5a31f6e4870f231dcd74c1f7053))
 
