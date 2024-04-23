@@ -22,7 +22,7 @@ jobs:
       - name: update changelog
         run: |
           pip install -U pip
-          pip install python-semantic-release >=8
+          pip install python-semantic-release ==9.3
           semantic-release changelog
       # Commits files to repository
       - name: Commit changes
