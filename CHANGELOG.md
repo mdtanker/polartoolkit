@@ -3,6 +3,14 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 📦️ Build
+* make semantic release GHA need changelog success ([`adf7edb`](https://github.com/mdtanker/polartoolkit/commit/adf7edb40d32a4e9090b9cfaff7c0a51f5299424))
+### 🧰 Chores / Maintenance
+* pin python semantic release version ([`73a0fbd`](https://github.com/mdtanker/polartoolkit/commit/73a0fbd00bafa012ca0fb63518d3e07a4580f24f))
+### 🐛 Bug Fixes
+* pinning issue in workflow ([`1578894`](https://github.com/mdtanker/polartoolkit/commit/1578894981c4c33ea00798ea163a620bc5128d28))
+
 
 ## v0.3.2 (2024-04-23)
 ### 📦️ Build
