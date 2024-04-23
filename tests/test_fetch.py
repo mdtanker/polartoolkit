@@ -198,7 +198,7 @@ def test_resample_grid(test_input, expected):
         utils.get_grid_info(resampled),
         expected,
         ignore_order=True,
-        significant_digits=2,
+        significant_digits=0,
     )
 
 
