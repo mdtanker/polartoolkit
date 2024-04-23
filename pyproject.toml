@@ -28,7 +28,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 readme = "README.md"
-version = "0.3.1"
+version = "0.3.2"
 license = {file = "LICENSE"}
 
 keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting", "pygmt", "cross-section"]

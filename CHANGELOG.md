@@ -3,11 +3,13 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
-## Unreleased
+
+## v0.3.2 (2024-04-23)
 ### 📦️ Build
 ### 🧰 Chores / Maintenance
 * fix semantic release action ([`6b12799`](https://github.com/mdtanker/polartoolkit/commit/6b12799d984917e9e4693bf8003c6869fc7f350d))
-
+### 🐛 Bug Fixes
+* reduce accuracy check for test resampling grids ([`93fca6f`](https://github.com/mdtanker/polartoolkit/commit/93fca6f44b69ae46672fcd74169d2c86d725a062))
 
 ## v0.3.1 (2024-02-22)
 ### 📦️ Build
