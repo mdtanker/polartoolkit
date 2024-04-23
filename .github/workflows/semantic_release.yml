@@ -31,9 +31,10 @@ jobs:
           author_name: semantic-release
           message: "chore: automatically updating changelog [skip ci]"
           add: "./CHANGELOG.md"
-  # determine appropriate version number, update changelog, and create a release commit
+  # determine appropriate version number and create a release commit
   semantic-release:
     name: Semantic Release
+    needs: changelog
     runs-on: ubuntu-latest
     # concurrency: release
     permissions:
