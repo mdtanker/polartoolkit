@@ -1,16 +1,13 @@
 # PolarToolkit
 
-**PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible. The software does this by providing: 
-
-- Convenient functions for downloading and pre-processing a wide range of commonly used polar datasets
-- Tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions)
-- Code to easily create publication-quality maps, data profiles, and cross-sections
-
-Additionally, **PolarToolkit** provides an easy means for exploring datasets with pre-defined or interactively-chosen geographic regions.
+```{include} ../README.md
+:start-after: <!-- SPHINX-START-proj-desc -->
+:end-before: <!-- SPHINX-END-proj-desc -->
+```
 
 ```{include} ../README.md
-:start-after: <!-- SPHINX-START1 -->
-:end-before: <!-- SPHINX-END1 -->
+:start-after: <!-- SPHINX-START-badges -->
+:end-before: <!-- SPHINX-END-badges -->
 ```
 
 ```{image} cover_fig.png
@@ -27,8 +24,8 @@ This means that we are still adding a lot of new features and sometimes we make 
 
 
 ```{include} ../README.md
-:start-after: <!-- SPHINX-START2 -->
-:end-before: <!-- SPHINX-END2 -->
+:start-after: <!-- SPHINX-START-long-desc -->
+:end-before: <!-- SPHINX-END-long-desc -->
 ```
 
 

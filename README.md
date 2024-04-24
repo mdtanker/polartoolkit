@@ -5,7 +5,25 @@
 <a href="https://polartoolkit.readthedocs.io"><strong>Documentation Link</strong></a>
 </p>
 
-<!-- SPHINX-START1 -->
+<!-- SPHINX-START-proj-desc -->
+
+**PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with
+the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more
+efficient, reproducible, and accessible. The software does this by providing:
+
+- Convenient functions for downloading and pre-processing a wide range of
+  commonly used polar datasets
+- Tools for common geospatial tasks (i.e. changing data resolution, subsetting
+  data by geographic regions)
+- Code to easily create publication-quality maps, data profiles, and
+  cross-sections
+
+Additionally, **PolarToolkit** provides an easy means for exploring datasets
+with pre-defined or interactively-chosen geographic regions.
+
+<!-- SPHINX-END-proj-desc -->
+
+<!-- SPHINX-START-badges -->
 
 <p align="center">
 <a href="https://mybinder.org/v2/gh/mdtanker/polartoolkit/main"><img src="https://mybinder.org/badge_logo.svg" alt="Binder link"></a>
@@ -24,17 +42,9 @@ alt="Latest version on PyPI"/></a>
 <a href='https://readthedocs.org/projects/polartoolkit/'><img src='https://readthedocs.org/projects/polartoolkit/badge/?version=latest&style=flat-square' alt='Documentation Status' /></a>
  </p>
 
-<!-- SPHINX-END1 -->
+<!-- SPHINX-END-badges -->
 
 ![](docs/cover_fig.png)
-
-**PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible. The software does this by providing: 
-
-- Convenient functions for downloading and pre-processing a wide range of commonly used polar datasets
-- Tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions)
-- Code to easily create publication-quality maps, data profiles, and cross-sections
-
-Additionally, **PolarToolkit** provides an easy means for exploring datasets with pre-defined or interactively-chosen geographic regions.
 
 ## Disclaimer
 
@@ -53,7 +63,7 @@ I welcome any feedback, ideas, or contributions! Please contact us on the
 or submit an [issue on GitHub](https://github.com/mdtanker/polartoolkit/issues)
 for problems or feature ideas.
 
-<!-- SPHINX-START2 -->
+<!-- SPHINX-START-long-desc -->
 
 The **PolarToolkit** python package provides some basic tools to help in
 conducting polar research. You can use it to download common datasets (i.e.
@@ -76,7 +86,7 @@ a feature request through
 - Include more datasets to aid in downloading and storage.
 - Additional projections and possible support for the Arctic region as well.
 
-<!-- SPHINX-END2 -->
+<!-- SPHINX-END-long-desc -->
 
 ## Installation
 
