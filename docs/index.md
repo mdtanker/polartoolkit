@@ -1,6 +1,12 @@
 # PolarToolkit
 
-Helpful tools for polar researchers
+**PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible. The software does this by providing: 
+
+- Convenient functions for downloading and pre-processing a wide range of commonly used polar datasets
+- Tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions)
+- Code to easily create publication-quality maps, data profiles, and cross-sections
+
+Additionally, **PolarToolkit** provides an easy means for exploring datasets with pre-defined or interactively-chosen geographic regions.
 
 ```{include} ../README.md
 :start-after: <!-- SPHINX-START1 -->
