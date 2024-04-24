@@ -42,20 +42,34 @@ Additionally, **PolarToolkit** provides an easy means for exploring datasets wit
 🚨 **Ready for daily use but still changing.** 🚨
 </p>
 
-This means that we are still adding a lot of new features and sometimes we make changes to the ones we already have while we try to improve the software based on users' experience, test new ideas, make better design decisions, etc. Some of these changes could be **backwards incompatible**. Keep that in mind before you update PolarToolkit to a new major version (i.e. from `v1.0.0` to `v2.0.0`).
+This means that we are still adding a lot of new features and sometimes we make
+changes to the ones we already have while we try to improve the software based
+on users' experience, test new ideas, make better design decisions, etc. Some of
+these changes could be **backwards incompatible**. Keep that in mind before you
+update PolarToolkit to a new major version (i.e. from `v1.0.0` to `v2.0.0`).
 
 I welcome any feedback, ideas, or contributions! Please contact us on the
-[GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions) or submit an [issue on GitHub](https://github.com/mdtanker/polartoolkit/issues) for problems or feature ideas.
+[GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)
+or submit an [issue on GitHub](https://github.com/mdtanker/polartoolkit/issues)
+for problems or feature ideas.
 
 <!-- SPHINX-START2 -->
 
-The **PolarToolkit** python package provides some basic tools to help in conducting polar research. You can use it to download common datasets (i.e. BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica (soon Greenland and the Arctic as well), and visualize data with multiple methods.
+The **PolarToolkit** python package provides some basic tools to help in
+conducting polar research. You can use it to download common datasets (i.e.
+BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica
+(soon Greenland and the Arctic as well), and visualize data with multiple
+methods.
 
-Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to this project. I've mostly made this for personal usage so expect significant changes. Hopefully, I'll implement more tests and Gallery examples soon.
+Feel free to use, share, modify, and
+[contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to
+this project. I've mostly made this for personal usage so expect significant
+changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
 ## Project goals
 
-Below is a list of some features I hope to eventually include. Feel free to make a feature request through
+Below is a list of some features I hope to eventually include. Feel free to make
+a feature request through
 [GitHub Issues](https://github.com/mdtanker/polartoolkit/issues/new/choose).
 
 - Create 3D interactive models to help visualize data.
@@ -66,11 +80,13 @@ Below is a list of some features I hope to eventually include. Feel free to make
 
 ## Installation
 
-There are 3 main ways to install `polartoolkit`. We show them here in order of simplest to hardest.
+There are 3 main ways to install `polartoolkit`. We show them here in order of
+simplest to hardest.
 
 ### Conda / Mamba
 
-The easiest way to install this package and it's dependencies is with conda or mamba into a new virtual environment:
+The easiest way to install this package and it's dependencies is with conda or
+mamba into a new virtual environment:
 
 ```
 mamba create --name polartoolkit --yes --force polartoolkit
@@ -83,11 +99,13 @@ conda activate polartoolkit
 ```
 
 Note that `conda` and `mamba` are interchangeable.
- 
+
 ### Pip
 
 Instead, you can use pip to install `polartoolkit`, but first you need to
-install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and `Cartopy` all rely on C packages, which can only be install with conda/mamba and not with pip.
+install a few dependencies with conda. This is because `PyGMT` `GeoPandas`, and
+`Cartopy` all rely on C packages, which can only be install with conda/mamba and
+not with pip.
 
 To create a new virtual environment:
 
@@ -103,6 +121,7 @@ pip install polartoolkit
 ```
 
 To install the optional dependencies of `polartoolkit`, use this instead:
+
 ```
 `pip install polartoolkit[all]`
 ```
@@ -123,11 +142,15 @@ git clone https://github.com/mdtanker/polartoolkit.git
 cd polartoolkit
 pip install .
 ```
-    
+
 ## How to contribute
 
-I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion]() or [issue (feature request)]() on the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
+I really welcome all forms of contribution! If you have any questions, comments
+or suggestions, please open a [discussion]() or [issue (feature request)]() on
+the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
-Please, read our [Contributor Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to learn how you can contribute to the project.
+Please, read our
+[Contributor Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html)
+to learn how you can contribute to the project.
