@@ -36,7 +36,8 @@ keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting
 dependencies = [
     "pandas",
     "openpyxl",
-    "pooch[progress]", # includes tqdm
+    "pooch",
+    "tqdm",
     "verde>=1.8.0",
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "harmonica>=0.6.0",
