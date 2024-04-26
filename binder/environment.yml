@@ -1,9 +1,7 @@
 name: polartoolkit-binder
 channels:
   - conda-forge
-  - nodefaults
 dependencies:
-  - python=3.11
   - polartoolkit=0.3.3
   # interactive
   - geoviews
