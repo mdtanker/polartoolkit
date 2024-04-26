@@ -21,7 +21,7 @@ names = list(regions_dict.keys())
 region_values = list(regions_dict.values())
 
 
-def check_region_valid(region):
+def check_region_valid(region: tuple[float, float, float, float]) -> None:
     assert isinstance(region, tuple)
     assert len(region) == 4
     assert all(isinstance(i, (int, float)) for i in region)
