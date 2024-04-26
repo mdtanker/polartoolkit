@@ -75,7 +75,7 @@ Although a popular and well-designed similar package exists [Antarctic Mapping T
 Written in easy-to-learn Python, and utilizing common geospatial data structures, `PolarToolkit` is designed to be familiar to use for experienced Python users, while also being approachable for beginner coders.
 It is built upon several open-source packages, such a [Pooch](https://www.fatiando.org/pooch/latest/) for data downloading [@uiedapooch2020], [PyGMT](https://www.pygmt.org/latest/) for creating figures [@uiedapygmt2021], and [xarray](https://docs.xarray.dev/en/stable/) and [verde](https://www.fatiando.org/verde/latest/) for geospatial data processing [@hoyerxarray2017; @uiedaverde2018].
 
-Comprehensive documentation, API reference, tutorials and how-to guides are available at [https://antarctic-plots.readthedocs.io/en/](https://antarctic-plots.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
+Comprehensive documentation, API reference, tutorials and how-to guides are available at [https://polartoolkit.readthedocs.io/en/](https://polartoolkit.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
 
 
 # PolarToolkit Modules
