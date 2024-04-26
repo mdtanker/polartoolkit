@@ -106,7 +106,7 @@ html_theme_options = {
     "repository_branch": "main",
     "path_to_docs": "docs",
     "launch_buttons": {
-        "binderhub_url": "https://mybinder.org",
+        "binderhub_url": "https://mybinder.org/v2/gh/mdtanker/polartoolkit-binder/main?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fmdtanker%252Fpolartoolkit%26urlpath%3Dtree%252Fpolartoolkit%252F%26branch%3Dmain",
         "notebook_interface": "jupyterlab",
     },
     "use_edit_page_button": True,
