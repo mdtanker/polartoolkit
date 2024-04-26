@@ -3,7 +3,7 @@
 
 <sub>Adapted from the great contribution guidelines of the [Fatiando a Terra](https://www.fatiando.org/) packages<sub>.
 
-> This document contains some general guidlines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)!
+> This document contains some general guidelines to help with contributing to this code. Contributing to a package can be a daunting task, if you want help please reach out on the [GitHub discussions page](https://github.com/mdtanker/polartoolkit/discussions)!
 
 Any kind of help would be much appreciated. Here are a few ways to contribute:
 * 🐛 Submitting bug reports and feature requests
@@ -215,7 +215,7 @@ Leave a comment in the PR and we'll help you out.
 
 The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
 
-> **Note:** The docs are automatically built on PR's by `RTD`, but it's good practise to build them manually before a PR, to check them for errors.
+> **Note:** The docs are automatically built on PR's by `RTD`, but it's good practice to build them manually before a PR, to check them for errors.
 
 #### Run all .ipynb's to update them
 
@@ -239,14 +239,9 @@ nox -s docs -- --serve
 
 Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
 
-In each PR, you will see section of the checks for RTD. Click on this to preview the docs for the PR.
+In each PR, you will see section of the checks for `RTD`. Click on this to preview the docs for the PR.
 
-RTD uses the conda environment specified in `env/RTD_env.yml` when it's building.
-To create or update this file based on the necessary dependencies in [docs] of `pyproject.toml`, run the following command:
-
-```
-make RTD_env
-```
+`RTD` uses the conda environment specified in `env/RTD_env.yml` when it's building.
 
 ### Code Review
 
@@ -279,64 +274,13 @@ If you have any trouble, leave a comment in the PR or
 
 This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
 
-Follow all the above instructions for formating and building the docs
+Follow all the above instructions for formatting. Push your changes to a new or existing Pull Request. Once the automated GitHub Actions run (and pass), merge the PR into the main branch.
 
 ### PyPI (pip)
-Manually increment the version in polartoolkit/__init__.py:
-
-  version = "X.Y.Z"
-
-Build the package locally into the /dist folder:
-
-  make build
-
-Upload the dist files to Test PyPI:
-
-    make test_publish
-
-This should automatically find the TestPyPI username and token from a `.pypirc` file in your home directory.
-
-Make a new environment and activate it:
-
-    make test_pypi_env
-    mamba activate polartoolkit_test_pypi
-
- and run the following, replacing the asterisks with the version number:
-
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ polartoolkit==******
-
-Run a few gallery examples to make sure this env works, then its ready to publish to the real PyPI:
-
-    make publish
-
-Now push the changes to GitHub and make a release with the matching version number.
+PyPI release are made automatically via GitHub actions whenever a pull request is merged.
 
 ### Conda-Forge
-Once the new version is on PyPI, we can update the conda-forge feedstock.
-
-Fork the [conda-forge polartoolkit feedstock](https://github.com/conda-forge/polartoolkit-feedstock) on github:
-
-Clone the fork and checkout a new branch
-
-    git clone https://github.com/mdtanker/polartoolkit-feedstock
-
-    git checkout -b update
-
-Update the `meta.yaml` with the new PyPI version with `grayskull`
-
-  grayskull pypi polartoolkit
-
-Copy the new contents into the old `meta.yaml` file.
-
-Push the changes to GitHub
-
-    git add .
-
-    git commit -m "updating polartoolkit"
-
-    git push origin update
-
-Open a PR on GitHub with the new branch.
+Once the new version is on PyPI, within a few hours a bot will automatically open a new PR in the [PolarToolkit conda-forge feedstock](https://github.com/conda-forge/polartoolkit-feedstock). Go through the checklist on the PR. Most of the time the only actions needs are updated any changes made to the dependencies since the last release. Merge the PR and the new version will be available on conda-forge shortly.
 
 Once the new version is on conda, update the binder .yml file, as below.
 
@@ -344,18 +288,10 @@ Once the new version is on conda, update the binder .yml file, as below.
 
 To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI.
 
-After release a new version on PyPI, we will create a new release on conda-forge, and the new dependencies should automatically be included there.
-
-If you add a dependency necessary for using the package, make sure to add it to `env/env_test.ylm` and include it in the Binder config file. See below.
+If you add a dependency necessary for using the package, make sure to add it to the Binder config file. See below.
 
 ## Set up the binder configuration
 
-To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `/binder/environment.yml`. This file reflects the latest release on Conda-Forge. Update it with the following commands.
-
-    make conda_install
-
-    conda activate polartoolkit
-
-    make binder_env
+To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `/binder/environment.yml`. This file reflects the latest release on Conda-Forge. To allow all optional features in Binder, we need to manually add optional dependencies to the `binder/environment.yml`. Also, to use the latest version of PolarToolkit within Binder, makes sure to update its version in the `.env` file.
 
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environment.
