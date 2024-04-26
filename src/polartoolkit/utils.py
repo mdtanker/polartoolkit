@@ -1495,12 +1495,12 @@ def random_color() -> str:
     Returns
     -------
     str
-        returns a random color string
+        returns a random color string, for example '95/226/100'
     """
-    return (
-        f"{int(np.random.random() * 256)}/{int(np.random.random() * 256)}"
-        f"/{int(np.random.random() * 256)}"
-    )
+    rng = np.random.default_rng()
+
+    numbers = rng.integers(low=0, high=256, size=3)
+    return f"{numbers[0]}/{numbers[1]}/{numbers[2]}"
 
 
 def get_min_max(
