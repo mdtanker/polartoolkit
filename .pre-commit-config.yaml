@@ -17,7 +17,6 @@ exclude: |
       .github/ISSUE_TEMPLATE/feature_request.md|
       .github/config.yml|
       CONTRIBUTING.md|
-      binder/environment.yml|
       templates/CHANGELOG.md.j2|
   )$
 

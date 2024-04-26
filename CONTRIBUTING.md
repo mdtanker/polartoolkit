@@ -221,6 +221,8 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 
     make run_doc_files
 
+If your edits haven't changed any part of the core package, then there is no need to re-run the notebooks. If you changed a notebook, just clear it's contents and re-run that one notebook.
+
 #### Check the build manually (optional)
 
 You can build the docs using, but this will require pandoc to be install on your machine:
@@ -292,6 +294,8 @@ If you add a dependency necessary for using the package, make sure to add it to 
 
 ## Set up the binder configuration
 
-To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `/binder/environment.yml`. This file reflects the latest release on Conda-Forge. To allow all optional features in Binder, we need to manually add optional dependencies to the `binder/environment.yml`. Also, to use the latest version of PolarToolkit within Binder, makes sure to update its version in the `.env` file.
+To run this package online, Read the Docs will automatically create a Binder instance based on the configuration file `environment.yml` in a separate repository [`Polartoolkit-Binder`](https://github.com/mdtanker/polartoolkit-binder). This file should reflect the latest release on Conda-Forge. To allow all optional features in Binder, we need to manually add optional dependencies to the `environment.yml` file. Also, to use the latest version of PolarToolkit within Binder, makes sure to update its version in the file after each release.
+
+Once updated, rebuild the Binder environment, look at which package versions Binder used for each specified dependency, and update the environment file with these versions.
 
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environment.
