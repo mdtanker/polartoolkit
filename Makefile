@@ -2,26 +2,44 @@
 PROJECT=polartoolkit
 STYLE_CHECK_FILES=.
 
+####
+####
+# install commands
+####
+####
+
 create:
 	mamba create --name $(PROJECT) --yes --force pygmt geopandas python=3.11
-
-create_test_env:
-	mamba create --name test --yes python=3.11
 
 install:
 	pip install -e .[all]
 
 install_test:
-	pip install polartoolkit[all]
+	pip install $(PROJECT)[all]
 
 remove:
 	mamba remove --name $(PROJECT) --all
+
+conda_install:
+	mamba create --name $(PROJECT) --yes --force $(PROJECT)
+
+####
+####
+# test commands
+####
+####
 
 test:
 	pytest -m "not earthdata and not issue and not fetch"
 
 test_fetch:
 	pytest -s -m fetch #-rp
+
+####
+####
+# style commands
+####
+####
 
 format:
 	ruff format $(STYLE_CHECK_FILES)
@@ -33,12 +51,19 @@ lint:
 	pre-commit run --all-files
 
 pylint:
-	pylint polartoolkit
+	pylint $(PROJECT)
 
 style: format check lint pylint
 
 mypy:
-	mypy src/polartoolkit
+	mypy src/$(PROJECT)
+
+
+####
+####
+# chore commands
+####
+####
 
 release_check:
 	semantic-release --noop version
@@ -52,6 +77,13 @@ license-add:
 license-check:
 	python tools/license_notice.py --check
 
+
+####
+####
+# doc commands
+####
+####
+
 run_gallery:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
 
@@ -63,31 +95,3 @@ run_doc_files:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*/*.ipynb
 
 run_notebooks: run_gallery run_tutorials run_doc_files
-
-# install with conda
-conda_install:
-	mamba create --name polartoolkit --yes --force polartoolkit
-
-# create binder yml
-binder_env:
-	mamba env export --name polartoolkit --no-builds > binder/environment.yml
-
-# create ReadTheDocs yml
-RTD_env:
-	mamba remove --name RTD_env --all --yes
-	mamba create --name RTD_env --yes --force python==3.11 pygmt>=0.10.0
-	mamba env export --name RTD_env --no-builds --from-history > env/RTD_env.yml
-	# delete last line
-	sed -i '$$d' env/RTD_env.yml
-	# add pip and install local package
-	sed -i '$$a\  - pip\n  - pip:\n    - ../.[docs]' env/RTD_env.yml
-
-# create testing yml
-testing_env:
-	mamba remove --name testing_env --all --yes
-	mamba create --name testing_env --yes --force pygmt
-	mamba env export --name testing_env --no-builds --from-history > env/testing_env.yml
-	# delete last line
-	sed -i '$$d' env/testing_env.yml
-	# add pip and install local package
-	sed -i '$$a\  - pip\n  - pip:\n    - ../.[test]' env/testing_env.yml
