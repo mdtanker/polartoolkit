@@ -18,7 +18,7 @@ from polartoolkit import regions
 
 regions_dict = regions.get_regions()
 names = list(regions_dict.keys())
-regions = list(regions_dict.values())
+region_values = list(regions_dict.values())
 
 
 def check_region_valid(region):
@@ -31,6 +31,6 @@ def check_region_valid(region):
     assert region[2] != region[3]
 
 
-@pytest.mark.parametrize(("testname", "region"), zip(names, regions))
+@pytest.mark.parametrize(("testname", "region"), zip(names, region_values))
 def test_regions(testname, region):  # noqa: ARG001
     check_region_valid(region)
