@@ -15,6 +15,7 @@ def test_():
     expected =
     assert utils.get_grid_info(grid) == expected
 """
+
 from __future__ import annotations
 
 import os

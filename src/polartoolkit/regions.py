@@ -9,6 +9,7 @@
 Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic
 Projection (EPSG:3031). The format is (East, West, North, South), in meters.
 """
+
 from __future__ import annotations
 
 import typing

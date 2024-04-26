@@ -2176,9 +2176,11 @@ def rema(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load data
-            with xr.open_dataarray(tiff_file).squeeze().drop_vars(
-                ["band", "spatial_ref"]
-            ) as grid:
+            with (
+                xr.open_dataarray(tiff_file)
+                .squeeze()
+                .drop_vars(["band", "spatial_ref"]) as grid
+            ):
                 ds = grid.to_dataset(name="surface")
 
                 # Save to disk
