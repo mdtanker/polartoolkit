@@ -12,6 +12,7 @@ for learning how to easily contribute a dataset yourself!
 ---
 ---
 bedmap2_grids
+bedmachine_grids
 ```
 
 ## Arctic
