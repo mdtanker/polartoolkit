@@ -1597,7 +1597,7 @@ def bedmachine(
     ----------
     layer : str
         choose which layer to fetch:
-        'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mapping', 'mask', 'source',
+        'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mask', 'source',
         'surface', 'thickness'; 'icebase' will give results of surface-thickness
     reference : str
         choose whether heights are referenced to 'eigen-6c4' geoid or the
@@ -1660,7 +1660,6 @@ def bedmachine(
         "errbed",
         "firn",
         "geoid",
-        "mapping",
         "mask",
         "source",
         "surface",
