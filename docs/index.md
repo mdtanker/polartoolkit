@@ -48,5 +48,86 @@ overview
 install
 gallery/index.md
 tutorial/index.md
-datasets/index.md
 ```
+
+```{toctree}
+:hidden:
+:caption: 📂 Available datasets
+datasets/index.md
+datasets/antarctica/index.md
+datasets/arctic/index.md
+datasets/greenland/index.md
+```
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Tips
+tips.ipynb
+```
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+:caption: 📖 Reference documentation
+api/polartoolkit
+citing.md
+changelog.md
+references.rst
+```
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: ℹ️ Other resources
+contributing.md
+Source code on GitHub <https://github.com/mdtanker/polartoolkit>
+```
+
+
+::::{grid} 2
+:::{grid-item-card} {octicon}`rocket` Getting started?
+:text-align: center
+New to PolarToolkit? Start here!
+```{button-ref} overview
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
+
+:::{grid-item-card} {octicon}`comment-discussion` Need help?
+:text-align: center
+Start a discussion on GitHub!
+```{button-link} https://github.com/mdtanker/polartoolkit/discussions
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+    Discussions
+```
+:::
+
+:::{grid-item-card} {octicon}`file-badge` Reference documentation
+:text-align: center
+A list of modules and functions
+```{button-ref} api/polartoolkit
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
+
+:::{grid-item-card} {octicon}`bookmark` Using PolarToolkit for research?
+:text-align: center
+Citations help support our work
+```{button-ref} citing
+    :click-parent:
+    :color: primary
+    :outline:
+    :expand:
+```
+:::
+::::
