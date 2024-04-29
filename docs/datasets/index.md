@@ -8,11 +8,15 @@ for learning how to easily contribute a dataset yourself!
 
 ## Antarctica
 
+### Topography-related data
+
 ```{nbgallery}
 ---
 ---
 bedmap2_grids
 bedmachine_grids
+basement
+bedmap_points
 ```
 
 ## Arctic
