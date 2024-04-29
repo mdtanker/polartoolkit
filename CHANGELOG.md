@@ -7,6 +7,13 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ### 📦️ Build
 ### 🧰 Chores / Maintenance
 * remove pre-commit updates from changelog ([`611ff84`](https://github.com/mdtanker/polartoolkit/commit/611ff84c3ba5a5a31f6e4870f231dcd74c1f7053))
+### 📖 Documentation
+* reuse readme material in RTD index ([`8791e96`](https://github.com/mdtanker/polartoolkit/commit/8791e9604e007417d4e7240a37fdf7d17f98000c))
+### ✏️ Formatting
+* auto style fixes from ruff/pylint ([`e1efbab`](https://github.com/mdtanker/polartoolkit/commit/e1efbab1eded88ebb42b256a09c4198e93f16842))
+### Other
+*  ([`49e95cb`](https://github.com/mdtanker/polartoolkit/commit/49e95cb854a9938095cf277d872db148a84fce5c))
+*  ([`cb7ee9d`](https://github.com/mdtanker/polartoolkit/commit/cb7ee9d64117a96e0220b9d2ff3f90c1f1b71f7d))
 
 
 ## v0.3.3 (2024-04-23)

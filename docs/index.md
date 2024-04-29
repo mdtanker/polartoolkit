@@ -1,10 +1,13 @@
 # PolarToolkit
 
-Helpful tools for polar researchers
+```{include} ../README.md
+:start-after: <!-- SPHINX-START-proj-desc -->
+:end-before: <!-- SPHINX-END-proj-desc -->
+```
 
 ```{include} ../README.md
-:start-after: <!-- SPHINX-START1 -->
-:end-before: <!-- SPHINX-END1 -->
+:start-after: <!-- SPHINX-START-badges -->
+:end-before: <!-- SPHINX-END-badges -->
 ```
 
 ```{image} cover_fig.png
@@ -21,8 +24,8 @@ This means that we are still adding a lot of new features and sometimes we make 
 
 
 ```{include} ../README.md
-:start-after: <!-- SPHINX-START2 -->
-:end-before: <!-- SPHINX-END2 -->
+:start-after: <!-- SPHINX-START-long-desc -->
+:end-before: <!-- SPHINX-END-long-desc -->
 ```
 
 
