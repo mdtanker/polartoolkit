@@ -45,6 +45,9 @@ jobs:
   test:
     name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
+    if: |
+      ${{!startsWith(github.event.head_commit.message, 'docs:') }} ||
+      ${{!startsWith(github.event.head_commit.message, 'style:') }}
     needs: [pre-commit]
     strategy:
       # Otherwise, the workflow would stop if a single job fails. We want to
