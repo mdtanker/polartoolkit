@@ -221,7 +221,7 @@ def resample_grid(
 
 class EarthDataDownloader:
     """
-    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/icepack/datasets.py
+    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/src/icepack/datasets.py
     Either pulls login details from pre-set environment variables, or prompts user to
     input username and password.
     """
@@ -599,8 +599,8 @@ def modis_moa(
     version: str = "750m",
 ) -> str:
     """
-    Load the MODIS MoA imagery in either "750m" or "125m" resolutions from
-    :footcite:t:`modis2021` and :footcite:t:`scambosmodisbased2007`.
+    Load the MODIS Mosaic of Antarctica imagery in either "750m" or "125m" resolutions
+    from :footcite:t:`haranmodis2021` and :footcite:t:`scambosmodisbased2007`.
 
     accessed from https://nsidc.org/data/nsidc-0593/versions/2
 
@@ -1358,7 +1358,7 @@ def sediment_thickness(
 
 def ibcso_coverage(
     region: tuple[float, float, float, float],
-) -> gpd.GeoDataFrame:
+) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
     Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
     :footcite:t:`dorschelinternational2022a`.
@@ -1370,8 +1370,9 @@ def ibcso_coverage(
 
     Returns
     -------
-    gpd.GeoDataFrame
-        Returns a geodataframe of a subset of IBCSO v2 point measurement locations
+    tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]
+        Returns two geodataframes; points and polygons for a subset of IBCSO v2 point
+        measurement locations.
 
     References
     ----------
@@ -2597,7 +2598,7 @@ def etopo(
 ) -> xr.DataArray:
     """
     Loads a grid of Antarctic topography from ETOPO1 from :footcite:t:`etopo12009`.
-    Originally at 10 arc-min resolution, reference to mean sea-level.
+    Originally at 10 arc-min resolution, reference to mean sea-level (geoid).
 
     originally from https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-topography-10arcmin
@@ -2702,7 +2703,7 @@ def geoid(
 
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin
-
+    DOI: 10.5281/zenodo.5882205
     Parameters
     ----------
 
@@ -3807,7 +3808,7 @@ def crustal_thickness(
     if version == "shen-2018":
         msg = "the link to the shen-2018 data appears to be broken"
         raise ValueError(msg)
-        # # was in lat long, so just using standard values here
+        # was in lat long, so just using standard values here
         # initial_region = regions.antarctica
         # initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
         # initial_registration = "g"
@@ -3832,7 +3833,7 @@ def crustal_thickness(
         #         # load data
         #         df = pd.read_csv(
         #             fname1,
-        #             delim_whitespace=True,
+        #             sep='\s+',
         #             header=None,
         #             names=["lon", "lat", "thickness"],
         #         )
