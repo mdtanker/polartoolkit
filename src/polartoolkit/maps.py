@@ -477,7 +477,11 @@ def plot_grd(
 
     # add box showing region
     if show_region is not None:
-        add_box(fig, show_region)
+        add_box(
+            fig,
+            show_region,
+            pen=kwargs.get("inset_box_pen", None),
+        )
 
     # plot groundingline and coastlines
     if coast is True:
