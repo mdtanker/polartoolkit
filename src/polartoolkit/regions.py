@@ -6,8 +6,7 @@
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """
-Bounding regions for commonly plotted Antarctic regions. In Polar Stereographic
-Projection (EPSG:3031). The format is (East, West, North, South), in meters.
+Bounding regions for commonly plotted polar regions. In stereographic projections. The format is (East, West, North, South), in meters.
 """
 
 from __future__ import annotations
@@ -23,10 +22,6 @@ from polartoolkit import (  # pylint: disable=import-self
     utils,
 )
 
-# import polartoolkit.maps as maps
-# import polartoolkit.regions as regions
-# import polartoolkit.utils as utils
-
 try:
     import ipyleaflet
 except ImportError:
@@ -38,6 +33,11 @@ try:
 except ImportError:
     display = None
 
+#####
+#####
+# Antarctica
+#####
+#####
 
 # regions
 antarctica = (-2800e3, 2800e3, -2800e3, 2800e3)
@@ -152,6 +152,25 @@ ross_sea = (-500e3, 450e3, -2100e3, -1300e3)
 lake_vostok = (1100e3, 1535e3, -470e3, -230e3)
 # ice catchements
 
+#####
+#####
+# Greenland
+#####
+#####
+
+# regions
+greenland = (-650e3, 900e3, -3400e3, -600e3)
+north_greenland = (-500e3, 600e3, -1200e3, -650e3)
+# northwest_greenland = ()
+# northeast_greenland = ()
+# west_greenland = ()
+# east_greenland = ()
+# southeast_greenland = ()
+# southwest_greenland = ()
+
+# glaciers
+kangerlussuaq_glacier = (380e3, 550e3, -2340e3, -2140e3)
+
 
 def get_regions() -> dict[str, tuple[float, float, float, float]]:
     """
@@ -226,7 +245,15 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
     -------
     typing.Any
         Returns a list of list of vertices for each polyline.
+
+    Example
+    -------
+    >>> from polartoolkit import regions, utils
+    ...
+    >>> polygon = regions.draw_region()
+    >>> region = utils.polygon_to_region(polygon, hemisphere="north")
     """
+
     if ipyleaflet is None:
         msg = """
             Missing optional dependency 'ipyleaflet' required for interactive plotting.
