@@ -2318,19 +2318,18 @@ def deepbedmap(
         progressbar=True,
     )
 
-    # with xr.open_dataarray(path) as da:
-    #     grid = da.squeeze()
+    with xr.open_dataarray(path) as da:
+        grid = da.squeeze()
 
-    return path
-    # return resample_grid(
-    #     grid,
-    #     initial_spacing=initial_spacing,
-    #     initial_region=initial_region,
-    #     initial_registration=initial_registration,
-    #     spacing=spacing,
-    #     region=region,
-    #     registration=registration,
-    # )
+    return resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+    )
 
 
 def gravity(
