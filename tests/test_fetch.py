@@ -291,6 +291,37 @@ def test_modis_moa():
 # grid = fetch.modis_moa(version="750m")
 # utils.get_grid_info(grid)
 
+# %% modis_mog
+
+
+@pytest.mark.fetch()
+@pytest.mark.slow()
+@pytest.mark.earthdata()
+@skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_modis_mog():
+    grid = fetch.modis_mog(version="500m")
+    expected = (
+        500,
+        (-1200000.0, 900000.0, -3400000.0, -600000.0),
+        0.0,
+        35746.0,
+        "p",
+    )
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=2,
+    )
+
+
+# version="100m" not testing since too large
+
+# grid = fetch.modis_mog(version="500m")
+# utils.get_grid_info(grid)
+
 # %% imagery
 
 

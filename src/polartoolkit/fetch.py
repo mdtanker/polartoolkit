@@ -645,6 +645,54 @@ def modis_moa(
     return path
 
 
+def modis_mog(
+    version: str = "500m",
+) -> str:
+    """
+    Load the 2015 MODIS Mosaic of Greenland imagery in either "500m" or "100m"
+    resolutions from :footcite:t:`haranmeasures2018`.
+
+    accessed from https://nsidc.org/data/nsidc-0547/versions/2
+
+    Parameters
+    ----------
+    version : str, optional
+        choose between "500m" or "100m" resolutions, by default "500m"
+
+    Returns
+    -------
+    str
+       filepath for either 500m or 100m MODIS MoG Imagery
+
+    References
+    ----------
+    .. footbibliography::
+    """
+    if version == "100m":
+        path: str = pooch.retrieve(
+            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif",
+            fname="mog100.tif",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
+            downloader=EarthDataDownloader(),
+            known_hash=None,
+            progressbar=True,
+        )
+    elif version == "500m":
+        path = pooch.retrieve(
+            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif",
+            fname="mog500.tif",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
+            downloader=EarthDataDownloader(),
+            known_hash=None,
+            progressbar=True,
+        )
+    else:
+        msg = "invalid version string"
+        raise ValueError(msg)
+
+    return path
+
+
 def imagery() -> str:
     """
     Load the file path of Antarctic imagery geotiff from LIMA from
