@@ -6,7 +6,8 @@
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
 """
-Bounding regions for commonly plotted polar regions. In stereographic projections. The format is (East, West, North, South), in meters.
+Bounding regions for commonly plotted polar regions. In stereographic projections. The
+format is (East, West, North, South), in meters.
 """
 
 from __future__ import annotations
