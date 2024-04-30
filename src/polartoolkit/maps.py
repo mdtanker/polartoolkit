@@ -1227,6 +1227,7 @@ def add_box(
 
 
 def interactive_map(
+    hemisphere: str,
     center_yx: list[float] | None = None,
     zoom: float = 0,
     display_xy: bool = True,
@@ -1237,10 +1238,12 @@ def interactive_map(
 ) -> ipyleaflet.Map:
     """
     Plot an interactive map with satellite imagery. Clicking gives the cursor location
-    in EPSG:3031 [x,y]. Requires ipyleaflet
+    in a Polar Stereographic projection [x,y]. Requires ipyleaflet
 
     Parameters
     ----------
+    hemisphere : str
+        choose between plotting in the "north" or "south" hemispheres
     center_yx : list, optional
         choose center coordinates in EPSG3031 [y,x], by default [0,0]
     zoom : float, optional
@@ -1283,7 +1286,11 @@ def interactive_map(
             center_ll = [points.lon.mean(), points.lat.mean()]
         else:
             # convert points to lat lon
-            points_ll: pd.DataFrame = utils.epsg3031_to_latlon(points)
+            if hemisphere == "south":
+                points_ll: pd.DataFrame = utils.epsg3031_to_latlon(points)
+            elif hemisphere == "north":
+                points_ll = utils.epsg3413_to_latlon(points)
+
             # if points supplied, center map on points
             center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
             # add points to geodataframe
@@ -1293,25 +1300,47 @@ def interactive_map(
             )
             geo_data = ipyleaflet.GeoData(
                 geo_dataframe=gdf,
-                # style={'radius': .5, 'color': 'red', 'weight': .5},
                 point_style={"radius": 1, "color": "red", "weight": 1},
             )
     else:
         # if no points, center map on 0, 0
-        center_ll = utils.epsg3031_to_latlon([0, 0])
+        if hemisphere == "south":
+            center_ll = utils.epsg3031_to_latlon([0, 0])
+        elif hemisphere == "north":
+            center_ll = utils.epsg3413_to_latlon([0, 0])
 
     if center_yx is not None:
-        center_ll = utils.epsg3031_to_latlon(center_yx)
+        if hemisphere == "south":
+            center_ll = utils.epsg3031_to_latlon(center_yx)
+        elif hemisphere == "north":
+            center_ll = utils.epsg3413_to_latlon(center_yx)
 
-    if basemap_type == "BlueMarble":
-        base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3031  # pylint: disable=no-member
-        proj = ipyleaflet.projections.EPSG3031.NASAGIBS
-    elif basemap_type == "Imagery":
-        base = ipyleaflet.basemaps.Esri.AntarcticImagery  # pylint: disable=no-member
-        proj = ipyleaflet.projections.EPSG3031.ESRIImagery
-    elif basemap_type == "Basemap":
-        base = ipyleaflet.basemaps.Esri.AntarcticBasemap  # pylint: disable=no-member
-        proj = ipyleaflet.projections.EPSG3031.ESRIBasemap
+    if hemisphere == "south":
+        if basemap_type == "BlueMarble":
+            base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3031  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3031.NASAGIBS
+        elif basemap_type == "Imagery":
+            base = ipyleaflet.basemaps.Esri.AntarcticImagery  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3031.ESRIImagery
+        elif basemap_type == "Basemap":
+            base = ipyleaflet.basemaps.Esri.AntarcticBasemap  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3031.ESRIBasemap
+        else:
+            msg = "invalid string for basemap_type"
+            raise ValueError(msg)
+    elif hemisphere == "north":
+        if basemap_type == "BlueMarble":
+            base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3413  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3413.NASAGIBS
+        # elif basemap_type == "Imagery":
+        #     base = ipyleaflet.basemaps.Esri.ArcticImagery  # pylint: disable=no-member
+        #     proj = ipyleaflet.projections.EPSG5936.ESRIImagery
+        # elif basemap_type == "Basemap":
+        #     base = ipyleaflet.basemaps.Esri.OceanBasemap  # pylint: disable=no-member
+        #     proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
+        else:
+            msg = "invalid string for basemap_type"
+            raise ValueError(msg)
 
     # create the map
     m = ipyleaflet.Map(
@@ -1334,7 +1363,10 @@ def interactive_map(
         def handle_click(**kwargs: typing.Any) -> None:
             if kwargs.get("type") == "click":
                 latlon = kwargs.get("coordinates")
-                label_xy.value = str(utils.latlon_to_epsg3031(latlon))
+                if hemisphere == "south":
+                    label_xy.value = str(utils.latlon_to_epsg3031(latlon))
+                elif hemisphere == "north":
+                    label_xy.value = str(utils.latlon_to_epsg3413(latlon))
 
     m.on_interaction(handle_click)
 
@@ -1561,6 +1593,7 @@ def plot_3d(
             grid = utils.mask_from_polygon(
                 polygon_mask,
                 grid=grid,
+                hemisphere=kwargs.get("hemisphere", None),
             )
         # create colorscales
         if grd2cpt is True:

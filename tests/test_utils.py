@@ -119,14 +119,40 @@ def test_region_to_df():
     assert reg2 == reg
 
 
-def test_region_xy_to_ll():
+def test_region_xy_to_ll_north():
+    """
+    test the GMT_xy_to_ll function
+    """
+
+    reg_xy = regions.north_greenland
+
+    reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="north", dms=True)
+
+    assert reg_ll == (
+        "-92:17:26.19615349866217",
+        "11:18:35.75690647277224",
+        "58:19:54.14523478713818",
+        "81:50:50.37008428043919",
+    )
+
+    reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="north")
+
+    assert reg_ll == (
+        -92.29061004263852,
+        11.309932474020215,
+        58.33170700966309,
+        81.84732502341123,
+    )
+
+
+def test_region_xy_to_ll_south():
     """
     test the GMT_xy_to_ll function
     """
 
     reg_xy = regions.ross_ice_shelf
 
-    reg_ll = utils.region_xy_to_ll(reg_xy, dms=True)
+    reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="south", dms=True)
 
     assert reg_ll == (
         "-154:24:41.35269126086496",
@@ -135,7 +161,7 @@ def test_region_xy_to_ll():
         "-75:34:58.96941344602965",
     )
 
-    reg_ll = utils.region_xy_to_ll(reg_xy)
+    reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="south")
 
     assert reg_ll == (
         -154.41148685868356,
@@ -247,6 +273,98 @@ def test_epsg3031_to_latlon_region():
     reg = utils.epsg3031_to_latlon(df_xy, reg=True)
 
     assert reg == pytest.approx((-154.41, 161.69, -84.82, -75.58), abs=0.01)
+
+
+def test_latlon_to_epsg3413():
+    """
+    test the latlon_to_epsg3413 function
+    """
+
+    df_ll = pd.DataFrame(
+        {
+            "lat": [68.366181, 68.070993, 70.129560, 69.806264],
+            "lon": [-35.776078, -31.773128, -34.930937, -30.586402],
+        }
+    )
+
+    df_xy = utils.latlon_to_epsg3413(df_ll)
+
+    expected = pd.DataFrame(
+        {
+            "x": [
+                380000.0,
+                550000.0,
+                380000.0,
+                550000.0,
+            ],
+            "y": [
+                -2340000.0,
+                -2340000.0,
+                -2140000.0,
+                -2140000.0,
+            ],
+        }
+    )
+    pd.testing.assert_frame_equal(df_xy[["x", "y"]], expected)
+
+
+def test_latlon_to_epsg3413_region():
+    """
+    test the latlon_to_epsg3413 function output a region
+    """
+
+    df_ll = pd.DataFrame(
+        {
+            "lat": [68.366181, 68.070993, 70.129560, 69.806264],
+            "lon": [-35.776078, -31.773128, -34.930937, -30.586402],
+        }
+    )
+
+    reg = utils.latlon_to_epsg3413(df_ll, reg=True)
+
+    assert reg == pytest.approx(regions.kangerlussuaq_glacier, abs=10)
+
+
+def test_epsg3413_to_latlon():
+    """
+    test the epsg3413_to_latlon function
+    """
+
+    df_xy = utils.region_to_df(regions.kangerlussuaq_glacier)
+
+    df_ll = utils.epsg3413_to_latlon(df_xy)
+
+    expected = pd.DataFrame(
+        {
+            "x": [
+                380000.0,
+                550000.0,
+                380000.0,
+                550000.0,
+            ],
+            "y": [
+                -2340000.0,
+                -2340000.0,
+                -2140000.0,
+                -2140000.0,
+            ],
+            "lat": [68.366181, 68.070993, 70.129560, 69.806264],
+            "lon": [-35.776078, -31.773128, -34.930937, -30.586402],
+        }
+    )
+    pd.testing.assert_frame_equal(df_ll, expected)
+
+
+def test_epsg3413_to_latlon_region():
+    """
+    test the epsg3413_to_latlon function output a region
+    """
+
+    df_xy = utils.region_to_df(regions.kangerlussuaq_glacier)
+
+    reg = utils.epsg3413_to_latlon(df_xy, reg=True)
+
+    assert reg == pytest.approx((-35.78, -30.59, 68.07, 70.13), abs=0.01)
 
 
 def test_points_inside_region():

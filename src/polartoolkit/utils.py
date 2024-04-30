@@ -237,13 +237,17 @@ def region_to_df(
 
 
 def region_xy_to_ll(
-    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any], dms: bool = False
+    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
+    hemisphere: str,
+    dms: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
     Convert GMT region in format [e, w, n, s] in EPSG:3031 to lat / lon
 
     Parameters
     ----------
+    hemisphere : str,
+        choose between the "north" or "south" hemispheres
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in GMT format; [e, w, n, s] in meters
     dms: bool, False
@@ -255,7 +259,10 @@ def region_xy_to_ll(
         region boundaries in GMT format; [e, w, n, s] in lat, lon
     """
     df = region_to_df(region)
-    df_proj = epsg3031_to_latlon(df, reg=True)
+    if hemisphere == "north":
+        df_proj = epsg3413_to_latlon(df, reg=True)
+    elif hemisphere == "south":
+        df_proj = epsg3031_to_latlon(df, reg=True)
 
     return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
@@ -368,6 +375,110 @@ def epsg3031_to_latlon(
     """
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
+
+    df_out = df.copy()
+
+    if isinstance(df, pd.DataFrame):
+        (  # pylint: disable=unpacking-non-sequence
+            df_out[output_coord_names[1]],  # type: ignore[call-overload]
+            df_out[output_coord_names[0]],  # type: ignore[call-overload]
+        ) = transformer.transform(
+            df_out[input_coord_names[0]].tolist(),  # type: ignore[call-overload]
+            df_out[input_coord_names[1]].tolist(),  # type: ignore[call-overload]
+        )
+        if reg is True:
+            df_out = [
+                df_out[output_coord_names[0]].min(),  # type: ignore[call-overload]
+                df_out[output_coord_names[0]].max(),  # type: ignore[call-overload]
+                df_out[output_coord_names[1]].min(),  # type: ignore[call-overload]
+                df_out[output_coord_names[1]].max(),  # type: ignore[call-overload]
+            ]
+    else:
+        df_out = list(transformer.transform(df_out[0], df_out[1]))
+    return df_out
+
+
+def latlon_to_epsg3413(
+    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
+    reg: bool = False,
+    input_coord_names: tuple[str, str] = ("lon", "lat"),
+    output_coord_names: tuple[str, str] = ("x", "y"),
+) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
+    """
+    Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3413 North Polar
+    Stereographic in meters.
+
+    Parameters
+    ----------
+    df : pd.DataFrame or NDArray[typing.Any, typing.Any]
+        input dataframe with latitude and longitude columns
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input_coord_names : list, optional
+        set names for input coordinate columns, by default ["lon", "lat"]
+    output_coord_names : list, optional
+        set names for output coordinate columns, by default ["x", "y"]
+
+    Returns
+    -------
+    pd.DataFrame or NDArray[typing.Any, typing.Any]
+        Updated dataframe with new easting and northing columns or NDArray in format
+        [e, w, n, s]
+    """
+    transformer = Transformer.from_crs("epsg:4326", "epsg:3413")
+
+    if isinstance(df, pd.DataFrame):
+        df_new = df.copy()
+        (  # pylint: disable=unpacking-non-sequence
+            df_new[output_coord_names[0]],
+            df_new[output_coord_names[1]],
+        ) = transformer.transform(
+            df_new[input_coord_names[1]].tolist(), df_new[input_coord_names[0]].tolist()
+        )
+    else:
+        ll = df.copy()
+        df_new = list(transformer.transform(ll[0], ll[1]))
+
+    if reg is True:
+        df_new = [
+            df_new[output_coord_names[0]].min(),
+            df_new[output_coord_names[0]].max(),
+            df_new[output_coord_names[1]].min(),
+            df_new[output_coord_names[1]].max(),
+        ]
+
+    return df_new
+
+
+def epsg3413_to_latlon(
+    df: pd.DataFrame | list[typing.Any],
+    reg: bool = False,
+    input_coord_names: tuple[str, str] = ("x", "y"),
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
+) -> pd.DataFrame | list[typing.Any]:
+    """
+    Convert coordinates from EPSG:3413 North Polar Stereographic in meters to
+    EPSG:4326 WGS84 in decimal degrees.
+
+    Parameters
+    ----------
+    df : pd.DataFrame or list[typing.Any]
+        input dataframe with easting and northing columns, or list [x,y]
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input_coord_names : list, optional
+        set names for input coordinate columns, by default ["x", "y"]
+    output_coord_names : list, optional
+        set names for output coordinate columns, by default ["lon", "lat"]
+
+    Returns
+    -------
+    pd.DataFrame or list[typing.Any]
+        Updated dataframe with new latitude and longitude columns, NDArray in
+        format [e, w, n, s], or list in format [lat, lon]
+    """
+
+    transformer = Transformer.from_crs("epsg:3413", "epsg:4326")
 
     df_out = df.copy()
 
@@ -1543,13 +1654,18 @@ def get_min_max(
     return (v_min, v_max)
 
 
-def shapes_to_df(shapes: list[float]) -> pd.DataFrame:
+def shapes_to_df(
+    shapes: list[float],
+    hemisphere: str,
+) -> pd.DataFrame:
     """
     convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe
     of x and y points
 
     Parameters
     ----------
+    hemisphere : str
+        choose between the "north" or "south" hemispheres
     shapes : list
         list of vertices
 
@@ -1566,17 +1682,31 @@ def shapes_to_df(shapes: list[float]) -> pd.DataFrame:
         shape = pd.DataFrame({"lon": lon, "lat": lat, "shape_num": i})
         df = pd.concat((df, shape))
 
-    return latlon_to_epsg3031(df)
+    if hemisphere == "north":
+        df = latlon_to_epsg3413(df)
+    elif hemisphere == "south":
+        df = latlon_to_epsg3031(df)
+    else:
+        msg = "hemisphere must be 'north' or 'south'"
+        raise ValueError(msg)
+
+    return df
 
 
-def polygon_to_region(polygon: list[float]) -> tuple[float, float, float, float]:
+def polygon_to_region(
+    polygon: list[float],
+    hemisphere: str,
+) -> tuple[float, float, float, float]:
     """
-    convert the output of `regions.draw_region` to bounding region in EPSG:3031
+    convert the output of `regions.draw_region` to bounding region in EPSG:3031 for the
+    south hemisphere and EPSG:3413 for the north hemisphere.
 
     Parameters
     ----------
     polyon : list
         list of polygon vertices
+    hemisphere : str
+        choose between the "north" or "south" hemispheres
 
     Returns
     -------
@@ -1584,7 +1714,7 @@ def polygon_to_region(polygon: list[float]) -> tuple[float, float, float, float]
         region in format [e,w,n,s]
     """
 
-    df = shapes_to_df(polygon)
+    df = shapes_to_df(shapes=polygon, hemisphere=hemisphere)
 
     if df.shape_num.max() > 0:
         logging.info(
@@ -1599,6 +1729,7 @@ def polygon_to_region(polygon: list[float]) -> tuple[float, float, float, float]
 
 def mask_from_polygon(
     polygon: list[float],
+    hemisphere: str,
     invert: bool = False,
     drop_nans: bool = False,
     grid: str | xr.DataArray | None = None,
@@ -1613,6 +1744,8 @@ def mask_from_polygon(
     ----------
     polygon : list
        list of polygon vertices
+    hemisphere : str
+        choose between the "north" or "south" hemispheres
     invert : bool, optional
         reverse the sense of masking, by default False
     drop_nans : bool, optional
@@ -1631,7 +1764,7 @@ def mask_from_polygon(
     """
 
     # convert drawn polygon into dataframe
-    df = shapes_to_df(polygon)
+    df = shapes_to_df(polygon, hemisphere=hemisphere)
     data_coords = (df.x, df.y)
 
     # remove additional polygons
