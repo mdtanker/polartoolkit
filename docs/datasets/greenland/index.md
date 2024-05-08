@@ -5,4 +5,5 @@
 ```{nbgallery}
 ---
 ---
+modis_mog
 ```
