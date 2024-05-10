@@ -842,6 +842,10 @@ def groundingline(
     from :footcite:t:`mouginotmeasures2017`.
     accessed at https://nsidc.org/data/nsidc-0709/versions/2
 
+    version = "BAS"
+    from :footcite:t:`gerrishcoastline2020`.
+    accessed at https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=8cecde06-8474-4b58-a9cb-b820fa4c9429
+
     Parameters
     ----------
     version : str, optional
@@ -892,6 +896,47 @@ def groundingline(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/GroundingLine*.shp")[0]  # noqa: PTH207
+
+    elif version == "BAS":
+        url = "https://ramadda.data.bas.ac.uk/repository/entry/get/Greenland_coast.zip?entryid=synth:8cecde06-8474-4b58-a9cb-b820fa4c9429:L0dyZWVubGFuZF9jb2FzdC56aXA="
+        path = pooch.retrieve(
+            url=url,
+            fname="Greenland_coast.zip",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/greenland",
+            known_hash=None,
+            processor=pooch.Unzip(),
+            progressbar=True,
+        )
+        fname = next(p for p in path if p.endswith(".shp"))
+
+    elif version == "measures-greenland":
+        name = "mog100_geus_coastline_v02"
+        # name = "mog100_gimp_iceedge_v02"  # shows islands
+        # name = "mog500_geus_coastline_v02" # corrupted
+        # name = "mog500_gimp_iceedge_v02" # shows islands
+        registry = {
+            f"{name}.dbf": None,
+            f"{name}.prj": None,
+            f"{name}.shp": None,
+            f"{name}.shx": None,
+            f"{name}.xml": None,
+        }
+        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2005.03.12/"
+        path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
+        pup = pooch.create(
+            path=path,
+            base_url=base_url,
+            # The registry specifies the files that can be fetched
+            registry=registry,
+        )
+        for k, _ in registry.items():
+            pup.fetch(
+                fname=k,
+                downloader=EarthDataDownloader(),
+                progressbar=True,
+            )
+        # pick the requested files
+        fname = glob.glob(f"{path}/{name}*.shp")[0]  # noqa: PTH207
     else:
         msg = "invalid version string"
         raise ValueError(msg)
