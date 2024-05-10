@@ -369,7 +369,7 @@ def plot_grd(
             msg = "invalid string for origin shift"
             raise ValueError(msg)
 
-    cmap_region = kwargs.get("cmap_region", region)
+    cmap_region = kwargs.get("cmap_region", None)
     show_region = kwargs.get("show_region", None)
     robust = kwargs.get("robust", False)
     cpt_lims = kwargs.get("cpt_lims", None)
@@ -393,7 +393,53 @@ def plot_grd(
             region=region,
         )
 
+    zmin, zmax = None, None
+
     # set cmap
+    if isinstance(cmap, str) and cmap.endswith(".cpt"):
+        # skip everything if cpt file is passed
+        def warn_msg(x: str) -> str:
+            return f"Since a .cpt file was passed to `cmap`, parameter `{x}` is unused."
+
+        # msg = lambda var: (
+        #     f"Since a .cpt file was passed to `cmap`, parameter `{var}` is unused."
+        # )
+        if modis is True:
+            warnings.warn(
+                warn_msg("modis"),
+                stacklevel=2,
+            )
+        if grd2cpt is True:
+            warnings.warn(
+                warn_msg("grd2cpt"),
+                stacklevel=2,
+            )
+        if cpt_lims is not None:
+            warnings.warn(
+                warn_msg("cpt_lims"),
+                stacklevel=2,
+            )
+        if cmap_region is not None:
+            warnings.warn(
+                warn_msg("cmap_region"),
+                stacklevel=2,
+            )
+        if robust is True:
+            warnings.warn(
+                warn_msg("robust"),
+                stacklevel=2,
+            )
+        if reverse_cpt is True:
+            warnings.warn(
+                warn_msg("reverse_cpt"),
+                stacklevel=2,
+            )
+        if shp_mask is not None:
+            warnings.warn(
+                warn_msg("shp_mask"),
+                stacklevel=2,
+            )
+
     elif modis is True:
         # create a cmap to use specifically with MODIS imagery
         pygmt.makecpt(
@@ -405,13 +451,52 @@ def plot_grd(
         cmap = True
 
     elif grd2cpt is True:
+        # gets here if
+        # 1) cmap doesn't end in .cpt
+        # 2) modis is False
         if cpt_lims is None and isinstance(grid, (xr.DataArray)):
-            zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+            zmin, zmax = utils.get_min_max(
+                grid,
+                shp_mask,
+                region=cmap_region,
+                robust=robust,
+                hemisphere=hemisphere,
+            )
         elif cpt_lims is None and isinstance(grid, (str)):
             with xr.load_dataarray(grid) as da:
-                zmin, zmax = utils.get_min_max(da, shp_mask, robust=robust)
+                zmin, zmax = utils.get_min_max(
+                    da,
+                    shp_mask,
+                    region=cmap_region,
+                    robust=robust,
+                    hemisphere=hemisphere,
+                )
         else:
             zmin, zmax = cpt_lims
+        if cpt_lims is not None:
+
+            def warn_msg(x: str) -> str:
+                return (
+                    f"Since limits were passed to `cpt_lims`, parameter `{x}` is"
+                    "unused."
+                )
+
+            if cmap_region is not None:
+                warnings.warn(
+                    warn_msg("cmap_region"),
+                    stacklevel=2,
+                )
+            if robust is True:
+                warnings.warn(
+                    warn_msg("robust"),
+                    stacklevel=2,
+                )
+            if shp_mask is not None:
+                warnings.warn(
+                    warn_msg("shp_mask"),
+                    stacklevel=2,
+                )
+
         pygmt.grd2cpt(
             cmap=cmap,
             grid=grid,
@@ -424,8 +509,32 @@ def plot_grd(
             reverse=reverse_cpt,
             verbose="e",
         )
+        cmap = True
     elif cpt_lims is not None:
+        # gets here if
+        # 1) cmap doesn't end in .cpt
+        # 2) modis is False
+        # 3) grd2cpt is False
         zmin, zmax = cpt_lims
+
+        def warn_msg(x: str) -> str:
+            return f"Since limits were passed to `cpt_lims`, parameter `{x}` is unused."
+
+        if cmap_region is not None:
+            warnings.warn(
+                warn_msg("cmap_region"),
+                stacklevel=2,
+            )
+        if robust is True:
+            warnings.warn(
+                warn_msg("robust"),
+                stacklevel=2,
+            )
+        if shp_mask is not None:
+            warnings.warn(
+                warn_msg("shp_mask"),
+                stacklevel=2,
+            )
         try:
             pygmt.makecpt(
                 cmap=cmap,
@@ -447,13 +556,31 @@ def plot_grd(
                 reverse=reverse_cpt,
                 verbose="e",
             )
+        cmap = True
     else:
+        # gets here if
+        # 1) cmap doesn't end in .cpt
+        # 2) modis is False
+        # 3) grd2cpt is False
+        # 4) cpt_lims aren't set
         try:
             if isinstance(grid, (xr.DataArray)):
-                zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
+                zmin, zmax = utils.get_min_max(
+                    grid,
+                    shp_mask,
+                    region=cmap_region,
+                    robust=robust,
+                    hemisphere=hemisphere,
+                )
             else:
                 with xr.load_dataarray(grid) as da:
-                    zmin, zmax = utils.get_min_max(da, shp_mask, robust=robust)
+                    zmin, zmax = utils.get_min_max(
+                        da,
+                        shp_mask,
+                        region=cmap_region,
+                        robust=robust,
+                        hemisphere=hemisphere,
+                    )
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -462,22 +589,30 @@ def plot_grd(
                 reverse=reverse_cpt,
                 verbose="e",
             )
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            # pygmt.exceptions.GMTInvalidInput:
-            logging.exception(e)
-            logging.warning("grid region can't be extracted.")
-            pygmt.makecpt(
-                cmap=cmap,
-                background=True,
-                continuous=kwargs.get("continuous", True),
-                reverse=reverse_cpt,
-                verbose="e",
-            )
+        except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
+            if "Option T: min >= max" in str(e):
+                logging.warning("grid's min value is greater or equal to its max value")
+                pygmt.makecpt(
+                    cmap=cmap,
+                    background=True,
+                    reverse=reverse_cpt,
+                    verbose="e",
+                )
+            else:
+                logging.exception(e)
+                pygmt.makecpt(
+                    cmap=cmap,
+                    background=True,
+                    continuous=kwargs.get("continuous", True),
+                    reverse=reverse_cpt,
+                    verbose="e",
+                )
+        cmap = True
 
     # display grid
     fig.grdimage(  # type: ignore[union-attr]
         grid=grid,
-        cmap=True,
+        cmap=cmap,
         projection=proj,
         region=region,
         nan_transparent=True,
@@ -486,8 +621,6 @@ def plot_grd(
         transparency=kwargs.get("transparency", 0),
         verbose="q",
     )
-
-    cmap_region = kwargs.get("cmap_region", region)
 
     # add datapoints
     if points is not None:
@@ -613,11 +746,17 @@ def plot_grd(
                 "fig",
             ]
         }
+        if zmin is None or zmax is None:  # noqa: SIM108
+            cpt_lims = None
+        else:
+            cpt_lims = (zmin, zmax)
+
         add_colorbar(
             fig,
             hist=kwargs.get("hist", False),
+            hist_cmap=cmap,
             grid=grid,
-            cpt_lims=(zmin, zmax),
+            cpt_lims=cpt_lims,
             fig_width=fig_width,
             region=region,
             **cbar_kwargs,
