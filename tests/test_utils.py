@@ -39,6 +39,31 @@ def dummy_grid() -> xr.Dataset:
     )
 
 
+# %%
+def test_subset_grid():
+    "test the subset grid function"
+    grid = dummy_grid()
+
+    region = (0, 100, 200, 300)
+    subset = utils.subset_grid(grid.misfit, region)
+
+    reg = utils.get_grid_info(subset)[1]
+
+    assert reg == region
+
+
+def test_subset_grid_bigger():
+    "test the subset grid function with a region bigger than the grid"
+    grid = dummy_grid()
+
+    region = (-200, 100, 200, 500)
+    subset = utils.subset_grid(grid.misfit, region)
+
+    reg = utils.get_grid_info(subset)[1]
+
+    assert reg == (-100, 100, 200, 400)
+
+
 def test_rmse():
     """
     test the RMSE function
