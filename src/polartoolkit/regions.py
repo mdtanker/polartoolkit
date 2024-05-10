@@ -160,7 +160,7 @@ lake_vostok = (1100e3, 1535e3, -470e3, -230e3)
 #####
 
 # regions
-greenland = (-650e3, 900e3, -3400e3, -600e3)
+greenland = (-700e3, 900e3, -3400e3, -600e3)
 north_greenland = (-500e3, 600e3, -1200e3, -650e3)
 # northwest_greenland = ()
 # northeast_greenland = ()
