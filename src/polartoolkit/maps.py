@@ -55,6 +55,7 @@ except ImportError:
 
 def basemap(
     region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
     fig_height: float = 15,
     fig_width: float | None = None,
     origin_shift: str = "initialize",
@@ -67,6 +68,9 @@ def basemap(
     ----------
     region : tuple[float, float, float, float] | None, optional
         bounding region in GMT format, by default None
+    hemisphere : str, optional
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), only used if plot lat long components (gridlines)
     fig_height : float, optional
         height of figure, by default 15
     fig_width : float | None, optional
@@ -89,12 +93,14 @@ def basemap(
     if fig_width is None:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
+            hemisphere=hemisphere,
             fig_height=fig_height,
         )
     # if fig_width is set, use it to set projection
     else:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
+            hemisphere=hemisphere,
             fig_width=fig_width,
         )
 
@@ -124,19 +130,25 @@ def basemap(
         verbose="e",
     )
 
-    # plot coast
+    # plot groundingline and coastlines
     if kwargs.get("coast", False) is True:
         add_coast(
             fig,
-            region,
-            proj,
+            hemisphere=hemisphere,
+            region=region,
+            projection=proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
-            version=kwargs.get("coast_version", "depoorter-2013"),
+            version=kwargs.get("coast_version", None),
         )
 
     # add lat long grid lines
     if kwargs.get("gridlines", False) is True:
+        if hemisphere is None:
+            logging.warning(
+                "Argument `hemisphere` not specified, will use meters for gridlines."
+            )
+
         add_gridlines(
             fig,
             region=region,
@@ -158,12 +170,16 @@ def basemap(
         }
         add_inset(
             fig,
-            # inset_pos=kwargs.get("inset_pos", "TL"),
+            hemisphere=hemisphere,  # type: ignore[arg-type]
             **new_kwargs,
         )
 
     # add scalebar
     if kwargs.get("scalebar", False) is True:
+        if proj_latlon is None:
+            msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
+            raise ValueError(msg)
+
         add_scalebar(
             fig=fig,
             region=region,
@@ -194,6 +210,7 @@ def basemap(
 
 def plot_grd(
     grid: str | xr.DataArray,
+    hemisphere: str | None = None,
     cmap: str | bool = "viridis",
     region: tuple[float, float, float, float] | None = None,
     coast: bool = False,
@@ -201,19 +218,22 @@ def plot_grd(
     fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
-    r"""
+    """
     Helps easily create PyGMT maps, individually or as subplots.
 
     Parameters
     ----------
     grid : str or xr.DataArray
         grid file to plot, either loaded xr.DataArray or string of a filename
+    hemisphere : str, optional
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), only used if plot lat long components (gridlines)
     cmap : str or bool, optional
         GMT color scale to use, by default 'viridis'
     region : tuple[float, float, float, float], optional
         region to plot, by default is extent of input grid
     coast : bool, optional
-        choose whether to plot Antarctic coastline and grounding line, by default False
+        choose whether to plot coastline and grounding line, by default False
     origin_shift : str, optional
         automatically will create a new figure, set to 'xshift' to instead add plot to
         right of previous plot, or 'yshift' to add plot above previous plot, by
@@ -299,12 +319,14 @@ def plot_grd(
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
         # if fig_width is set, use it to set projection
         else:
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_width=fig_width,
+                hemisphere=hemisphere,
             )
     else:
         if origin_shift == "xshift":
@@ -312,6 +334,7 @@ def plot_grd(
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
             fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
@@ -321,6 +344,7 @@ def plot_grd(
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
             fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
         elif origin_shift == "both_shift":
@@ -328,6 +352,7 @@ def plot_grd(
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
             fig.shift_origin(  # type: ignore[union-attr]
                 xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
@@ -337,6 +362,7 @@ def plot_grd(
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=kwargs.get("fig_height", 15),
+                hemisphere=hemisphere,
             )
 
         else:
@@ -487,8 +513,7 @@ def plot_grd(
     if coast is True:
         add_coast(
             fig,
-            region,
-            proj,
+            hemisphere=hemisphere,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version", "depoorter-2013"),
@@ -510,6 +535,11 @@ def plot_grd(
 
     # add lat long grid lines
     if gridlines is True:
+        if hemisphere is None:
+            logging.warning(
+                "Argument `hemisphere` not specified, will use meters for gridlines."
+            )
+
         add_gridlines(
             fig,
             region=region,
@@ -531,12 +561,16 @@ def plot_grd(
         }
         add_inset(
             fig,
-            # inset_pos=kwargs.get("inset_pos", "TL"),
+            hemisphere=hemisphere,  # type: ignore[arg-type]
             **new_kwargs,
         )
 
     # add scalebar
     if scalebar is True:
+        if proj_latlon is None:
+            msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
+            raise ValueError(msg)
+
         add_scalebar(
             fig=fig,
             region=region,
@@ -550,6 +584,12 @@ def plot_grd(
 
     # add north arrow
     if north_arrow is True:
+        if proj_latlon is None:
+            msg = (
+                "Argument `hemisphere` needs to be specified for plotting a north arrow"
+            )
+            raise ValueError(msg)
+
         add_north_arrow(
             fig,
             region=region,
@@ -698,7 +738,7 @@ def add_colorbar(
                 stacklevel=2,
             )
             zmin, zmax = utils.get_min_max(
-                grid, kwargs.get("shp_mask", None), robust=kwargs.get("robust", False)
+                hemisphere=kwargs.get("hemisphere", None),
             )
         else:
             zmin, zmax = cpt_lims
@@ -788,6 +828,7 @@ def add_colorbar(
 
 def add_coast(
     fig: pygmt.Figure,
+    hemisphere: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     projection: str | None = None,
     no_coast: bool = False,
@@ -800,6 +841,8 @@ def add_coast(
     Parameters
     ----------
     fig : pygmt.Figure
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
         region for the figure, by default is last used by PyGMT
     projection : str, optional
@@ -1037,6 +1080,7 @@ def add_faults(
 
 def add_inset(
     fig: pygmt.Figure,
+    hemisphere: str,
     region: tuple[float, float, float, float] | None = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
@@ -1049,6 +1093,8 @@ def add_inset(
     Parameters
     ----------
     fig : pygmt.Figure instance
+    hemisphere : str
+        choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
         region for the figure
     inset_pos : str, optional
@@ -1056,7 +1102,8 @@ def add_inset(
     inset_width : float, optional
         Inset width as percentage of the total figure width, by default is 25% (0.25)
     inset_reg : tuple[float, float, float, float], optional
-        Region of Antarctica to plot for the inset map, by default is whole continent
+        Region of Antarctica/Greenland to plot for the inset map, by default is whole
+        area
     """
 
     fig_width = utils.get_fig_width()
@@ -1371,6 +1418,7 @@ def interactive_map(
 
 def subplots(
     grids: list[xr.DataArray],
+    hemisphere: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     dims: tuple[int, int] | None = None,
     **kwargs: typing.Any,
@@ -1389,7 +1437,8 @@ def subplots(
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
         `utils.square_subplots()` to make a square(~ish) layout.
-
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     Returns
     -------
     PyGMT.Figure()
@@ -1417,12 +1466,14 @@ def subplots(
         _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=kwargs.pop("fig_height", 15),
+            hemisphere=hemisphere,
         )
     # if fig_width is set, use it to set projection
     else:
         _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=kwargs.get("fig_width", None),
+            hemisphere=hemisphere,
         )
 
     # initialize figure
@@ -1483,6 +1534,7 @@ def subplots(
                     cbar_label=cbar_label,
                     cbar_unit=cbar_unit,
                     cpt_lims=cpt_lims,
+                    hemisphere=hemisphere,
                     **kwargs,
                 )
     return fig
@@ -1495,6 +1547,7 @@ def plot_3d(
     view: tuple[float, float] = (170, 30),
     vlims: tuple[float, float] = (-10000, 1000),
     region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
     shp_mask: str | gpd.GeoDataFrame | None = None,
     polygon_mask: list[float] | None = None,
     colorbar: bool = True,
@@ -1553,12 +1606,14 @@ def plot_3d(
         proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=fig_height,
+            hemisphere=hemisphere,
         )
     # if fig_width is set, use it to set projection
     else:
         proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=fig_width,
+            hemisphere=hemisphere,
         )
     # set vertical limits
     new_region = region + vlims
@@ -1576,6 +1631,7 @@ def plot_3d(
                 xr_grid=grid,
                 masked=True,
                 invert=kwargs.get("invert", False),
+                hemisphere=hemisphere,  # type: ignore[arg-type]
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]
@@ -1586,7 +1642,7 @@ def plot_3d(
             grid = utils.mask_from_polygon(
                 polygon_mask,
                 grid=grid,
-                hemisphere=kwargs.get("hemisphere", None),
+                hemisphere=hemisphere,  # type: ignore[arg-type]
             )
         # create colorscales
         if grd2cpt is True:
@@ -1674,6 +1730,7 @@ def plot_3d(
 
 
 def interactive_data(
+    hemisphere: str,
     coast: bool = True,
     grid: xr.DataArray | None = None,
     grid_cmap: str = "inferno",
@@ -1688,8 +1745,11 @@ def interactive_data(
 
     Parameters
     ----------
+    hemisphere : str
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031)
     coast : bool, optional
-        choose whether to plot Antarctic coastline data, by default True
+        choose whether to plot coastline data, by default True
     grid : xr.DataArray, optional
         display a grid on the map, by default None
     grid_cmap : str, optional
