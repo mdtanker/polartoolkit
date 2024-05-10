@@ -1005,6 +1005,19 @@ def plot_profile(
 
         # plot groundingline and coastlines
         if coast is True:
+            coast_version = kwargs.get("coast_version", None)
+            if coast_version is None:
+                if hemisphere == "north":
+                    coast_version = "BAS"
+                elif hemisphere == "south":
+                    coast_version = "depoorter-2013"
+                elif hemisphere is None:
+                    msg = (
+                        "if coast is True and hemisphere is not provided, must provide "
+                        "argument `coast_version`"
+                    )
+                    raise ValueError(msg)
+
             maps.add_coast(
                 fig,
                 hemisphere=hemisphere,

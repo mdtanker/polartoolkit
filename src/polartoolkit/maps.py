@@ -513,9 +513,11 @@ def plot_grd(
         add_coast(
             fig,
             hemisphere=hemisphere,
+            region=region,
+            projection=proj,
             pen=kwargs.get("coast_pen", None),
             no_coast=kwargs.get("no_coast", False),
-            version=kwargs.get("coast_version", "depoorter-2013"),
+            version=kwargs.get("coast_version", None),
         )
 
     # plot faults
@@ -832,10 +834,10 @@ def add_coast(
     projection: str | None = None,
     no_coast: bool = False,
     pen: str | None = None,
-    version: str = "depoorter-2013",
+    version: str | None = None,
 ) -> None:
     """
-    add coastline and groundingline to figure.
+    add coastline and or groundingline to figure.
 
     Parameters
     ----------
@@ -850,23 +852,43 @@ def add_coast(
         If True, only plot groundingline, not coastline, by default is False
     pen : None
         GMT pen string, by default "0.6p,black"
+    version : str, optional
+        version of groundingline to plot, by default is BAS for north hemisphere and
+        Depoorter-2013 for south hemisphere
     """
     if pen is None:
         pen = "0.6p,black"
 
+    if version is None:
+        if hemisphere == "north":
+            version = "BAS"
+        elif hemisphere == "south":
+            version = "depoorter-2013"
+        elif hemisphere is None:
+            msg = "if version is not provided, must provide hemisphere"
+            raise ValueError(msg)
+        else:
+            msg = "hemisphere must be either north or south"
+            raise ValueError(msg)
+
     if version == "depoorter-2013":
-        gdf = gpd.read_file(fetch.groundingline(version=version))
         if no_coast is False:
-            data = gdf
+            data = fetch.groundingline(version=version)
         elif no_coast is True:
+            gdf = gpd.read_file(fetch.groundingline(version=version))
             data = gdf[gdf.Id_text == "Grounded ice or land"]
     elif version == "measures-v2":
-        gl = gpd.read_file(fetch.groundingline(version=version))
         if no_coast is False:
+            gl = gpd.read_file(fetch.groundingline(version=version))
             coast = gpd.read_file(fetch.measures_boundaries(version="Coastline"))
             data = pd.concat([gl, coast])
         elif no_coast is True:
-            data = gpd.read_file(fetch.groundingline(version=version))
+            data = fetch.groundingline(version=version)
+    elif version in ("BAS", "measures-greenland"):
+        data = fetch.groundingline(version=version)
+    else:
+        msg = "invalid version string"
+        raise ValueError(msg)
 
     fig.plot(
         data,
@@ -1766,28 +1788,22 @@ def interactive_data(
     -------
     holoviews.Overlay
         holoview/geoviews map instance
+
+    Example
+    -------
+    >>> from polartoolkit import regions, utils, maps
+    ...
+    >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
+    >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
+    ...
+    >>> image = maps.interactive_data(
+    ...    hemisphere="south",
+    ...    grid = bedmap2_bed,
+    ...    points = GHF_point_data[['x','y','GHF']],
+    ...    points_z = 'GHF',
+    ...    )
+    >>> image
     """
-    # Example
-    # -------
-
-    # image = maps.interactive_data(
-    #     grid = bedmap2_bed,
-    #     points = point_data,
-    #     points_z = 'z_ellipsoidal',
-    #     )
-
-    # image
-    #     >>> from polartoolkit import maps, regions, fetch
-    #     ...
-    #     >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
-    #     >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
-    #     ...
-    #     >>> image = maps.interactive_data(
-    #     ... grid = bedmap2_bed,
-    #     ... points = GHF_point_data[['x','y','GHF']],
-    #     ... points_z = 'GHF',
-    #     ... )
-    #     >>> image
     if gv is None:
         msg = (
             "Missing optional dependency 'geoviews' required for interactive plotting."
@@ -1801,13 +1817,25 @@ def interactive_data(
     gv.extension("bokeh")
 
     # initialize figure with coastline
+    if hemisphere == "north":
+        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"))
+        # crsys=crs.epsg(3413)
+        crsys = crs.NorthPolarStereo()
+    elif hemisphere == "south":
+        coast_gdf = gpd.read_file(fetch.groundingline(version="depoorter-2013"))
+        # crsys=crs.epsg(3031)
+        crsys = crs.SouthPolarStereo()
+    else:
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
+
     coast_fig = gv.Path(
-        gpd.read_file(fetch.groundingline()),
-        crs=crs.SouthPolarStereo(),
+        coast_gdf,
+        crs=crsys,
     )
     # set projection, and change groundingline attributes
     coast_fig.opts(
-        projection=crs.SouthPolarStereo(),
+        projection=crsys,
         color=kwargs.get("coast_color", "black"),
         data_aspect=1,
     )
@@ -1820,7 +1848,7 @@ def interactive_data(
         dataset = gv.Dataset(
             grid,
             [grid.dims[1], grid.dims[0]],
-            crs=crs.SouthPolarStereo(),
+            crs=crsys,
         )
         # turn geoviews dataset into image
         gv_grid = dataset.to(gv.Image)
