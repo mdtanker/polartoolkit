@@ -242,7 +242,7 @@ def region_xy_to_ll(
     dms: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
-    Convert GMT region in format [e, w, n, s] in EPSG:3031 to lat / lon
+    Convert GMT region in format [e, w, n, s] in EPSG to lat / lon
 
     Parameters
     ----------
@@ -263,6 +263,9 @@ def region_xy_to_ll(
         df_proj = epsg3413_to_latlon(df, reg=True)
     elif hemisphere == "south":
         df_proj = epsg3031_to_latlon(df, reg=True)
+    else:
+        msg = "hemisphere must be 'north' or 'south'"
+        raise ValueError(msg)
 
     return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
@@ -605,13 +608,13 @@ def block_reduce(
 
 def mask_from_shp(
     shapefile: str | gpd.geodataframe.GeoDataFrame,
+    hemisphere: str,
     invert: bool = True,
     xr_grid: xr.DataArray | None = None,
     grid_file: str | None = None,
     region: str | tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     masked: bool = False,
-    crs: str = "epsg:3031",
     pixel_register: bool = True,
     input_coord_names: tuple[str, str] = ("x", "y"),
 ) -> xr.DataArray:
@@ -624,6 +627,8 @@ def mask_from_shp(
         either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
         been loaded into a geodataframe.
+    hemisphere : str
+        choose "north" for EPSG:3413 or "south" for EPSG:3031
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
@@ -640,9 +645,6 @@ def mask_from_shp(
     masked : bool, optional
         choose whether to return the masked grid (True) or the mask itself (False), by
         default False
-    crs : str, optional
-        if grid is provided, rasterio needs to assign a coordinate reference system via
-        an epsg code, by default "epsg:3031"
 
     Returns
     -------
@@ -651,6 +653,14 @@ def mask_from_shp(
     """
 
     shp = pyogrio.read_dataframe(shapefile) if isinstance(shapefile, str) else shapefile
+
+    if hemisphere == "north":
+        crs = "epsg:3413"
+    elif hemisphere == "south":
+        crs = "epsg:3031"
+    else:
+        msg = "hemisphere must be 'north' or 'south'"
+        raise ValueError(msg)
 
     if xr_grid is None and grid_file is None:
         coords = vd.grid_coordinates(
@@ -761,9 +771,10 @@ def alter_region(
 
 def set_proj(
     region: tuple[float, float, float, float],
+    hemisphere: str | None = None,
     fig_height: float = 15,
     fig_width: float | None = None,
-) -> tuple[str, str, float, float]:
+) -> tuple[str, str | None, float, float]:
     """
     Gives GMT format projection string from region and figure height or width.
     Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
@@ -772,6 +783,9 @@ def set_proj(
     ----------
     region : tuple[float, float, float, float]
         region boundaries in GMT-format (e, w, n, s) in meters EPSG:3031
+    hemisphere : str, optional
+        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
+        "south" hemisphere (EPSG:3031)
     fig_height : float
         desired figure height in cm
     fig_width : float
@@ -794,7 +808,13 @@ def set_proj(
         ratio = (s - n) / (fig_height / 100)
 
     proj = f"x1:{ratio}"
-    proj_latlon = f"s0/-90/-71/1:{ratio}"
+
+    if hemisphere == "north":
+        proj_latlon = f"s-45/90/70/1:{ratio}"
+    elif hemisphere == "south":
+        proj_latlon = f"s0/-90/-71/1:{ratio}"
+    else:
+        proj_latlon = None
 
     return proj, proj_latlon, fig_width, fig_height
 
@@ -1079,14 +1099,36 @@ def grd_compare(
     dif = grid1 - grid2
 
     # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(grid1, shp_mask, robust=robust)
-    grid2_cpt_lims = get_min_max(grid2, shp_mask, robust=robust)
+    grid1_cpt_lims = get_min_max(
+        grid1,
+        shp_mask,
+        robust=robust,
+        hemisphere=kwargs.get("hemisphere", None),
+    )
+    grid2_cpt_lims = get_min_max(
+        grid2,
+        shp_mask,
+        robust=robust,
+        hemisphere=kwargs.get("hemisphere", None),
+    )
 
     diff_maxabs = kwargs.get("diff_maxabs", True)
     if diff_maxabs is False:
-        diff_lims: typing.Any = get_min_max(dif, shp_mask, robust=robust)
+        diff_lims: typing.Any = get_min_max(
+            dif,
+            shp_mask,
+            robust=robust,
+            hemisphere=kwargs.get("hemisphere", None),
+        )
     else:
-        diff_maxabs = vd.maxabs(get_min_max(dif, shp_mask, robust=robust))
+        diff_maxabs = vd.maxabs(
+            get_min_max(
+                dif,
+                shp_mask,
+                robust=robust,
+                hemisphere=kwargs.get("hemisphere", None),
+            )
+        )
         diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     # get min and max of both grids together
@@ -1118,16 +1160,13 @@ def grd_compare(
                     "fig_height",
                     "inset",
                     "inset_pos",
+                    "shp_mask",
                 ]
             }
             diff_kwargs = {
                 key: value
                 for key, value in new_kwargs.items()
-                if key
-                not in [
-                    "reverse_cpt",
-                    "cbar_label",
-                ]
+                if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
             }
             fig = maps.plot_grd(
                 grid1,
@@ -1649,6 +1688,7 @@ def get_min_max(
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
 ) -> tuple[float, float]:
     """
     Get a grids max and min values.
@@ -1664,6 +1704,9 @@ def get_min_max(
         min/max
     region : tuple[float, float, float, float], optional
         give a subset region to get min and max values from, by default None
+    hemisphere : str, optional
+        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
+        "south" hemisphere (EPSG:3031)
     Returns
     -------
     tuple[float, float]
@@ -1679,12 +1722,20 @@ def get_min_max(
             v_min, v_max = np.nanmin(grid), np.nanmax(grid)
 
     elif shapefile is not None:
-        masked = mask_from_shp(shapefile, xr_grid=grid, masked=True, invert=False)
+        masked = mask_from_shp(
+            shapefile,
+            hemisphere=hemisphere,  # type: ignore[arg-type]
+            xr_grid=grid,
+            masked=True,
+            invert=False,
+        )
+
         if robust:
             v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
         else:
             v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 
+    assert v_min <= v_max, "min value should be less than or equal to max value"
     return (v_min, v_max)
 
 
