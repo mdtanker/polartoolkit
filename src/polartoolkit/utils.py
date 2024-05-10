@@ -1614,10 +1614,41 @@ def random_color() -> str:
     return f"{numbers[0]}/{numbers[1]}/{numbers[2]}"
 
 
+def subset_grid(
+    grid: xr.DataArray,
+    region: tuple[float, float, float, float],
+) -> xr.DataArray:
+    """
+    Return a subset of a grid based on a region
+
+    Parameters
+    ----------
+    grid : xr.DataArray
+        grid to be clipped
+    region : tuple[float, float, float, float]
+        region to clip to
+
+    Returns
+    -------
+    xr.DataArray
+        clipped grid
+    """
+    ew = [region[0], region[1]]
+    ns = [region[2], region[3]]
+
+    return grid.sel(
+        {
+            list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
+            list(grid.sizes.keys())[0]: slice(min(ns), max(ns)),  # noqa: RUF015
+        }
+    )
+
+
 def get_min_max(
     grid: xr.DataArray,
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
+    region: tuple[float, float, float, float] | None = None,
 ) -> tuple[float, float]:
     """
     Get a grids max and min values.
@@ -1631,12 +1662,15 @@ def get_min_max(
     robust: bool, optional
         choose whether to return the 2nd and 98th percentile values, instead of the
         min/max
-
+    region : tuple[float, float, float, float], optional
+        give a subset region to get min and max values from, by default None
     Returns
     -------
     tuple[float, float]
         returns the min and max values.
     """
+    if region is not None:
+        grid = subset_grid(grid, region)
 
     if shapefile is None:
         if robust:
