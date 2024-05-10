@@ -1105,7 +1105,7 @@ def add_inset(
     region: tuple[float, float, float, float] | None = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
-    inset_reg: tuple[float, float, float, float] = (-2800e3, 2800e3, -2800e3, 2800e3),
+    inset_reg: tuple[float, float, float, float] | None = None,
     **kwargs: typing.Any,
 ) -> None:
     """
@@ -1145,17 +1145,54 @@ def add_inset(
         # verbose="q",
         box=kwargs.get("inset_box", False),
     ):
-        gdf = gpd.read_file(fetch.groundingline())
-        fig.plot(
-            projection=inset_map,
-            region=inset_reg,
-            data=gdf[gdf.Id_text == "Ice shelf"],
-            fill="skyblue",
-        )
-        fig.plot(data=gdf[gdf.Id_text == "Grounded ice or land"], fill="grey")
-        fig.plot(
-            data=fetch.groundingline(), pen=kwargs.get("inset_coast_pen", "0.2,black")
-        )
+        if hemisphere == "north":
+            if inset_reg is None:
+                if "L" in inset_pos:
+                    # inset reg needs to be square,
+                    # if on left side, make square by adding to right side of region
+                    inset_reg = (-800e3, 2000e3, -3400e3, -600e3)
+                elif "R" in inset_pos:
+                    inset_reg = (-1800e3, 1000e3, -3400e3, -600e3)
+                else:
+                    inset_reg = (-1300e3, 1500e3, -3400e3, -600e3)
+
+            if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
+                logging.warning(
+                    "Inset region should be square or else projection will be off."
+                )
+            gdf = gpd.read_file(fetch.groundingline("BAS"))
+            fig.plot(
+                projection=inset_map,
+                region=inset_reg,
+                data=gdf,
+                fill="grey",
+            )
+            fig.plot(
+                data=gdf,
+                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+            )
+        elif hemisphere == "south":
+            if inset_reg is None:
+                inset_reg = regions.antarctica
+            if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
+                logging.warning(
+                    "Inset region should be square or else projection will be off."
+                )
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"))
+            fig.plot(
+                projection=inset_map,
+                region=inset_reg,
+                data=gdf[gdf.Id_text == "Ice shelf"],
+                fill="skyblue",
+            )
+            fig.plot(
+                data=gdf[gdf.Id_text == "Grounded ice or land"],
+                fill="grey",
+            )
+            fig.plot(data=gdf, pen=kwargs.get("inset_coast_pen", "0.2,black"))
+        else:
+            msg = "hemisphere must be north or south"
+            raise ValueError(msg)
 
         add_box(
             fig,
