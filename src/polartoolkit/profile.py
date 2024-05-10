@@ -461,6 +461,7 @@ def plot_profile(
     layers_version: str = "bedmap2",
     fig_height: float = 9,
     fig_width: float = 14,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> tuple[pygmt.Figure, pd.DataFrame, pd.DataFrame]:
     """
@@ -484,6 +485,8 @@ def plot_profile(
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
         Set the width of the figure (excluding the map) in cm, by default is 14.
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     Keyword Args
     ------------
     fillnans: bool
@@ -952,6 +955,7 @@ def plot_profile(
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
                 map_reg,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
             # shift map to the left with 1 cm margin
             if data_dict is not None:
@@ -965,6 +969,7 @@ def plot_profile(
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
                 map_reg,
                 fig_width=fig_width,
+                hemisphere=hemisphere,
             )
             # shift map up with a 1/2 cm margin
             if data_dict is not None:
@@ -1002,11 +1007,12 @@ def plot_profile(
         if coast is True:
             maps.add_coast(
                 fig,
-                map_reg,
-                map_proj,
+                hemisphere=hemisphere,
+                region=map_reg,
+                projection=map_proj,
                 pen=kwargs.get("coast_pen", "1.2p,black"),
                 no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version", "depoorter-2013"),
+                version=kwargs.get("coast_version", None),
             )
 
         # add lat long grid lines
@@ -1060,6 +1066,7 @@ def plot_profile(
         if inset is True:
             maps.add_inset(
                 fig,
+                hemisphere=hemisphere,  # type: ignore[arg-type]
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
@@ -1081,6 +1088,7 @@ def plot_data(
     add_map: bool = False,
     fig_height: float = 9,
     fig_width: float = 14,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> tuple[pygmt.Figure, pd.DataFrame]:
     """
@@ -1099,6 +1107,8 @@ def plot_data(
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
         Set the width of the figure (excluding the map) in cm, by default is 14.
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     Keyword Args
     ------------
     clip: bool
@@ -1342,6 +1352,7 @@ def plot_data(
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
                 map_reg,
                 fig_height=fig_height,
+                hemisphere=hemisphere,
             )
             # shift map to the left with 1 cm margin
             if data_dict is not None:
@@ -1355,6 +1366,7 @@ def plot_data(
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
                 map_reg,
                 fig_width=fig_width,
+                hemisphere=hemisphere,
             )
             # shift map up with a 1/2 cm margin
             if data_dict is not None:
@@ -1392,11 +1404,12 @@ def plot_data(
         if coast is True:
             maps.add_coast(
                 fig,
-                map_reg,
-                map_proj,
+                hemisphere=hemisphere,
+                region=map_reg,
+                projection=map_proj,
                 pen=kwargs.get("coast_pen", "1.2p,black"),
                 no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version", "depoorter-2013"),
+                version=kwargs.get("coast_version", None),
             )
 
         # add lat long grid lines
@@ -1450,6 +1463,7 @@ def plot_data(
         if inset is True:
             maps.add_inset(
                 fig,
+                hemisphere=hemisphere,  # type: ignore[arg-type]
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
