@@ -501,7 +501,7 @@ def plot_profile(
         imagery.
     map_cmap: str
         Change the map colorscale by passing a valid GMT cmap string, by default is
-        'earth'.
+        'viridis'.
     map_buffer: float (0-1)
         Change map zoom as relative percentage of profile length, by default is 0.3.
     layer_buffer: float (0-1)
@@ -979,7 +979,7 @@ def plot_profile(
         # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
-                cmap=kwargs.get("map_cmap", "earth"),
+                cmap=kwargs.get("map_cmap", "viridis"),
                 grid=kwargs.get("map_background", fetch.imagery()),
                 region=map_reg,
                 background=True,
@@ -988,7 +988,7 @@ def plot_profile(
             )
             cmap = True
         else:
-            cmap = kwargs.get("map_cmap", "earth")
+            cmap = kwargs.get("map_cmap", "viridis")
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
@@ -1114,7 +1114,7 @@ def plot_data(
         imagery.
     map_cmap: str
         Change the map colorscale by passing a valid GMT cmap string, by default is
-        'earth'.
+        'viridis'.
     map_buffer: float (0-1)
         Change map zoom as relative percentage of profile length, by default is 0.3.
     data_buffer: float (0-1)
@@ -1369,7 +1369,7 @@ def plot_data(
         # can't use maps.plot_grd because it reset projection
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
-                cmap=kwargs.get("map_cmap", "earth"),
+                cmap=kwargs.get("map_cmap", "viridis"),
                 grid=kwargs.get("map_background", fetch.imagery()),
                 region=map_reg,
                 background=True,
@@ -1378,7 +1378,7 @@ def plot_data(
             )
             cmap = True
         else:
-            cmap = kwargs.get("map_cmap", "earth")
+            cmap = kwargs.get("map_cmap", "viridis")
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
