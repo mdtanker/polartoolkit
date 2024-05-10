@@ -8,6 +8,7 @@ Here are some examples for use the module `Maps`.
 ---
 ---
 basic_map
+colormaps
 extend_pygmt
 setting_projection
 3D_stack
