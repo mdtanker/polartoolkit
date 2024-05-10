@@ -1366,9 +1366,9 @@ def interactive_map(
     else:
         # if no points, center map on 0, 0
         if hemisphere == "south":
-            center_ll = utils.epsg3031_to_latlon([0, 0])
+            center_ll = [-90, 0]
         elif hemisphere == "north":
-            center_ll = utils.epsg3413_to_latlon([0, 0])
+            center_ll = [90, -45]
 
     if center_yx is not None:
         if hemisphere == "south":
