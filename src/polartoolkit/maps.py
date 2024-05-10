@@ -701,6 +701,8 @@ def add_colorbar(
         # get grid to use
         grid = kwargs.get("grid", None)
 
+        hist_cmap = kwargs.get("hist_cmap", True)
+
         if grid is None:
             msg = "if hist is True, grid must be provided."
             raise ValueError(msg)
@@ -732,13 +734,46 @@ def add_colorbar(
 
             grid = grid_clipped
 
-        if (cpt_lims is None) or (np.isnan(cpt_lims).any()):
+        if isinstance(hist_cmap, str) and hist_cmap.endswith(".cpt"):
+            # extract cpt_lims from cmap
+            p = pathlib.Path(hist_cmap)
+            with p.open(encoding="utf-8") as cptfile:
+                # read the lines into memory
+                lows, highs = [], []
+                for x in cptfile:
+                    line = x.strip()
+
+                    # skip empty lines
+                    if not line:
+                        continue
+
+                    # skip other comments
+                    if line.startswith("#"):
+                        continue
+
+                    # skip BFN info
+                    if line.startswith(("B", "F", "N")):
+                        continue
+
+                    # split at tabs
+                    split = line.split("\t")
+                    lows.append(float(split[0]))
+                    highs.append(float(split[2]))
+
+                zmin, zmax = min(lows), max(highs)
+                cpt_lims = (zmin, zmax)
+
+        elif (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
                 "getting max/min values from grid, if cpt_lims were used to create the "
                 "colorscale, histogram will not properly align with colorbar!",
                 stacklevel=2,
             )
             zmin, zmax = utils.get_min_max(
+                grid,
+                shapefile=kwargs.get("shp_mask", None),
+                region=kwargs.get("cmap_region", None),
+                robust=kwargs.get("robust", False),
                 hemisphere=kwargs.get("hemisphere", None),
             )
         else:
@@ -802,7 +837,7 @@ def add_colorbar(
                 projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
                 region=hist_reg,
                 frame=kwargs.get("hist_frame", False),
-                cmap=kwargs.get("hist_cmap", True),
+                cmap=hist_cmap,
                 fill=kwargs.get("hist_fill", None),
                 pen=kwargs.get("hist_pen", "default"),
                 barwidth=kwargs.get("hist_barwidth", None),
