@@ -24,4 +24,5 @@ antarctica/crustal_thickness
 antarctica/sediment_thickness
 antarctica/imagery
 antarctica/modis_moa
+greenland/modis_mog
 ```
