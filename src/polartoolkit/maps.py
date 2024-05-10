@@ -244,8 +244,8 @@ def plot_grd(
 
     Keyword Args
     ------------
-    image : bool
-        set to True if plotting imagery to correctly set colorscale.
+    modis : bool
+        set to True if plotting MODIS data to use a nice colorscale.
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : str or tuple[float, float, float, float]
@@ -374,7 +374,7 @@ def plot_grd(
     robust = kwargs.get("robust", False)
     cpt_lims = kwargs.get("cpt_lims", None)
     grd2cpt = kwargs.get("grd2cpt", False)
-    image = kwargs.get("image", False)
+    modis = kwargs.get("modis", False)
     gridlines = kwargs.get("gridlines", False)
     points = kwargs.get("points", None)
     inset = kwargs.get("inset", False)
@@ -394,17 +394,16 @@ def plot_grd(
         )
 
     # set cmap
-    if cmap is True:
-        # use cmap from most recent pygmt session
-        pass
-    elif image is True:
-        # create a cmap to use with imagery
+    elif modis is True:
+        # create a cmap to use specifically with MODIS imagery
         pygmt.makecpt(
-            cmap=cmap,
-            series="15000/17000/1",
+            cmap="grayC",
+            series=[15000, 17000, 1],
             verbose="e",
         )
         colorbar = False
+        cmap = True
+
     elif grd2cpt is True:
         if cpt_lims is None and isinstance(grid, (xr.DataArray)):
             zmin, zmax = utils.get_min_max(grid, shp_mask, robust=robust)
