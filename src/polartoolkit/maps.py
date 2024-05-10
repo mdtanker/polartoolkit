@@ -674,15 +674,8 @@ def add_colorbar(
 
         # clip grid to plot region
         if region != utils.get_grid_info(grid)[1]:
-            # grid = fetch.resample_grid(grid, region=region)
-            ew = [region[0], region[1]]
-            ns = [region[2], region[3]]
-            grid_clipped = grid.sel(
-                {
-                    list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
-                    list(grid.sizes.keys())[0]: slice(max(ns), min(ns)),  # noqa: RUF015
-                }
-            )
+            grid_clipped = utils.subset_grid(grid, region)
+
             # if subplotting, region will be in figure units and grid will be clipped
             # incorrectly, hacky solution is to check if clipped figure is smaller than
             # a few data points, if so, use grids full region
@@ -694,12 +687,8 @@ def add_colorbar(
                         "histogram, please provide region kwarg."
                     )
                     raise ValueError(msg)
-                grid_clipped = grid.sel(
-                    {
-                        list(grid.sizes.keys())[1]: slice(reg[0], reg[1]),
-                        list(grid.sizes.keys())[0]: slice(reg[2], reg[3]),  # noqa: RUF015
-                    }
-                )
+                grid_clipped = utils.subset_grid(grid, reg)
+
             grid = grid_clipped
 
         if (cpt_lims is None) or (np.isnan(cpt_lims).any()):
