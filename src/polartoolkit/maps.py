@@ -505,7 +505,7 @@ def plot_grd(
         add_box(
             fig,
             show_region,
-            pen=kwargs.get("inset_box_pen", None),
+            pen=kwargs.get("region_pen", None),
         )
 
     # plot groundingline and coastlines
@@ -748,7 +748,7 @@ def add_colorbar(
         df = vd.grid_to_table(grid)
         df2 = df.iloc[:, -1:].squeeze()
 
-        # subset between cbar min and max
+        # subset data between cbar min and max
         data = df2[df2.between(zmin, zmax)]
 
         bin_width = kwargs.get("hist_bin_width", None)
@@ -1294,7 +1294,6 @@ def add_north_arrow(
         region=region_converted,
         projection=projection,
         rose=rose_str,
-        verbose="e",
         box=kwargs.get("rose_box", False),
         perspective=kwargs.get("perspective", False),
     )
