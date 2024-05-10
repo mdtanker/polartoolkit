@@ -968,6 +968,54 @@ def grd_trend(
     return fit, detrend
 
 
+def get_combined_min_max(
+    grids: tuple[xr.DataArray],
+    shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
+    robust: bool = False,
+    region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
+) -> tuple[float, float]:
+    """
+    Get a grids max and min values.
+
+    Parameters
+    ----------
+    grids : tuple[xr.DataArray]
+        grids to get values for
+    shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
+        path or loaded shapefile to use for a mask, by default None
+    robust: bool, optional
+        choose whether to return the 2nd and 98th percentile values, instead of the
+        min/max
+    region : tuple[float, float, float, float], optional
+        give a subset region to get min and max values from, by default None
+    hemisphere : str, optional
+        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
+        "south" hemisphere (EPSG:3031)
+    Returns
+    -------
+    tuple[float, float]
+        returns the min and max values.
+    """
+    # get min max of each grid
+    limits = []
+    for g in grids:
+        limits.append(
+            get_min_max(
+                g,
+                robust=robust,
+                region=region,
+                shapefile=shapefile,
+                hemisphere=hemisphere,
+            )
+        )
+
+    # get min of all mins and max of all maxes
+    ar = np.array(limits)
+
+    return np.min(ar[:, 0]), np.max(ar[:, 1])
+
+
 def grd_compare(
     da1: xr.DataArray | str,
     da2: xr.DataArray | str,
