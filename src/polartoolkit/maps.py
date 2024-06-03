@@ -208,192 +208,55 @@ def basemap(
     return fig
 
 
-def plot_grd(
-    grid: str | xr.DataArray,
+def set_cmap(
+    cmap: str | bool,
+    grid: str | xr.DataArray | None = None,
+    modis: bool = False,
+    grd2cpt: bool = False,
+    cpt_lims: tuple[float, float] | None = None,
+    cmap_region: tuple[float, float, float, float] | None = None,
+    robust: bool = False,
+    reverse_cpt: bool = False,
+    shp_mask: gpd.GeoDataFrame | None = None,
     hemisphere: str | None = None,
-    cmap: str | bool = "viridis",
-    region: tuple[float, float, float, float] | None = None,
-    coast: bool = False,
-    origin_shift: str = "initialize",
-    fig: pygmt.Figure | None = None,
+    colorbar: bool = True,
     **kwargs: typing.Any,
-) -> pygmt.Figure:
+) -> tuple[str | bool, bool, tuple[float, float] | None]:
     """
-    Helps easily create PyGMT maps, individually or as subplots.
+    Function used to set the PyGMT colormap for a figure.
 
     Parameters
     ----------
-    grid : str or xr.DataArray
-        grid file to plot, either loaded xr.DataArray or string of a filename
-    hemisphere : str, optional
-        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
-        (EPSG:3031), only used if plot lat long components (gridlines)
-    cmap : str or bool, optional
-        GMT color scale to use, by default 'viridis'
-    region : tuple[float, float, float, float], optional
-        region to plot, by default is extent of input grid
-    coast : bool, optional
-        choose whether to plot coastline and grounding line, by default False
-    origin_shift : str, optional
-        automatically will create a new figure, set to 'xshift' to instead add plot to
-        right of previous plot, or 'yshift' to add plot above previous plot, by
-        default 'initialize'.
-    fig : pygmt.Figure(), optional
-        supply figure instance for adding subplots or other PyGMT plotting methods, by
-        default None
-
-    Keyword Args
-    ------------
-    modis : bool
-        set to True if plotting MODIS data to use a nice colorscale.
-    grd2cpt : bool
-        use GMT module grd2cpt to set color scale from grid values, by default is False
-    cmap_region : str or tuple[float, float, float, float]
-        region to use to define color scale if grd2cpt is True, by default is
-        region
-    cbar_label : str
-        label to add to colorbar.
-    points : pd.DataFrame
-        points to plot on map, must contain columns 'x' and 'y'.
-    show_region : tuple[float, float, float, float]
-        GMT-format region to use to plot a bounding regions.
-    cpt_lims : str or tuple]
-        limits to use for color scale max and min, by default is max and min of data.
-    gridlines : bool
-        choose to plot lat/long grid lines, by default is False
-    inset : bool
-        choose to plot inset map showing figure location, by default is False
-    inset_pos : str
-        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
-    fig_height : int or float
-        height in cm for figures, by default is 15cm.
-    scalebar: bool
-        choose to add a scalebar to the plot, by default is False. See
-        `maps.add_scalebar` for additional kwargs.
-    colorbar: bool
-        choose to add a colorbar to the plot, by default is True
+    cmap : str | bool
+        a string of either a PyGMT cpt file (.cpt), or a preset PyGMT color ramp, or
+        alternatively a value of True will use the last used cmap.
+    grid : str | xr.DataArray | None, optional
+       grid used for grd2cpt colormap equalization, by default None
+    modis : bool, optional
+        choose appropriate cmap for plotting modis data, by default False
+    grd2cpt : bool, optional
+        equalized the colormap to the grid data values, by default False
+    cpt_lims : tuple[float, float] | None, optional
+        limits to set for the colormap, by default None
+    cmap_region : tuple[float, float, float, float] | None, optional
+        extract colormap limits from a subset of the grid, by default None
+    robust : bool, optional
+        use the 2nd and 98th percentile of the data from the grid, by default False
+    reverse_cpt : bool, optional
+        change the direction of the cmap, by default False
+    shp_mask : gpd.GeoDataFrame | None, optional
+        a shapefile to mask the grid by before extracting limits, by default None
+    hemisphere : str | None, optional
+        "north" or "south" hemisphere needed for using shp_mask, by default None
+    colorbar : bool, optional
+        tell subsequent plotting functions whether to add a colorbar, by default True
 
     Returns
     -------
-    PyGMT.Figure()
-        Returns a figure object, which can be passed to the `fig` kwarg to add subplots
-        or other `PyGMT` plotting methods.
-
-    Example
-    -------
-    >>> from polartoolkit import maps
-    ...
-    >>> fig = maps.plot_grd('grid1.nc')
-    >>> fig = maps.plot_grd(
-    ... 'grid2.nc',
-    ... origin_shift = 'xshift',
-    ... fig = fig,
-    ... )
-    ...
-    >>> fig.show()
+    tuple[str | bool, bool, tuple[float,float] | None]
+        a tuple with the pygmt colormap, as a string or boolean, a boolean of whether to
+        plot the colorbar, and a tuple of 2 floats with the cpt limits.
     """
-
-    warnings.filterwarnings("ignore", message="pandas.Int64Index")
-    warnings.filterwarnings("ignore", message="pandas.Float64Index")
-
-    # get region from grid or use supplied region
-    if region is None:
-        try:
-            region = utils.get_grid_info(grid)[1]
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            # pygmt.exceptions.GMTInvalidInput:
-            logging.exception(e)
-            logging.warning("grid region can't be extracted, using antarctic region.")
-            region = regions.antarctica
-
-    region = typing.cast(tuple[float, float, float, float], region)
-
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-        fig_height = kwargs.get("fig_height", 15)
-        fig_width = kwargs.get("fig_width", None)
-        # set figure projection and size from input region and figure dimensions
-        # by default use figure height to set projection
-        if fig_width is None:
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-        # if fig_width is set, use it to set projection
-        else:
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_width=fig_width,
-                hemisphere=hemisphere,
-            )
-    else:
-        if origin_shift == "xshift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(  # type: ignore[union-attr]
-                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
-            )
-        elif origin_shift == "yshift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
-        elif origin_shift == "both_shift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(  # type: ignore[union-attr]
-                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
-                yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
-            )
-        elif origin_shift == "no_shift":
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=kwargs.get("fig_height", 15),
-                hemisphere=hemisphere,
-            )
-
-        else:
-            msg = "invalid string for origin shift"
-            raise ValueError(msg)
-
-    cmap_region = kwargs.get("cmap_region", None)
-    show_region = kwargs.get("show_region", None)
-    robust = kwargs.get("robust", False)
-    cpt_lims = kwargs.get("cpt_lims", None)
-    grd2cpt = kwargs.get("grd2cpt", False)
-    modis = kwargs.get("modis", False)
-    gridlines = kwargs.get("gridlines", False)
-    points = kwargs.get("points", None)
-    inset = kwargs.get("inset", False)
-    title = kwargs.get("title", None)
-    scalebar = kwargs.get("scalebar", False)
-    north_arrow = kwargs.get("north_arrow", False)
-    reverse_cpt = kwargs.get("reverse_cpt", False)
-    colorbar = kwargs.get("colorbar", True)
-    shp_mask = kwargs.get("shp_mask", None)
-
-    if kwargs.get("imagery_basemap", False) is True:
-        fig.grdimage(  # type: ignore[union-attr]
-            grid=fetch.imagery(),
-            cmap=None,
-            projection=proj,
-            region=region,
-        )
-
-    zmin, zmax = None, None
 
     # set cmap
     if isinstance(cmap, str) and cmap.endswith(".cpt"):
@@ -401,9 +264,6 @@ def plot_grd(
         def warn_msg(x: str) -> str:
             return f"Since a .cpt file was passed to `cmap`, parameter `{x}` is unused."
 
-        # msg = lambda var: (
-        #     f"Since a .cpt file was passed to `cmap`, parameter `{var}` is unused."
-        # )
         if modis is True:
             warnings.warn(
                 warn_msg("modis"),
@@ -472,7 +332,10 @@ def plot_grd(
                     hemisphere=hemisphere,
                 )
         else:
-            zmin, zmax = cpt_lims
+            if cpt_lims is None:
+                zmin, zmax = None, None
+            else:
+                zmin, zmax = cpt_lims
         if cpt_lims is not None:
 
             def warn_msg(x: str) -> str:
@@ -608,6 +471,221 @@ def plot_grd(
                     verbose="e",
                 )
         cmap = True
+
+        if zmin is None or zmax is None:  # noqa: SIM108
+            cpt_lims = None
+        else:
+            cpt_lims = (zmin, zmax)
+
+    return cmap, colorbar, cpt_lims
+
+
+def plot_grd(
+    grid: str | xr.DataArray,
+    hemisphere: str | None = None,
+    cmap: str | bool = "viridis",
+    region: tuple[float, float, float, float] | None = None,
+    coast: bool = False,
+    origin_shift: str = "initialize",
+    fig: pygmt.Figure | None = None,
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
+    """
+    Helps easily create PyGMT maps, individually or as subplots.
+
+    Parameters
+    ----------
+    grid : str or xr.DataArray
+        grid file to plot, either loaded xr.DataArray or string of a filename
+    hemisphere : str, optional
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), only used if plot lat long components (gridlines)
+    cmap : str or bool, optional
+        GMT color scale to use, by default 'viridis'
+    region : tuple[float, float, float, float], optional
+        region to plot, by default is extent of input grid
+    coast : bool, optional
+        choose whether to plot coastline and grounding line, by default False
+    origin_shift : str, optional
+        automatically will create a new figure, set to 'xshift' to instead add plot to
+        right of previous plot, or 'yshift' to add plot above previous plot, by
+        default 'initialize'.
+    fig : pygmt.Figure(), optional
+        supply figure instance for adding subplots or other PyGMT plotting methods, by
+        default None
+
+    Keyword Args
+    ------------
+    modis : bool
+        set to True if plotting MODIS data to use a nice colorscale.
+    grd2cpt : bool
+        use GMT module grd2cpt to set color scale from grid values, by default is False
+    cmap_region : str or tuple[float, float, float, float]
+        region to use to define color scale if grd2cpt is True, by default is
+        region
+    cbar_label : str
+        label to add to colorbar.
+    points : pd.DataFrame
+        points to plot on map, must contain columns 'x' and 'y'.
+    show_region : tuple[float, float, float, float]
+        GMT-format region to use to plot a bounding regions.
+    cpt_lims : str or tuple]
+        limits to use for color scale max and min, by default is max and min of data.
+    gridlines : bool
+        choose to plot lat/long grid lines, by default is False
+    inset : bool
+        choose to plot inset map showing figure location, by default is False
+    inset_pos : str
+        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    fig_height : int or float
+        height in cm for figures, by default is 15cm.
+    scalebar: bool
+        choose to add a scalebar to the plot, by default is False. See
+        `maps.add_scalebar` for additional kwargs.
+    colorbar: bool
+        choose to add a colorbar to the plot, by default is True
+
+    Returns
+    -------
+    PyGMT.Figure()
+        Returns a figure object, which can be passed to the `fig` kwarg to add subplots
+        or other `PyGMT` plotting methods.
+
+    Example
+    -------
+    >>> from polartoolkit import maps
+    ...
+    >>> fig = maps.plot_grd('grid1.nc')
+    >>> fig = maps.plot_grd(
+    ... 'grid2.nc',
+    ... origin_shift = 'xshift',
+    ... fig = fig,
+    ... )
+    ...
+    >>> fig.show()
+    """
+
+    warnings.filterwarnings("ignore", message="pandas.Int64Index")
+    warnings.filterwarnings("ignore", message="pandas.Float64Index")
+
+    # get region from grid or use supplied region
+    if region is None:
+        try:
+            region = utils.get_grid_info(grid)[1]
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # pygmt.exceptions.GMTInvalidInput:
+            # pygmt.exceptions.GMTInvalidInput:
+            msg = "grid's region can't be extracted, please provide with `region`"
+            raise ValueError(msg) from e
+
+    region = typing.cast(tuple[float, float, float, float], region)
+
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
+        fig = pygmt.Figure()
+        fig_height = kwargs.get("fig_height", 15)
+        fig_width = kwargs.get("fig_width", None)
+        # set figure projection and size from input region and figure dimensions
+        # by default use figure height to set projection
+        if fig_width is None:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+        # if fig_width is set, use it to set projection
+        else:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_width=fig_width,
+                hemisphere=hemisphere,
+            )
+    else:
+        if origin_shift == "xshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(  # type: ignore[union-attr]
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
+            )
+        elif origin_shift == "yshift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
+        elif origin_shift == "both_shift":
+            fig_height = kwargs.get("fig_height", utils.get_fig_height())
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(  # type: ignore[union-attr]
+                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
+                yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+            )
+        elif origin_shift == "no_shift":
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=kwargs.get("fig_height", 15),
+                hemisphere=hemisphere,
+            )
+
+        else:
+            msg = "invalid string for origin shift"
+            raise ValueError(msg)
+
+    show_region = kwargs.get("show_region", None)
+    gridlines = kwargs.get("gridlines", False)
+    points = kwargs.get("points", None)
+    inset = kwargs.get("inset", False)
+    title = kwargs.get("title", None)
+    scalebar = kwargs.get("scalebar", False)
+    north_arrow = kwargs.get("north_arrow", False)
+
+    if kwargs.get("imagery_basemap", False) is True:
+        fig.grdimage(  # type: ignore[union-attr]
+            grid=fetch.imagery(),
+            cmap=None,
+            projection=proj,
+            region=region,
+        )
+
+    cpt_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if key
+        not in [
+            "modis",
+            "grd2cpt",
+            "cpt_lims",
+            "cmap_region",
+            "robust",
+            "reverse_cpt",
+            "shp_mask",
+            "colorbar",
+        ]
+    }
+    cmap, colorbar, cpt_lims = set_cmap(
+        cmap,
+        grid=grid,
+        modis=kwargs.get("modis", False),
+        grd2cpt=kwargs.get("grd2cpt", False),
+        cpt_lims=kwargs.get("cpt_lims", None),
+        cmap_region=kwargs.get("cmap_region", None),
+        robust=kwargs.get("robust", False),
+        reverse_cpt=kwargs.get("reverse_cpt", False),
+        shp_mask=kwargs.get("shp_mask", None),
+        hemisphere=hemisphere,
+        colorbar=kwargs.get("colorbar", True),
+        **cpt_kwargs,
+    )
 
     # display grid
     fig.grdimage(  # type: ignore[union-attr]
@@ -746,10 +824,6 @@ def plot_grd(
                 "fig",
             ]
         }
-        if zmin is None or zmax is None:  # noqa: SIM108
-            cpt_lims = None
-        else:
-            cpt_lims = (zmin, zmax)
 
         add_colorbar(
             fig,
@@ -1819,6 +1893,57 @@ def plot_3d(
     """
     fig_height = kwargs.get("fig_height", 15)
     fig_width = kwargs.get("fig_width", None)
+
+    cbar_labels = kwargs.get("cbar_labels", None)
+
+    # colormap kwargs
+    modis = kwargs.get("modis", False)
+    grd2cpt = kwargs.get("grd2cpt", False)
+    cmap_region = kwargs.get("cmap_region", None)
+    robust = kwargs.get("robust", False)
+    reverse_cpt = kwargs.get("reverse_cpt", False)
+    cpt_lims_list = kwargs.get("cpt_lims", None)
+
+    if not isinstance(grids, list):
+        grids = [grids]
+
+    # number of grids to plot
+    num_grids = len(grids)
+
+    # if not provided as a list, make it a list the length of num_grids
+
+    if not isinstance(cbar_labels, list):
+        cbar_labels = [cbar_labels] * num_grids
+    if not isinstance(modis, list):
+        modis = [modis] * num_grids
+    if not isinstance(grd2cpt, list):
+        grd2cpt = [grd2cpt] * num_grids
+    if not isinstance(cmap_region, list):
+        cmap_region = [cmap_region] * num_grids
+    if not isinstance(robust, list):
+        robust = [robust] * num_grids
+    if not isinstance(reverse_cpt, list):
+        reverse_cpt = [reverse_cpt] * num_grids
+    if not isinstance(cmaps, list):
+        cmaps = [cmaps] * num_grids
+    if not isinstance(exaggeration, list):
+        exaggeration = [exaggeration] * num_grids
+    if cpt_lims_list is None:
+        cpt_lims_list = [None] * num_grids
+    elif (
+        (isinstance(cpt_lims_list, list))
+        & (len(cpt_lims_list) == 2)
+        & (all(isinstance(x, float) for x in cpt_lims_list))
+    ):
+        cpt_lims_list = [cpt_lims_list] * num_grids
+    if cmap_region is None:
+        cmap_region = [None] * num_grids
+    elif (
+        isinstance(cmap_region, list)
+        & (len(cmap_region) == 4)
+        & (all(isinstance(x, float) for x in cmap_region))
+    ):
+        cmap_region = [cmap_region] * num_grids
 
     # if plot region not specified, try to pull from grid info
     if region is None:
