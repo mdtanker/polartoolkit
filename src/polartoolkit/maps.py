@@ -1853,7 +1853,7 @@ def plot_3d(
     cmaps: list[str],
     exaggeration: list[float],
     view: tuple[float, float] = (170, 30),
-    vlims: tuple[float, float] = (-10000, 1000),
+    vlims: tuple[float, float] | None = None,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
     shp_mask: str | gpd.GeoDataFrame | None = None,
@@ -1875,8 +1875,8 @@ def plot_3d(
         list of vertical exaggeration factors to use for each grid
     view : list, optional
         list of azimuth and elevation angles for the view, by default [170, 30]
-    vlims : list, optional
-        list of vertical limits for the plot, by default [-10000, 1000]
+    vlims : tuple, optional
+        tuple of vertical limits for the plot, by default is z range of grids
     region : tuple[float, float, float, float], optional
         region for the plot, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
@@ -1973,7 +1973,11 @@ def plot_3d(
             fig_width=fig_width,
             hemisphere=hemisphere,
         )
+
     # set vertical limits
+    if vlims is None:
+        vlims = utils.get_combined_min_max(grids)
+
     new_region = region + vlims
 
     # initialize the figure
