@@ -29,5 +29,6 @@ antarctica/glacial_isostatic_adjustment
 antarctica/gravity
 antarctica/magnetics
 antarctica/ice_velocity
+antarctica/mass_change
 greenland/modis_mog
 ```
