@@ -27,5 +27,6 @@ antarctica/modis_moa
 antarctica/geothermal_heat_flux
 antarctica/glacial_isostatic_adjustment
 antarctica/gravity
+antarctica/ice_velocity
 greenland/modis_mog
 ```
