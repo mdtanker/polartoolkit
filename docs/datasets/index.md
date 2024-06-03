@@ -31,6 +31,7 @@ antarctica/magnetics
 antarctica/ice_velocity
 antarctica/mass_change
 antarctica/groundingline
+antarctica/geology
 greenland/modis_mog
 greenland/groundingline
 ```
