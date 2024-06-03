@@ -24,5 +24,6 @@ antarctica/crustal_thickness
 antarctica/sediment_thickness
 antarctica/imagery
 antarctica/modis_moa
+antarctica/geothermal_heat_flux
 greenland/modis_mog
 ```
