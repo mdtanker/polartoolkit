@@ -1,9 +1,18 @@
 # Greenland
 
-> No datasets added for Greenland yet!
+
+## Imagery
 
 ```{nbgallery}
 ---
 ---
 modis_mog
+```
+
+## Shapefiles and Misc.
+
+```{nbgallery}
+---
+---
+groundingline
 ```
