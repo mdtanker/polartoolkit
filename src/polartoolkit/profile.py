@@ -1071,8 +1071,8 @@ def plot_profile(
                 x=map_points.x,
                 y=map_points.y,
                 style=kwargs.get("map_points_style", "x.15c"),
-                pen=kwargs.get("map_points_pen", ".2p,blue"),
-                fill=kwargs.get("map_points_color", "blue"),
+                pen=kwargs.get("map_points_pen", ".2p,black"),
+                fill=kwargs.get("map_points_color", "black"),
             )
 
         # add inset map
