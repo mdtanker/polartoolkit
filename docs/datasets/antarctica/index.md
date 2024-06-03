@@ -28,3 +28,11 @@ sediment_thickness
 imagery
 modis_moa
 ```
+
+## Geophysically-derived data
+
+```{nbgallery}
+---
+---
+geothermal_heat_flux
+```
