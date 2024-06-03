@@ -44,4 +44,5 @@ gravity
 ---
 geothermal_heat_flux
 glacial_isostatic_adjustment
+ice_velocity
 ```
