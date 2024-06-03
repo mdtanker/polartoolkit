@@ -1849,9 +1849,9 @@ def subplots(
 
 
 def plot_3d(
-    grids: list[xr.DataArray],
-    cmaps: list[str],
-    exaggeration: list[float],
+    grids: list[xr.DataArray] | xr.DataArray,
+    cmaps: list[str] | str,
+    exaggeration: list[float] | float,
     view: tuple[float, float] = (170, 30),
     vlims: tuple[float, float] | None = None,
     region: tuple[float, float, float, float] | None = None,
@@ -1867,22 +1867,20 @@ def plot_3d(
 
     Parameters
     ----------
-    grids : list
+    grids : list or xr.DataArray
         xarray DataArrays to be plotted in 3D
-    cmaps : list
+    cmaps : list or str
         list of PyGMT colormap names to use for each grid
-    exaggeration : list
+    exaggeration : list or float
         list of vertical exaggeration factors to use for each grid
-    view : list, optional
-        list of azimuth and elevation angles for the view, by default [170, 30]
+    view : tuple, optional
+        tuple of azimuth and elevation angles for the view, by default [170, 30]
     vlims : tuple, optional
         tuple of vertical limits for the plot, by default is z range of grids
     region : tuple[float, float, float, float], optional
         region for the plot, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
-    cpt_lims : list, optional
-        list of colorbar limits for each grid, by default None
     colorbar : bool, optional
         whether to plot a colorbar, by default True
     cbar_perspective : bool, optional
@@ -1984,11 +1982,10 @@ def plot_3d(
     fig = pygmt.Figure()
 
     # iterate through grids and plot them
-    for i, j in enumerate(grids):
-        grid = j
+    for i, grid in enumerate(grids):
         # if provided, mask grid with shapefile
         if shp_mask is not None:
-            grid = utils.mask_from_shp(
+            grid = utils.mask_from_shp(  # noqa: PLW2901
                 shp_mask,
                 xr_grid=grid,
                 masked=True,
@@ -1996,50 +1993,44 @@ def plot_3d(
                 hemisphere=hemisphere,  # type: ignore[arg-type]
             )
             grid.to_netcdf("tmp.nc")
-            grid = xr.load_dataset("tmp.nc")["z"]
+            grid = xr.load_dataset("tmp.nc")["z"]  # noqa: PLW2901
             pathlib.Path("tmp.nc").unlink()
         # if provided, mask grid with polygon from interactive map via
         # regions.draw_region
         elif polygon_mask is not None:
-            grid = utils.mask_from_polygon(
+            grid = utils.mask_from_polygon(  # noqa: PLW2901
                 polygon_mask,
                 grid=grid,
                 hemisphere=hemisphere,  # type: ignore[arg-type]
             )
         # create colorscales
-        if grd2cpt is True:
-            pygmt.grd2cpt(
-                cmap=cmaps[i],
-                grid=grid,
-                background=True,
-                continuous=True,
-                verbose="e",
-            )
-        else:
-            try:
-                cpt_lims = kwargs.get("cpt_lims", None)
-                if cpt_lims is None:
-                    zmin, zmax = (
-                        utils.get_grid_info(grid)[2],
-                        utils.get_grid_info(grid)[3],
-                    )
-                else:
-                    zmin, zmax = cpt_lims[i]
-                pygmt.makecpt(
-                    cmap=cmaps[i],
-                    background=True,
-                    continuous=True,
-                    series=(zmin, zmax),
-                )
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                # pygmt.exceptions.GMTInvalidInput:
-                logging.exception(e)
-                logging.warning("grid region can't be extracted.")
-                pygmt.makecpt(
-                    cmap=cmaps[i],
-                    background=True,
-                    continuous=True,
-                )
+        cpt_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key
+            not in [
+                "modis",
+                "grd2cpt",
+                "cpt_lims",
+                "cmap_region",
+                "robust",
+                "reverse_cpt",
+                "shp_mask",
+            ]
+        }
+        cmap, colorbar, _ = set_cmap(
+            cmaps[i],
+            grid=grid,
+            modis=modis[i],
+            grd2cpt=grd2cpt[i],
+            cpt_lims=cpt_lims_list[i],
+            cmap_region=cmap_region[i],
+            robust=robust[i],
+            reverse_cpt=reverse_cpt[i],
+            hemisphere=hemisphere,
+            colorbar=colorbar,
+            **cpt_kwargs,
+        )
 
         # set transparency values
         transparencies = kwargs.get("transparencies", None)
@@ -2048,7 +2039,7 @@ def plot_3d(
         # plot as perspective view
         fig.grdview(
             grid=grid,
-            cmap=True,
+            cmap=cmap,
             projection=proj,
             region=new_region,
             frame=None,
@@ -2071,6 +2062,9 @@ def plot_3d(
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             fig.colorbar(
+                cmap=cmap,
+                # position=f"g{np.max(region[0:2])}/{np.mean(region[2:4])}+w{fig_width*.4}c/.5c+v+e+m", #noqa: E501
+                # # vertical, with triangles, text opposite
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite #noqa: E501
                 frame=f"xaf+l{cbar_labels[i]}",
                 perspective=cbar_perspective,
