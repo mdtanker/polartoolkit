@@ -951,7 +951,10 @@ def add_colorbar(
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
 
-        assert zmin != zmax, "Grids are all the same value!"
+        if zmin == zmax:
+            msg = "Grid is a constant value, can't make a colorbar histogram!"
+            logging.warning(msg)
+            return
 
         # define histogram region
         hist_reg = [
