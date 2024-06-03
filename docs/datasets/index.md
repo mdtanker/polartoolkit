@@ -30,6 +30,7 @@ antarctica/gravity
 antarctica/magnetics
 antarctica/ice_velocity
 antarctica/mass_change
+antarctica/basal_melt
 antarctica/groundingline
 antarctica/geology
 greenland/modis_mog
