@@ -2063,12 +2063,10 @@ def plot_3d(
             cbar_yshift = kwargs.get("cbar_yshift", None)
 
             xshift = 0 if cbar_xshift is None else cbar_xshift[i]
-
-            yshift = fig_height / 2 if cbar_yshift is None else cbar_yshift[i]
+            # yshift = fig_height / 2 if cbar_yshift is None else cbar_yshift[i]
+            yshift = 0 if cbar_yshift is None else cbar_yshift[i]
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
-            cbar_labels = kwargs.get("cbar_labels", None)
-            cbar_label = " " if cbar_labels is None else cbar_labels[i]
             fig.colorbar(
                 cmap=True,
                 position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
@@ -2079,11 +2077,12 @@ def plot_3d(
             fig.shift_origin(yshift=f"{-yshift}c", xshift=f"{-xshift}c")
 
         # shift up for next grid
-        zshifts: list[float] | None = kwargs.get("zshifts", None)
-        if zshifts is None:
-            fig.shift_origin(yshift=f"{fig_height/2}c")
-        else:
-            fig.shift_origin(yshift=f"{zshifts[i]}c")
+        if i < len(grids) - 1:
+            zshifts = kwargs.get("zshifts", None)
+            zshift = 0 if zshifts is None else zshifts[i]
+
+            if zshifts is not None:
+                fig.shift_origin(yshift=f"{zshift}c")
 
     return fig
 
