@@ -1859,7 +1859,7 @@ def plot_3d(
     shp_mask: str | gpd.GeoDataFrame | None = None,
     polygon_mask: list[float] | None = None,
     colorbar: bool = True,
-    grd2cpt: bool = True,
+    cbar_perspective: bool = True,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
@@ -1885,6 +1885,8 @@ def plot_3d(
         list of colorbar limits for each grid, by default None
     colorbar : bool, optional
         whether to plot a colorbar, by default True
+    cbar_perspective : bool, optional
+        whether to plot the colorbar in perspective, by default True
 
     Returns
     -------
@@ -2065,10 +2067,7 @@ def plot_3d(
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             fig.colorbar(
-                cmap=True,
-                position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",
-                frame=f"xaf+l{cbar_label}",
-                perspective=True,
+                perspective=cbar_perspective,
                 box="+gwhite+c3p",
             )
             fig.shift_origin(yshift=f"{-yshift}c", xshift=f"{-xshift}c")
