@@ -29,6 +29,14 @@ imagery
 modis_moa
 ```
 
+## Geophysical data
+
+```{nbgallery}
+---
+---
+gravity
+```
+
 ## Geophysically-derived data
 
 ```{nbgallery}
