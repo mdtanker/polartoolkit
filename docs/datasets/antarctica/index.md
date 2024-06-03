@@ -35,6 +35,7 @@ modis_moa
 ---
 ---
 gravity
+magnetics
 ```
 
 ## Geophysically-derived data
