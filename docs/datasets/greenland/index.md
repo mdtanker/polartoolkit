@@ -1,6 +1,5 @@
 # Greenland
 
-
 ## Imagery
 
 ```{nbgallery}
