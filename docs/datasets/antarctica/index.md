@@ -48,3 +48,11 @@ glacial_isostatic_adjustment
 ice_velocity
 mass_change
 ```
+
+## Shapefiles and Misc.
+
+```{nbgallery}
+---
+---
+groundingline
+```

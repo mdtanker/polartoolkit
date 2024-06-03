@@ -846,6 +846,10 @@ def groundingline(
     from :footcite:t:`gerrishcoastline2020`.
     accessed at https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=8cecde06-8474-4b58-a9cb-b820fa4c9429
 
+    version = "measures-greenland"
+    from :footcite:t:`haranmeasures2018`.
+
+
     Parameters
     ----------
     version : str, optional
