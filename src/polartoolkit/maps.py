@@ -2071,6 +2071,7 @@ def plot_3d(
 
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             fig.colorbar(
+                position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite #noqa: E501
                 frame=f"xaf+l{cbar_labels[i]}",
                 perspective=cbar_perspective,
                 box="+gwhite+c3p",
