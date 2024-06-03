@@ -1951,11 +1951,8 @@ def plot_3d(
             region = utils.get_grid_info(grids[0])[1]
         except Exception as e:  # pylint: disable=broad-exception-caught
             # pygmt.exceptions.GMTInvalidInput:
-            logging.exception(e)
-            logging.warning(
-                "first grids' region can't be extracted, using antarctic region."
-            )
-            region = regions.antarctica
+            msg = "first grids' region can't be extracted, please provide with `region`"
+            raise ValueError(msg) from e
 
     region = typing.cast(tuple[float, float, float, float], region)
 
