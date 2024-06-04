@@ -386,6 +386,9 @@ def default_layers(
             spacing=spacing,
             verbose=verbose,
         )
+    else:
+        msg = "version must be either 'bedmap2' or 'bedmachine'"
+        raise ValueError(msg)
 
     layer_names = [
         "ice",
@@ -914,6 +917,9 @@ def plot_profile(
         y = layers_reg[3]
     elif kwargs.get("start_end_label_position", "B") == "B":
         y = layers_reg[2]
+    else:
+        msg = "invalid start_end_label_position string"
+        raise ValueError(msg)
 
     fig.text(
         x=x1,
@@ -1518,7 +1524,7 @@ def rel_dist(
         df1 = df.copy()
 
     # from https://stackoverflow.com/a/75824992/18686384
-    df1["x_lag"] = df1["x"].shift(1)
+    df1["x_lag"] = df1["x"].shift(1)  # pylint: disable=used-before-assignment
     df1["y_lag"] = df1["y"].shift(1)
     df1["rel_dist"] = np.sqrt(
         (df1["x"] - df1["x_lag"]) ** 2 + (df1["y"] - df1["y_lag"]) ** 2

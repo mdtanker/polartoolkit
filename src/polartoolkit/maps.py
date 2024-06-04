@@ -1024,6 +1024,9 @@ def add_colorbar(
                 bins=bins,
             )[0]
             max_bin_height = bins.max() / bins.sum() * 100
+        else:
+            msg = "hist_type must be 0 or 1"
+            raise ValueError(msg)
 
         if zmin == zmax:
             msg = "Grid is a constant value, can't make a colorbar histogram!"
@@ -1142,7 +1145,7 @@ def add_coast(
         raise ValueError(msg)
 
     fig.plot(
-        data,
+        data,  # pylint: disable=used-before-assignment
         projection=projection,
         region=region,
         pen=pen,
@@ -1638,7 +1641,9 @@ def interactive_map(
                 points_ll: pd.DataFrame = utils.epsg3031_to_latlon(points)
             elif hemisphere == "north":
                 points_ll = utils.epsg3413_to_latlon(points)
-
+            else:
+                msg = "hemisphere must be north or south"
+                raise ValueError(msg)
             # if points supplied, center map on points
             center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
             # add points to geodataframe
@@ -1656,12 +1661,17 @@ def interactive_map(
             center_ll = [-90, 0]
         elif hemisphere == "north":
             center_ll = [90, -45]
-
+        else:
+            msg = "hemisphere must be north or south"
+            raise ValueError(msg)
     if center_yx is not None:
         if hemisphere == "south":
             center_ll = utils.epsg3031_to_latlon(center_yx)
         elif hemisphere == "north":
             center_ll = utils.epsg3413_to_latlon(center_yx)
+        else:
+            msg = "hemisphere must be north or south"
+            raise ValueError(msg)
 
     if hemisphere == "south":
         if basemap_type == "BlueMarble":
@@ -1689,7 +1699,9 @@ def interactive_map(
         else:
             msg = "invalid string for basemap_type"
             raise ValueError(msg)
-
+    else:
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
     # create the map
     m = ipyleaflet.Map(
         center=center_ll,
