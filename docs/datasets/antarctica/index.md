@@ -36,6 +36,8 @@ modis_moa
 ---
 gravity
 magnetics
+rosetta_gravity
+rosetta_magnetics
 ```
 
 ## Geophysically-derived data
