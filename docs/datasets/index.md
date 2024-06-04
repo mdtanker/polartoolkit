@@ -33,6 +33,8 @@ antarctica/mass_change
 antarctica/basal_melt
 antarctica/groundingline
 antarctica/ice_boundaries
+antarctica/rosetta_gravity
+antarctica/rosetta_magnetics
 antarctica/geology
 greenland/modis_mog
 greenland/groundingline
