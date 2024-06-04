@@ -280,6 +280,9 @@ def sample_shp(name: str) -> str:
         known_hash = "70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e"
     elif name == "Roosevelt_Island":
         known_hash = "83434284808d067b8b18b649e41287a63f01eb2ce581b2c34ee44ae3a1a5ca2a"
+    else:
+        msg = "invalid name string"
+        raise ValueError(msg)
     path = pooch.retrieve(
         url=f"https://github.com/mdtanker/polartoolkit/raw/main/data/{name}.zip",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
@@ -565,9 +568,9 @@ def ice_vel(
         initial_registration = "g"
 
     if region is None:
-        region = initial_region
+        region = initial_region  # pylint: disable=possibly-used-before-assignment
     if registration is None:
-        registration = initial_registration
+        registration = initial_registration  # pylint: disable=possibly-used-before-assignment
 
     # This is the path to the processed (magnitude) grid
     path = pooch.retrieve(
@@ -577,13 +580,13 @@ def ice_vel(
         downloader=EarthDataDownloader(),
         known_hash="fa0957618b8bd98099f4a419d7dc0e3a2c562d89e9791b4d0ed55e6017f52416",
         progressbar=True,
-        processor=preprocessor,
+        processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
     )
 
     with xr.open_dataarray(path) as grid:
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
+            initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
             initial_region=initial_region,
             initial_registration=initial_registration,
             spacing=spacing,
@@ -810,6 +813,9 @@ def geomap(
         layer = "ATA_GeoMAP_sources_v2022_08"
     elif version == "quality":
         layer = "ATA_GeoMAP_quality_v2022_08"
+    else:
+        msg = "invalid version string"
+        raise ValueError(msg)
 
     if region is None:
         data = pyogrio.read_dataframe(fname2, layer=layer)
@@ -1621,9 +1627,9 @@ def ibcso(
         initial_registration = "p"
 
     if region is None:
-        region = initial_region
+        region = initial_region  # pylint: disable=possibly-used-before-assignment
     if registration is None:
-        registration = initial_registration
+        registration = initial_registration  # pylint: disable=possibly-used-before-assignment
 
     if layer == "surface":
         path = pooch.retrieve(
@@ -1632,7 +1638,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="7748a79fffa41024c175cff7142066940b3e88f710eaf4080193c46b2b59e1f0",
             progressbar=True,
-            processor=preprocessor,
+            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
     elif layer == "bed":
         path = pooch.retrieve(
@@ -1641,7 +1647,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="74d55acb219deb87dc5be019d6dafeceb7b1ebcf9095866f257671d12670a5e2",
             progressbar=True,
-            processor=preprocessor,
+            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
     else:
         msg = "invalid layer string"
@@ -1651,7 +1657,7 @@ def ibcso(
 
     resampled = resample_grid(
         grid,
-        initial_spacing=initial_spacing,
+        initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
         initial_region=initial_region,
         initial_registration=initial_registration,
         spacing=spacing,
@@ -3725,12 +3731,11 @@ def ghf(
             region,
             registration,
         )
-
     else:
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def gia(
