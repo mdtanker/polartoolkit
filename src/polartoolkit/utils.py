@@ -688,6 +688,9 @@ def mask_from_shp(
         xds = grid.rio.write_crs(crs).rio.set_spatial_dims(
             original_dims[1], original_dims[0]
         )
+    else:
+        msg = "can't supply both xr_grid and grid_file."
+        raise ValueError(msg)
 
     masked_grd = xds.rio.clip(
         shp.geometry,
@@ -703,7 +706,7 @@ def mask_from_shp(
         output = mask_grd
 
     try:
-        output = output.drop_vars("spatial_ref")
+        output = output.drop_vars("spatial_ref")  # pylint: disable=used-before-assignment
     except ValueError as e:
         logging.exception(e)
 
@@ -1778,12 +1781,12 @@ def get_min_max(
             invert=False,
         )
 
-        if robust:
+        if robust is True:
             v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
-        else:
+        elif robust is False:
             v_min, v_max = np.nanmin(masked), np.nanmax(masked)
 
-    assert v_min <= v_max, "min value should be less than or equal to max value"
+    assert v_min <= v_max, "min value should be less than or equal to max value"  # pylint: disable=possibly-used-before-assignment
     return (v_min, v_max)
 
 
@@ -1914,9 +1917,8 @@ def mask_from_polygon(
         ds = grid.to_dataset()
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
-
     # if no grid given, make a dummy one with supplied region and spacing
-    if grid is None:
+    elif grid is None:
         coords = vd.grid_coordinates(
             region=region,
             spacing=spacing,
@@ -1925,6 +1927,9 @@ def mask_from_polygon(
         ds = vd.make_xarray_grid(
             coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
         )
+    else:
+        msg = "grid must be a xr.DataArray, a filename, or None"
+        raise ValueError(msg)
 
     masked = vd.convexhull_mask(
         data_coords,
