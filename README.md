@@ -68,24 +68,45 @@ for problems or feature ideas.
 
 The **PolarToolkit** python package provides some basic tools to help in
 conducting polar research. You can use it to download common datasets (i.e.
-BedMachine, Bedmap2, MODIA MoA), create maps and plots specific to Antarctica
-(soon Greenland and the Arctic as well), and visualize data with multiple
-methods.
+BedMachine, Bedmap2, MODIS Mosaics), create maps and plots specific to
+Antarctica, Greenland and the Arctic and visualize data with multiple methods.
 
 Feel free to use, share, modify, and
 [contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to
 this project. I've mostly made this for personal usage so expect significant
 changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
-## Project goals
+### What _PolarToolkit_ is for:
 
-Below is a list of some features I hope to eventually include. Feel free to make
-a feature request through
-[GitHub Issues](https://github.com/mdtanker/polartoolkit/issues/new/choose).
+- download commonly used datasets related to Antarctica, Greenland and the
+  Arctic
+- making publication-quality maps and cross-sections
+- interactively explore data and define geographic regions
+- plotting and working with data in projected coordinates (meters) in either
+  EPSG 3031 or 3413, for the South and North hemispheres, respectively
+- mostly focused on regularly gridded (interpolated) datasets, with some support
+  for discrete (un-gridded) data
+- current focus for datasets is related to ice, geophysics, and earth properties
+  since this is where my personal research interests are, but please request or
+  add your own types of data!
+- basic geospatial manipulations (filtering, resampling, reprojecting, masking
+  etc.)
 
-- Create 3D interactive models to help visualize data.
-- Include more datasets to aid in downloading and storage.
-- Additional projections and possible support for the Arctic region as well.
+### What _PolarToolkit_ is **NOT** for:
+
+- downloading niche datasets for specific regions
+- downloaded datasets outside of Antarctica, Greenland and the Arctic
+- plotting and working with data in geographic (latitude and longitude)
+  coordinates
+- plots not related to geospatial data
+- a point-and-click GUI for plotting or data exploration -> see
+  [Quantarctica](https://www.npolar.no/quantarctica/) or
+  [QGreenland](https://qgreenland.org/)
+- complex geospatial processing -> see
+  [PyGMT](https://www.pygmt.org/dev/index.html),
+  [Verde](https://www.fatiando.org/verde/dev/index.html),
+  [Geopandas](https://geopandas.org/en/stable/) or
+  [Rasterio](https://rasterio.readthedocs.io/en/stable/)
 
 <!-- SPHINX-END-long-desc -->
 
@@ -96,7 +117,7 @@ simplest to hardest.
 
 ### Conda / Mamba
 
-The easiest way to install this package and it's dependencies is with conda or
+The easiest way to install this package and its dependencies is with conda or
 mamba into a new virtual environment:
 
 ```
