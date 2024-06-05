@@ -200,13 +200,13 @@ def region_to_df(
     reverse: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame:
     """
-    Convert region bounds in GMT format [e, w, n, s] to pandas dataframe with
+    Convert region bounds in format [xmin, xmax, ymin, ymax] to pandas dataframe with
     coordinates of region corners, or reverse this if `reverse` is True.
 
     Parameters
     ----------
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
-        Tuple of bounding region in GMT format; [e, w, n, s], or, if `reverse` is True,
+        bounding region in format [xmin, xmax, ymin, ymax] or, if `reverse` is True,
         a DataFrame with coordinate columns with names set by `cood_names`
     coord_names : tuple[str, str], optional
         names of input or output coordinate columns, by default ("x", "y")
@@ -218,7 +218,8 @@ def region_to_df(
     -------
     tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
         Dataframe with easting and northing columns, and a row for each corner of the
-        region, or, if `reverse` is True, an array in the format [e,w,n,s].
+        region, or, if `reverse` is True, an array in the format
+        [xmin, xmax, ymin, ymax].
     """
 
     if reverse:
@@ -242,21 +243,21 @@ def region_xy_to_ll(
     dms: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
-    Convert GMT region in format [e, w, n, s] in EPSG to lat / lon
+    Convert region in format [xmin, xmax, ymin, ymax] in projected meters to lat / lon
 
     Parameters
     ----------
     hemisphere : str,
         choose between the "north" or "south" hemispheres
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
-        region boundaries in GMT format; [e, w, n, s] in meters
+        region boundaries in format [xmin, xmax, ymin, ymax] in meters
     dms: bool, False
         if True, will return results as deg:min:sec instead of decimal degrees
 
     Returns
     -------
     tuple[typing.Any, typing.Any, typing.Any, typing.Any]
-        region boundaries in GMT format; [e, w, n, s] in lat, lon
+        region boundaries in format [lon_min, lon_max, lat_min, lat_max]
     """
     df = region_to_df(region)
     if hemisphere == "north":
@@ -274,7 +275,8 @@ def region_to_bounding_box(
     region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
-    Convert GMT region in format [e, w, n, s] to bounding box format used for icepyx:
+    Convert region in format [xmin, xmax, ymin, ymax] to bounding box format used for
+    icepyx:
     [
     lower left longitude,
     lower left latitude,
@@ -287,7 +289,7 @@ def region_to_bounding_box(
     Parameters
     ----------
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
-        region boundaries in GMT format; [e, w, n, s] in meters or degrees.
+        region boundaries in format [xmin, xmax, ymin, ymax] in meters or degrees.
 
     Returns
     -------
@@ -322,7 +324,7 @@ def latlon_to_epsg3031(
     -------
     pd.DataFrame or NDArray[typing.Any, typing.Any]
         Updated dataframe with new easting and northing columns or NDArray in format
-        [e, w, n, s]
+        [xmin, xmax, ymin, ymax]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
 
@@ -373,8 +375,8 @@ def epsg3031_to_latlon(
     Returns
     -------
     pd.DataFrame or list[typing.Any]
-        Updated dataframe with new latitude and longitude columns, NDArray in
-        format [e, w, n, s], or list in format [lat, lon]
+        Updated dataframe with new latitude and longitude columns, NDArray in format
+        [xmin, xmax, ymin, ymax], or list in format [lat, lon]
     """
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
@@ -426,7 +428,7 @@ def latlon_to_epsg3413(
     -------
     pd.DataFrame or NDArray[typing.Any, typing.Any]
         Updated dataframe with new easting and northing columns or NDArray in format
-        [e, w, n, s]
+        [xmin, xmax, ymin, ymax]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3413")
 
@@ -477,8 +479,8 @@ def epsg3413_to_latlon(
     Returns
     -------
     pd.DataFrame or list[typing.Any]
-        Updated dataframe with new latitude and longitude columns, NDArray in
-        format [e, w, n, s], or list in format [lat, lon]
+        Updated dataframe with new latitude and longitude columns, NDArray in format
+        [xmin, xmax, ymin, ymax], or list in format [lat, lon]
     """
 
     transformer = Transformer.from_crs("epsg:3413", "epsg:4326")
@@ -519,7 +521,8 @@ def points_inside_region(
     df : pd.DataFrame
         dataframe with columns 'x','y' to use for defining if within region
     region : tuple[float, float, float, float]
-        bounding region in GMT format for bounds of new subset dataframe
+        bounding region in format [xmin, xmax, ymin, ymax] for bounds of new subset
+        dataframe
     names : tuple[str, str], optional
         column names to use for x and y coordinates, by default ("x", "y")
     reverse : bool, optional
@@ -637,8 +640,8 @@ def mask_from_shp(
     grid_file : str, optional
         path to a .nc or .tif file to use to define region or to mask, by default None
     region : str or tuple[float, float, float, float], optional
-        bounding region in GMT format in meters to create a dummy grid if none are
-        supplied, by default None
+        bounding region in format [xmin, xmax, ymin, ymax] in meters to create a dummy
+        grid if none are supplied, by default None
     spacing : str or int, optional
         grid spacing in meters to create a dummy grid if none are supplied, by default
         None
@@ -728,7 +731,7 @@ def alter_region(
     Parameters
     ----------
     starting_region : tuple[float, float, float, float]
-        Initial GMT formatted region in meters, [e,w,n,s]
+        Initial region in meters in format [xmin, xmax, ymin, ymax]
     zoom : float, optional
         zoom in or out, in meters, by default 0
     n_shift : float, optional
@@ -748,26 +751,28 @@ def alter_region(
     starting_e, starting_w = starting_region[0], starting_region[1]
     starting_n, starting_s = starting_region[2], starting_region[3]
 
-    e = starting_e + zoom + w_shift
-    w = starting_w - zoom + w_shift
+    xmin = starting_e + zoom + w_shift
+    xmax = starting_w - zoom + w_shift
 
-    n = starting_n + zoom - n_shift
-    s = starting_s - zoom - n_shift
+    ymin = starting_n + zoom - n_shift
+    ymax = starting_s - zoom - n_shift
 
-    region = (e, w, n, s)
+    region = (xmin, xmax, ymin, ymax)
 
     e_buff, w_buff, n_buff, s_buff = (
-        int(e - buffer),
-        int(w + buffer),
-        int(n - buffer),
-        int(s + buffer),
+        int(xmin - buffer),
+        int(xmax + buffer),
+        int(ymin - buffer),
+        int(ymax + buffer),
     )
 
     buffer_region = (e_buff, w_buff, n_buff, s_buff)
 
     if print_reg is True:
         logging.info(
-            "inner region is %s x %s km", int((w - e) / 1e3), int((s - n) / 1e3)
+            "inner region is %s x %s km",
+            int((xmax - xmin) / 1e3),
+            int((ymax - ymin) / 1e3),
         )
     return region, buffer_region
 
@@ -785,7 +790,7 @@ def set_proj(
     Parameters
     ----------
     region : tuple[float, float, float, float]
-        region boundaries in GMT-format (e, w, n, s) in meters EPSG:3031
+        region boundaries in format [xmin, xmax, ymin, ymax] in projected meters
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
@@ -801,14 +806,14 @@ def set_proj(
         returns a tuple of the following variables: proj, proj_latlon, fig_width,
         fig_height
     """
-    e, w, n, s = region
+    xmin, xmax, ymin, ymax = region
 
     if fig_width is not None:
-        fig_height = fig_width * (s - n) / (w - e)
-        ratio = (w - e) / (fig_width / 100)
+        fig_height = fig_width * (ymax - ymin) / (xmax - xmin)
+        ratio = (xmax - xmin) / (fig_width / 100)
     else:
-        fig_width = fig_height * (w - e) / (s - n)
-        ratio = (s - n) / (fig_height / 100)
+        fig_width = fig_height * (xmax - xmin) / (ymax - ymin)
+        ratio = (ymax - ymin) / (fig_height / 100)
 
     proj = f"x1:{ratio}"
 
@@ -991,7 +996,8 @@ def get_combined_min_max(
         choose whether to return the 2nd and 98th percentile values, instead of the
         min/max
     region : tuple[float, float, float, float], optional
-        give a subset region to get min and max values from, by default None
+        give a subset region to get min and max values from, in format
+        [xmin, xmax, ymin, ymax], by default None
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
@@ -1052,7 +1058,7 @@ def grd_compare(
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
     region : tuple[float, float, float, float]
-        choose a specific region to compare.
+        choose a specific region to compare, in format [xmin, xmax, ymin, ymax].
     rmse_in_title: bool
         add the RMSE to the title, by default is True.
 
@@ -1114,11 +1120,11 @@ def grd_compare(
             spacing = da1_spacing
         # get inside region of both grids
         if da1_reg != da2_reg:
-            e = max(da1_reg[0], da2_reg[0])
-            w = min(da1_reg[1], da2_reg[1])
-            n = max(da1_reg[2], da2_reg[2])
-            s = min(da1_reg[3], da2_reg[3])
-            region = (e, w, n, s)
+            xmin = max(da1_reg[0], da2_reg[0])
+            xmax = min(da1_reg[1], da2_reg[1])
+            ymin = max(da1_reg[2], da2_reg[2])
+            ymax = min(da1_reg[3], da2_reg[3])
+            region = (xmin, xmax, ymin, ymax)
             logging.info("grid regions dont match, using inner region %s", region)
         else:
             region = da1_reg
@@ -1383,7 +1389,7 @@ def make_grid(
     Parameters
     ----------
     region : tuple[float, float, float, float]
-        bounding region in GMT format
+        bounding region in format [xmin, xmax, ymin, ymax]
     spacing : float
         spacing for grid
     value : float
@@ -1432,7 +1438,7 @@ def raps(
     Keyword Args
     ------------
     region : str | tuple[float, float, float, float]
-        grid region if input is not a grid
+        grid region if input is not a grid, in format [xmin, xmax, ymin, ymax]
     spacing : float
         grid spacing if input is not a grid
     """
@@ -1547,7 +1553,7 @@ def coherency(
     Keyword Args
     ------------
     region : str | tuple[float, float, float, float]
-        grid region if input is pd.DataFrame
+        grid region if input is pd.DataFrame, in format [xmin, xmax, ymin, ymax]
     spacing : float
         grid spacing if input is pd.DataFrame
     """
@@ -1716,7 +1722,7 @@ def subset_grid(
     grid : xr.DataArray
         grid to be clipped
     region : tuple[float, float, float, float]
-        region to clip to
+        region to clip to, in format [xmin, xmax, ymin, ymax]
 
     Returns
     -------
@@ -1754,7 +1760,8 @@ def get_min_max(
         choose whether to return the 2nd and 98th percentile values, instead of the
         min/max
     region : tuple[float, float, float, float], optional
-        give a subset region to get min and max values from, by default None
+        give a subset region to get min and max values from, in format
+        [xmin, xmax, ymin, ymax], by default None
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
@@ -1847,7 +1854,7 @@ def polygon_to_region(
     Returns
     -------
     tuple[float, float, float, float]
-        region in format [e,w,n,s]
+        region in format in format [xmin, xmax, ymin, ymax]
     """
 
     df = shapes_to_df(shapes=polygon, hemisphere=hemisphere)
@@ -1889,7 +1896,8 @@ def mask_from_polygon(
     grid : Union[str, xr.DataArray], optional
         grid to mask, by default None
     region : tuple[float, float, float, float], optional
-        region to create a grid if none is supplied, by default None
+        region to create a grid if none is supplied, in format [xmin, xmax, ymin, ymax],
+        by default None
     spacing : int, optional
         spacing to create a grid if none is supplied, by default None
 
@@ -2050,7 +2058,7 @@ def gmt_str_to_list(region: tuple[float, float, float, float]) -> str:
     Parameters
     ----------
     region : tuple[float, float, float, float]
-        bounding region in format (e, w, n, s)
+        bounding region in format [xmin, xmax, ymin, ymax]
 
     Returns
     -------
@@ -2078,7 +2086,7 @@ def grd_mask(
     spacing : float
         _description_
     region : tuple[float, float, float, float]
-        _description_
+        bounding region in format [xmin, xmax, ymin, ymax]
     clobber : str, optional
         _description_, by default "o"
     values : str, optional

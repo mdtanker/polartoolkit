@@ -91,13 +91,14 @@ def resample_grid(
     initial_spacing : float | None, optional
         spacing of input grid, if known, by default None
     initial_region : tuple[float, float, float, float] | None, optional
-        region of input grid, if known, by default None
+        region of input grid, if known, in format [xmin, xmax, ymin, ymax] by default
+        None
     initial_registration : str | None, optional
         registration of input grid, if known, by default None
     spacing : float | None, optional
         new spacing for grid, by default None
     region : tuple[float, float, float, float] | None, optional
-        new region for grid, by default None
+        new region for grid in format [xmin, xmax, ymin, ymax], by default None
     registration : str | None, optional
         new registration for grid, by default None
 
@@ -466,7 +467,8 @@ def ice_vel(
     Parameters
     ----------
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : float,
         grid spacing to resample the loaded grid to, by default 5e3, original spacing
         is 450m
@@ -742,7 +744,8 @@ def geomap(
         choose which version to retrieve, "faults", "units", "sources", or "quality",
         by default "faults"
     region : tuple[float, float, float, float], optional
-        return only data within this region, by default None
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
 
     Returns
     -------
@@ -1079,7 +1082,8 @@ def basement(
     Parameters
     ----------
     region : tuple[float, float, float, float], optional
-        bounding region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : float, optional
         grid spacing to resample the loaded grid to, by default 5e3
     registration : str, optional
@@ -1159,7 +1163,8 @@ def sediment_thickness(
     version : str,
         choose which version of data to fetch.
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional
@@ -1421,7 +1426,8 @@ def ibcso_coverage(
     Parameters
     ----------
     region : tuple[float, float, float, float]
-        GMT-format region to subset the data from.
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
 
     Returns
     -------
@@ -1482,7 +1488,8 @@ def ibcso(
         choose which layer to fetch:
         'surface', 'bed'
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default
     registration : str, optional
@@ -1707,7 +1714,8 @@ def bedmachine(
         choose whether heights are referenced to 'eigen-6c4' geoid or the
         'ellipsoid' (WGS84), by default is eigen-6c4'
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 500m
     registration : str, optional
@@ -1838,7 +1846,8 @@ def bedmap_points(
     version : str
         choose between 'bedmap1', 'bedmap2', or 'bedmap3' point data
     region : tuple[float, float, float, float], optional
-        add a GMT region to subset the data by, by default None
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
 
     Returns
     -------
@@ -1942,7 +1951,8 @@ def bedmap2(
         choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
         ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional,
@@ -2213,7 +2223,8 @@ def rema(
     version : str, optional,
         choose which resolution to fetch, either "1km" or "500m", by default is "1km"
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional,
@@ -2337,7 +2348,8 @@ def deepbedmap(
     Parameters
     ----------
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional
@@ -2419,7 +2431,8 @@ def gravity(
     version : str
         choose which version of gravity data to fetch.
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional
@@ -2662,7 +2675,8 @@ def etopo(
     ----------
 
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional
@@ -2763,7 +2777,8 @@ def geoid(
     ----------
 
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional
@@ -3084,7 +3099,8 @@ def magnetics(
     version : str
         Either 'admap1', 'admap2', or 'admap2_gdb'
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : str or int, optional
         grid spacing to resample the loaded grid to, by default 10e3
     registration : str, optional,
@@ -3296,7 +3312,8 @@ def ghf(
     version : str
         Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
@@ -3755,7 +3772,8 @@ def gia(
     version : str
         For now the only option is 'stal-2020',
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
@@ -3842,7 +3860,8 @@ def crustal_thickness(
         will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes', 'pappa', 'stal'
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files
@@ -4050,7 +4069,8 @@ def moho(
         will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1',
         'szwillus', 'llubes',
     region : tuple[float, float, float, float], optional
-        GMT-format region to clip the loaded grid to, by default doesn't clip
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
     spacing : int, optional
        grid spacing to resample the loaded grid to, by default spacing is read from
        downloaded files

@@ -67,7 +67,7 @@ def basemap(
     Parameters
     ----------
     region : tuple[float, float, float, float] | None, optional
-        bounding region in GMT format, by default None
+        region for the figure in format [xmin, xmax, ymin, ymax], by default None
     hemisphere : str, optional
         set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
         (EPSG:3031), only used if plot lat long components (gridlines)
@@ -239,7 +239,8 @@ def set_cmap(
     cpt_lims : tuple[float, float] | None, optional
         limits to set for the colormap, by default None
     cmap_region : tuple[float, float, float, float] | None, optional
-        extract colormap limits from a subset of the grid, by default None
+        extract colormap limits from a subset of the grid, in format
+        [xmin, xmax, ymin, ymax], by default None
     robust : bool, optional
         use the 2nd and 98th percentile of the data from the grid, by default False
     reverse_cpt : bool, optional
@@ -503,7 +504,8 @@ def plot_grd(
     cmap : str or bool, optional
         GMT color scale to use, by default 'viridis'
     region : tuple[float, float, float, float], optional
-        region to plot, by default is extent of input grid
+        region for the figure in format [xmin, xmax, ymin, ymax], by default is extent
+        of the input grid
     coast : bool, optional
         choose whether to plot coastline and grounding line, by default False
     origin_shift : str, optional
@@ -521,14 +523,14 @@ def plot_grd(
     grd2cpt : bool
         use GMT module grd2cpt to set color scale from grid values, by default is False
     cmap_region : str or tuple[float, float, float, float]
-        region to use to define color scale if grd2cpt is True, by default is
-        region
+        region to use to define color scale if grd2cpt is True, in format
+        [xmin, xmax, ymin, ymax], by default is region
     cbar_label : str
         label to add to colorbar.
     points : pd.DataFrame
         points to plot on map, must contain columns 'x' and 'y'.
     show_region : tuple[float, float, float, float]
-        GMT-format region to use to plot a bounding regions.
+        show a rectangular region on the map, in the format [xmin, xmax, ymin, ymax].
     cpt_lims : str or tuple]
         limits to use for color scale max and min, by default is max and min of data.
     gridlines : bool
@@ -1099,7 +1101,8 @@ def add_coast(
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
-        region for the figure, by default is last used by PyGMT
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     projection : str, optional
         GMT projection string, by default is last used by PyGMT
     no_coast : bool
@@ -1166,7 +1169,8 @@ def add_gridlines(
     ----------
     fig : pygmt.Figure instance
     region : tuple[float, float, float, float], optional
-        region for the figure
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
@@ -1260,7 +1264,8 @@ def add_faults(
     ----------
     fig : pygmt.Figure instance
     region : tuple[float, float, float, float], optional
-        region for the figure
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
@@ -1371,7 +1376,8 @@ def add_inset(
     hemisphere : str
         choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
-        region for the figure
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
     inset_width : float, optional
@@ -1468,7 +1474,8 @@ def add_scalebar(
     ----------
     fig : pygmt.Figure instance
     region : tuple[float, float, float, float], optional
-        region for the figure
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
@@ -1523,7 +1530,8 @@ def add_north_arrow(
     ----------
     fig : pygmt.Figure instance
     region : tuple[float, float, float, float], optional
-        region for the figure
+        region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
+        try to extract from the current figure.
     projection : str, optional
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
@@ -1566,7 +1574,7 @@ def add_box(
     fig : pygmt.Figure
         Figure to plot on
     box : tuple[float, float, float, float]
-        region in EPSG3031 in format [e,w,n,s] in meters
+        region in EPSG3031 in format [xmin, xmax, ymin, ymax] in meters
     pen : str, optional
         GMT pen string used for the box, by default "2p,black"
     """
@@ -1753,7 +1761,8 @@ def subplots(
     grids : list
         list of xr.DataArray's to be plotted
     region : tuple[float, float, float, float], optional
-        choose to subset the grids to a specified region, by default None
+        choose to subset the grids to a specified region, in format
+        [xmin, xmax, ymin, ymax], by default None
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
         `utils.square_subplots()` to make a square(~ish) layout.
@@ -1890,7 +1899,7 @@ def plot_3d(
     vlims : tuple, optional
         tuple of vertical limits for the plot, by default is z range of grids
     region : tuple[float, float, float, float], optional
-        region for the plot, by default None
+        region for the figure in format [xmin, xmax, ymin, ymax], by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
     colorbar : bool, optional
