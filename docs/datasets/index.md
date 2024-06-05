@@ -18,7 +18,6 @@ antarctica/ibcso
 antarctica/geoid
 antarctica/bedmap_points
 antarctica/ibcso_coverage
-antarctica/basement
 antarctica/moho
 antarctica/crustal_thickness
 antarctica/sediment_thickness
