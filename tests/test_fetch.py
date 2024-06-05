@@ -915,68 +915,6 @@ def test_gravity(test_input, expected):
 # utils.get_grid_info(grid)
 
 
-# %% ROSETTA radar
-
-
-# @pytest.mark.fetch
-# def test_rosetta_radar():
-#     df = fetch.rosetta_radar_data()
-#     # expected = [
-#     #     547.0122703054126,
-#     #     -80.63749846487134,
-#     #     -43.287329630685,
-#     #     1448416752.058848,
-#     #     -100568.55304355593,
-#     #     -987321.56515563,
-#     #     789.0193522081788,
-#     #     -0.6843365719042627,
-#     # ]
-#     print(df.describe().iloc[1].tolist())
-#     # assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
-
-
-# %% ROSETTA magnetics
-
-
-@pytest.mark.fetch()
-def test_rosetta_magnetics():
-    df = fetch.rosetta_magnetics()
-    expected = [
-        547.0122703054126,
-        -80.63749846487134,
-        -43.287329630685,
-        1448416752.058848,
-        -100568.55304355593,
-        -987321.56515563,
-        789.0193522081788,
-        -0.6843365719042627,
-    ]
-    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
-
-
-# %% ROSETTA gravity
-
-
-@pytest.mark.fetch()
-def test_rosetta_gravity():
-    df = fetch.rosetta_gravity()
-    expected = [
-        661.2195503654474,
-        -80.57119757556714,
-        -36.74185651880941,
-        1457514923.0469708,
-        793.0566192217011,
-        -84278.81094301463,
-        -1000705.4912593851,
-        -40.83496413480705,
-    ]
-    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
-
-
-# df = fetch.rosetta_gravity()
-# # get mean values of each column
-# df.describe().iloc[1].tolist()
-
 # %% magnetics
 
 magnetics_test = [
