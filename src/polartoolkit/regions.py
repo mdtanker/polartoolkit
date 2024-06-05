@@ -7,7 +7,7 @@
 #
 """
 Bounding regions for commonly plotted polar regions. In stereographic projections. The
-format is (East, West, North, South), in meters.
+format is (xmin, xmax, ymin, ymax), in meters.
 """
 
 from __future__ import annotations
@@ -218,9 +218,9 @@ def combine_regions(
     Parameters
     ----------
     region1 : tuple[float, float, float, float]
-        first region
+        first region, in the format (xmin, xmax, ymin, ymax)
     region2 : tuple[float, float, float, float]
-        second region
+        second region in the format (xmin, xmax, ymin, ymax)
 
     Returns
     -------

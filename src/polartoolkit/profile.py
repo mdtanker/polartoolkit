@@ -318,7 +318,7 @@ def default_layers(
         choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap2),
         for an elevation reference frame, by default None
     region : tuple[float], optional
-        bounding region to subset grids by, by default None
+        region to subset grids by, in format [xmin, xmax, ymin, ymax], by default None
     spacing : float, optional
         grid spacing to resample the grids to, by default None
 
@@ -418,7 +418,7 @@ def default_data(
     Parameters
     ----------
     region : tuple[float, float, float, float], optional
-        bounding region to subset grids by, by default None
+        region to subset grids by, in format [xmin, xmax, ymin, ymax], by default None
 
     Returns
     -------
