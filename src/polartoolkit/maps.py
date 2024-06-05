@@ -1137,7 +1137,7 @@ def add_coast(
     elif version == "measures-v2":
         if no_coast is False:
             gl = gpd.read_file(fetch.groundingline(version=version))
-            coast = gpd.read_file(fetch.measures_boundaries(version="Coastline"))
+            coast = gpd.read_file(fetch.antarctic_boundaries(version="Coastline"))
             data = pd.concat([gl, coast])
         elif no_coast is True:
             data = fetch.groundingline(version=version)

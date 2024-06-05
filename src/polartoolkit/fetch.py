@@ -957,7 +957,7 @@ def groundingline(
     return fname
 
 
-def measures_boundaries(
+def antarctic_boundaries(
     version: str,
 ) -> str:
     """
