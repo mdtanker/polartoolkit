@@ -14,7 +14,6 @@ ibcso
 geoid
 bedmap_points
 ibcso_coverage
-basement
 moho
 crustal_thickness
 sediment_thickness

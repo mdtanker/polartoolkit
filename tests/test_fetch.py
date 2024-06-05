@@ -350,31 +350,6 @@ def test_imagery():
 # grid = fetch.imagery()
 # utils.get_grid_info(grid)
 
-# %% basement
-
-
-@pytest.mark.fetch()
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_basement():
-    grid = fetch.basement()
-    expected = (
-        5000,
-        (-3330000.0, 1900000.0, -3330000.0, 1850000.0),
-        -8503.13378906,
-        78.269317627,
-        "p",
-    )
-    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-    assert not deepdiff.DeepDiff(
-        utils.get_grid_info(grid),
-        expected,
-        ignore_order=True,
-        significant_digits=2,
-    )
-
-
-# grid = fetch.basement()
-# utils.get_grid_info(grid)
 
 # %% sediment thickness
 
