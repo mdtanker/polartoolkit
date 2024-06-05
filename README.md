@@ -94,7 +94,7 @@ changes. Hopefully, I'll implement more tests and Gallery examples soon.
 
 ### What _PolarToolkit_ is **NOT** for:
 
-- downloading niche datasets for specific regions
+- downloading niche datasets or those that only cover specific regions
 - downloaded datasets outside of Antarctica, Greenland and the Arctic
 - plotting and working with data in geographic (latitude and longitude)
   coordinates
