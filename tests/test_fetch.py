@@ -1281,19 +1281,34 @@ def test_moho(test_input, expected):
 
 # %% geoid
 
-
+geoid_test = [
+    (
+        "north",
+        (
+            5000,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -52.0835571289,
+            68.4151992798,
+            "g",
+        ),
+    ),
+    (
+        "south",
+        (
+            5000,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -66.1241073608,
+            52.2200813293,
+            "g",
+        ),
+    ),
+]
 @pytest.mark.fetch()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_geoid():
-    grid = fetch.geoid()
+@pytest.mark.parametrize(("test_input", "expected"), geoid_test)
+def test_geoid(test_input, expected):
+    grid = fetch.geoid(hemisphere=test_input)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-    expected = (
-        5000,
-        (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
-        -66.1241073608,
-        52.2200775146,
-        "g",
-    )
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
         expected,

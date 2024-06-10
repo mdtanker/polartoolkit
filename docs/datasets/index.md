@@ -36,4 +36,5 @@ antarctica/geology
 greenland/modis_mog
 greenland/groundingline
 greenland/bedmachine
+greenland/geoid
 ```
