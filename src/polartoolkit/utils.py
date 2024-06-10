@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import random
 import typing
 
@@ -35,6 +36,38 @@ try:
     import seaborn as sns
 except ImportError:
     sns = None
+
+
+def default_hemisphere(hemisphere: str | None) -> str:
+    """
+    Returns the default hemisphere set in the users environment variables or raises a
+    error.
+
+    Parameters
+    ----------
+    hemisphere : str | None
+        hemisphere to use, either "north" or "south", or None to use the default set in
+        the users environment variables.
+
+    Returns
+    -------
+    str
+        hemisphere to use, either "north" or "south"
+    """
+
+    if hemisphere is None:
+        try:
+            return os.environ["POLARTOOLKIT_HEMISPHERE"]
+        except KeyError as e:
+            msg = (
+                "hemisphere not set, either set it as a temp environment variable in "
+                "python (os.environ['POLARTOOLKIT_HEMISPHERE']='north'), set it as a "
+                "permanent operating system environment variable (i.e. for Unix, add "
+                "'export POLARTOOLKIT_HEMISPHERE=south' to the end of your .bashrc "
+                "file) or pass it as an argument (hemisphere='north')"
+            )
+            raise KeyError(msg) from e
+    return hemisphere
 
 
 def rmse(data: typing.Any, as_median: bool = False) -> float:
