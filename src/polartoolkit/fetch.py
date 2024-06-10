@@ -1612,22 +1612,28 @@ def bedmachine(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Load BedMachine v3 data,  from :footcite:t:`morlighemmeasures2022`.
+    Load BedMachine topography data from either Greenland (v5) or Antarctica (v3),  from
+    :footcite:t:`morlighemmeasures2022` or  :footcite:t:`icebridge2020a`.
 
+    Antarctica:
     Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
     Also available from
     https://github.com/ldeo-glaciology/pangeo-bedmachine/blob/master/load_plot_bedmachine.ipynb
+
+    Greenland:
+    Accessed from NSIDC via https://nsidc.org/data/idbmg4/versions/5
 
     Referenced to the EIGEN-6C4 geoid. To convert to be ellipsoid-referenced, we add
     the geoid grid. use `reference='ellipsoid'` to include this conversion in the
     fetch call.
 
-    Surface and ice thickness are in ice equivalents. Actual snow surface is from
-    REMA :footcite:p:`howatreference2019`, and has had firn thickness added(?) to it to
-    get Bedmachine Surface.
+    For Antarctica: Surface and ice thickness are in ice equivalents. Actual snow
+    surface is from REMA :footcite:p:`howatreference2019`, and has had firn thickness
+    added(?) to it to get Bedmachine Surface.
 
     To get snow surface: surface+firn
     To get firn and ice thickness: thickness+firn
@@ -1652,6 +1658,10 @@ def bedmachine(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, currently only available for
+        "south", by default "south"
+
     kwargs : typing.Any
         additional kwargs to pass to resample_grid
 
@@ -1664,11 +1674,41 @@ def bedmachine(
     ----------
     .. footbibliography::
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
 
-    # found with utils.get_grid_info()
-    initial_region = (-3333000.0, 3333000.0, -3333000.0, 3333000.0)
-    initial_spacing = 500
-    initial_registration = "g"
+    if hemisphere == "north":
+        # found with utils.get_grid_info()
+        initial_region = (-653000.0, 879700.0, -3384350.0, -632750.0)
+        initial_spacing = 150
+        initial_registration = "p"
+
+        url = (
+            "https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/IDBMG4.005/1993.01.01/"
+            "BedMachineGreenland-v5.nc"
+        )
+        fname = "bedmachine_v5.nc"
+        known_hash = "f7116b8e9e3840649075dcceb796ce98aaeeb5d279d15db489e6e7668e0d80db"
+
+        # greenland dataset doesn't have firn layer
+        if layer == "firn":
+            msg = "invalid layer string"
+            raise ValueError(msg)
+
+    elif hemisphere == "south":
+        # found with utils.get_grid_info()
+        initial_region = (-3333000.0, 3333000.0, -3333000.0, 3333000.0)
+        initial_spacing = 500
+        initial_registration = "g"
+
+        url = (
+            "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
+            "BedMachineAntarctica-v3.nc"
+        )
+        fname = "bedmachine_v3.nc"
+        known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
+    else:
+        msg = "invalid hemisphere string"
+        raise ValueError(msg)
 
     if region is None:
         region = initial_region
@@ -1677,18 +1717,12 @@ def bedmachine(
     if registration is None:
         registration = initial_registration
 
-    # download url
-    url = (
-        "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
-        "BedMachineAntarctica-v3.nc"
-    )
-
     path = pooch.retrieve(
         url=url,
-        fname="bedmachine_v3.nc",
+        fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         downloader=EarthDataDownloader(),
-        known_hash="d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159",
+        known_hash=known_hash,
         progressbar=True,
     )
 
@@ -1696,6 +1730,10 @@ def bedmachine(
     if layer == "icebase":
         with xr.open_dataset(path) as ds:
             grid = ds["surface"] - ds["thickness"]
+            # utils.get_grid_info(ds["thickness"], print_info=True)
+        # pygmt mistakenly switches registration from pixel to gridline for greenland
+        if hemisphere == "north":
+            grid.gmt.registration = 1
 
     elif layer in [
         "bed",
