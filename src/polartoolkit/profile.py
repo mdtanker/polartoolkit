@@ -314,7 +314,10 @@ def default_layers(
     Parameters
     ----------
     version : str
-        choose between 'bedmap2' and 'bedmachine' layers
+        choose between 'bedmap2' and 'bedmachine' layers for Antarctica, and just
+        'bedmachine' Greenland
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     reference : str, optional
         choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap2),
         for an elevation reference frame, by default None
@@ -338,6 +341,9 @@ def default_layers(
         )
 
     if version == "bedmap2":
+        if hemisphere == "north":
+            msg = "Bedmap2 is not available for the northern hemisphere."
+            raise ValueError(msg)
         if reference is None:
             reference = "eigen-gl04c"
         surface = fetch.bedmap2(
@@ -475,7 +481,7 @@ def plot_profile(
     layers_dict: dict[typing.Any, typing.Any] | None = None,
     data_dict: typing.Any | None = None,
     add_map: bool = False,
-    layers_version: str = "bedmap2",
+    layers_version: str | None = None,
     fig_height: float = 9,
     fig_width: float = 14,
     hemisphere: str | None = None,
@@ -497,7 +503,8 @@ def plot_profile(
     add_map : bool = False
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
-        choose between using 'bedmap2' or 'bedmachine' layers, by default is 'bedmap2'
+        choose between using 'bedmap2' or 'bedmachine' layers, by default is Bedmap2,
+        unless plotting for Greenland, then it is Bedmachine.
     fig_height : float, optional
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
@@ -557,18 +564,26 @@ def plot_profile(
 
     # if no layers supplied, use default
     if layers_dict is None:
+        if hemisphere == "north":
+            layers_version = "bedmachine"
+        elif hemisphere == "south":
+            layers_version = "bedmap2"
         # with redirect_stdout(None), redirect_stderr(None):
         layers_dict = default_layers(
             layers_version,
             # region=vd.get_region((points.x, points.y)),
             reference=kwargs.get("default_layers_reference", None),
             spacing=kwargs.get("default_layers_spacing", None),
+            hemisphere=hemisphere,
         )
 
     # create default data dictionary
     if data_dict == "default":
         # with redirect_stdout(None), redirect_stderr(None):
-        data_dict = default_data(region=vd.get_region((points.x, points.y)))
+        data_dict = default_data(
+            region=vd.get_region((points.x, points.y)),
+            hemisphere=hemisphere,
+        )
 
     # sample cross-section layers from grids
     df_layers = points.copy()
@@ -1197,7 +1212,10 @@ def plot_data(
     # create default data dictionary
     if data_dict == "default":
         # with redirect_stdout(None), redirect_stderr(None):
-        data_dict = default_data(region=vd.get_region((points.x, points.y)))
+        data_dict = default_data(
+            region=vd.get_region((points.x, points.y)),
+            hemisphere=hemisphere,
+        )
 
     # sample data grids
     df_data = points.copy()
