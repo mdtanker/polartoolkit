@@ -747,7 +747,7 @@ def mask_from_shp(
     try:
         output = output.drop_vars("spatial_ref")  # pylint: disable=used-before-assignment
     except ValueError as e:
-        logging.exception(e)
+        logging.info(e)
 
     return typing.cast(xr.DataArray, output)
 
