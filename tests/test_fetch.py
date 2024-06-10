@@ -676,26 +676,71 @@ def test_bedmachine(test_input, expected, hemisphere):
 @pytest.mark.earthdata()
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_bedmachine_reference():
+def test_bedmachine_reference_south():
     # fetch variations of grids and reference models
     region = (-101e3, -100e3, -51e3, -50e3)
     eigen_6c4_grid = fetch.geoid(
         spacing=500,
         region=region,
+        hemisphere="south",
     )
     BM_eigen_6c4_grid = fetch.bedmachine(
         layer="geoid",
         region=region,
+        hemisphere="south",
     )
     surface_6c4_grid = fetch.bedmachine(
         layer="surface",
         reference="eigen-6c4",
         region=region,
+        hemisphere="south",
     )
     surface_ellipsoid_grid = fetch.bedmachine(
         layer="surface",
         reference="ellipsoid",
         region=region,
+        hemisphere="south",
+    )
+
+    # get mean values
+    eigen_6c4 = np.nanmean(eigen_6c4_grid)
+    BM_eigen_6c4 = np.nanmean(BM_eigen_6c4_grid)
+    surface_6c4 = np.nanmean(surface_6c4_grid)
+    surface_ellipsoid = np.nanmean(surface_ellipsoid_grid)
+
+    assert surface_ellipsoid - BM_eigen_6c4 == pytest.approx(surface_6c4, rel=0.1)
+    assert surface_6c4 + BM_eigen_6c4 == pytest.approx(surface_ellipsoid, rel=0.1)
+    assert BM_eigen_6c4 == pytest.approx(eigen_6c4, rel=0.1)
+
+
+@pytest.mark.fetch()
+@pytest.mark.earthdata()
+@skip_earthdata
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_bedmachine_reference_north():
+    # fetch variations of grids and reference models
+    region = (380e3, 382e3, -2340e3, -2338e3)
+    eigen_6c4_grid = fetch.geoid(
+        spacing=150,
+        region=region,
+        hemisphere="north",
+    )
+    BM_eigen_6c4_grid = fetch.bedmachine(
+        layer="geoid",
+        region=region,
+        hemisphere="north",
+    )
+    surface_6c4_grid = fetch.bedmachine(
+        layer="surface",
+        reference="eigen-6c4",
+        region=region,
+        hemisphere="north",
+    )
+    surface_ellipsoid_grid = fetch.bedmachine(
+        layer="surface",
+        reference="ellipsoid",
+        region=region,
+        hemisphere="north",
     )
 
     # get mean values
