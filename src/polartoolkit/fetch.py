@@ -2727,6 +2727,7 @@ def geoid(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -2753,6 +2754,9 @@ def geoid(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid
 
@@ -2765,9 +2769,19 @@ def geoid(
     ----------
     .. footbibliography::
     """
-    initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
+
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
     initial_spacing = 5e3
     initial_registration = "g"
+
+    if hemisphere == "south":
+        proj = "EPSG:3031"
+        fname = "eigen_geoid_south.nc"
+    elif hemisphere == "north":
+        proj = "EPSG:3413"
+        fname = "eigen_geoid_north.nc"
 
     if region is None:
         region = initial_region
@@ -2789,7 +2803,7 @@ def geoid(
             # reproject to polar stereographic
             grid2 = pygmt.grdproject(
                 grid,
-                projection="EPSG:3031",
+                projection=proj,
                 spacing=initial_spacing,
             )
             # get just antarctica region
@@ -2805,7 +2819,7 @@ def geoid(
 
     path = pooch.retrieve(
         url="doi:10.5281/zenodo.5882204/earth-geoid-10arcmin.nc",
-        fname="eigen_geoid.nc",
+        fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/geoid",
         known_hash="e98dd544c8b4b8e5f11d1a316684dfbc2612e2860af07b946df46ed9f782a0f6",
         progressbar=True,
