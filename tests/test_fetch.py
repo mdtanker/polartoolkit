@@ -1348,6 +1348,8 @@ geoid_test = [
         ),
     ),
 ]
+
+
 @pytest.mark.fetch()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), geoid_test)
