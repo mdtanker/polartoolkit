@@ -1731,9 +1731,8 @@ def bedmachine(
         with xr.open_dataset(path) as ds:
             grid = ds["surface"] - ds["thickness"]
             # utils.get_grid_info(ds["thickness"], print_info=True)
-        # pygmt mistakenly switches registration from pixel to gridline for greenland
-        if hemisphere == "north":
-            grid.gmt.registration = 1
+            # restore registration type
+            grid.gmt.registration = ds["surface"].gmt.registration
 
     elif layer in [
         "bed",
@@ -1759,18 +1758,14 @@ def bedmachine(
             logging.info("converting to be reference to the WGS84 ellipsoid")
             with xr.open_dataset(path) as ds:
                 geoid_grid = ds["geoid"]
-            resampled_geoid = resample_grid(
-                geoid_grid,
-                initial_spacing=initial_spacing,
-                initial_region=initial_region,
-                initial_registration=initial_registration,
-                spacing=spacing,
-                region=region,
-                registration=registration,
-                **kwargs,
-            )
+            # save grid registration type
+            reg = grid.gmt.registration
             # convert to the ellipsoid
-            grid = grid + resampled_geoid
+            grid = grid + geoid_grid
+            # restore registration type
+            if grid.gmt.registration != reg:
+                grid.gmt.registration = reg
+
         elif reference == "eigen-6c4":
             pass
         else:
