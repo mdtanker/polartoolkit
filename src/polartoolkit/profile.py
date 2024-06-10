@@ -302,6 +302,7 @@ def make_data_dict(
 
 def default_layers(
     version: str,
+    hemisphere: str | None = None,
     reference: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
@@ -327,6 +328,7 @@ def default_layers(
     dict[str, dict[str, str | xr.DataArray]]
         Nested dictionary of earth layers and attributes
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
 
     if (spacing is not None) or (reference is not None) or (region is not None):
         logging.warning(
@@ -367,6 +369,7 @@ def default_layers(
             reference = "eigen-6c4"
         surface = fetch.bedmachine(
             "surface",
+            hemisphere=hemisphere,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -374,6 +377,7 @@ def default_layers(
         )
         icebase = fetch.bedmachine(
             "icebase",
+            hemisphere=hemisphere,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -381,6 +385,7 @@ def default_layers(
         )
         bed = fetch.bedmachine(
             "bed",
+            hemisphere=hemisphere,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -410,6 +415,7 @@ def default_layers(
 
 def default_data(
     region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
     verbose: str = "q",
 ) -> dict[typing.Any, typing.Any]:
     """
@@ -419,12 +425,20 @@ def default_data(
     ----------
     region : tuple[float, float, float, float], optional
         region to subset grids by, in format [xmin, xmax, ymin, ymax], by default None
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
 
     Returns
     -------
     dict[typing.Any, typing.Any]
         Nested dictionary of data and attributes
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    if hemisphere == "north":
+        msg = "Default data is not yet available for the northern hemisphere."
+        raise ValueError(msg)
+
     mag = fetch.magnetics(
         version="admap1",
         region=region,
@@ -527,6 +541,11 @@ def plot_profile(
     path: str
         Filename for saving image, by default is None.
     """
+    try:
+        hemisphere = utils.default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     gridlines = kwargs.get("gridlines", True)
@@ -1085,7 +1104,7 @@ def plot_profile(
         if inset is True:
             maps.add_inset(
                 fig,
-                hemisphere=hemisphere,  # type: ignore[arg-type]
+                hemisphere=hemisphere,
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
@@ -1161,6 +1180,11 @@ def plot_data(
     path: str
         Filename for saving image, by default is None.
     """
+    try:
+        hemisphere = utils.default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     gridlines = kwargs.get("gridlines", True)
@@ -1482,7 +1506,7 @@ def plot_data(
         if inset is True:
             maps.add_inset(
                 fig,
-                hemisphere=hemisphere,  # type: ignore[arg-type]
+                hemisphere=hemisphere,
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),

@@ -272,7 +272,7 @@ def region_to_df(
 
 def region_xy_to_ll(
     region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
-    hemisphere: str,
+    hemisphere: str | None = None,
     dms: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
     """
@@ -280,7 +280,7 @@ def region_xy_to_ll(
 
     Parameters
     ----------
-    hemisphere : str,
+    hemisphere : str, optional,
         choose between the "north" or "south" hemispheres
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in format [xmin, xmax, ymin, ymax] in meters
@@ -292,6 +292,8 @@ def region_xy_to_ll(
     tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in format [lon_min, lon_max, lat_min, lat_max]
     """
+    hemisphere = default_hemisphere(hemisphere)
+
     df = region_to_df(region)
     if hemisphere == "north":
         df_proj = epsg3413_to_latlon(df, reg=True)
@@ -644,7 +646,7 @@ def block_reduce(
 
 def mask_from_shp(
     shapefile: str | gpd.geodataframe.GeoDataFrame,
-    hemisphere: str,
+    hemisphere: str | None = None,
     invert: bool = True,
     xr_grid: xr.DataArray | None = None,
     grid_file: str | None = None,
@@ -663,7 +665,7 @@ def mask_from_shp(
         either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
         been loaded into a geodataframe.
-    hemisphere : str
+    hemisphere : str, optional
         choose "north" for EPSG:3413 or "south" for EPSG:3031
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
@@ -687,6 +689,7 @@ def mask_from_shp(
     xarray.DataArray
         Returns either a masked grid, or the mask grid itself.
     """
+    hemisphere = default_hemisphere(hemisphere)
 
     shp = pyogrio.read_dataframe(shapefile) if isinstance(shapefile, str) else shapefile
 
@@ -839,6 +842,11 @@ def set_proj(
         returns a tuple of the following variables: proj, proj_latlon, fig_width,
         fig_height
     """
+    try:
+        hemisphere = default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     xmin, xmax, ymin, ymax = region
 
     if fig_width is not None:
@@ -1039,6 +1047,11 @@ def get_combined_min_max(
     tuple[float, float]
         returns the min and max values.
     """
+    try:
+        hemisphere = default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     # get min max of each grid
     limits = []
     for g in grids:
@@ -1803,6 +1816,11 @@ def get_min_max(
     tuple[float, float]
         returns the min and max values.
     """
+    try:
+        hemisphere = default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     if region is not None:
         grid = subset_grid(grid, region)
 
@@ -1815,7 +1833,7 @@ def get_min_max(
     elif shapefile is not None:
         masked = mask_from_shp(
             shapefile,
-            hemisphere=hemisphere,  # type: ignore[arg-type]
+            hemisphere=hemisphere,
             xr_grid=grid,
             masked=True,
             invert=False,
@@ -1832,7 +1850,7 @@ def get_min_max(
 
 def shapes_to_df(
     shapes: list[float],
-    hemisphere: str,
+    hemisphere: str | None = None,
 ) -> pd.DataFrame:
     """
     convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe
@@ -1840,7 +1858,7 @@ def shapes_to_df(
 
     Parameters
     ----------
-    hemisphere : str
+    hemisphere : str, optional
         choose between the "north" or "south" hemispheres
     shapes : list
         list of vertices
@@ -1850,6 +1868,7 @@ def shapes_to_df(
     pd.DataFrame
         Dataframe with x, y, and shape_num.
     """
+    hemisphere = default_hemisphere(hemisphere)
 
     df = pd.DataFrame()
     for i, j in enumerate(shapes):
@@ -1871,7 +1890,7 @@ def shapes_to_df(
 
 def polygon_to_region(
     polygon: list[float],
-    hemisphere: str,
+    hemisphere: str | None = None,
 ) -> tuple[float, float, float, float]:
     """
     convert the output of `regions.draw_region` to bounding region in EPSG:3031 for the
@@ -1881,7 +1900,7 @@ def polygon_to_region(
     ----------
     polyon : list
         list of polygon vertices
-    hemisphere : str
+    hemisphere : str, optional
         choose between the "north" or "south" hemispheres
 
     Returns
@@ -1889,6 +1908,7 @@ def polygon_to_region(
     tuple[float, float, float, float]
         region in format in format [xmin, xmax, ymin, ymax]
     """
+    hemisphere = default_hemisphere(hemisphere)
 
     df = shapes_to_df(shapes=polygon, hemisphere=hemisphere)
 
@@ -1905,7 +1925,7 @@ def polygon_to_region(
 
 def mask_from_polygon(
     polygon: list[float],
-    hemisphere: str,
+    hemisphere: str | None = None,
     invert: bool = False,
     drop_nans: bool = False,
     grid: str | xr.DataArray | None = None,
@@ -1920,7 +1940,7 @@ def mask_from_polygon(
     ----------
     polygon : list
        list of polygon vertices
-    hemisphere : str
+    hemisphere : str, optional
         choose between the "north" or "south" hemispheres
     invert : bool, optional
         reverse the sense of masking, by default False
@@ -1939,6 +1959,7 @@ def mask_from_polygon(
     xr.DataArray
         masked grid or mask grid with 1's inside the mask.
     """
+    hemisphere = default_hemisphere(hemisphere)
 
     # convert drawn polygon into dataframe
     df = shapes_to_df(polygon, hemisphere=hemisphere)
@@ -2002,7 +2023,7 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
     Returns
     -------
     xr.DataArray
-        returns a xr.DataArray with switch reg type.
+        returns a xr.DataArray with switched reg type.
     """
     with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
