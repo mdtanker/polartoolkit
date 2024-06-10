@@ -35,4 +35,5 @@ antarctica/ice_boundaries
 antarctica/geology
 greenland/modis_mog
 greenland/groundingline
+greenland/bedmachine
 ```

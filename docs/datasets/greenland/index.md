@@ -1,5 +1,13 @@
 # Greenland
 
+## Topography-related data
+
+```{nbgallery}
+---
+---
+bedmachine
+```
+
 ## Imagery
 
 ```{nbgallery}
