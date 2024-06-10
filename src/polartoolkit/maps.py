@@ -84,6 +84,11 @@ def basemap(
     pygmt.Figure
         a new or update figure instance with a basemap.
     """
+    try:
+        hemisphere = utils.default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     # if region not set, use antarctic region
     if region is None:
         region = regions.antarctica
@@ -170,7 +175,7 @@ def basemap(
         }
         add_inset(
             fig,
-            hemisphere=hemisphere,  # type: ignore[arg-type]
+            hemisphere=hemisphere,
             **new_kwargs,
         )
 
@@ -566,6 +571,10 @@ def plot_grd(
     ...
     >>> fig.show()
     """
+    try:
+        hemisphere = utils.default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
 
     warnings.filterwarnings("ignore", message="pandas.Int64Index")
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
@@ -775,7 +784,7 @@ def plot_grd(
         }
         add_inset(
             fig,
-            hemisphere=hemisphere,  # type: ignore[arg-type]
+            hemisphere=hemisphere,
             **new_kwargs,
         )
 
@@ -1113,6 +1122,11 @@ def add_coast(
         version of groundingline to plot, by default is BAS for north hemisphere and
         Depoorter-2013 for south hemisphere
     """
+    try:
+        hemisphere = utils.default_hemisphere(hemisphere)
+    except KeyError:
+        hemisphere = None
+
     if pen is None:
         pen = "0.6p,black"
 
@@ -1360,7 +1374,7 @@ def add_faults(
 
 def add_inset(
     fig: pygmt.Figure,
-    hemisphere: str,
+    hemisphere: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     inset_pos: str = "TL",
     inset_width: float = 0.25,
@@ -1373,7 +1387,7 @@ def add_inset(
     Parameters
     ----------
     fig : pygmt.Figure instance
-    hemisphere : str
+    hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
@@ -1386,6 +1400,7 @@ def add_inset(
         Region of Antarctica/Greenland to plot for the inset map, by default is whole
         area
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
 
     fig_width = utils.get_fig_width()
 
@@ -1586,7 +1601,7 @@ def add_box(
 
 
 def interactive_map(
-    hemisphere: str,
+    hemisphere: str | None = None,
     center_yx: list[float] | None = None,
     zoom: float = 0,
     display_xy: bool = True,
@@ -1601,7 +1616,7 @@ def interactive_map(
 
     Parameters
     ----------
-    hemisphere : str
+    hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres
     center_yx : list, optional
         choose center coordinates in EPSG3031 [y,x], by default [0,0]
@@ -1617,6 +1632,7 @@ def interactive_map(
         choose what basemap to plot, options are 'BlueMarble', 'Imagery', and 'Basemap',
         by default 'BlueMarble'
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
 
     if ipyleaflet is None:
         msg = """
@@ -1900,6 +1916,8 @@ def plot_3d(
         tuple of vertical limits for the plot, by default is z range of grids
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], by default None
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     shp_mask : Union[str or gpd.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
     colorbar : bool, optional
@@ -2011,7 +2029,7 @@ def plot_3d(
                 xr_grid=grid,
                 masked=True,
                 invert=kwargs.get("invert", False),
-                hemisphere=hemisphere,  # type: ignore[arg-type]
+                hemisphere=hemisphere,
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]  # noqa: PLW2901
@@ -2022,7 +2040,7 @@ def plot_3d(
             grid = utils.mask_from_polygon(  # noqa: PLW2901
                 polygon_mask,
                 grid=grid,
-                hemisphere=hemisphere,  # type: ignore[arg-type]
+                hemisphere=hemisphere,
             )
         # create colorscales
         cpt_kwargs = {
@@ -2105,7 +2123,7 @@ def plot_3d(
 
 
 def interactive_data(
-    hemisphere: str,
+    hemisphere: str | None = None,
     coast: bool = True,
     grid: xr.DataArray | None = None,
     grid_cmap: str = "inferno",
@@ -2120,7 +2138,7 @@ def interactive_data(
 
     Parameters
     ----------
-    hemisphere : str
+    hemisphere : str, optional
         set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
         (EPSG:3031)
     coast : bool, optional
@@ -2158,6 +2176,8 @@ def interactive_data(
     ...    )
     >>> image
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
+
     if gv is None:
         msg = (
             "Missing optional dependency 'geoviews' required for interactive plotting."
