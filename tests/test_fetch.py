@@ -558,6 +558,7 @@ bedmachine_test = [
             4818.15576172,
             "g",
         ),
+        "south",
     ),
     (
         "surface",
@@ -568,6 +569,7 @@ bedmachine_test = [
             4818.15576172,
             "g",
         ),
+        "south",
     ),
     (
         "thickness",
@@ -578,6 +580,7 @@ bedmachine_test = [
             4822.79492188,
             "g",
         ),
+        "south",
     ),
     (
         "bed",
@@ -588,10 +591,67 @@ bedmachine_test = [
             4818.15576172,
             "g",
         ),
+        "south",
     ),
     (
         "geoid",
         (500, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), -66.0, 52.0, "g"),
+        "south",
+    ),
+    (
+        "icebase",
+        (
+            150,
+            (-653000.0, 879700.0, -3384350.0, -632750.0),
+            -1913.28369141,
+            3673.34838867,
+            "p",
+        ),
+        "north",
+    ),
+    (
+        "surface",
+        (
+            150,
+            (-653000.0, 879700.0, -3384350.0, -632750.0),
+            0.0,
+            3673.38549805,
+            "p",
+        ),
+        "north",
+    ),
+    (
+        "thickness",
+        (
+            150,
+            (-653000.0, 879700.0, -3384350.0, -632750.0),
+            0.0,
+            3409.73779297,
+            "p",
+        ),
+        "north",
+    ),
+    (
+        "bed",
+        (
+            150,
+            (-653000.0, 879700.0, -3384350.0, -632750.0),
+            -5571.67285156,
+            3673.34838867,
+            "p",
+        ),
+        "north",
+    ),
+    (
+        "geoid",
+        (
+            150,
+            (-653000.0, 879700.0, -3384350.0, -632750.0),
+            6.0,
+            64.0,
+            "p",
+        ),
+        "north",
     ),
 ]
 
@@ -600,9 +660,9 @@ bedmachine_test = [
 @pytest.mark.earthdata()
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected"), bedmachine_test)
-def test_bedmachine(test_input, expected):
-    grid = fetch.bedmachine(test_input)
+@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), bedmachine_test)
+def test_bedmachine(test_input, expected, hemisphere):
+    grid = fetch.bedmachine(test_input, hemisphere=hemisphere)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
