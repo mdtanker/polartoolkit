@@ -570,7 +570,7 @@ def plot_profile(
             layers_version = "bedmap2"
         # with redirect_stdout(None), redirect_stderr(None):
         layers_dict = default_layers(
-            layers_version,
+            layers_version,  # type: ignore[arg-type]
             # region=vd.get_region((points.x, points.y)),
             reference=kwargs.get("default_layers_reference", None),
             spacing=kwargs.get("default_layers_spacing", None),
@@ -1022,10 +1022,24 @@ def plot_profile(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd because it reset projection
+        background = kwargs.get("map_background", None)
+        if background is None:
+            if hemisphere == "south":
+                background = fetch.imagery()
+                map_cmap = kwargs.get("map_cmap", "viridis")
+            elif hemisphere == "north":
+                background = fetch.modis_mog()
+                pygmt.makecpt(
+                    cmap="grayC",
+                    series=[15000, 17000, 1],
+                    verbose="e",
+                )
+                map_cmap = True
+
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
-                cmap=kwargs.get("map_cmap", "viridis"),
-                grid=kwargs.get("map_background", fetch.imagery()),
+                cmap=map_cmap,
+                grid=background,
                 region=map_reg,
                 background=True,
                 continuous=True,
@@ -1033,11 +1047,11 @@ def plot_profile(
             )
             cmap = True
         else:
-            cmap = kwargs.get("map_cmap", "viridis")
+            cmap = map_cmap
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
-            grid=kwargs.get("map_background", fetch.imagery()),
+            grid=background,
             shading=kwargs.get("map_shading", False),
             cmap=cmap,
             verbose="q",
@@ -1123,7 +1137,7 @@ def plot_profile(
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
-                inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
+                inset_reg=kwargs.get("inset_reg", None),
             )
 
     if kwargs.get("save") is True:
@@ -1440,10 +1454,17 @@ def plot_data(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd because it reset projection
+        background = kwargs.get("map_background", None)
+        if background is None:
+            if hemisphere == "south":
+                background = fetch.imagery()
+            elif hemisphere == "north":
+                background = fetch.modis_mog()
+
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=kwargs.get("map_cmap", "viridis"),
-                grid=kwargs.get("map_background", fetch.imagery()),
+                grid=background,
                 region=map_reg,
                 background=True,
                 continuous=True,
@@ -1455,7 +1476,7 @@ def plot_data(
         fig.grdimage(
             region=map_reg,
             projection=map_proj,
-            grid=kwargs.get("map_background", fetch.imagery()),
+            grid=background,
             shading=kwargs.get("map_shading", False),
             cmap=cmap,
             verbose="q",
