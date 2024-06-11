@@ -464,6 +464,9 @@ def ice_vel(
 
     Units are in m/yr
 
+    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
+    configure this.
+
     Parameters
     ----------
     region : tuple[float, float, float, float], optional
@@ -609,6 +612,9 @@ def modis_moa(
 
     accessed from https://nsidc.org/data/nsidc-0593/versions/2
 
+    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
+    configure this.
+
     Parameters
     ----------
     version : str, optional
@@ -658,6 +664,9 @@ def modis_mog(
     resolutions from :footcite:t:`haranmeasures2018`.
 
     accessed from https://nsidc.org/data/nsidc-0547/versions/2
+
+    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
+    configure this.
 
     Parameters
     ----------
@@ -858,6 +867,8 @@ def groundingline(
     version = "measures-greenland"
     from :footcite:t:`haranmeasures2018`.
 
+    Some versions require an EarthData login, see Tutorials/Download Polar datasets for
+    how to configure this.
 
     Parameters
     ----------
@@ -965,6 +976,9 @@ def antarctic_boundaries(
 
     from :footcite:t:`mouginotmeasures2017`.
     accessed at https://nsidc.org/data/nsidc-0709/versions/2
+
+    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
+    configure this.
 
     Parameters
     ----------
@@ -1639,6 +1653,9 @@ def bedmachine(
 
     Here, icebase will return a grid of surface-thickness
     This should be the same as snow-surface - (firn and ice thickness)
+
+    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
+    configure this.
 
     Parameters
     ----------
