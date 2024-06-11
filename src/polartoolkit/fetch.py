@@ -2137,7 +2137,7 @@ def bedmap2(
                 spacing=initial_spacing,
                 region=initial_region,
                 registration=initial_registration,
-                **kwargs,
+                hemisphere="south",
             )
             # convert from ellipsoid back to eigen geoid
             grid = grid - eigen_correction
