@@ -32,7 +32,7 @@ This means that we are still adding a lot of new features and sometimes we make 
 ```{admonition} How to contribute
 :class: seealso
 
-I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion]() or [issue (feature request)]() on the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
+I really welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion](https://github.com/mdtanker/polartoolkit/discussions/new/choose) or [issue (feature request)](https://github.com/mdtanker/polartoolkit/issues/new/choose) on the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
