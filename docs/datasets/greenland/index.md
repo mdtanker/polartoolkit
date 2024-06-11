@@ -7,6 +7,7 @@
 ---
 bedmachine
 geoid
+etopo
 ```
 
 ## Imagery
