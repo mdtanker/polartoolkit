@@ -86,7 +86,7 @@ dev = [
     "ruff",
     "nox",
     "pre-commit",
-    "pylint",
+    "pylint>=3.2",
     "python-semantic-release >=8",
     "ipykernel",
     "jupyterlab",
