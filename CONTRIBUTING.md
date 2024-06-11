@@ -42,6 +42,7 @@ contributions.
 * [Update the Dependencies](#update-the-dependencies)
 * [Create a conda environment file](#create-a-conda-environment-file)
 * [Set up Binder](#set-up-the-binder-configuration)
+* [Release Checklist](#release-checklist)
 
 ## What Can I Do?
 
@@ -291,7 +292,7 @@ Once the new version is on conda, update the binder .yml file, as below.
 
 To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI.
 
-If you add a dependency necessary for using the package, make sure to add it to the Binder config file and update the `environment.yml` file in the repositry. See below.
+If you add a dependency necessary for using the package, make sure to add it to the Binder config file and update the `environment.yml` file in the repository. See below.
 
 ## Create a conda environment file
 
@@ -309,3 +310,16 @@ To run this package online, Read the Docs will automatically create a Binder ins
 Once updated, rebuild the Binder environment, look at which package versions Binder used for each specified dependency, and update the environment file with these versions.
 
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environment.
+
+## Release Checklist
+* re-run any relevant notebooks
+* check docs are building correctly using the GitHub actions link within the PR
+* merge the  PR
+* wait for `PyPI` to publish the new version [here](https://pypi.python.org/pypi/polartoolkit)
+* wait for a PR to be opened in the [feedstock](https://github.com/conda-forge/polartoolkit-feedstock)
+* update any changed dependencies in the feedstock PR and merge
+* wait for `conda` to publish the new version [here](https://anaconda.org/conda-forge/polartoolkit)
+* update backup `env/environment.yml`
+* update polartoolkit version in `environment.yml` in [PolarToolkit-Binder repo](https://github.com/mdtanker/polartoolkit-binder/blob/main/environment.yml)
+* test `PyPI` version with `make install_test` and `make test`
+* test `conda` version with `make conda_install` and `make test`
