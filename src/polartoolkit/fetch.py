@@ -2656,6 +2656,7 @@ def etopo(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
 ) -> xr.DataArray:
     """
     Loads a grid of Antarctic topography from ETOPO1 from :footcite:t:`etopo12009`.
@@ -2675,6 +2676,9 @@ def etopo(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
 
     Returns
     -------
@@ -2685,9 +2689,19 @@ def etopo(
     ----------
     .. footbibliography::
     """
-    initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
+
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
     initial_spacing = 5e3
     initial_registration = "g"
+
+    if hemisphere == "south":
+        proj = "EPSG:3031"
+        fname = "etopo_south.nc"
+    elif hemisphere == "north":
+        proj = "EPSG:3413"
+        fname = "etopo_north.nc"
 
     if region is None:
         region = initial_region
@@ -2709,10 +2723,10 @@ def etopo(
             # reproject to polar stereographic
             grid2 = pygmt.grdproject(
                 grid,
-                projection="EPSG:3031",
+                projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=initial_spacing,
             )
-            # get just antarctica region
+            # get just needed region
             processed = pygmt.grdsample(
                 grid2,
                 region=initial_region,
@@ -2725,7 +2739,7 @@ def etopo(
 
     path = pooch.retrieve(
         url="doi:10.5281/zenodo.5882203/earth-topography-10arcmin.nc",
-        fname="etopo.nc",
+        fname=fname,  # pylint: disable=possibly-used-before-assignment
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
         known_hash="e45628a3f559ec600a4003587a2b575402d22986651ee48806930aa909af4cf6",
         progressbar=True,

@@ -37,5 +37,6 @@ greenland/modis_mog
 greenland/groundingline
 greenland/bedmachine
 greenland/geoid
+greenland/etopo
 greenland/mass_change
 ```
