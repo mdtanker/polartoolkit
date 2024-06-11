@@ -2788,7 +2788,7 @@ def geoid(
             # reproject to polar stereographic
             grid2 = pygmt.grdproject(
                 grid,
-                projection=proj,
+                projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=initial_spacing,
             )
             # get just antarctica region
@@ -2804,7 +2804,7 @@ def geoid(
 
     path = pooch.retrieve(
         url="doi:10.5281/zenodo.5882204/earth-geoid-10arcmin.nc",
-        fname=fname,
+        fname=fname,  # pylint: disable=possibly-used-before-assignment
         path=f"{pooch.os_cache('pooch')}/polartoolkit/geoid",
         known_hash="e98dd544c8b4b8e5f11d1a316684dfbc2612e2860af07b946df46ed9f782a0f6",
         progressbar=True,
