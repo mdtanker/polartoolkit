@@ -1394,19 +1394,36 @@ def test_geoid(test_input, expected):
 
 # %% etopo
 
-expected = (
-    5000,
-    (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
-    -7093.03369141,
-    4089.17773438,
-    "g",
-)
+
+etopo_test = [
+    (
+        "north",
+        (
+            5000,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -7265.75048828,
+            3226.35986328,
+            "g",
+        ),
+    ),
+    (
+        "south",
+        (
+            5000,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -7946.32617188,
+            4089.17773438,
+            "g",
+        ),
+    ),
+]
 
 
 @pytest.mark.fetch()
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_etopo():
-    grid = fetch.etopo()
+@pytest.mark.parametrize(("test_input", "expected"), etopo_test)
+def test_etopo(test_input, expected):
+    grid = fetch.etopo(hemisphere=test_input)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
