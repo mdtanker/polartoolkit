@@ -831,6 +831,7 @@ def test_bedmap2_reference():
     eigen_6c4_grid = fetch.geoid(
         region=region,
         spacing=1e3,
+        hemisphere="south",
     )
     surface_6c4_grid = fetch.bedmap2(
         layer="surface",
