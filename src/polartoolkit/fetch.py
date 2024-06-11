@@ -1613,7 +1613,6 @@ def bedmachine(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
-    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load BedMachine topography data from either Greenland (v5) or Antarctica (v3),  from
@@ -1661,9 +1660,6 @@ def bedmachine(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, currently only available for
         "south", by default "south"
-
-    kwargs : typing.Any
-        additional kwargs to pass to resample_grid
 
     Returns
     -------
@@ -1885,7 +1881,6 @@ def bedmap2(
     spacing: float | None = None,
     registration: str | None = None,
     fill_nans: bool = False,
-    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load bedmap2 data as xarray.DataArrays
@@ -1926,8 +1921,6 @@ def bedmap2(
         choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
         to reference to the geoid, will fill nan's before conversion, by default is
         False
-    kwargs : typing.Any
-        additional kwargs to pass to resample_grid
 
     Returns
     -------
@@ -2723,7 +2716,6 @@ def geoid(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
-    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 from
@@ -2752,8 +2744,6 @@ def geoid(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
-    kwargs : typing.Any
-        additional kwargs to pass to resample_grid
 
     Returns
     -------
@@ -2831,7 +2821,6 @@ def geoid(
         spacing=spacing,
         region=region,
         registration=registration,
-        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)

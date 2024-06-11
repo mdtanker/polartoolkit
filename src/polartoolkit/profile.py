@@ -306,7 +306,6 @@ def default_layers(
     reference: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
-    verbose: str = "q",
 ) -> dict[str, dict[str, str | xr.DataArray]]:
     """
     Fetch default ice surface, ice base, and bed layers.
@@ -352,7 +351,6 @@ def default_layers(
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
         icebase = fetch.bedmap2(
             "icebase",
@@ -360,14 +358,12 @@ def default_layers(
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
         bed = fetch.bedmap2(
             "bed",
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
 
     elif version == "bedmachine":
@@ -379,7 +375,6 @@ def default_layers(
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
         icebase = fetch.bedmachine(
             "icebase",
@@ -387,7 +382,6 @@ def default_layers(
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
         bed = fetch.bedmachine(
             "bed",
@@ -395,7 +389,6 @@ def default_layers(
             region=region,
             reference=reference,
             spacing=spacing,
-            verbose=verbose,
         )
     else:
         msg = "version must be either 'bedmap2' or 'bedmachine'"
