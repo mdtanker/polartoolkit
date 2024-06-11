@@ -296,16 +296,19 @@ def sample_shp(name: str) -> str:
 
 
 def mass_change(
-    version: str = "ais_dhdt_floating",
+    version: str | None = None,
+    hemisphere: str | None = None,
 ) -> typing.Any:
     """
-    Ice-sheet height and thickness changes from ICESat to ICESat-2.
+    Ice-sheet height and thickness changes from ICESat to ICESat-2 for both Antarctica
+    and Greenland
     from :footcite:t:`smithpervasive2020`.
 
-    Choose a version of the data to download with the format: "ais_VERSION_TYPE" where
-    VERSION is "dhdt" for total thickness change or "dmdt" for corrected for firn-air
-    content.
-    TYPE is "floating" or "grounded"
+    Choose a version of the data to download with the format: "ICESHEET_VERSION_TYPE"
+    where ICESHEET is "ais" or "gris", for Antarctica or Greenland, which is
+    automatically set via the hemisphere variable. VERSION is "dhdt" for total thickness
+    change or "dmdt" for corrected for firn-air content. For Antarctica data, TYPE is
+    "floating" or "grounded".
 
     add "_filt" to retrieve a filtered version of the data.
 
@@ -315,8 +318,12 @@ def mass_change(
 
     Parameters
     ----------
-    version : str, optional
-        choose which version to retrieve, by default "ais_dhdt_floating"
+    version : str, optional,
+        choose which version to retrieve, by default is "dhdt_grounded" for Antarctica
+        and "dhdt" for Greenland.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
 
     Returns
     -------
@@ -327,6 +334,7 @@ def mass_change(
     ----------
     .. footbibliography::
     """
+    hemisphere = utils.default_hemisphere(hemisphere)
 
     # This is the path to the processed (magnitude) grid
     url = (
@@ -337,9 +345,20 @@ def mass_change(
 
     zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
 
-    if "dhdt" in version:
+    if version is None:
+        if hemisphere == "south":
+            version = "dhdt_grounded"
+        elif hemisphere == "north":
+            version = "dhdt"
+
+    if hemisphere == "south":
+        version = f"ais_{version}"
+    elif hemisphere == "north":
+        version = f"gris_{version}"
+
+    if "dhdt" in version:  # type: ignore[operator]
         fname = f"dhdt/{version}.tif"
-    elif "dmdt" in version:
+    elif "dmdt" in version:  # type: ignore[operator]
         fname = f"dmdt/{version}.tif"
 
     path = pooch.retrieve(
