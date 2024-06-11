@@ -1019,7 +1019,7 @@ def plot_profile(
         if background is None:
             if hemisphere == "south":
                 background = fetch.imagery()
-                map_cmap = kwargs.get("map_cmap", "viridis")
+                map_cmap = True
             elif hemisphere == "north":
                 background = fetch.modis_mog()
                 pygmt.makecpt(
@@ -1028,7 +1028,14 @@ def plot_profile(
                     verbose="e",
                 )
                 map_cmap = True
-
+            else:
+                msg = (
+                    "if add_map is True and hemisphere is not provided, must provide "
+                    "argument `map_background`"
+                )
+                raise ValueError(msg)
+        else:
+            map_cmap = kwargs.get("map_cmap", "viridis")
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
                 cmap=map_cmap,
