@@ -9,7 +9,7 @@ STYLE_CHECK_FILES=.
 ####
 
 create:
-	mamba create --name $(PROJECT) --yes --force pygmt geopandas python=3.11
+	mamba create --name $(PROJECT) --yes --force --channel conda-forge pygmt geopandas python=3.11
 
 install:
 	pip install -e .[all]
@@ -21,8 +21,10 @@ remove:
 	mamba remove --name $(PROJECT) --all
 
 conda_install:
-	mamba create --name $(PROJECT) --yes --force $(PROJECT)
+	mamba create --name $(PROJECT) --yes --force --channel conda-forge $(PROJECT)
 
+conda_export:
+	mamba env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
 ####
 ####
 # test commands

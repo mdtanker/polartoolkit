@@ -40,6 +40,7 @@ contributions.
   - [Code Review](#code-review)
 * [Publish a new release](#publish-a-new-release)
 * [Update the Dependencies](#update-the-dependencies)
+* [Create a conda environment file](#create-a-conda-environment-file)
 * [Set up Binder](#set-up-the-binder-configuration)
 
 ## What Can I Do?
@@ -290,7 +291,16 @@ Once the new version is on conda, update the binder .yml file, as below.
 
 To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI.
 
-If you add a dependency necessary for using the package, make sure to add it to the Binder config file. See below.
+If you add a dependency necessary for using the package, make sure to add it to the Binder config file and update the `environment.yml` file in the repositry. See below.
+
+## Create a conda environment file
+
+As a backup options for users experiencing install issues, we include a `environment.yml` file in the repo, which users can download and install from. To update this, run the following commands:
+
+```
+make remove
+make conda_install
+```
 
 ## Set up the binder configuration
 
