@@ -19,6 +19,7 @@ from getpass import getpass
 from inspect import getmembers, isfunction
 from pathlib import Path
 
+import deprecation
 import geopandas as gpd
 import harmonica as hm
 import pandas as pd
@@ -31,7 +32,8 @@ import zarr
 from dotenv import load_dotenv
 from pyproj import Transformer
 
-# import polartoolkit.fetch as fetch
+import polartoolkit
+
 from polartoolkit import (  # pylint: disable=import-self
     fetch,  # noqa: PLW0406
     regions,
@@ -810,6 +812,28 @@ def modis(
             progressbar=True,
         )
     return path  # pylint: disable=possibly-used-before-assignment
+
+
+@deprecation.deprecated(
+    deprecated_in="0.4.0",
+    removed_in="0.8.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function use modis(hemisphere='south') instead",
+)
+def modis_moa(version: str = "750m") -> str:
+    """deprecated function, use modis(hemisphere="south") instead"""
+    return modis(version=version, hemisphere="south")
+
+
+@deprecation.deprecated(
+    deprecated_in="0.4.0",
+    removed_in="0.8.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function use modis(hemisphere='north') instead",
+)
+def modis_mog(version: str = "500m") -> str:
+    """deprecated function, use modis(hemisphere="north") instead"""
+    return modis(version=version, hemisphere="north")
 
 
 def imagery() -> str:

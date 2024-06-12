@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 
 import deepdiff
+import deprecation
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -319,6 +320,16 @@ def test_modis():
 
 # grid = fetch.modis(version="750m")
 # utils.get_grid_info(grid)
+
+
+@deprecation.fail_if_not_removed
+def test_modis_moa():
+    fetch.modis_moa()
+
+
+@deprecation.fail_if_not_removed
+def test_modis_mog():
+    fetch.modis_mog()
 
 
 # %% imagery
