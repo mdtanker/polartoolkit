@@ -92,6 +92,7 @@ dev = [
     "jupyterlab",
     "mypy",
     "pathspec",
+    "deprecation",
 ]
 all = [
   "polartoolkit[interactive,viz,test,dev,docs]",
@@ -155,6 +156,7 @@ warn_unreachable = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 ignore_missing_imports = true
+disallow_untyped_decorators = false
 
 [[tool.mypy.overrides]]
 module = "polartoolkit.*"
