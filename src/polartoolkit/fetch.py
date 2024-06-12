@@ -712,66 +712,20 @@ def ice_vel(
     return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
-def modis_moa(
-    version: str = "750m",
+def modis(
+    version: str | None = None,
+    hemisphere: str | None = None,
 ) -> str:
     """
-    Load the MODIS Mosaic of Antarctica imagery in either "750m" or "125m" resolutions
+    Load the MODIS Mosaic of Antarctica (MoA) or Greenland (MoG) imagery.
+
+    Antarctica:
     from :footcite:t:`haranmodis2021` and :footcite:t:`scambosmodisbased2007`.
 
     accessed from https://nsidc.org/data/nsidc-0593/versions/2
 
-    Requires an EarthData login, see Tutorials/Download Polar datasets for how to
-    configure this.
-
-    Parameters
-    ----------
-    version : str, optional
-        choose between "750m" or "125m" resolutions, by default "750m"
-
-    Returns
-    -------
-    str
-       filepath for either 750m or 125m MODIS MoA Imagery
-
-    References
-    ----------
-    .. footbibliography::
-    """
-    if version == "125m":
-        path: str = pooch.retrieve(
-            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz",
-            fname="moa125.tif.gz",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
-            downloader=EarthDataDownloader(),
-            processor=pooch.Decompress(method="gzip", name="moa125_2009_hp1_v02.0.tif"),
-            known_hash="101fa22295f94f6eab487d208c051cf81c9af925355b124a04e3d96463af5b72",
-            progressbar=True,
-        )
-    elif version == "750m":
-        path = pooch.retrieve(
-            url="https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz",
-            fname="moa750.tif.gz",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
-            downloader=EarthDataDownloader(),
-            processor=pooch.Decompress(method="gzip", name="moa750_2009_hp1_v02.0.tif"),
-            known_hash="90d1718ea0971795ec102482c47f308ba08ba2b88383facb9fe210877e80282c",
-            progressbar=True,
-        )
-    else:
-        msg = "invalid version string"
-        raise ValueError(msg)
-
-    return path
-
-
-def modis_mog(
-    version: str = "500m",
-) -> str:
-    """
-    Load the 2015 MODIS Mosaic of Greenland imagery in either "500m" or "100m"
-    resolutions from :footcite:t:`haranmeasures2018`.
-
+    Greenland:
+    from :footcite:t:`haranmeasures2018`
     accessed from https://nsidc.org/data/nsidc-0547/versions/2
 
     Requires an EarthData login, see Tutorials/Download Polar datasets for how to
@@ -780,40 +734,82 @@ def modis_mog(
     Parameters
     ----------
     version : str, optional
-        choose between "500m" or "100m" resolutions, by default "500m"
+        for Antarctica, choose between "750m" or "125m" resolutions, by default "750m",
+        for Greenland, choose between "500m" or "100m" resolutions, by default "500m"
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
 
     Returns
     -------
     str
-       filepath for either 500m or 100m MODIS MoG Imagery
+       filepath for MODIS Imagery
 
     References
     ----------
     .. footbibliography::
     """
-    if version == "100m":
-        path: str = pooch.retrieve(
-            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif",
-            fname="mog100.tif",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
-            downloader=EarthDataDownloader(),
-            known_hash=None,
-            progressbar=True,
-        )
-    elif version == "500m":
-        path = pooch.retrieve(
-            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif",
-            fname="mog500.tif",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
-            downloader=EarthDataDownloader(),
-            known_hash=None,
-            progressbar=True,
-        )
-    else:
-        msg = "invalid version string"
-        raise ValueError(msg)
+    hemisphere = utils.default_hemisphere(hemisphere)
 
-    return path
+    if version is None:
+        if hemisphere == "south":
+            version = "750m"
+        elif hemisphere == "north":
+            version = "500m"
+
+    if hemisphere == "south":
+        if version == "125m":
+            url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz"
+            fname = "moa125.tif.gz"
+            name = "moa125_2009_hp1_v02.0.tif"
+            known_hash = (
+                "101fa22295f94f6eab487d208c051cf81c9af925355b124a04e3d96463af5b72"
+            )
+        elif version == "750m":
+            url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa750_2009_hp1_v02.0.tif.gz"
+            fname = "moa750.tif.gz"
+            name = "moa750_2009_hp1_v02.0.tif"
+            known_hash = (
+                "90d1718ea0971795ec102482c47f308ba08ba2b88383facb9fe210877e80282c"
+            )
+        else:
+            msg = "invalid version string for southern hemisphere"
+            raise ValueError(msg)
+        path: str = pooch.retrieve(
+            url=url,
+            fname=fname,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
+            downloader=EarthDataDownloader(),
+            processor=pooch.Decompress(method="gzip", name=name),
+            known_hash=known_hash,
+            progressbar=True,
+        )
+
+    if hemisphere == "north":
+        if version == "100m":
+            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif"
+            fname = "mog100.tif"
+            known_hash = (
+                "673745b96b08bf7118c47ad458f7999fb715b8260328d1112c9faf062c4664e9"
+            )
+        elif version == "500m":
+            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif"
+            fname = "mog500.tif"
+            known_hash = (
+                "5a5d3f5771e72750db69eeb1ddc2860101933ca45a5d5e0f43e54e1f86aae14b"
+            )
+        else:
+            msg = "invalid version string for northern hemisphere"
+            raise ValueError(msg)
+        path = pooch.retrieve(
+            url=url,
+            fname=fname,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/imagery",
+            downloader=EarthDataDownloader(),
+            known_hash=known_hash,
+            progressbar=True,
+        )
+    return path  # pylint: disable=possibly-used-before-assignment
 
 
 def imagery() -> str:

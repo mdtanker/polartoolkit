@@ -273,7 +273,7 @@ def test_ice_vel_highres():
 # grid = fetch.ice_vel(spacing=1e3)
 # utils.get_grid_info(grid)
 
-# %% modis_moa
+# %% modis
 
 
 @pytest.mark.fetch()
@@ -281,8 +281,8 @@ def test_ice_vel_highres():
 @pytest.mark.earthdata()
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_modis_moa():
-    grid = fetch.modis_moa(version="750m")
+def test_modis():
+    grid = fetch.modis(version="750m", hemisphere="south")
     expected = (
         750,
         (-3174450.0, 2867550.0, -2816675.0, 2406325.0),
@@ -298,22 +298,7 @@ def test_modis_moa():
         significant_digits=2,
     )
 
-
-# version="125m" not testing since too large
-
-# grid = fetch.modis_moa(version="750m")
-# utils.get_grid_info(grid)
-
-# %% modis_mog
-
-
-@pytest.mark.fetch()
-@pytest.mark.slow()
-@pytest.mark.earthdata()
-@skip_earthdata
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_modis_mog():
-    grid = fetch.modis_mog(version="500m")
+    grid = fetch.modis(version="500m", hemisphere="north")
     expected = (
         500,
         (-1200000.0, 900000.0, -3400000.0, -600000.0),
@@ -330,10 +315,11 @@ def test_modis_mog():
     )
 
 
-# version="100m" not testing since too large
+# version="125m"of MoA and "100m" of MoG not tested since too large
 
-# grid = fetch.modis_mog(version="500m")
+# grid = fetch.modis(version="750m")
 # utils.get_grid_info(grid)
+
 
 # %% imagery
 
