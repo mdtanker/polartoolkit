@@ -89,22 +89,25 @@ def basemap(
     except KeyError:
         hemisphere = None
 
-    # if region not set, use antarctic region
+    # if region not set, use antarctic or greenland regions
     if region is None:
-        region = regions.antarctica
+        if hemisphere == "north":
+            region = regions.greenland
+        if hemisphere == "south":
+            region = regions.antarctica
 
     # set figure projection and size from input region and figure dimensions
     # by default use figure height to set projection
     if fig_width is None:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
+            region,  # type: ignore[arg-type]
             hemisphere=hemisphere,
             fig_height=fig_height,
         )
     # if fig_width is set, use it to set projection
     else:
         proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
+            region,  # type: ignore[arg-type]
             hemisphere=hemisphere,
             fig_width=fig_width,
         )
