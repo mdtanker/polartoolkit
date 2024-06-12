@@ -53,6 +53,7 @@ dependencies = [
     "python-dotenv",
     "nptyping",
     "requests",
+    "deprecation",
 ]
 
 [project.optional-dependencies]
@@ -92,7 +93,6 @@ dev = [
     "jupyterlab",
     "mypy",
     "pathspec",
-    "deprecation",
 ]
 all = [
   "polartoolkit[interactive,viz,test,dev,docs]",
