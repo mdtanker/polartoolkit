@@ -1097,6 +1097,19 @@ def groundingline(
     return fname
 
 
+@deprecation.deprecated(
+    deprecated_in="0.4.0",
+    removed_in="0.8.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function antarctic_boundaries instead",
+)
+def measures_boundaries(
+    version: str,
+) -> str:
+    """Deprecated, see the new function antarctic_boundaries instead"""
+    return antarctic_boundaries(version)
+
+
 def antarctic_boundaries(
     version: str,
 ) -> str:

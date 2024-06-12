@@ -44,6 +44,12 @@ skip_earthdata = pytest.mark.skipif(
     reason="requires earthdata login credentials set as environment variables",
 )
 
+
+@deprecation.fail_if_not_removed
+def test_measures_boundaries():
+    fetch.measures_boundaries()
+
+
 # %% resample_grid
 resample_test = [
     # no inputs
