@@ -150,6 +150,40 @@ def basemap(
             version=kwargs.get("coast_version", None),
         )
 
+    # add datapoints
+    points = kwargs.get("points", None)
+    if points is not None:
+        cmap = kwargs.get("points_cmap", True)
+        fig.plot(
+            x=points.x,
+            y=points.y,
+            style=kwargs.get("points_style", "c.2c"),
+            fill=kwargs.get("points_fill", "black"),
+            pen=kwargs.get("points_pen", "1p,black"),
+            cmap=cmap,
+        )
+
+        # display colorbar
+        if kwargs.get("colorbar", False) is True:
+            # removed duplicate kwargs before passing to add_colorbar
+            cbar_kwargs = {
+                key: value
+                for key, value in kwargs.items()
+                if key
+                not in [
+                    "fig_width",
+                    "fig",
+                ]
+            }
+
+            add_colorbar(
+                fig,
+                cmap=cmap,
+                fig_width=fig_width,
+                region=region,
+                **cbar_kwargs,
+            )
+
     # add lat long grid lines
     if kwargs.get("gridlines", False) is True:
         if hemisphere is None:
