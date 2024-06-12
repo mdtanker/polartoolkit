@@ -199,6 +199,7 @@ def get_regions() -> dict[str, tuple[float, float, float, float]]:
         "annotations",
         "typing",
         "display",
+        "alter_region",
     ]
 
     return {
