@@ -1,4 +1,4 @@
-# Greenland
+# Greenland and the Arctic
 
 ## Topography-related data
 
