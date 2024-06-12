@@ -305,6 +305,40 @@ def region_xy_to_ll(
     return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
 
+def region_ll_to_xy(
+    region: tuple[float, float, float, float],
+    hemisphere: str | None = None,
+) -> tuple[float, float, float, float]:
+    """
+    Convert region in format [lon_min, lon_max, lat_min, lat_max] to projected meters in
+    the north or south polar stereographic projections.
+
+    Parameters
+    ----------
+    hemisphere : str, optional,
+        choose between the "north" or "south" hemispheres
+    region : tuple[float, float, float, float]
+        region boundaries in format [xmin, xmax, ymin, ymax] in decimal degrees
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        region boundaries in format [x_min, x_max, y_min, y_max]
+    """
+    hemisphere = default_hemisphere(hemisphere)
+
+    df = region_to_df(region, coord_names=("lon", "lat"))
+    if hemisphere == "north":
+        df_proj: tuple[float, float, float, float] = latlon_to_epsg3413(df, reg=True)
+    elif hemisphere == "south":
+        df_proj = latlon_to_epsg3031(df, reg=True)
+    else:
+        msg = "hemisphere must be 'north' or 'south'"
+        raise ValueError(msg)
+
+    return df_proj
+
+
 def region_to_bounding_box(
     region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
