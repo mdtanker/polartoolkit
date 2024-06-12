@@ -13,6 +13,7 @@ import os
 import random
 import typing
 
+import deprecation
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,10 +25,8 @@ import xarray as xr
 from nptyping import NDArray
 from pyproj import Transformer
 
-# import polartoolkit.fetch as fetch
-from polartoolkit import fetch, maps
-
-# import polartoolkit.maps as maps
+import polartoolkit
+from polartoolkit import fetch, maps, regions
 
 if typing.TYPE_CHECKING:
     import geopandas as gpd
@@ -752,65 +751,22 @@ def mask_from_shp(
     return typing.cast(xr.DataArray, output)
 
 
+@deprecation.deprecated(
+    deprecated_in="0.4.0",
+    removed_in="0.8.0",
+    current_version=polartoolkit.__version__,
+    details="alter_region has been moved to the regions module, use that instead",
+)
 def alter_region(
     starting_region: tuple[float, float, float, float],
     zoom: float = 0,
     n_shift: float = 0,
     w_shift: float = 0,
-    buffer: float = 0,
-    print_reg: bool = False,
-) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
-    """
-    Change a bounding region by shifting the box east/west or north/south, zooming in or
-    out, or adding a separate buffer region.
-
-    Parameters
-    ----------
-    starting_region : tuple[float, float, float, float]
-        Initial region in meters in format [xmin, xmax, ymin, ymax]
-    zoom : float, optional
-        zoom in or out, in meters, by default 0
-    n_shift : float, optional
-        shift north, or south if negative, in meters, by default 0
-    w_shift : float, optional
-        shift west, or east if negative, in meters, by default 0
-    buffer : float, optional
-        create new region which is zoomed out in all direction, in meters, by default 0
-    print_reg : bool, optional
-        print out the dimensions of the altered region, by default False
-
-    Returns
-    -------
-    tuple[tuple[float, float, float, float], tuple[float, float, float, float]]
-        Returns two tuples: region, buffer_region
-    """
-    starting_e, starting_w = starting_region[0], starting_region[1]
-    starting_n, starting_s = starting_region[2], starting_region[3]
-
-    xmin = starting_e + zoom + w_shift
-    xmax = starting_w - zoom + w_shift
-
-    ymin = starting_n + zoom - n_shift
-    ymax = starting_s - zoom - n_shift
-
-    region = (xmin, xmax, ymin, ymax)
-
-    e_buff, w_buff, n_buff, s_buff = (
-        int(xmin - buffer),
-        int(xmax + buffer),
-        int(ymin - buffer),
-        int(ymax + buffer),
-    )
-
-    buffer_region = (e_buff, w_buff, n_buff, s_buff)
-
-    if print_reg is True:
-        logging.info(
-            "inner region is %s x %s km",
-            int((xmax - xmin) / 1e3),
-            int((ymax - ymin) / 1e3),
-        )
-    return region, buffer_region
+    buffer: float = 0,  # noqa: ARG001 # pylint: disable=unused-argument
+    print_reg: bool = False,  # noqa: ARG001 # pylint: disable=unused-argument
+) -> tuple[float, float, float, float]:
+    """deprecated function, use regions.alter_region instead"""
+    return regions.alter_region(starting_region, zoom, n_shift, w_shift)
 
 
 def set_proj(
