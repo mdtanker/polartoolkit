@@ -47,10 +47,23 @@ how you can contribute to the project.
 ```{toctree}
 :maxdepth: 1
 :hidden:
+:caption: 🚀 Getting started
 overview
 install
-gallery/index.md
+quickstart
+citing
+```
+
+```{toctree}
+:hidden:
+:caption: 🚶 Tutorials
 tutorial/index.md
+```
+
+```{toctree}
+:hidden:
+:caption: 📚 How-To Guides
+how_to/index.md
 ```
 
 ```{toctree}
@@ -62,18 +75,10 @@ datasets/greenland_arctic/index.md
 ```
 
 ```{toctree}
-:maxdepth: 1
-:hidden:
-:caption: Tips
-tips.ipynb
-```
-
-```{toctree}
 :maxdepth: 2
 :hidden:
 :caption: 📖 Reference documentation
 api/polartoolkit
-citing.md
 changelog.md
 references.rst
 ```
@@ -91,7 +96,7 @@ Source code on GitHub <https://github.com/mdtanker/polartoolkit>
 :::{grid-item-card} {octicon}`rocket` Getting started?
 :text-align: center
 New to PolarToolkit? Start here!
-```{button-ref} overview
+```{button-ref} quickstart
     :click-parent:
     :color: primary
     :outline:

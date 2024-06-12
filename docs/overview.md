@@ -1,4 +1,4 @@
-# 🔎 Overview
+# Overview
 
 PolarToolkit is a Python package developed to help with conducting polar
 science. The 5 modules shown here provide tools to help with a variety of common
