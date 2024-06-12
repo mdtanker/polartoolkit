@@ -1021,7 +1021,7 @@ def plot_profile(
                 background = fetch.imagery()
                 map_cmap = True
             elif hemisphere == "north":
-                background = fetch.modis_mog()
+                background = fetch.modis(hemisphere=hemisphere)
                 pygmt.makecpt(
                     cmap="grayC",
                     series=[15000, 17000, 1],
@@ -1459,7 +1459,7 @@ def plot_data(
             if hemisphere == "south":
                 background = fetch.imagery()
             elif hemisphere == "north":
-                background = fetch.modis_mog()
+                background = fetch.modis(hemisphere=hemisphere)
 
         if kwargs.get("map_grd2cpt", False) is True:
             pygmt.grd2cpt(
