@@ -39,4 +39,5 @@ greenland/bedmachine
 greenland/geoid
 greenland/etopo
 greenland/mass_change
+greenland/ice_velocity
 ```

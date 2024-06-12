@@ -24,6 +24,7 @@ modis_mog
 ---
 ---
 mass_change
+ice_velocity
 ```
 
 ## Shapefiles and Misc.
