@@ -208,6 +208,46 @@ def get_regions() -> dict[str, tuple[float, float, float, float]]:
     }
 
 
+def alter_region(
+    starting_region: tuple[float, float, float, float],
+    zoom: float = 0,
+    n_shift: float = 0,
+    w_shift: float = 0,
+) -> tuple[float, float, float, float]:
+    """
+    Change a bounding region by shifting the box east/west or north/south, or zooming in
+    or out.
+
+    Parameters
+    ----------
+    starting_region : tuple[float, float, float, float]
+        Initial region in meters in format [xmin, xmax, ymin, ymax]
+    zoom : float, optional
+        zoom in or out, in meters, by default 0
+    n_shift : float, optional
+        shift north, or south if negative, in meters, by default 0
+    w_shift : float, optional
+        shift west, or east if negative, in meters, by default 0
+    buffer : float, optional
+        create new region which is zoomed out in all direction, in meters, by default 0
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        Returns the altered region
+    """
+    starting_e, starting_w = starting_region[0], starting_region[1]
+    starting_n, starting_s = starting_region[2], starting_region[3]
+
+    xmin = starting_e + zoom + w_shift
+    xmax = starting_w - zoom + w_shift
+
+    ymin = starting_n + zoom - n_shift
+    ymax = starting_s - zoom - n_shift
+
+    return (xmin, xmax, ymin, ymax)
+
+
 def combine_regions(
     region1: tuple[float, float, float, float],
     region2: tuple[float, float, float, float],

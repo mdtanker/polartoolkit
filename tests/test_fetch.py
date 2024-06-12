@@ -433,7 +433,7 @@ geomap_test = [
 def test_geomap(test_input, expected):
     # collect a few points
     data = fetch.geomap(
-        version=test_input, region=utils.alter_region(regions.ross_island, zoom=25e3)[0]
+        version=test_input, region=regions.alter_region(regions.ross_island, zoom=25e3)
     )[0:2]
 
     # check if the first 2 object id's match the expected
@@ -447,7 +447,7 @@ def test_geomap(test_input, expected):
 def test_ibcso_coverage():
     # collect a few points
     points, polygons = fetch.ibcso_coverage(
-        region=utils.alter_region(regions.siple_coast, zoom=270e3)[0]
+        region=regions.alter_region(regions.siple_coast, zoom=270e3)
     )
 
     # re-create the expected geodataframe

@@ -19,7 +19,7 @@ import verde as vd
 import xarray as xr
 
 # import polartoolkit.fetch as fetch
-from polartoolkit import fetch, maps, utils
+from polartoolkit import fetch, maps, regions, utils
 
 # import polartoolkit.maps as maps
 # import polartoolkit.utils as utils
@@ -978,9 +978,9 @@ def plot_profile(
     if add_map is True:
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
-        map_reg = utils.alter_region(
-            vd.get_region((df_layers.x, df_layers.y)), buffer=buffer
-        )[1]
+        map_reg = regions.alter_region(
+            vd.get_region((df_layers.x, df_layers.y)), zoom=-buffer
+        )
 
         # Set figure parameters
         if subplot_orientation == "horizontal":
@@ -1417,9 +1417,9 @@ def plot_data(
     if add_map is True:
         # Automatic data extent + buffer as % of line length
         buffer = df_data.dist.max() * kwargs.get("map_buffer", 0.3)
-        map_reg = utils.alter_region(
-            vd.get_region((df_data.x, df_data.y)), buffer=buffer
-        )[1]
+        map_reg = regions.alter_region(
+            vd.get_region((df_data.x, df_data.y)), zoom=-buffer
+        )
 
         # Set figure parameters
         if subplot_orientation == "horizontal":
