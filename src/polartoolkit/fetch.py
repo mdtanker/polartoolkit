@@ -1103,10 +1103,10 @@ def groundingline(
     details="Use the new function antarctic_boundaries instead",
 )
 def measures_boundaries(
-    version: str,
+    version: str | None = None,
 ) -> str:
     """Deprecated, see the new function antarctic_boundaries instead"""
-    return antarctic_boundaries(version)
+    return antarctic_boundaries(version)  # type: ignore[arg-type]
 
 
 def antarctic_boundaries(

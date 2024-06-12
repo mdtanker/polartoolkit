@@ -792,7 +792,7 @@ def mask_from_shp(
     details="alter_region has been moved to the regions module, use that instead",
 )
 def alter_region(
-    starting_region: tuple[float, float, float, float],
+    starting_region: tuple[float, float, float, float] | None = None,
     zoom: float = 0,
     n_shift: float = 0,
     w_shift: float = 0,
@@ -800,7 +800,7 @@ def alter_region(
     print_reg: bool = False,  # noqa: ARG001 # pylint: disable=unused-argument
 ) -> tuple[float, float, float, float]:
     """deprecated function, use regions.alter_region instead"""
-    return regions.alter_region(starting_region, zoom, n_shift, w_shift)
+    return regions.alter_region(starting_region, zoom, n_shift, w_shift)  # type: ignore[arg-type]
 
 
 def set_proj(
