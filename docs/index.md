@@ -58,8 +58,7 @@ tutorial/index.md
 :caption: 📂 Available datasets
 datasets/index.md
 datasets/antarctica/index.md
-datasets/arctic/index.md
-datasets/greenland/index.md
+datasets/greenland_arctic/index.md
 ```
 
 ```{toctree}
