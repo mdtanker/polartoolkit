@@ -1614,10 +1614,10 @@ def ibcso(
             # subset to a smaller region (buffer by 1 cell width)
             cut = pygmt.grdcut(
                 grid=grid,
-                region=utils.alter_region(
+                region=regions.alter_region(
                     regions.antarctica,
                     zoom=-original_spacing,
-                )[0],
+                ),
             )
             logging.info(utils.get_grid_info(cut))
 
@@ -1670,7 +1670,7 @@ def ibcso(
                 initial_region=(-4800000, 4800000, -4800000, 4800000),
                 initial_registration="p",
                 spacing=5e3,
-                region=utils.alter_region(regions.antarctica, zoom=-5e3)[0],
+                region=regions.alter_region(regions.antarctica, zoom=-5e3),
                 registration="p",
             )
             cut = typing.cast(xr.DataArray, cut)

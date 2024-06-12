@@ -12,6 +12,7 @@ Tests for utils module.
 # %%
 from __future__ import annotations
 
+import deprecation
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,6 +20,11 @@ import verde as vd
 import xarray as xr
 
 from polartoolkit import regions, utils
+
+
+@deprecation.fail_if_not_removed
+def test_alter_region():
+    utils.alter_region()
 
 
 def dummy_grid() -> xr.Dataset:
