@@ -1,4 +1,4 @@
-# 🚀 Install
+# Install
 
 ## Online usage (Binder)
 
