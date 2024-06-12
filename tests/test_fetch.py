@@ -220,7 +220,7 @@ def test_resample_grid(test_input, expected):
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_lowres():
-    grid = fetch.ice_vel(spacing=5e3)
+    grid = fetch.ice_vel(spacing=5e3, hemisphere="south")
     expected = (
         5000,
         (-2800000.0, 2795000.0, -2795000.0, 2800000.0),
@@ -240,12 +240,12 @@ def test_ice_vel_lowres():
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_highres():
-    grid = fetch.ice_vel(spacing=1e3)
+    grid = fetch.ice_vel(spacing=450, hemisphere="south")
     expected = (
-        1000,
-        (-2800000.0, 2799000.0, -2799000.0, 2800000.0),
-        -92.828956604,
-        4216.78759766,
+        450,
+        (-2800000.0, 2799800.0, -2799800.0, 2800000.0),
+        2.34232032881e-07,
+        4218.26513672,
         "g",
     )
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
@@ -254,6 +254,19 @@ def test_ice_vel_highres():
         expected,
         ignore_order=True,
         significant_digits=2,
+    )
+
+    grid = fetch.ice_vel(spacing=250, hemisphere="north")
+    expected = (
+        250,
+        (-645000.0, 859750.0, -3370000.0, -640250.0),
+        0.00136277475394,
+        12906.4941406,
+        "g",
+    )
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid), expected, ignore_order=True, significant_digits=2
     )
 
 

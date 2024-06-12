@@ -470,16 +470,23 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
 
 def ice_vel(
     region: tuple[float, float, float, float] | None = None,
-    spacing: float = 5e3,
+    spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    MEaSUREs Phase-Based Antarctica Ice Velocity Map, version 1 from
-    :footcite:t:`mouginotcontinent2019` and :footcite:t:`mouginotmeasures2019`.
+    MEaSUREs Phase-Based Ice Velocity Maps for Antarctica and Greenland.
+
+    Antarctica: version 1 from :footcite:t:`mouginotcontinent2019` and
+    :footcite:t:`mouginotmeasures2019`.
 
     accessed from https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
     Data part of https://doi.org/10.1029/2019GL083826
+
+    Greenland: version 1 from :footcite:t:`measures2020`
+
+    accessed from https://nsidc.org/data/nsidc-0670/versions/1
 
     Units are in m/yr
 
@@ -491,12 +498,15 @@ def ice_vel(
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
-    spacing : float,
-        grid spacing to resample the loaded grid to, by default 5e3, original spacing
-        is 450m
+    spacing : float, optional,
+        grid spacing to resample the loaded grid to, by default is 5km for Antarctica
+        (original data is 450m), and 250m for Greenland
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
     kwargs : typing.Any
         additional keyword arguments to pass to resample_grid
 
@@ -509,107 +519,187 @@ def ice_vel(
     ----------
     .. footbibliography::
     """
-    original_spacing = 450
+    hemisphere = utils.default_hemisphere(hemisphere)
 
-    # preprocessing for full, 450m resolution
-    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, calculate velocity magnitude, save it back"
-        fname1 = Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
-        # Only recalculate if new download or the processed file doesn't exist yet
-        if action in ("download", "update") or not fname_processed.exists():
-            logging.warning(
-                "WARNING; this file is large (~7Gb) and may take some time to download!"
-            )
-            logging.warning(
-                """WARNING; preprocessing this grid in full resolution is very
-                computationally demanding, consider choosing a lower resolution using
-                the parameter `spacing`."
-                """
-            )
-            with xr.open_dataset(fname1) as ds:
-                processed = (ds.VX**2 + ds.VY**2) ** 0.5
-                # Save to disk
-                processed.to_netcdf(fname_processed)
-        return str(fname_processed)
+    if hemisphere == "south":
+        if spacing is None:
+            spacing = 5e3
+        original_spacing = 450
 
-    # preprocessing for filtered 5k resolution
-    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, calculate velocity magnitude, resample to 5k, save it back"
-        fname1 = Path(fname)
-        # Rename to the file to ***_preprocessed_5k.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
-        # Only recalculate if new download or the processed file doesn't exist yet
-        if action in ("download", "update") or not fname_processed.exists():
-            logging.warning(
-                "WARNING; this file is large (~7Gb) and may take some time to download!"
-            )
-            logging.warning("WARNING; preprocessing this grid may take a long time.")
-            with xr.open_dataset(fname1) as ds:
-                initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
-                initial_spacing = original_spacing
-                initial_registration = "g"
-                vx_5k = resample_grid(
-                    ds.VX,
-                    initial_spacing=initial_spacing,
-                    initial_region=initial_region,
-                    initial_registration=initial_registration,
-                    spacing=5e3,
-                    region=initial_region,
-                    registration=initial_registration,
-                    **kwargs,
+        # preprocessing for full, 450m resolution
+        def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .nc file, calculate velocity magnitude, save it back"
+            fname1 = Path(fname)
+            # Rename to the file to ***_preprocessed.nc
+            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                msg = (
+                    "WARNING; this file is large (~7Gb) and may take some time to "
+                    "download!"
                 )
-                vx_5k = typing.cast(xr.DataArray, vx_5k)
-                vy_5k = resample_grid(
-                    ds.VY,
-                    initial_spacing=initial_spacing,
-                    initial_region=initial_region,
-                    initial_registration=initial_registration,
-                    spacing=5e3,
-                    region=initial_region,
-                    registration=initial_registration,
-                    **kwargs,
+                logging.warning(msg)
+                msg = (
+                    "WARNING; preprocessing this grid in full resolution is very "
+                    "computationally demanding, consider choosing a lower resolution "
+                    "using the parameter `spacing`."
                 )
-                vy_5k = typing.cast(xr.DataArray, vy_5k)
+                logging.warning(msg)
+                with xr.open_dataset(fname1) as ds:
+                    processed = (ds.VX**2 + ds.VY**2) ** 0.5
+                    # Save to disk
+                    processed.to_netcdf(fname_processed)
+            return str(fname_processed)
 
-                processed_lowres = (vx_5k**2 + vy_5k**2) ** 0.5
-                # Save to disk
-                processed_lowres.to_netcdf(fname_processed)
-        return str(fname_processed)
+        # preprocessing for filtered 5k resolution
+        def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
+            """
+            Load the .nc file, calculate velocity magnitude, resample to 5k, save it
+            back
+            """
+            fname1 = Path(fname)
+            # Rename to the file to ***_preprocessed_5k.nc
+            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                msg = (
+                    "WARNING; this file is large (~7Gb) and may take some time to "
+                    "download!"
+                )
+                logging.warning(msg)
+                msg = "WARNING; preprocessing this grid may take a long time."
+                logging.warning(msg)
+                with xr.open_dataset(fname1) as ds:
+                    vx_5k = resample_grid(
+                        ds.VX,
+                        initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
+                        initial_region=initial_region,  # pylint: disable=possibly-used-before-assignment
+                        initial_registration=initial_registration,  # pylint: disable=possibly-used-before-assignment
+                        spacing=5e3,
+                        region=initial_region,
+                        registration=initial_registration,
+                        **kwargs,
+                    )
+                    vx_5k = typing.cast(xr.DataArray, vx_5k)
+                    vy_5k = resample_grid(
+                        ds.VY,
+                        initial_spacing=initial_spacing,
+                        initial_region=initial_region,
+                        initial_registration=initial_registration,
+                        spacing=5e3,
+                        region=initial_region,
+                        registration=initial_registration,
+                        **kwargs,
+                    )
+                    vy_5k = typing.cast(xr.DataArray, vy_5k)
 
-    # determine which resolution of preprocessed grid to use
-    if spacing < 5000:
-        preprocessor = preprocessing_fullres
-        initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
-        initial_spacing = original_spacing
+                    processed_lowres = (vx_5k**2 + vy_5k**2) ** 0.5
+                    # Save to disk
+                    processed_lowres.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        # determine which resolution of preprocessed grid to use
+        if spacing < 5000:
+            preprocessor = preprocessing_fullres
+            initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
+            initial_spacing = original_spacing
+            initial_registration = "g"
+        elif spacing >= 5000:
+            logging.info("using preprocessed 5km grid since spacing is > 5km")
+            preprocessor = preprocessing_5k
+            initial_region = (-2800000.0, 2795000.0, -2795000.0, 2800000.0)
+            initial_spacing = 5000
+            initial_registration = "g"
+
+        if region is None:
+            region = initial_region  # pylint: disable=possibly-used-before-assignment
+        if registration is None:
+            registration = initial_registration  # pylint: disable=possibly-used-before-assignment
+
+        # This is the path to the processed (magnitude) grid
+        path = pooch.retrieve(
+            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",
+            fname="measures_ice_vel_phase_map.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity",
+            downloader=EarthDataDownloader(),
+            known_hash="fa0957618b8bd98099f4a419d7dc0e3a2c562d89e9791b4d0ed55e6017f52416",
+            progressbar=True,
+            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
+        )
+
+        with xr.open_dataarray(path) as grid:
+            resampled = resample_grid(
+                grid,
+                initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
+                initial_region=initial_region,
+                initial_registration=initial_registration,
+                spacing=spacing,
+                region=region,
+                registration=registration,
+                **kwargs,
+            )
+
+    elif hemisphere == "north":
+        if spacing is None:
+            spacing = 250
+
+        initial_region = (-645000.0, 859750.0, -3370000.0, -640250.0)
+        initial_spacing = 250
         initial_registration = "g"
-    elif spacing >= 5000:
-        logging.info("using preprocessed 5km grid since spacing is > 5km")
-        preprocessor = preprocessing_5k
-        initial_region = (-2800000.0, 2795000.0, -2795000.0, 2800000.0)
-        initial_spacing = 5000
-        initial_registration = "g"
 
-    if region is None:
-        region = initial_region  # pylint: disable=possibly-used-before-assignment
-    if registration is None:
-        registration = initial_registration  # pylint: disable=possibly-used-before-assignment
+        base_fname = "greenland_vel_mosaic250"
+        registry = {
+            f"{base_fname}_vx_v1.tif": None,
+            f"{base_fname}_vy_v1.tif": None,
+        }
+        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0670.001/1995.12.01/"
+        path = f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity"
 
-    # This is the path to the processed (magnitude) grid
-    path = pooch.retrieve(
-        url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",
-        fname="measures_ice_vel_phase_map.nc",
-        path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity",
-        downloader=EarthDataDownloader(),
-        known_hash="fa0957618b8bd98099f4a419d7dc0e3a2c562d89e9791b4d0ed55e6017f52416",
-        progressbar=True,
-        processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
-    )
+        pup = pooch.create(
+            path=path,
+            base_url=base_url,
+            registry=registry,
+        )
+        for k, _ in registry.items():
+            pup.fetch(
+                fname=k,
+                downloader=EarthDataDownloader(),
+                progressbar=True,
+            )
 
-    with xr.open_dataarray(path) as grid:
+        # pick the requested files
+        fname_x = glob.glob(f"{path}/*vx_v1.tif")[0]  # noqa: PTH207
+        fname_y = glob.glob(f"{path}/*vy_v1.tif")[0]  # noqa: PTH207
+
+        # print(fname_x)
+        # print(fname_y)
+
+        # fname_processed = f"{fname_x[0:-10]}.zarr"
+        # print(fname_processed)
+
+        # load and merge data into dataset
+        grid_x = (
+            xr.load_dataarray(
+                fname_x,
+                engine="rasterio",
+            )
+            .squeeze()
+            .drop_vars(["band", "spatial_ref"])
+        ).rename("VX")
+        grid_y = (
+            xr.load_dataarray(
+                fname_y,
+                engine="rasterio",
+            )
+            .squeeze()
+            .drop_vars(["band", "spatial_ref"])
+        ).rename("VY")
+        grid = xr.merge([grid_x, grid_y])
+
+        processed = (grid.VX**2 + grid.VY**2) ** 0.5
+
         resampled = resample_grid(
-            grid,
+            processed,
             initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
             initial_region=initial_region,
             initial_registration=initial_registration,
@@ -619,7 +709,7 @@ def ice_vel(
             **kwargs,
         )
 
-        return typing.cast(xr.DataArray, resampled)
+    return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def modis_moa(
