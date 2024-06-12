@@ -1,5 +1,3 @@
-# 📚 Gallery
-
 ## Maps
 
 Here are some examples for use the module `Maps`.
