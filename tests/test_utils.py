@@ -24,7 +24,7 @@ from polartoolkit import regions, utils
 
 @deprecation.fail_if_not_removed
 def test_alter_region():
-    utils.alter_region()
+    utils.alter_region(regions.ross_ice_shelf, zoom=10e3)
 
 
 def dummy_grid() -> xr.Dataset:
