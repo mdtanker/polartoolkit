@@ -570,6 +570,9 @@ def ice_vel(
                 logging.warning(msg)
                 msg = "WARNING; preprocessing this grid may take a long time."
                 logging.warning(msg)
+                initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
+                initial_spacing = original_spacing
+                initial_registration = "g"
                 with xr.open_dataset(fname1) as ds:
                     vx_5k = resample_grid(
                         ds.VX,
