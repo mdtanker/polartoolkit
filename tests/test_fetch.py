@@ -45,6 +45,8 @@ skip_earthdata = pytest.mark.skipif(
 )
 
 
+@pytest.mark.earthdata()
+@skip_earthdata
 @deprecation.fail_if_not_removed
 def test_measures_boundaries():
     fetch.measures_boundaries("Coastline")
@@ -328,11 +330,15 @@ def test_modis():
 # utils.get_grid_info(grid)
 
 
+@pytest.mark.earthdata()
+@skip_earthdata
 @deprecation.fail_if_not_removed
 def test_modis_moa():
     fetch.modis_moa()
 
 
+@pytest.mark.earthdata()
+@skip_earthdata
 @deprecation.fail_if_not_removed
 def test_modis_mog():
     fetch.modis_mog()
