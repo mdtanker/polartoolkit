@@ -1,4 +1,6 @@
-<h1 align="center">PolarToolkit</h1>
+<p align="center">
+<img src="docs/logo_dark.png" alt="polartoolkit logo" width="200"/>
+</p>
 <h2 align="center">Helpful tools for polar researchers</h2>
 
 <p align="center">
