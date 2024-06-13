@@ -47,7 +47,7 @@ skip_earthdata = pytest.mark.skipif(
 
 @deprecation.fail_if_not_removed
 def test_measures_boundaries():
-    fetch.measures_boundaries()
+    fetch.measures_boundaries("Coastline")
 
 
 # %% resample_grid
