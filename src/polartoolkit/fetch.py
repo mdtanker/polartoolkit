@@ -1300,7 +1300,7 @@ def sediment_thickness(
                 df = pd.read_csv(
                     fname2,
                     header=None,
-                    delim_whitespace=True,
+                    sep=r"\s+",
                     names=["x_100km", "y_100km", "thick_km"],
                 )
                 # change units to meters
@@ -2659,7 +2659,7 @@ def gravity(
                 # load data
                 df = pd.read_csv(
                     fname2,
-                    delim_whitespace=True,
+                    sep=r"\s+",
                     skiprows=3,
                     names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
                 )
@@ -3080,7 +3080,7 @@ def magnetics(
                 # load data
                 df = pd.read_csv(
                     fname1,
-                    delim_whitespace=True,
+                    sep=r"\s+",
                     header=None,
                     names=["lat", "lon", "nT"],
                 )
@@ -3365,7 +3365,7 @@ def ghf(
             if action in ("download", "update") or not fname_processed.exists():
                 # load the data
                 df = pd.read_csv(
-                    fname1, header=None, delim_whitespace=True, names=["x", "y", "GHF"]
+                    fname1, header=None, sep=r"\s+", names=["x", "y", "GHF"]
                 )
 
                 # grid the data
@@ -3631,7 +3631,7 @@ def ghf(
                 # load data
                 df = pd.read_csv(
                     fname1,
-                    delim_whitespace=True,
+                    sep=r"\s+",
                     header=None,
                     names=["lon", "lat", "GHF"],
                 )
@@ -4049,7 +4049,7 @@ def moho(
                 # load data
                 df = pd.read_csv(
                     fname2,
-                    delim_whitespace=True,
+                    sep=r"\s+",
                     header=None,
                     names=["lon", "lat", "depth"],
                 )
