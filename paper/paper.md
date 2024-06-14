@@ -97,7 +97,7 @@ The below example demonstrates some of the functionality of `PolarToolkit`. Runn
   * Imagery data from LIMA [@bindschadlerlandsat2008]
 2) Pre-process the data
   * convert the Bedmap2 `.tif` files into compressed `.zarr` files
-  * resample the grid resolutions from 1 km to 2 km
+  * resample the grid from 1 km resolution to 1.5 km
   * extract the portion of the grids around the Saunders Coast region
   * calculate the water column thickness ([surface - ice thickness] - bed)
   * mask the grid outside of the floating ice shelves
@@ -109,35 +109,40 @@ The below example demonstrates some of the functionality of `PolarToolkit`. Runn
 
 ```python
 # import modules
-from polartoolkit import regions, fetch, utils, maps
+from polartoolkit import fetch, maps, regions, utils
 
-# define a region
+# define a geographic region
 region = regions.saunders_coast
 
 # download and pre-process bedmap2 data
 water_thickness = fetch.bedmap2(
-  layer="water_thickness",
-  region=region,
-  spacing=2000)
+    layer="water_thickness",
+    region=region,
+    spacing=1500,
+)
 
 # mask areas outside of ice shelves
 water_thickness = utils.mask_from_shp(
-    shapefile=fetch.measures_boundaries(version="IceShelf"),
+    fetch.antarctic_boundaries(version="IceShelf"),
     xr_grid=water_thickness,
     masked=True,
-    invert=False)
+    invert=False,
+    hemisphere="south",
+)
 
 # plot map and set options
 fig = maps.plot_grd(
-    grid=water_thickness,
-    cmap="dense",
+    water_thickness,
+    cmap="matter",
     title="Saunders Coast Ice Shelves",
-    cbar_label="Water column thickness (m)",
+    cbar_label="Water column thickness (meters)",
     imagery_basemap=True,
     coast=True,
     inset=True,
     scalebar=True,
-    hist=True)
+    hist=True,
+    hemisphere="south",
+)
 
 # display figure
 fig.show()
@@ -146,141 +151,6 @@ fig.show()
 ![Example map output from above code implemented in `PolarToolkit`. Water column thickness [@fretwellbedmap22013] beneath the ice shelves of Antarctica's Saunders Coast. Inset map shows figure location. Grounding line and coastlines shown by black line [@depoorterantarctic2013]. Background imagery from LIMA [@bindschadlerlandsat2008]. Colorbar histogram shows data distribution.](example_figure.png){ width=70% }
 
 # Acknowledgements
-I would like to acknowledge the support in the early stages of this project from Wei Ji Leong, who taught me many of the skills necessary for developing this package, as well as the team at PyGMT, Fatiando a Terra, and the community of Software Underground for all the technical support and providing open-source software which inspired this project.
+I would like to acknowledge the support in the early stages of this project from Wei Ji Leong, who taught me many of the skills necessary for developing this package, as well as the team at PyGMT, Fatiando a Terra, and the community of Software Underground for all the technical support and providing open-source software which inspired this project.I greatly appreciate the suggestions from reviewers Penny How and Jessica Scheick.
 
 # References
-
-<!-- \newpage
-
-\Begin{multicols}{2}
-
-```python
-from polartoolkit import fetch, regions, maps, utils
-
-# define a region
-region = regions.ronne_filchner_ice_shelf
-
-# download bedmap2 data and calculate water column thickness
-water_thickness = fetch.bedmap2(
-    layer="water_thickness",
-    region=region,
-)
-
-# mask to ice shelf areas
-water_thickness = utils.mask_from_shp(
-    fetch.measures_boundaries(version="IceShelf"),
-    xr_grid=water_thickness,
-    masked=True,
-    invert=False,
-)
-
-# plot map and set options
-fig = maps.plot_grd(
-    water_thickness,
-    cmap="dense",
-    grd2cpt=True,
-    title="Ronne-Filchner Ice Shelf",
-    cbar_label="Ocean cavity thickness (m)",
-    imagery_basemap=True,
-    coast=True,
-    inset=True,
-    scalebar=True,
-    hist=True,
-    add_faults=True,
-)
-
-# add legend
-fig.legend()
-
-# display figure
-fig.show()
-```
-\End{multicols}
-
-![](example_figure.png)
-
-\newpage -->
-
-
-<!--
-```python
-from polartoolkit import fetch, regions, maps
-# define a region
-region = regions.amery_ice_shelf
-# download Bedmap2 ice thickness data
-ice_thickness = fetch.bedmap2(
-    layer="thickness",
-    region=region,
-    spacing=2000,
-)
-
-# plot map and set options
-fig = maps.plot_grd(
-    ice_thickness,  # input data
-    cmap="dense",  # set the colormap
-    coast=True,  # plot grounding and coastlines
-    title="Amery Ice Shelf",  # add title
-    cbar_label="Ice thickness (m)",  # add label
-    inset=True,  # add inset map
-    scalebar=True,  # add scalebar
-    gridlines=True,  # add lat/lon gridlines
-    x_spacing=10, # lon interval (deg)
-    hist=True,  # add a histogram to the colorbar
-)
-# display figure
-fig.show()
-```
--->
-
-
-<!--
-+----------------------------------------------+--------------------------------------+
-|```python                                     |```python                             |
-|# define a region                             |# plot map and set options            |
-|region = regions.amery_ice_shelf              |fig = maps.plot_grd(                  |
-|                                              |    ice_thickness,                    |
-|# download Bedmap2 ice thickness data         |    cmap="dense",                     |
-|ice_thickness = fetch.bedmap2(                |    coast=True,                       |
-|    layer="thickness",                        |    title="Amery Ice Shelf",          |
-|    region=region,                            |    cbar_label="Ice thickness (m)",   |
-|    spacing=2000,                             |    inset=True,                       |
-|)                                             |    scalebar=True,                    |
-|```                                           |    gridlines=True,                   |
-|                                              |    x_spacing=10,                     |
-|                                              |    hist=True,                        |
-|                                              |)                                     |
-|                                              |# display figure                      |
-|                                              |fig.show()                            |
-|                                              |```                                   |
-+----------------------------------------------+--------------------------------------+
--->
-
-<!--
-+--------------------------------------+-------------------------+
-|```python                             |                         |
-|# define a region                     |                         |
-|region = regions.amery_ice_shelf      |                         |
-|# download Bedmap2 ice thickness data |                         |
-|ice_thickness = fetch.bedmap2(        |                         |
-|    layer="thickness",                |                         |
-|    region=region,                    |                         |
-|    spacing=2000,                     |                         |
-|)                                     |                         |
-|# plot map and set options            |![](amery_ice_shelf.png) |
-|fig = maps.plot_grd(                  |                         |
-|    ice_thickness,                    |                         |
-|    cmap="dense",                     |                         |
-|    coast=True,                       |                         |
-|    title="Amery Ice Shelf",          |                         |
-|    cbar_label="Ice thickness (m)",   |                         |
-|    inset=True,                       |                         |
-|    scalebar=True,                    |                         |
-|    gridlines=True,                   |                         |
-|    x_spacing=10,                     |                         |
-|    hist=True,                        |                         |
-|)                                     |                         |
-|# display figure                      |                         |
-|fig.show()                            |                         |
-|```                                   |                         |
-+--------------------------------------+-------------------------+
--->
