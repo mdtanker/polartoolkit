@@ -2,7 +2,7 @@
 
 ## Online usage (Binder)
 
-See below for the full installation instructions. If instead you'd like to use this package online, without needing to install anything, check out our [Binder link](https://mybinder.org/v2/gh/mdtanker/polartoolkit-binder/main?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fmdtanker%252Fpolartoolkit%26urlpath%3Dtree%252Fpolartoolkit%252Fdocs%252Fgallery%26branch%3Dmain), which gives full access to the latest released version of the package in an online environment.
+See below for the full installation instructions. If instead you'd like to use this package online, without needing to install anything, check out our [Binder link](https://mybinder.org/v2/gh/mdtanker/polartoolkit-binder/main?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fmdtanker%252Fpolartoolkit%26urlpath%3Dtree%252Fpolartoolkit%252Fdocs%252Ftutorial%26branch%3Dmain), which gives full access to the latest released version of the package in an online environment.
 
 ## Install Python
 
