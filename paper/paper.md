@@ -84,7 +84,7 @@ The key functionality of `PolarToolkit` is organized into five modules:
 | **fetch**    | Functions to download, pre-process, and retrieve cached data                       |
 | **maps**     | Create high-quality maps with functions specifically tailored to polar settings    |
 | **profiles** | Define a line, sample layers and data along it, and plot the results               |
-| **utils**    | Useful functions for common geospatial tasks (e.g. coordinate conversion, masking) |
+| **utils**    | Useful functions for common geospatial tasks (e.g. reprojecting, masking)          |
 
 # Example
 The below example demonstrates some of the functionality of `PolarToolkit`. Running the code will perform the following steps:
