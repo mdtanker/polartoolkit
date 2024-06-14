@@ -22,7 +22,7 @@ The software does this by providing:
 <!-- SPHINX-START-badges -->
 
 <p align="center">
-<a href="https://mybinder.org/v2/gh/mdtanker/polartoolkit-binder/main?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fmdtanker%252Fpolartoolkit%26urlpath%3Dtree%252Fpolartoolkit%252Fdocs%252Fgallery%26branch%3Dmain">
+<a href="https://mybinder.org/v2/gh/mdtanker/polartoolkit-binder/main?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fmdtanker%252Fpolartoolkit%26urlpath%3Dtree%252Fpolartoolkit%252Fdocs%252Ftutorial%26branch%3Dmain">
  <img src="https://mybinder.org/badge_logo.svg" alt="Binder link"></a>
  </p>
 
