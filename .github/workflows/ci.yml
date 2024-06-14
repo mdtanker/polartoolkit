@@ -54,11 +54,10 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
         runs-on: [ubuntu-latest, macos-latest, windows-latest]
-
     env:
       FORCE_COLOR: 3
       NUMBA_DISABLE_JIT: "1"
-
+    timeout-minutes: 30
     steps:
       # Checkout current git repository
       - name: Checkout
@@ -69,24 +68,26 @@ jobs:
       - name: Switch to Current Branch
         run: git checkout ${{ env.BRANCH }}
 
-      # Install Mambaforge with conda-forge dependencies
-      - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: polartoolkit
-          environment-file: env/testing_env.yml
-          python-version: ${{ matrix.python-version }}
-          channels: conda-forge,nodefaults
-          channel-priority: strict
-          miniforge-version: latest
-          miniforge-variant: Mambaforge
-          mamba-version: "*"
-          use-mamba: true
-          auto-activate-base: false
+      - name: Get current week number of year
+        id: date
+        run: echo "date=$(date +%Y-W%W)" >> $GITHUB_OUTPUT # e.g., 2024-W19
 
-        # Show installed pkg information for postmortem diagnostic
-      - name: List installed packages
-        run: mamba list
+      # Install Micromamba with conda-forge dependencies
+      - name: Setup Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: env/testing_env.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+          post-cleanup: "all"
+          # cache-downloads: false
+          # # environment cache is persistent for one week.
+          # cache-environment-key:
+          #   micromamba-environment-${{ steps.date.outputs.date }}
+
+      # Install the package that we want to test
+      - name: Install the package
+        run: pip install --no-deps -e .
 
       - name: Run the tests
         run: >-
