@@ -16,7 +16,7 @@ subplot_layout
 
 ## Profiles
 
-Here are some examples for use the module `Profile`.
+Here are some examples for use the module `Profiles`.
 
 ```{nbgallery}
 ---
