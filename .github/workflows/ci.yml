@@ -94,7 +94,7 @@ jobs:
 
       - name: Run the tests
         run: >-
-          pytest -m "not earthdata and not issue" -ra --cov --cov-report=xml
+          pytest -m "not fetch and not issue" -ra --cov --cov-report=xml
           --cov-report=term --durations=20
 
       - name: Upload coverage report
