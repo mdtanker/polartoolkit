@@ -60,39 +60,37 @@ Acknowledgement of any financial support.
 # Summary \hfill ![](../docs/logo_light.png){ width=15% } \hfill \phantom{Summary}
 <!-- describing the high-level functionality and purpose of the software for a diverse, non-specialist audience. -->
 **PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making Polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible.
-The software does this by providing; 1) convenient functions for downloading and pre-processing a wide range of commonly used polar datasets, 2) tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions), and 3) code to easily create publication-quality maps, data profiles, and cross-sections.
-Additionally, `PolarToolkit` provides an easy means for exploring datasets with pre-defined or interactively-chosen geographic regions.
+The software does this by providing; 1) convenient functions for downloading and pre-processing a wide range of commonly used polar datasets, 2) tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions), 3) code to easily create publication-quality maps, data profiles, and cross-sections, and 4) a means to interactively explore datasets.
 
 # Statement of need
 <!-- clearly illustrates the research purpose of the software and places it in the context of related work. -->
-A common workflow for a geospatial scientist might be: navigate to an online repository and download a dataset, place this downloaded file in a local folder on their computer, perform some preprocessing steps, such a re-projecting, or interpolating the data, possibly using tools like GMT [@wesselgeneric2019], perform their scientific analysis on the data, and then create a map with this data using a graphical user interface (GUI) application such as QGIS [@qgisdevelopmentteamqgis2024].
-These workflows typically require many separate tools (i.e. internet browser, file browser, spatial analysis software, and mapping software), and are often manually repeated many times throughout a manuscript revision process, and throughout the career of the scientist.
+A common workflow for a geospatial scientist might be: navigate to an online repository and download a dataset, place this downloaded file in a local folder on their computer, perform some preprocessing steps, such as re-projecting, or interpolating the data, possibly using tools like GMT [@wesselgeneric2019], perform their scientific analysis on the data, and then create a map with this data using a graphical user interface (GUI) application such as QGIS [@qgisdevelopmentteamqgis2024].
+These workflows typically require many separate tools (i.e. internet browser, file browser, spatial analysis software, and mapping software), and are often manually repeated many times throughout a manuscript revision process and the scientist's career.
 
 `PolarToolkit` aims to consolidate this workflow to be entirely contained within Python, making it both easier and faster to perform all these steps.
-Scripting workflows like this has several advantages: 1) it decreases the chance of human errors, for example using an old-version of the downloaded data or accidentally altering a pre-processing steps, such as referencing a raster of elevation data to the geoid instead of the ellipsoid, and 2) it allows entire workflows to be shared easily between collaborators with a single python file or Jupyter Notebook.
-Although a popular and well-designed similar package exists [Antarctic Mapping Tools, @greeneantarctic2017], PolarToolkit is unique in its open-access without the need for a paid MatLab license.
+Scripting workflows like this has several advantages: 1) it decreases the chance of human errors, for example using an old version of the downloaded data or accidentally altering a pre-processing steps, such as referencing a raster of elevation data to the geoid instead of the ellipsoid, and 2) it allows entire workflows to be shared easily between collaborators with a single python file or Jupyter Notebook.
 
 Written in easy-to-learn Python, and utilizing common geospatial data structures, `PolarToolkit` is designed to be familiar to use for experienced Python users, while also being approachable for beginner coders.
-It is built upon several open-source packages, such a [Pooch](https://www.fatiando.org/pooch/latest/) for data downloading [@uiedapooch2020], [PyGMT](https://www.pygmt.org/latest/) for creating figures [@uiedapygmt2021], and [xarray](https://docs.xarray.dev/en/stable/) and [verde](https://www.fatiando.org/verde/latest/) for geospatial data processing [@hoyerxarray2017; @uiedaverde2018].
+It is built upon several open-source packages, such as [Pooch](https://www.fatiando.org/pooch/latest/) for data downloading [@uiedapooch2020], [PyGMT](https://www.pygmt.org/latest/) for creating figures [@uiedapygmt2021], and [xarray](https://docs.xarray.dev/en/stable/) and [verde](https://www.fatiando.org/verde/latest/) for geospatial data processing [@hoyerxarray2017; @uiedaverde2018]. `PolarToolkit` is designed for generic work with polar data while there are specific packages available for downloading or working with specific data types, such as [ITS_LIVE](https://github.com/nasa-jpl/itslive-py) for glacier velocity data [@itslive2024], [icepyx](https://github.com/icesat2py/icepyx) for ICESat-2 data [@scheickicepyx2023], [earthspy](https://github.com/AdrienWehrle/earthspy) for satellite data [@earthspy2024]. [icepack](https://github.com/icepack/icepack) offers some similar tools, but is focused on ice sheet modeling [@shaperoicepack2023]. [Antarctic Mapping Tools, @greeneantarctic2017] is also similar to PolarToolkit but is implemented in MatLab, requiring users to need a paid license.
 
-Comprehensive documentation, API reference, tutorials and how-to guides are available at [https://polartoolkit.readthedocs.io/en/](https://polartoolkit.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
+Comprehensive documentation, API reference, tutorials, and how-to guides are available at [https://polartoolkit.readthedocs.io/en/](https://polartoolkit.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
 
 
 # PolarToolkit Modules
 The key functionality of `PolarToolkit` is organized into five modules:
 
-| Module      | Description                                                                   |
-| ----------- | ----------------------------------------------------------------------------- |
-| **regions** | Pre-defined or interactively chosen geographic regions                        |
-| **fetch**   | Functions to download, pre-process, and retrieve cached data                  |
-| **maps**    | Create high-quality maps with functions specifically tailored to polar settings |
-| **profile** | Define a line, sample layers and data along it, and plot the results          |
-| **utils**   | Useful functions for common tasks (e.g. coordinate conversion, masking)       |
+| Module       | Description                                                                        |
+| ------------ | ---------------------------------------------------------------------------------- |
+| **regions**  | Pre-defined or interactively chosen geographic regions                             |
+| **fetch**    | Functions to download, pre-process, and retrieve cached data                       |
+| **maps**     | Create high-quality maps with functions specifically tailored to polar settings    |
+| **profiles** | Define a line, sample layers and data along it, and plot the results               |
+| **utils**    | Useful functions for common geospatial tasks (e.g. coordinate conversion, masking) |
 
 # Example
-The below example demonstrates the functionality of `PolarToolkit`. Running the code will perform the following steps:
+The below example demonstrates some of the functionality of `PolarToolkit`. Running the code will perform the following steps:
 
-1) Download (or retrieve previously downloaded) datasets from various online repositories:
+1) Download (or retrieve previously downloaded and cached) datasets from various online repositories:
   * Surface and bed elevation, and ice thickness data from Bedmap2 [@fretwellbedmap22013]
   * Antarctic coastline and groundingline shapefiles [@depoorterantarctic2013]
   * Antarctic ice shelf boundary shapefiles [@mouginotmeasures2017]
@@ -107,7 +105,7 @@ The below example demonstrates the functionality of `PolarToolkit`. Running the 
   * plot a basemap of imagery
   * plot water column thickness data
   * add a colorbar histogram to show data distribution
-  * add features like a scale bar, inset map and a title
+  * add features like a scale bar, inset map, and a title
 
 ```python
 # import modules
