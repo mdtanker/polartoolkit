@@ -7,6 +7,6 @@ API Reference
 
    polartoolkit.fetch
    polartoolkit.maps
-   polartoolkit.profile
+   polartoolkit.profiles
    polartoolkit.regions
    polartoolkit.utils

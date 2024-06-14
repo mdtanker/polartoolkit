@@ -25,7 +25,7 @@ Create high-quality maps using PyGMT with functions specifically tailored to
 Antarctica (and soon to include Greenland and the Arctic). plot types: 2D, 3D,
 subplots, interactive maps
 
-### Profile
+### Profiles
 
 Define a line, sample layers & data along it, and plot the results.
 

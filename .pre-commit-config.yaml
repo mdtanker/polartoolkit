@@ -13,7 +13,7 @@ exclude: |
       docs/api/polartoolkit.rst|
       docs/api/polartoolkit.fetch.rst|
       docs/api/polartoolkit.maps.rst|
-      docs/api/polartoolkit.profile.rst|
+      docs/api/polartoolkit.profiles.rst|
       docs/api/polartoolkit.regions.rst|
       docs/api/polartoolkit.utils.rst|
       docs/_polartoolkit_refs.bib|

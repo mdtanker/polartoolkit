@@ -1843,7 +1843,7 @@ def shapes_to_df(
     hemisphere: str | None = None,
 ) -> pd.DataFrame:
     """
-    convert the output of `regions.draw_region` and `profile.draw_lines` to a dataframe
+    convert the output of `regions.draw_region` and `profiles.draw_lines` to a dataframe
     of x and y points
 
     Parameters
