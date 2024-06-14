@@ -1,6 +1,6 @@
 # Overview
 
-PolarToolkit is a Python package developed to help with conducting polar
+`PolarToolkit` is a Python package developed to help with conducting polar
 science. The 5 modules shown here provide tools to help with a variety of common
 tasks.
 
@@ -21,7 +21,7 @@ manipulations.
 
 ## Maps
 
-Create high-quality maps using PyGMT with functions specifically tailored to
+Create high-quality maps using `PyGMT` with functions specifically tailored to
 Antarctica (and soon to include Greenland and the Arctic). plot types: 2D, 3D,
 subplots, interactive maps
 
