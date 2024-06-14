@@ -1563,7 +1563,7 @@ def add_scalebar(
         fig.basemap(
             region=region_converted,
             projection=projection,
-            map_scale=f'{position}+w{scale_length}k+f+l"km"+ar',
+            map_scale=f"{position}+w{scale_length}k+f+lkm+ar",
             # verbose="e",
             box=kwargs.get("scalebar_box", "+gwhite"),
         )
