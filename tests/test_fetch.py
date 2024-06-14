@@ -44,7 +44,7 @@ skip_earthdata = pytest.mark.skipif(
     reason="requires earthdata login credentials set as environment variables",
 )
 
-
+@pytest.mark.fetch()
 @pytest.mark.earthdata()
 @skip_earthdata
 @deprecation.fail_if_not_removed
@@ -329,14 +329,14 @@ def test_modis():
 # grid = fetch.modis(version="750m")
 # utils.get_grid_info(grid)
 
-
+@pytest.mark.fetch()
 @pytest.mark.earthdata()
 @skip_earthdata
 @deprecation.fail_if_not_removed
 def test_modis_moa():
     fetch.modis_moa()
 
-
+@pytest.mark.fetch()
 @pytest.mark.earthdata()
 @skip_earthdata
 @deprecation.fail_if_not_removed
