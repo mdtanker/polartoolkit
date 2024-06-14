@@ -1,6 +1,7 @@
 name: testing_env
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
   - pygmt
   - pip
