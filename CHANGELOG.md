@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
-## Unreleased
+
+## v0.4.0 (2024-06-14)
 ### 💥 Breaking Changes
 * change module name from `profile` to `profiles` to match plural style of other modules.
 
@@ -172,7 +173,6 @@ To utilize this feature, either set a system environment variable POLARTOOLKIT_H
 ### Other
 *  ([`49e95cb`](https://github.com/mdtanker/polartoolkit/commit/49e95cb854a9938095cf277d872db148a84fce5c))
 *  ([`cb7ee9d`](https://github.com/mdtanker/polartoolkit/commit/cb7ee9d64117a96e0220b9d2ff3f90c1f1b71f7d))
-
 
 ## v0.3.3 (2024-04-23)
 ### 📦️ Build
