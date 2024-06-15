@@ -20,7 +20,10 @@ from inspect import getmembers, isfunction
 from pathlib import Path
 
 import deprecation
-import geopandas as gpd
+
+if typing.TYPE_CHECKING:
+    import geopandas as gpd
+
 import harmonica as hm
 import pandas as pd
 import pooch
@@ -38,9 +41,6 @@ from polartoolkit import (  # pylint: disable=import-self
     regions,
     utils,
 )
-
-# import polartoolkit.regions as regions
-# import polartoolkit.utils as utils
 
 load_dotenv()
 
