@@ -278,20 +278,26 @@ def sample_shp(name: str) -> str:
     str
         file path as a string
     """
+
     if name == "Disco_deep_transect":
-        known_hash = "70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e"
+        known_hash = (
+            None  # "ffffeef15d7556cd60305e6222852e3b4e09da3b6c628a094c1e99ac6d605303"
+        )
     elif name == "Roosevelt_Island":
-        known_hash = "83434284808d067b8b18b649e41287a63f01eb2ce581b2c34ee44ae3a1a5ca2a"
+        known_hash = (
+            None  # "f3821b8a4d24dd676f75db4b7f2b532a328de18e0bdcce8cee6a6abb3b3e70f6"
+        )
     else:
         msg = "invalid name string"
         raise ValueError(msg)
+
     path = pooch.retrieve(
-        url=f"https://github.com/mdtanker/polartoolkit/raw/main/data/{name}.zip",
+        url=f"doi:10.6084/m9.figshare.26039578.v1/{name}.zip",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
+        fname=name,
         processor=pooch.Unzip(),
         known_hash=known_hash,
     )
-
     val: str = next(p for p in path if p.endswith(".shp"))
     return val
 
