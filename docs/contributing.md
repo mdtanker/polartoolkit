@@ -301,6 +301,7 @@ As a backup options for users experiencing install issues, we include a `environ
 ```
 make remove
 make conda_install
+make conda_export
 ```
 
 ## Set up the binder configuration
