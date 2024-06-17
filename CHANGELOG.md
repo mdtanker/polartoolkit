@@ -4,6 +4,7 @@ Automatically updated by
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
 ## Unreleased
+### 📦️ Build
 ### 🧰 Chores / Maintenance
 * update binder env wih polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
 ### 📖 Documentation
