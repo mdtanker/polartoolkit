@@ -90,49 +90,8 @@ Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedo
 
 <!-- SPHINX-END-long-desc -->
 
-
-### Pip
-
-Instead, you can use pip to install `polartoolkit, but first, you need to install a few dependencies with conda.
-This is because `PyGMT` `GeoPandas`, and `Cartopy` all rely on C packages, which can only be successfully installed with conda/mamba and not with pip.
-
-To create a new virtual environment:
-
-```
-mamba create --name polartoolkit --yes --force pygmt geopandas cartopy --channel conda-forge
-```
-
-And activate the environment, followed by using `pip` to install `polartoolkit`:
-
-```
-mamba activate polartoolkit
-pip install polartoolkit
-```
-
-To install the optional dependencies of `polartoolkit`, use this instead:
-
-```
-`pip install polartoolkit[all]`
-```
-
-### Development version
-
-You can use pip, with the above-created environment, to install the latest source from GitHub:
-
-```
-pip install git+https://github.com/mdtanker/polartoolkit.git
-```
-
-Or you can clone the repository and install:
-
-```
-git clone https://github.com/mdtanker/polartoolkit.git
-cd polartoolkit
-pip install .
-```
-
 ## How to contribute
-I welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion](https://github.com/mdtanker/polartoolkit/discussions/new/choose) or [issue (feature request)](https://github.com/mdtanker/polartoolkit/issues/new/choose) on the [GitHub page](https://github.com/mdtanker/polartoolkit/)!
+I welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion](https://github.com/mdtanker/polartoolkit/discussions/new/choose) or [issue (feature request)](https://github.com/mdtanker/polartoolkit/issues/new/choose)!
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
