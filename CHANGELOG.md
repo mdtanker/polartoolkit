@@ -8,6 +8,7 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ### 🧰 Chores / Maintenance
 * update binder env wih polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
 ### 📖 Documentation
+* remove install info from readme ([`09ef175`](https://github.com/mdtanker/polartoolkit/commit/09ef175c3a9096ec014e3ee86880eb397fcd0f42))
 * typos in notebook ([`d539795`](https://github.com/mdtanker/polartoolkit/commit/d539795396d9c8675e71c797492a17f3cd44e09b))
 * fix missing instruction in contrib guide ([`8128a8f`](https://github.com/mdtanker/polartoolkit/commit/8128a8f0389f673dc91916f659b0e32417f7a3ea))
 * move contrib guide into docs/ ([`3001032`](https://github.com/mdtanker/polartoolkit/commit/30010329bed35bd608b1f40f1c23bd403d639ad2))
