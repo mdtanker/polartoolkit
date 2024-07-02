@@ -17,16 +17,15 @@ from __future__ import annotations
 
 import glob
 import logging
-import os
 import pathlib
 import re
 import shutil
 import typing
-from getpass import getpass
 from inspect import getmembers, isfunction
 from pathlib import Path
 
 import deprecation
+import earthaccess
 
 if typing.TYPE_CHECKING:
     import geopandas as gpd
@@ -230,45 +229,20 @@ def resample_grid(
 
 class EarthDataDownloader:
     """
-    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/src/icepack/datasets.py
     Either pulls login details from pre-set environment variables, or prompts user to
-    input username and password.
+    input username and password. Will persist the entered details within the python
+    session.
     """
 
     def __init__(self) -> None:
-        self._username: str | None = None
-        self._password: str | None = None
-
-    def _get_credentials(self) -> tuple[str | None, str | None]:
-        if self._username is None:
-            username_env = os.environ.get("EARTHDATA_USERNAME")
-            if username_env is None:
-                self._username = input("EarthData username: ")
-            else:
-                self._username = username_env
-
-        if self._password is None:
-            password_env = os.environ.get("EARTHDATA_PASSWORD")
-            if password_env is None:
-                self._password = getpass("EarthData password: ")
-            else:
-                self._password = password_env
-
-        return self._username, self._password
+        earthaccess.login()
 
     def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
-        auth = self._get_credentials()
+        creds = earthaccess.auth_environ()
+        auth = creds.get("EARTHDATA_USERNAME"), creds.get("EARTHDATA_PASSWORD")
         downloader = pooch.HTTPDownloader(auth=auth, progressbar=True)
-        try:
-            login = requests.get(url, timeout=30)
-            downloader(login.url, output_file, dataset)
-        except requests.exceptions.HTTPError as error:
-            if "Unauthorized" in str(error):
-                pooch.get_logger().error("Wrong username/password!")
-                self._username = None
-                self._password = None
-            raise error
-
+        login = requests.get(url, timeout=30)
+        downloader(login.url, output_file, dataset)
 
 def sample_shp(name: str) -> str:
     """
