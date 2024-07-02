@@ -2518,7 +2518,7 @@ def deepbedmap(
     )
 
     with xr.open_dataarray(path) as da:
-        grid = da.squeeze()
+        grid = da.squeeze().drop_vars(["band", "spatial_ref"])
 
     return resample_grid(
         grid,
@@ -3755,7 +3755,7 @@ def gia(
             known_hash="cb579c9606f98dfd28239183ba28de33e6e288a4256b27da7249c3741a24b7e8",
             progressbar=True,
         )
-        grid = xr.load_dataarray(path).squeeze()
+        grid = xr.load_dataarray(path).squeeze().drop_vars(["band", "spatial_ref"])
 
         resampled = resample_grid(
             grid,
