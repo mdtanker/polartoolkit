@@ -124,7 +124,7 @@ def get_grid_info(
     -------
     tuple
         (string of grid spacing,
-        array with the region boundaries,
+        array with the region boundary,
         data min,
         data max,
         grid registration)
