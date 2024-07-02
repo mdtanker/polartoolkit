@@ -244,6 +244,7 @@ class EarthDataDownloader:
         login = requests.get(url, timeout=30)
         downloader(login.url, output_file, dataset)
 
+
 def sample_shp(name: str) -> str:
     """
     Load the file path of sample shapefiles
