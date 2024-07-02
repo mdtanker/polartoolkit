@@ -328,7 +328,147 @@ def sample_shp(name: str) -> str:
     """deprecated function, use class SampleShp instead"""
     return SampleShp(name)()
 
+class MassChange:
+    """
+    Ice-sheet height and thickness changes from ICESat to ICESat-2 for both Antarctica
+    and Greenland
+    from :footcite:t:`smithpervasive2020`.
 
+    Choose a version of the data to download with the format: "ICESHEET_VERSION_TYPE"
+    where ICESHEET is "ais" or "gris", for Antarctica or Greenland, which is
+    automatically set via the hemisphere variable. VERSION is "dhdt" for total thickness
+    change or "dmdt" for corrected for firn-air content. For Antarctica data, TYPE is
+    "floating" or "grounded".
+
+    add "_filt" to retrieve a filtered version of the data.
+
+    accessed from https://digital.lib.washington.edu/researchworks/handle/1773/45388
+
+    Units are in m/yr
+
+    Parameters
+    ----------
+    version : str, optional,
+        choose which version to retrieve, by default is "dhdt_grounded" for Antarctica
+        and "dhdt" for Greenland.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
+
+    Attributes
+    ----------
+    version : str
+        chosen version of the data
+    description : str
+        short description of the data
+    url : str
+        url data is downloaded from
+    known_hash : str
+        hash of the requested file
+    path : str
+        path to the downloaded file
+    original_info : tuple
+        tuple of the info of the original data, (spacing, region, min, max,
+        registration)
+    info: tuple
+        tuple of the info on the loaded grids, (spacing, region, min, max,
+        registration)
+
+    References
+    ----------
+    .. footbibliography::
+    """
+
+    def __init__(
+        self,
+        version: str | None = None,
+        hemisphere: str | None = None,
+    ):
+        self.version = version
+        self.description = (
+            "Ice-sheet height and thickness changes from ICESat to ICESat-2"
+        )
+        self.url = (
+            "https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/"
+            "45388/ICESat1_ICESat2_mass_change_updated_2_2021%20%281%29.zip?sequence"
+            "=4&isAllowed=y"
+        )
+        self.doi = "https://doi.org/10.1126/science.aaz5845"
+        self.known_hash = None
+        self.original_info = (
+            5000.0,
+            (-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559),
+            -27.9492435455,
+            1.03691923618,
+            "p",
+        )
+
+        hemisphere = utils.default_hemisphere(hemisphere)
+        zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
+
+        if self.version is None:
+            if hemisphere == "south":
+                self.version = "dhdt_grounded"
+            elif hemisphere == "north":
+                self.version = "dhdt"
+
+        if hemisphere == "south":
+            self.version = f"ais_{self.version}"
+        elif hemisphere == "north":
+            self.version = f"gris_{self.version}"
+
+        if "dhdt" in self.version:  # type: ignore[operator]
+            fname = f"dhdt/{self.version}.tif"
+        elif "dmdt" in version:  # type: ignore[operator]
+            fname = f"dmdt/{self.version}.tif"
+
+        fpath = pooch.retrieve(
+            url=self.url,
+            fname=zip_fname,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/mass_change",
+            known_hash=self.known_hash,
+            progressbar=True,
+            processor=pooch.Unzip(
+                extract_dir="Smith_2020",
+            ),
+        )
+        self.path = next(p for p in fpath if p.endswith(fname))
+
+    def __call__(
+        self,
+        region: tuple[float, float, float, float] | None = None,
+        spacing: float | None = None,
+        registration: str | None = None,
+    ):
+        grid = (
+            xr.load_dataarray(
+                self.path,
+                engine="rasterio",
+            )
+            .squeeze()
+            .drop_vars(["band", "spatial_ref"])
+        )
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing=self.original_info[0],
+            initial_region=self.original_info[1],
+            initial_registration=self.original_info[4],
+            spacing=spacing,
+            region=region,
+            registration=registration,
+        )
+        self.info = utils.get_grid_info(resampled)
+
+        return resampled
+
+
+@deprecation.deprecated(
+    deprecated_in="0.5.0",
+    removed_in="0.10.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new class MassChange instead",
+)
 def mass_change(
     version: str | None = None,
     hemisphere: str | None = None,
@@ -368,53 +508,8 @@ def mass_change(
     ----------
     .. footbibliography::
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
 
-    # This is the path to the processed (magnitude) grid
-    url = (
-        "https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/"
-        "45388/ICESat1_ICESat2_mass_change_updated_2_2021%20%281%29.zip?sequence"
-        "=4&isAllowed=y"
-    )
-
-    zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
-
-    if version is None:
-        if hemisphere == "south":
-            version = "dhdt_grounded"
-        elif hemisphere == "north":
-            version = "dhdt"
-
-    if hemisphere == "south":
-        version = f"ais_{version}"
-    elif hemisphere == "north":
-        version = f"gris_{version}"
-
-    if "dhdt" in version:  # type: ignore[operator]
-        fname = f"dhdt/{version}.tif"
-    elif "dmdt" in version:  # type: ignore[operator]
-        fname = f"dmdt/{version}.tif"
-
-    path = pooch.retrieve(
-        url=url,
-        fname=zip_fname,
-        path=f"{pooch.os_cache('pooch')}/polartoolkit/mass_change",
-        known_hash=None,
-        progressbar=True,
-        processor=pooch.Unzip(
-            extract_dir="Smith_2020",
-        ),
-    )
-    fname1 = next(p for p in path if p.endswith(fname))
-
-    return (
-        xr.load_dataarray(
-            fname1,
-            engine="rasterio",
-        )
-        .squeeze()
-        .drop_vars(["band", "spatial_ref"])
-    )
+    return MassChange(version=version, hemisphere=hemisphere)()
 
 
 def basal_melt(variable: str = "w_b") -> typing.Any:

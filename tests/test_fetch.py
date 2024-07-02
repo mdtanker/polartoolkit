@@ -1134,6 +1134,7 @@ mass_change_test = [
 
 @pytest.mark.fetch()
 @pytest.mark.issue()
+@deprecation.fail_if_not_removed
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected", "hemisphere"), mass_change_test)
 def test_mass_change(test_input, expected, hemisphere):
