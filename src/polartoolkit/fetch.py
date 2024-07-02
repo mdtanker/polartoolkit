@@ -270,43 +270,63 @@ class EarthDataDownloader:
             raise error
 
 
-def sample_shp(name: str) -> str:
+class SampleShp:
     """
-    Load the file path of sample shapefiles
+    Retrieve some sample shapefiles.
 
     Parameters
     ----------
-    name : str
+    version : str
         chose which sample shapefile to load, either 'Disco_deep_transect' or
         'Roosevelt_Island'
 
-    Returns
-    -------
-    str
-        file path as a string
+    Attributes
+    ----------
+    version : str
+        chosen version of the data
+    description : str
+        short description of the data
+    url : str
+        url data is downloaded from
+    known_hash : str
+        hash of the requested file
+    path : str
+        path to the downloaded file
     """
 
-    if name == "Disco_deep_transect":
-        known_hash = (
-            None  # "ffffeef15d7556cd60305e6222852e3b4e09da3b6c628a094c1e99ac6d605303"
-        )
-    elif name == "Roosevelt_Island":
-        known_hash = (
-            None  # "f3821b8a4d24dd676f75db4b7f2b532a328de18e0bdcce8cee6a6abb3b3e70f6"
-        )
-    else:
-        msg = "invalid name string"
-        raise ValueError(msg)
+    def __init__(self, version) -> None:
+        self.version = version
+        self.description = "shapefiles for using in the polartoolkit tutorials"
+        self.url = f"doi:10.6084/m9.figshare.26039578.v1/{self.version}.zip"
 
-    path = pooch.retrieve(
-        url=f"doi:10.6084/m9.figshare.26039578.v1/{name}.zip",
-        path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
-        fname=name,
-        processor=pooch.Unzip(),
-        known_hash=known_hash,
-    )
-    val: str = next(p for p in path if p.endswith(".shp"))
-    return val
+        if self.version == "Disco_deep_transect" or self.version == "Roosevelt_Island":
+            self.known_hash = None
+        else:
+            msg = "invalid name string"
+            raise ValueError(msg)
+
+        path = pooch.retrieve(
+            url=self.url,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles",
+            fname=self.version,
+            processor=pooch.Unzip(),
+            known_hash=self.known_hash,
+        )
+        self.path: str = next(p for p in path if p.endswith(".shp"))
+
+    def __call__(self):
+        return self.path
+
+
+@deprecation.deprecated(
+    deprecated_in="0.5.0",
+    removed_in="0.10.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new class SampleShp instead",
+)
+def sample_shp(name: str) -> str:
+    """deprecated function, use class SampleShp instead"""
+    return SampleShp(name)()
 
 
 def mass_change(

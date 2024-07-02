@@ -60,6 +60,12 @@ def test_measures_boundaries():
     fetch.measures_boundaries("Coastline")
 
 
+@pytest.mark.fetch()
+@deprecation.fail_if_not_removed
+def test_sample_shp():
+    fetch.sample_shp(name="Disco_deep_transect")
+
+
 # %% resample_grid
 resample_test = [
     # no inputs
