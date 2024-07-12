@@ -1690,17 +1690,18 @@ def square_subplots(n: int) -> tuple[int, int]:
         example a 3 x 2 grid would be represented as ``(3, 3)``, because there are 2
         rows of length 3.
     """
-    special_cases = {
-        1: (1, 1),
-        2: (1, 2),
-        3: (2, 2),
-        4: (2, 2),
-        5: (2, 3),
-        6: (2, 3),
-        7: (3, 3),
-        8: (3, 3),
-        9: (3, 3),
-    }
+    # special_cases = {
+    #     1: (1, 1),
+    #     2: (1, 2),
+    #     3: (2, 2),
+    #     4: (2, 2),
+    #     5: (2, 3),
+    #     6: (2, 3),
+    #     7: (3, 3),
+    #     8: (3, 3),
+    #     9: (3, 3),
+    # }
+    special_cases = {3: (2, 1), 5: (2, 3)}
     if n in special_cases:
         return special_cases[n]
 
@@ -1728,8 +1729,7 @@ def square_subplots(n: int) -> tuple[int, int]:
 
     if n == x * y:
         # There are no deficient rows, so we can just return from here
-        val = tuple(x for i in range(y))
-        return typing.cast(tuple[int, int], val)
+        return x, y  # tuple(x for i in range(y))
 
     # If exactly one of these is odd, make it the rows
     if (x % 2) != (y % 2) and (x % 2):
