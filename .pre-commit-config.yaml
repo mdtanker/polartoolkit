@@ -21,7 +21,7 @@ exclude: |
       .github/ISSUE_TEMPLATE/bug_report.md|
       .github/ISSUE_TEMPLATE/feature_request.md|
       .github/config.yml|
-      CONTRIBUTING.md|
+      docs/contributing.md|
       templates/CHANGELOG.md.j2|
       README.md|
       paper/paper.bib|

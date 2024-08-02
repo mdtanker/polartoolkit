@@ -3,6 +3,24 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 📦️ Build
+### 🧰 Chores / Maintenance
+* update binder env wih polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
+### 📖 Documentation
+* remove install info from readme ([`09ef175`](https://github.com/mdtanker/polartoolkit/commit/09ef175c3a9096ec014e3ee86880eb397fcd0f42))
+* typos in notebook ([`d539795`](https://github.com/mdtanker/polartoolkit/commit/d539795396d9c8675e71c797492a17f3cd44e09b))
+* fix missing instruction in contrib guide ([`8128a8f`](https://github.com/mdtanker/polartoolkit/commit/8128a8f0389f673dc91916f659b0e32417f7a3ea))
+* move contrib guide into docs/ ([`3001032`](https://github.com/mdtanker/polartoolkit/commit/30010329bed35bd608b1f40f1c23bd403d639ad2))
+* update license to 2024 for source files ([`127b173`](https://github.com/mdtanker/polartoolkit/commit/127b173745181ad5fc25686c3d873a4124147862))
+* add citation info ([`d1281da`](https://github.com/mdtanker/polartoolkit/commit/d1281dab3b7c698ee7653be36fd8eaa560c2a861))
+* update docs with numbered tutorials and other fixes ([`fdb7227`](https://github.com/mdtanker/polartoolkit/commit/fdb72271ac9b7cd7f5a59779a0ab6aa619992221))
+* point binder link to tutorials ([`3fddb27`](https://github.com/mdtanker/polartoolkit/commit/3fddb27c5a1c28bf2d8b7807f1cf1913e8393b0f))
+###  🎨 Refactor
+* mock import geopandas ([`ab3437d`](https://github.com/mdtanker/polartoolkit/commit/ab3437d17d856fe78e02f34596764e2937463004))
+* use figshare sample shapefiles and remove data/ from repo ([`de684bb`](https://github.com/mdtanker/polartoolkit/commit/de684bb53dd0a09de969160ebf6c32e0f44628e2))
+* remove quotes from scalebar ([`7995f9f`](https://github.com/mdtanker/polartoolkit/commit/7995f9fde71428e8e3f6cc58a917e26642a8ec8f))
+
 
 ## v0.4.0 (2024-06-14)
 ### 💥 Breaking Changes
