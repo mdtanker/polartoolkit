@@ -803,9 +803,16 @@ def plot_grd(
 
     # add datapoints
     if points is not None:
-        fig.plot(  # type: ignore[union-attr]
-            x=points.x,
-            y=points.y,
+        if ("x" in points.columns) and ("y" in points.columns):
+            x, y = points.x, points.y
+        elif ("easting" in points.columns) and ("northing" in points.columns):
+            x, y = points.easting, points.northing
+        else:
+            msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
+            raise ValueError(msg)
+        fig.plot(
+            x=x,
+            y=y,
             style=kwargs.get("points_style", "c.2c"),
             fill=kwargs.get("points_fill", "black"),
             pen=kwargs.get("points_pen", "1p,black"),
@@ -1166,7 +1173,6 @@ def add_colorbar(
                 cumulative=kwargs.get("hist_cumulative", False),
                 extreme=kwargs.get("hist_extreme", "b"),
                 stairs=kwargs.get("hist_stairs", False),
-                # horizontal=kwargs.get('hist_horizontal', False),
                 series=f"{zmin}/{zmax}/{bin_width}",
                 histtype=hist_type,
             )
