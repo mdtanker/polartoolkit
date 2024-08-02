@@ -1263,7 +1263,9 @@ def add_gridlines(
     fig: pygmt.Figure,
     region: tuple[float, float, float, float] | None = None,
     projection: str | None = None,
-    **kwargs: typing.Any,
+    x_spacing: float | None = None,
+    y_spacing: float | None = None,
+    annotation_offset: str = "20p",
 ) -> None:
     """
     add lat lon grid lines and annotations to a figure. Use kwargs x_spacing and
@@ -1279,11 +1281,13 @@ def add_gridlines(
         GMT projection string in lat lon, if your previous pygmt.Figure() call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
         utils.set_proj() to make this projection.
-
+    x_spacing : float, optional
+        spacing for x gridlines in degrees, by default is None
+    y_spacing : float, optional
+        spacing for y gridlines in degrees, by default is None
+    annotation_offset : str, optional
+        offset for gridline annotations, by default "20p"
     """
-
-    x_spacing = kwargs.get("x_spacing", None)
-    y_spacing = kwargs.get("y_spacing", None)
 
     # if no region supplied, get region of current PyGMT figure
     if region is None:
@@ -1310,9 +1314,7 @@ def add_gridlines(
         ]
 
     with pygmt.config(
-        MAP_ANNOT_OFFSET_PRIMARY=kwargs.get(
-            "MAP_ANNOT_OFFSET_PRIMARY", "20p"
-        ),  # move annotations in/out radially
+        MAP_ANNOT_OFFSET_PRIMARY=annotation_offset,  # move annotations in/out
         MAP_ANNOT_MIN_ANGLE=0,
         MAP_FRAME_TYPE="inside",
         MAP_ANNOT_OBLIQUE=0,  # rotate relative to lines
