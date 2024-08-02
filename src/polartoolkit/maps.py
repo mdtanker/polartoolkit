@@ -28,11 +28,7 @@ import pygmt
 import verde as vd
 import xarray as xr
 
-# import polartoolkit.fetch as fetch
 from polartoolkit import fetch, regions, utils
-
-# import polartoolkit.regions as regions
-# import polartoolkit.utils as utils
 
 try:
     from IPython.display import display
@@ -58,6 +54,124 @@ try:
     import ipywidgets
 except ImportError:
     ipywidgets = None
+
+
+def _set_figure_spec(
+    region: tuple[float, float, float, float],
+    origin_shift: str | None = "initialize",
+    fig: pygmt.Figure | None = None,
+    fig_height: float | None = None,
+    fig_width: float | None = None,
+    hemisphere: str | None = None,
+    yshift_amount: float = 1,
+    xshift_amount: float = 1,
+) -> tuple[pygmt.Figure, str, str | None, float, float]:
+    """determine what to do with figure"""
+
+    # initialize figure or shift for new subplot
+    if origin_shift == "initialize":
+        fig = pygmt.Figure()
+        # set figure projection and size from input region and figure dimensions
+        # by default use figure height to set projection
+        if fig_width is None:
+            if fig_height is None:
+                msg = "fig_height must be set if fig_width is not set."
+                raise ValueError(msg)
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+        # if fig_width is set, use it to set projection
+        else:
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_width=fig_width,
+                hemisphere=hemisphere,
+            )
+    else:
+        if fig is None:
+            msg = (
+                "If origin_shift is not 'initialize', a figure instance must be "
+                "provided."
+            )
+            raise ValueError(msg)
+
+        if origin_shift == "x_shift":
+            origin_shift = "x"
+            msg = "origin_shift 'x_shift' is deprecated, use 'x' instead."
+            warnings.warn(
+                msg,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if origin_shift == "y_shift":
+            origin_shift = "y"
+            msg = "origin_shift 'y_shift' is deprecated, use 'y' instead."
+            warnings.warn(
+                msg,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if origin_shift == "both_shift":
+            origin_shift = "both"
+            msg = "origin_shift 'both_shift' is deprecated, use 'both' instead."
+            warnings.warn(
+                msg,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if origin_shift == "no_shift":
+            origin_shift = None
+            msg = "origin_shift 'no_shift' is deprecated, use None instead."
+            warnings.warn(
+                msg,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if origin_shift == "x":
+            if fig_height is None:
+                fig_height = utils.get_fig_height()
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(xshift=xshift_amount * (fig_width + 0.4))
+        elif origin_shift == "y":
+            if fig_height is None:
+                fig_height = utils.get_fig_height()
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(yshift=yshift_amount * (fig_height + 3))
+        elif origin_shift == "both":
+            if fig_height is None:
+                fig_height = utils.get_fig_height()
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+            fig.shift_origin(
+                xshift=xshift_amount * (fig_width + 0.4),
+                yshift=yshift_amount * (fig_height + 3),
+            )
+        elif origin_shift is None:
+            if fig_height is None:
+                fig_height = utils.get_fig_height()
+            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+                region,
+                fig_height=fig_height,
+                hemisphere=hemisphere,
+            )
+        else:
+            msg = "invalid string for origin shift"
+            raise ValueError(msg)
+
+    return fig, proj, proj_latlon, fig_width, fig_height
 
 
 def basemap(
@@ -102,37 +216,19 @@ def basemap(
             region = regions.greenland
         if hemisphere == "south":
             region = regions.antarctica
-
-    # set figure projection and size from input region and figure dimensions
-    # by default use figure height to set projection
-    if fig_width is None:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,  # type: ignore[arg-type]
-            hemisphere=hemisphere,
-            fig_height=fig_height,
-        )
-    # if fig_width is set, use it to set projection
-    else:
-        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,  # type: ignore[arg-type]
-            hemisphere=hemisphere,
-            fig_width=fig_width,
-        )
-
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-    elif origin_shift == "xshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)))
-    elif origin_shift == "yshift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))
-    elif origin_shift == "both_shift":
-        fig = kwargs.get("fig")
-        fig.shift_origin(
-            xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
-            yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
+        else:
+            msg = "Region must be specified if hemisphere is not specified."
+            raise ValueError(msg)
+    fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
+        region=region,
+        fig=fig,
+        origin_shift=origin_shift,
+        fig_height=kwargs.get("fig_height", 15),
+        fig_width=kwargs.get("fig_width", None),
+        hemisphere=hemisphere,
+        yshift_amount=kwargs.get("yshift_amount", 1),
+        xshift_amount=kwargs.get("xshift_amount", 1),
+    )
         )
     elif origin_shift == "no_shift":
         fig = kwargs.get("fig")
@@ -609,7 +705,7 @@ def plot_grd(
     >>> fig = maps.plot_grd('grid1.nc')
     >>> fig = maps.plot_grd(
     ... 'grid2.nc',
-    ... origin_shift = 'xshift',
+    ... origin_shift = 'x',
     ... fig = fig,
     ... )
     ...
@@ -635,66 +731,16 @@ def plot_grd(
 
     region = typing.cast(tuple[float, float, float, float], region)
 
-    # initialize figure or shift for new subplot
-    if origin_shift == "initialize":
-        fig = pygmt.Figure()
-        fig_height = kwargs.get("fig_height", 15)
-        fig_width = kwargs.get("fig_width", None)
-        # set figure projection and size from input region and figure dimensions
-        # by default use figure height to set projection
-        if fig_width is None:
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-        # if fig_width is set, use it to set projection
-        else:
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_width=fig_width,
-                hemisphere=hemisphere,
-            )
-    else:
-        if origin_shift == "xshift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(  # type: ignore[union-attr]
-                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4))
-            )
-        elif origin_shift == "yshift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)))  # type: ignore[union-attr]
-        elif origin_shift == "both_shift":
-            fig_height = kwargs.get("fig_height", utils.get_fig_height())
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(  # type: ignore[union-attr]
-                xshift=(kwargs.get("xshift_amount", 1) * (fig_width + 0.4)),
-                yshift=(kwargs.get("yshift_amount", 1) * (fig_height + 3)),
-            )
-        elif origin_shift == "no_shift":
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=kwargs.get("fig_height", 15),
-                hemisphere=hemisphere,
-            )
-
-        else:
-            msg = "invalid string for origin shift"
-            raise ValueError(msg)
+    fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
+        region=region,
+        fig=fig,
+        origin_shift=origin_shift,
+        fig_height=kwargs.get("fig_height", 15),
+        fig_width=kwargs.get("fig_width", None),
+        hemisphere=hemisphere,
+        yshift_amount=kwargs.get("yshift_amount", 1),
+        xshift_amount=kwargs.get("xshift_amount", 1),
+    )
 
     show_region = kwargs.get("show_region", None)
     gridlines = kwargs.get("gridlines", False)
@@ -1916,7 +1962,7 @@ def subplots(
                     j,
                     fig=fig,
                     fig_height=fig_height,
-                    origin_shift="no_shift",
+                    origin_shift=None,
                     region=region,
                     cmap=cmap,
                     title=sub_title,
