@@ -151,7 +151,6 @@ files = ["src"]
 python_version = "3.9"
 warn_unused_configs = true
 strict = true
-show_error_codes = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 disallow_untyped_defs = false
@@ -191,7 +190,7 @@ lint.select = [
   "NPY",         # NumPy specific rules
   "PD",          # pandas-vet
 ]
-lint.extend-ignore = [
+lint.ignore = [
   "PLR",    # Design related pylint codes
   "G004",   # Logging with f-strings
   "PD901",  # Bad variable name warning
