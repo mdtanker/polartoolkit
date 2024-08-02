@@ -967,7 +967,7 @@ def grd_trend(
             coast: typing.Any = kwargs.get("coast", True)
             inset: typing.Any = kwargs.get("inset", True)
             inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
-            origin_shift: typing.Any = kwargs.get("origin_shift", "yshift")
+            origin_shift: typing.Any = kwargs.get("origin_shift", "y")
             fit_label: typing.Any = kwargs.get(
                 "fit_label", f"fitted trend (order {deg})"
             )
@@ -1243,7 +1243,7 @@ def grd_compare(
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 12)
             coast = kwargs.get("coast", False)
-            origin_shift = kwargs.get("origin_shift", "xshift")
+            origin_shift = kwargs.get("origin_shift", "x")
             cmap = kwargs.get("cmap", "viridis")
             subplot_labels = kwargs.get("subplot_labels", False)
 
