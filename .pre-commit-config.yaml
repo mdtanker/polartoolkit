@@ -27,11 +27,6 @@ exclude: |
   )$
 
 repos:
-  # - repo: https://github.com/psf/black-pre-commit-mirror
-  #   rev: "23.9.1"
-  #   hooks:
-  #     - id: black-jupyter
-
   - repo: https://github.com/adamchainz/blacken-docs
     rev: "1.16.0"
     hooks:
@@ -110,3 +105,16 @@ repos:
         language: pygrep
         entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
         exclude: .pre-commit-config.yaml
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: "v0.18"
+    hooks:
+      - id: validate-pyproject
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: "0.29.0"
+    hooks:
+      - id: check-dependabot
+      - id: check-github-workflows
+      - id: check-readthedocs
