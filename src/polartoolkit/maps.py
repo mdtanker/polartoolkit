@@ -97,17 +97,17 @@ def _set_figure_spec(
             )
             raise ValueError(msg)
 
-        if origin_shift == "x_shift":
+        if (origin_shift == "x_shift") | (origin_shift == "xshift"):
             origin_shift = "x"
-            msg = "origin_shift 'x_shift' is deprecated, use 'x' instead."
+            msg = "`origin_shift` parameter has changed, use 'x' instead."
             warnings.warn(
                 msg,
                 DeprecationWarning,
                 stacklevel=2,
             )
-        if origin_shift == "y_shift":
+        if (origin_shift == "y_shift") | (origin_shift == "yshift"):
             origin_shift = "y"
-            msg = "origin_shift 'y_shift' is deprecated, use 'y' instead."
+            msg = "`origin_shift` parameter has changed, use 'y' instead."
             warnings.warn(
                 msg,
                 DeprecationWarning,
@@ -115,7 +115,7 @@ def _set_figure_spec(
             )
         if origin_shift == "both_shift":
             origin_shift = "both"
-            msg = "origin_shift 'both_shift' is deprecated, use 'both' instead."
+            msg = "`origin_shift='both_shift'` is deprecated, use 'both' instead."
             warnings.warn(
                 msg,
                 DeprecationWarning,
