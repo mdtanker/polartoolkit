@@ -21,7 +21,7 @@ remove:
 	mamba remove --name $(PROJECT) --all
 
 conda_install:
-	mamba create --name $(PROJECT) --yes --force --channel conda-forge $(PROJECT)
+	mamba create --name $(PROJECT) --yes --force --channel conda-forge $(PROJECT) pytest pytest-cov deepdiff
 
 conda_export:
 	mamba env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
