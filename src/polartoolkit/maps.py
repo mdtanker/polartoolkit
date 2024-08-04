@@ -223,12 +223,12 @@ def basemap(
         title to add to the figure, by default is None
     inset : bool, optional
         choose to plot inset map showing figure location, by default is False
-    points : pd.DataFrame | None, optional
+    points : pandas.DataFrame | None, optional
         points to plot on map, must contain columns 'x' and 'y' or
         'easting' and 'northing'.
     gridlines : bool, optional
         choose to plot lat/lon grid lines, by default is False
-    origin_shift : str, | None optional
+    origin_shift : str, | None, optional
         choose what to do with the plot when creating the figure. By default is
         'initialize' which will create a new figure instance. To plot additional grids
         on top of the existing figure provide a figure instance to `fig` and set
@@ -239,12 +239,9 @@ def basemap(
         will be the width/height of the figure instance, this can be changed with kwargs
         `xshift_amount` and `yshift_amount`, which are in multiples of figure
         width/height.
-    fig : pygmt.Figure(), optional
+    fig : pygmt.Figure, optional
         supply a figure instance for adding subplots or using other PyGMT plotting
         methods, by default None
-
-    Figure Keyword Args
-    ------------
     fig_height : int or float
         height in cm for figures, by default is 15cm.
     fig_width : int or float
@@ -258,9 +255,6 @@ def basemap(
         instance height, by default is 1.
     frame : str
         GMT frame string to use for the basemap, by default is None
-
-    Plot Features Keyword Args
-    --------------------------
     transparency : int
         transparency to use for the background imagery, by default is 0
     inset_pos : str
@@ -313,7 +307,7 @@ def basemap(
 
     Returns
     -------
-    PyGMT.Figure()
+    pygmt.Figure
         Returns a figure object, which can be passed to the `fig` kwarg to add subplots
         or other `PyGMT` plotting methods.
 
@@ -554,7 +548,7 @@ def set_cmap(
     cmap : str | bool
         a string of either a PyGMT cpt file (.cpt), or a preset PyGMT color ramp, or
         alternatively a value of True will use the last used cmap.
-    grid : str | xr.DataArray | None, optional
+    grid : str | xarray.DataArray | None, optional
        grid used for grd2cpt colormap equalization, by default None
     modis : bool, optional
         choose appropriate cmap for plotting modis data, by default False
@@ -569,7 +563,7 @@ def set_cmap(
         use the 2nd and 98th percentile of the data from the grid, by default False
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
-    shp_mask : gpd.GeoDataFrame | str | None, optional
+    shp_mask : geopandas.GeoDataFrame | str | None, optional
         a shapefile to mask the grid by before extracting limits, by default None
     hemisphere : str | None, optional
         "north" or "south" hemisphere needed for using shp_mask, by default None
@@ -836,9 +830,9 @@ def plot_grd(
 
     Parameters
     ----------
-    grid : str or xr.DataArray
-        grid file to plot, either loaded xr.DataArray or string of the path to a gridded
-        data file, such as a netCDF, geotiff or zarr file.
+    grid : str or xarray.DataArray
+        grid file to plot, either loaded xarray.DataArray or string of the path to a
+        gridded data file, such as a netCDF, geotiff or zarr file.
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], by default is the
         extent of the input grid. If provided, the grid will be cut to this region
@@ -869,12 +863,12 @@ def plot_grd(
         title to add to the figure, by default is None
     inset : bool, optional
         choose to plot inset map showing figure location, by default is False
-    points : pd.DataFrame | None, optional
+    points : pandas.DataFrame | None, optional
         points to plot on map, must contain columns 'x' and 'y' or
         'easting' and 'northing'.
     gridlines : bool, optional
         choose to plot lat/lon grid lines, by default is False
-    origin_shift : str, | None optional
+    origin_shift : str, | None, optional
         choose what to do with the plot when creating the figure. By default is
         'initialize' which will create a new figure instance. To plot additional grids
         on top of the existing figure provide a figure instance to `fig` and set
@@ -885,12 +879,9 @@ def plot_grd(
         will be the width/height of the figure instance, this can be changed with kwargs
         `xshift_amount` and `yshift_amount`, which are in multiples of figure
         width/height.
-    fig : pygmt.Figure(), optional
+    fig : pygmt.Figure, optional
         supply a figure instance for adding subplots or using other PyGMT plotting
         methods, by default None
-
-    Figure Keyword Args
-    ------------
     fig_height : int or float
         height in cm for figures, by default is 15cm.
     fig_width : int or float
@@ -904,9 +895,6 @@ def plot_grd(
         instance height, by default is 1.
     frame : str
         GMT frame string to use for the basemap, by default is None
-
-    Colormap/Colorbar Keyword Args
-    ------------------------------
     modis : bool
         set to True if plotting MODIS data to use a nice colorscale.
     grd2cpt : bool
@@ -921,7 +909,7 @@ def plot_grd(
         default is False.
     reverse_cpt : bool
         reverse the color scale, by default is False.
-    shp_mask : gpd.GeoDataFrame | str
+    shp_mask : geopandas.GeoDataFrame | str
         shapefile to use to mask the grid before extracting limits, by default is None.
     colorbar : bool
         choose to add a colorbar to the plot, by default is True.
@@ -931,9 +919,6 @@ def plot_grd(
         GMT shading string to use for the basemap, by default is None
     transparency : int
         transparency of the grid, by default is 0
-
-    Plot Features Keyword Args
-    --------------------------
     inset_pos : str
         position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
     title_font : str
@@ -982,7 +967,7 @@ def plot_grd(
 
     Returns
     -------
-    PyGMT.Figure()
+    pygmt.Figure
         Returns a figure object, which can be passed to the `fig` kwarg to add subplots
         or other `PyGMT` plotting methods.
 
@@ -1554,12 +1539,12 @@ def add_gridlines(
 
     Parameters
     ----------
-    fig : pygmt.Figure instance
+    fig : pygmt.Figure
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
         try to extract from the current figure.
     projection : str, optional
-        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        GMT projection string in lat lon, if your previous pygmt.Figure call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
         utils.set_proj() to make this projection.
     x_spacing : float, optional
@@ -1649,12 +1634,12 @@ def add_faults(
 
     Parameters
     ----------
-    fig : pygmt.Figure instance
+    fig : pygmt.Figure
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
         try to extract from the current figure.
     projection : str, optional
-        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        GMT projection string in lat lon, if your previous pygmt.Figure call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
         utils.set_proj() to make this projection.
     fault_activity : str, optional
@@ -1759,7 +1744,7 @@ def add_inset(
 
     Parameters
     ----------
-    fig : pygmt.Figure instance
+    fig : pygmt.Figure
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres
     region : tuple[float, float, float, float], optional
@@ -1860,12 +1845,12 @@ def add_scalebar(
 
     Parameters
     ----------
-    fig : pygmt.Figure instance
+    fig : pygmt.Figure
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
         try to extract from the current figure.
     projection : str, optional
-        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        GMT projection string in lat lon, if your previous pygmt.Figure call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
         utils.set_proj() to make this projection.
 
@@ -1916,12 +1901,12 @@ def add_north_arrow(
 
     Parameters
     ----------
-    fig : pygmt.Figure instance
+    fig : pygmt.Figure
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
         try to extract from the current figure.
     projection : str, optional
-        GMT projection string in lat lon, if your previous pygmt.Figure() call used a
+        GMT projection string in lat lon, if your previous pygmt.Figure call used a
         cartesian projection, you will need to provide a projection in lat/lon here, use
         utils.set_proj() to make this projection.
 
@@ -1999,11 +1984,16 @@ def interactive_map(
         choose if you want clicks to show the xy location, by default True
     show : bool, optional
         choose whether to display the map, by default True
-    points : pd.DataFrame, optional
+    points : pandas.DataFrame, optional
         choose to plot points supplied as columns x, y, in EPSG:3031 in a dataframe
     basemap_type : str, optional
         choose what basemap to plot, options are 'BlueMarble', 'Imagery', and 'Basemap',
         by default 'BlueMarble'
+
+    Returns
+    -------
+    ipyleaflet.Map
+        interactive map
     """
     hemisphere = utils.default_hemisphere(hemisphere)
 
@@ -2148,7 +2138,7 @@ def subplots(
     Parameters
     ----------
     grids : list
-        list of xr.DataArray's to be plotted
+        list of xarray.DataArray's to be plotted
     region : tuple[float, float, float, float], optional
         choose to subset the grids to a specified region, in format
         [xmin, xmax, ymin, ymax], by default None
@@ -2159,7 +2149,7 @@ def subplots(
         choose between plotting in the "north" or "south" hemispheres, by default None
     Returns
     -------
-    PyGMT.Figure()
+    pygmt.Figure
         Returns a figure object, which can be used by other PyGMT plotting functions.
 
     """
@@ -2277,7 +2267,7 @@ def plot_3d(
 
     Parameters
     ----------
-    grids : list or xr.DataArray
+    grids : list or xarray.DataArray
         xarray DataArrays to be plotted in 3D
     cmaps : list or str
         list of PyGMT colormap names to use for each grid
@@ -2291,7 +2281,7 @@ def plot_3d(
         region for the figure in format [xmin, xmax, ymin, ymax], by default None
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres, by default None
-    shp_mask : Union[str or gpd.GeoDataFrame], optional
+    shp_mask : Union[str or geopandas.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
     colorbar : bool, optional
         whether to plot a colorbar, by default True
@@ -2300,7 +2290,7 @@ def plot_3d(
 
     Returns
     -------
-    PyGMT.Figure()
+    pygmt.Figure
         Returns a figure object, which can be used by other PyGMT plotting functions.
     """
     fig_height = kwargs.get("fig_height", 15)
@@ -2516,11 +2506,11 @@ def interactive_data(
         (EPSG:3031)
     coast : bool, optional
         choose whether to plot coastline data, by default True
-    grid : xr.DataArray, optional
+    grid : xarray.DataArray, optional
         display a grid on the map, by default None
     grid_cmap : str, optional
         colormap to use for the grid, by default 'inferno'
-    points : pd.DataFrame, optional
+    points : pandas.DataFrame, optional
         points to display on the map, must have columns 'x' and 'y', by default None
     points_z : str, optional
         name of column to color points by, by default None
@@ -2678,23 +2668,22 @@ def geoviews_points(
     **kwargs: typing.Any,
 ) -> gv.Points:
     """
-    _summary_
-
+    Add points to a geoviews map instance.
     Parameters
     ----------
-    points : pd.DataFrame
-        _description_, by default None
+    points : pandas.DataFrame
+        points to plot on the map, by default None
     points_z : str | None, optional
-        _description_, by default None
+        column name to color the points by, by default None
     points_color : str, optional
-        _description_, by default "red"
+        color for the points, by default "red"
     points_cmap : str, optional
-        _description_, by default "viridis"
+        colormap to use to color the points based on `points_z`, by default "viridis"
 
     Returns
     -------
-    gv.Points
-        _description_
+    holoviews.element.Points
+        the instance of points
 
     """
     if gv is None:
