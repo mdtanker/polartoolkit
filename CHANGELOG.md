@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
-## Unreleased
+
+## v0.5.0 (2024-08-04)
 ### 💥 Breaking Changes
 * change `origin_shift` parameter options
 
@@ -46,7 +47,6 @@ BREAKING CHANGE: please update your code for functions `plot_grd` and `basemap` 
 * typo ([`a8e0342`](https://github.com/mdtanker/polartoolkit/commit/a8e03420f4af969933495fbc98abccfd1ef201b1))
 ### Other
 *  ([`4424866`](https://github.com/mdtanker/polartoolkit/commit/4424866f96dd88f5948ad307d28c4b958ac40caf))
-
 
 ## v0.4.0 (2024-06-14)
 ### 💥 Breaking Changes
