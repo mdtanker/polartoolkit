@@ -103,26 +103,6 @@ def docs(session: nox.Session) -> None:
 
 
 @nox.session
-def build_api_docs(session: nox.Session) -> None:
-    """
-    Build (regenerate) API docs.
-    """
-
-    session.install("sphinx")
-    session.run(
-        "sphinx-apidoc",
-        "-o",
-        "docs/api/",
-        "--module-first",
-        "--no-toc",
-        "--force",
-        "--separate",
-        "--templatedir=_templates/",
-        "../src/polartoolkit",
-    )
-
-
-@nox.session
 def build(session: nox.Session) -> None:
     """
     Build an SDist and wheel.

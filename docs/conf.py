@@ -21,18 +21,17 @@ copyright = "2023, Matt Tankersley"
 author = "Matt Tankersley"
 version = release = polartoolkit.__version__
 extensions = [
-    "sphinx.ext.napoleon",
-    "sphinx.ext.autodoc",
+    "sphinx.ext.autodoc",  # needed for typehints
+    "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "autoapi.extension",
     "sphinx.ext.mathjax",
-    "sphinx_autodoc_typehints",
     "sphinx_copybutton",
     "myst_parser",
     "sphinx_design",
     "nbsphinx",
-    "sphinx.ext.viewcode",
     "sphinxcontrib.bibtex",
-    # "sphinx.ext.autosummary",
 ]
 source_suffix = [".rst", ".md"]
 exclude_patterns = [
@@ -67,18 +66,26 @@ intersphinx_mapping = {
     "numba": ("https://numba.pydata.org/numba-doc/latest/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
+    "pooch": ("https://www.fatiando.org/pooch/latest/", None),
+    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     # "tqdm": ("https://tqdm.github.io/", None),
     "pygmt": ("https://www.pygmt.org/latest/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
+    "geopandas": ("https://geopandas.org/en/stable/", None),
     #
     # Viz deps
     #
     "seaborn": ("https://seaborn.pydata.org/", None),
+    "ipyleaflet": ("https://ipyleaflet.readthedocs.io/en/latest/", None),
+    "holoviews": ("http://holoviews.org/", None),
+    "geoviews": ("http://geoviews.org/", None),
 }
 
 nitpick_ignore = [
     ("py:class", "_io.StringIO"),
     ("py:class", "_io.BytesIO"),
+    ("py:class", "optional"),
+    ("py:class", "Ellipsis"),
 ]
 
 always_document_param_types = True
@@ -87,19 +94,15 @@ add_function_parentheses = False
 
 # API doc configuration
 # -----------------------------------------------------------------------------
-# autosummary_generate = True
-# autodoc_default_options = {
-#     "members": True,
-#     "show-inheritance": True,
-# }
-# apidoc_module_dir = '../src/polartoolkit'
-# apidoc_excluded_paths = ['tests']
-# apidoc_separate_modules = False
+autoapi_dirs = ["../src/polartoolkit"]
+autoapi_type = "python"
+autoapi_add_toctree_entry = False
+autodoc_typehints = "description"
+
 
 # HTML output configuration
 # -----------------------------------------------------------------------------
 html_title = f'{project} <span class="project-version">{version}</span>'
-# html_logo = "logo.png"
 html_static_path = []
 html_favicon = "logo_dark.png"
 html_last_updated_fmt = "%b %d, %Y"

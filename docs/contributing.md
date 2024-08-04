@@ -238,16 +238,14 @@ If your edits haven't changed any part of the core package, then there is no nee
 
 #### Check the build manually (optional)
 
-You can build the docs using, but this will require pandoc to be install on your machine:
-
+You can build the docs using:
 ```bash
-nox -s docs
+    nox -s docs
 ```
 
-You can see a preview with:
-
+or if you don't want them to automatically update
 ```bash
-nox -s docs -- --serve
+    nox -s docs --non-interactive
 ```
 
 #### Automatically build the docs

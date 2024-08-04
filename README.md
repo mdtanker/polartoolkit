@@ -43,7 +43,7 @@ alt="Latest version on PyPI"/></a>
 
 ![](docs/cover_fig.png)
 
-## Disclaimer
+# Disclaimer
 
 <p align="center">
 🚨 **Ready for daily use but still changing.** 🚨
@@ -63,7 +63,7 @@ You can use it to download common datasets (i.e. BedMachine, Bedmap2, MODIS Mosa
 
 Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to this project.
 
-### What _PolarToolkit_ is for:
+## What _PolarToolkit_ is for:
 
 - download commonly used datasets related to Antarctica, Greenland and the Arctic
 - making publication-quality maps and cross-sections
@@ -73,7 +73,7 @@ Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedo
 - current focus for datasets is related to ice, geophysics, and earth properties since this is where my personal research interests are, but please request or add your own types of data!
 - basic geospatial manipulations (filtering, resampling, reprojecting, masking etc.)
 
-### What _PolarToolkit_ is **NOT** for:
+## What _PolarToolkit_ is **NOT** for:
 
 - downloading niche datasets or those that only cover specific regions
 - downloaded datasets outside of Antarctica, Greenland and the Arctic
@@ -90,7 +90,7 @@ Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedo
 
 <!-- SPHINX-END-long-desc -->
 
-## How to contribute
+# How to contribute
 I welcome all forms of contribution! If you have any questions, comments or suggestions, please open a [discussion](https://github.com/mdtanker/polartoolkit/discussions/new/choose) or [issue (feature request)](https://github.com/mdtanker/polartoolkit/issues/new/choose)!
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
