@@ -4,10 +4,21 @@ Automatically updated by
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
 ## Unreleased
+### 💥 Breaking Changes
+* change `origin_shift` parameter options
+
+BREAKING CHANGE: please update your code for functions `plot_grd` and `basemap` to use the following options for `origin_shift`: &#39;x&#39;, &#39;y&#39;, &#39;both&#39;, &#39;initialize&#39;, or None. ([`4e751c8`](https://github.com/mdtanker/polartoolkit/commit/4e751c8d6fc848bc15cd04657d913af374af8e4e))
 ### 📦️ Build
 ### 🧰 Chores / Maintenance
+* add test deps to conda_install for testing conda releases ([`0cc2da2`](https://github.com/mdtanker/polartoolkit/commit/0cc2da230754d9f23138ca13d123b5798e93fa0c))
+* updates from learn-scientific-python ([`07d79a9`](https://github.com/mdtanker/polartoolkit/commit/07d79a90213f8646bb909c6f5e03af99359b8106))
 * update binder env wih polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
 ### 📖 Documentation
+* fix issues with autoapi and typehints ([`51f4266`](https://github.com/mdtanker/polartoolkit/commit/51f4266c8aee1d3a37021844c34a0e7441ebf442))
+* rerun all doc notebooks ([`1c0fcb3`](https://github.com/mdtanker/polartoolkit/commit/1c0fcb33e5167a05a3bc9cbe986b81330ce62622))
+* minor corrections to docs ([`64ee497`](https://github.com/mdtanker/polartoolkit/commit/64ee497779bf20a34793956fb59d510d4b9b9282))
+* reduce notebook size with pygmt `dpi` parameter ([`46aadb8`](https://github.com/mdtanker/polartoolkit/commit/46aadb8c8727f620822811f2e0678ddc2007421d))
+* add make setup instructions to contrib guide ([`18fe9cf`](https://github.com/mdtanker/polartoolkit/commit/18fe9cf9b76c964baea357e109533c4c492398ae))
 * remove install info from readme ([`09ef175`](https://github.com/mdtanker/polartoolkit/commit/09ef175c3a9096ec014e3ee86880eb397fcd0f42))
 * typos in notebook ([`d539795`](https://github.com/mdtanker/polartoolkit/commit/d539795396d9c8675e71c797492a17f3cd44e09b))
 * fix missing instruction in contrib guide ([`8128a8f`](https://github.com/mdtanker/polartoolkit/commit/8128a8f0389f673dc91916f659b0e32417f7a3ea))
@@ -16,10 +27,25 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * add citation info ([`d1281da`](https://github.com/mdtanker/polartoolkit/commit/d1281dab3b7c698ee7653be36fd8eaa560c2a861))
 * update docs with numbered tutorials and other fixes ([`fdb7227`](https://github.com/mdtanker/polartoolkit/commit/fdb72271ac9b7cd7f5a59779a0ab6aa619992221))
 * point binder link to tutorials ([`3fddb27`](https://github.com/mdtanker/polartoolkit/commit/3fddb27c5a1c28bf2d8b7807f1cf1913e8393b0f))
+### 🚀 Features
+* add &#39;easting&#39; and &#39;northing&#39; as defaults for plotting points ([`13b917b`](https://github.com/mdtanker/polartoolkit/commit/13b917b31e939f73fbe4a4764502bfa81b15eeaf))
+* add earthaccess dependency and use for login credentials ([`1b87ca8`](https://github.com/mdtanker/polartoolkit/commit/1b87ca8f0b71bba73afd617cc06394b6a74b122e))
+### 🐛 Bug Fixes
+* add warning for deprecated origin shift parameters ([`728a218`](https://github.com/mdtanker/polartoolkit/commit/728a218aa3684f7990b3cc72abeb45d440e9c7bb))
+* found bug in `utils.square_subplots` ([`f87f2e1`](https://github.com/mdtanker/polartoolkit/commit/f87f2e1ff96f2335c857cdb00b5594325469421e))
+* drop band and spatial_ref variables from fetched grids ([`40f6ba2`](https://github.com/mdtanker/polartoolkit/commit/40f6ba2bb7e9fb7b9b4deda7ef895cc925bb4641))
 ###  🎨 Refactor
+* organize `plot_grd` and enable more mapping features for `basemap` ([`684e86e`](https://github.com/mdtanker/polartoolkit/commit/684e86e5957276f2e86fcd38fb1852c234a2a67f))
+* remove kwargs for `add_gridlines` ([`e86144d`](https://github.com/mdtanker/polartoolkit/commit/e86144d707dedbddae98414eea3f0d27b6584cd9))
 * mock import geopandas ([`ab3437d`](https://github.com/mdtanker/polartoolkit/commit/ab3437d17d856fe78e02f34596764e2937463004))
 * use figshare sample shapefiles and remove data/ from repo ([`de684bb`](https://github.com/mdtanker/polartoolkit/commit/de684bb53dd0a09de969160ebf6c32e0f44628e2))
 * remove quotes from scalebar ([`7995f9f`](https://github.com/mdtanker/polartoolkit/commit/7995f9fde71428e8e3f6cc58a917e26642a8ec8f))
+### ✏️ Formatting
+* pre-commit fixes ([`463a225`](https://github.com/mdtanker/polartoolkit/commit/463a225babe3d84aa2d2589121eba632050aa386))
+* auto style fix ([`65266e9`](https://github.com/mdtanker/polartoolkit/commit/65266e99e46481d88ffdf386899958a28417ed03))
+* typo ([`a8e0342`](https://github.com/mdtanker/polartoolkit/commit/a8e03420f4af969933495fbc98abccfd1ef201b1))
+### Other
+*  ([`4424866`](https://github.com/mdtanker/polartoolkit/commit/4424866f96dd88f5948ad307d28c4b958ac40caf))
 
 
 ## v0.4.0 (2024-06-14)
