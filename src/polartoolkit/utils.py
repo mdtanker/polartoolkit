@@ -29,7 +29,7 @@ import pygmt
 import pyogrio
 import verde as vd
 import xarray as xr
-from nptyping import NDArray
+from numpy.typing import NDArray
 from pyproj import Transformer
 
 import polartoolkit
