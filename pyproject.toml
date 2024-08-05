@@ -48,7 +48,7 @@ dependencies = [
     "scipy",
     "numpy",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
-    "geopandas",
+    "geopandas<1.0",
     "zarr",
     "python-dotenv",
     "requests",
