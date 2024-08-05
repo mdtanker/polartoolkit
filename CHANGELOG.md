@@ -3,6 +3,11 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 🐛 Bug Fixes
+* restrict geopandas to below v1 until issue with `scheme` is fixed in next pygmt release ([`846056e`](https://github.com/mdtanker/polartoolkit/commit/846056ed9aa8de7105398d1014d91f5201141fce))
+* remove nptyping as a dependency after issues with bool8 ([`6b97865`](https://github.com/mdtanker/polartoolkit/commit/6b97865002fed2469c32fea2276de352e90b416d))
+
 
 ## v0.5.0 (2024-08-04)
 ### 💥 Breaking Changes
