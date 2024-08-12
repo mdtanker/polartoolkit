@@ -6,6 +6,9 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ## Unreleased
 ### 📦️ Build
 * update backup env yml for`v0.5.1` ([`7a1b984`](https://github.com/mdtanker/polartoolkit/commit/7a1b98434fed49a94d097a77557252a5a5314dce))
+### 🧰 Chores / Maintenance
+### 📖 Documentation
+* fix issue in contrib guide ([`f776f03`](https://github.com/mdtanker/polartoolkit/commit/f776f03d56c581683688d27552eaec71f4b59029))
 
 
 ## v0.5.1 (2024-08-05)
