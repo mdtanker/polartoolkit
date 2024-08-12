@@ -102,9 +102,9 @@ If you're new to working with git, GitHub, and the Unix Shell, we recommend
 starting with the [Software Carpentry](https://software-carpentry.org/) lessons,
 which are available in English and Spanish:
 
-* :gb: [Version Control with Git](http://swcarpentry.github.io/git-novice/) / :es: [Control de
+* 🇬🇧 [Version Control with Git](http://swcarpentry.github.io/git-novice/) / 🇪🇸 [Control de
 versiones con Git](https://swcarpentry.github.io/git-novice-es/)
-* :gb: [The Unix Shell](http://swcarpentry.github.io/shell-novice/) / :es:
+* 🇬🇧 [The Unix Shell](http://swcarpentry.github.io/shell-novice/) / 🇪🇸
 [La Terminal de Unix](https://swcarpentry.github.io/shell-novice-es/)
 
 
@@ -117,7 +117,7 @@ If you don't want to use `make`, you can always open the `Makefile` and copy and
 
 `make` is typically included in most unix systems, but can be installed explicitly with a package manager such as `Homebrew` for MacOS, or `RPM` or`DNF` for Linux, or `Chocalatey` for Windows.
 
-Run ```make -version` to test that `make` is correctly installed.
+Run `make -version` to test that `make` is correctly installed.
 
 ### Setting up your environment
 
