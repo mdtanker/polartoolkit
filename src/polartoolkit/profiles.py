@@ -67,12 +67,12 @@ def create_profile(
         num by default is determined by shapefile or dataframe
     shapefile : str, optional
         shapefile file name to create points along, by default None
-    polyline : pd.DataFrame, optional
+    polyline : pandas.DataFrame, optional
         pandas dataframe with columns x and y as vertices of a polyline, by default None
 
     Returns
     -------
-    pd.Dataframe
+    pandas.DataFrame
         Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile
         path.
     """
@@ -160,17 +160,17 @@ def sample_grids(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Dataframe containing columns 'x', 'y', or columns with names defined by kwarg
         "coord_names".
-    grid : str or xr.DataArray
-        Grid to sample, either file name or xr.DataArray
+    grid : str or xarray.DataArray
+        Grid to sample, either file name or xarray.DataArray
     sampled_name : str,
         Name for sampled column
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Dataframe with new column (sampled_name) of sample values from (grid)
     """
 
@@ -220,12 +220,12 @@ def fill_nans(df: pd.DataFrame) -> pd.DataFrame:
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         First 3 columns as they are assumed to by x, y, dist.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Dataframe with NaN's of lower layers filled
     """
     cols = df.columns[3:].values
@@ -245,7 +245,7 @@ def shorten(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Dataframe to shorten and recalculate distance, must contain 'x', 'y', 'dist'
     max_dist : float, optional
         remove rows with dist>max_dist, by default None
@@ -254,7 +254,7 @@ def shorten(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Shortened dataframe
     """
     if max_dist is None:
@@ -334,7 +334,7 @@ def default_layers(
 
     Returns
     -------
-    dict[str, dict[str, str | xr.DataArray]]
+    dict[str, dict[str, str | xarray.DataArray]]
         Nested dictionary of earth layers and attributes
     """
     hemisphere = utils.default_hemisphere(hemisphere)
@@ -500,7 +500,7 @@ def plot_profile(
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
         `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
-    add_map : bool = False
+    add_map : bool
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
         choose between using 'bedmap2' or 'bedmachine' layers, by default is Bedmap2,
@@ -529,12 +529,13 @@ def plot_profile(
     map_cmap: str
         Change the map colorscale by passing a valid GMT cmap string, by default is
         'viridis'.
-    map_buffer: float (0-1)
-        Change map zoom as relative percentage of profile length, by default is 0.3.
-    layer_buffer: float (0-1)
-        Change vertical white space within cross-section, by default is 0.1.
-    data_buffer: float (0-1)
-        Change vertical white space within data graph, by default is 0.1.
+    map_buffer: float
+        Change map zoom as relative percentage of profile length (0-1), by default is
+        0.3.
+    layer_buffer: float
+        Change vertical white space within cross-section (0-1), by default is 0.1.
+    data_buffer: float
+        Change vertical white space within data graph (0-1), by default is 0.1.
     legend_loc: str
         Change the legend location with a GMT position string, by default is
         "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
@@ -1175,7 +1176,7 @@ def plot_data(
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
         `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
-    add_map : bool = False
+    add_map : bool
         Choose whether to add a location map, by default is False.
     fig_height : float, optional
         Set the height of the figure (excluding the map) in cm, by default is 9.
@@ -1199,10 +1200,11 @@ def plot_data(
     map_cmap: str
         Change the map colorscale by passing a valid GMT cmap string, by default is
         'viridis'.
-    map_buffer: float (0-1)
-        Change map zoom as relative percentage of profile length, by default is 0.3.
-    data_buffer: float (0-1)
-        Change vertical white space within data graph, by default is 0.1.
+    map_buffer: float
+        Change map zoom as relative percentage of profile length (0-1), by default is
+        0.3.
+    data_buffer: float
+        Change vertical white space within data graph (0-1), by default is 0.1.
     legend_loc: str
         Change the legend location with a GMT position string, by default is
         "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
@@ -1577,14 +1579,14 @@ def rel_dist(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Dataframe containing columns x and y in meters.
     reverse : bool, optional,
         choose whether to reverse the profile, by default is False
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Returns original dataframe with additional column rel_dist
     """
     df = df.copy()
@@ -1632,12 +1634,12 @@ def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Dataframe containing columns x, y, and rel_dist
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Returns original dataframe with additional column dist
     """
     reverse = kwargs.get("reverse", False)

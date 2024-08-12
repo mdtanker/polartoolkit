@@ -17,16 +17,15 @@ from __future__ import annotations
 
 import glob
 import logging
-import os
 import pathlib
 import re
 import shutil
 import typing
-from getpass import getpass
 from inspect import getmembers, isfunction
 from pathlib import Path
 
 import deprecation
+import earthaccess
 
 if typing.TYPE_CHECKING:
     import geopandas as gpd
@@ -94,7 +93,7 @@ def resample_grid(
 
     Parameters
     ----------
-    grid : str | xr.DataArray
+    grid : str | xarray.DataArray
         grid to resample
     initial_spacing : float | None, optional
         spacing of input grid, if known, by default None
@@ -112,10 +111,11 @@ def resample_grid(
 
     Returns
     -------
-    str | xr.DataArray
+    str | xarray.DataArray
         grid, either resampled or same as original depending on inputs. If no
         resampling, and supplied grid is a filepath, returns filepath.
     """
+
     # get coordinate names
     # original_dims = list(grid.sizes.keys())
     verbose = kwargs.get("verbose", "w")
@@ -230,44 +230,20 @@ def resample_grid(
 
 class EarthDataDownloader:
     """
-    Adapted from IcePack: https://github.com/icepack/icepack/blob/master/src/icepack/datasets.py
     Either pulls login details from pre-set environment variables, or prompts user to
-    input username and password.
+    input username and password. Will persist the entered details within the python
+    session.
     """
 
     def __init__(self) -> None:
-        self._username: str | None = None
-        self._password: str | None = None
-
-    def _get_credentials(self) -> tuple[str | None, str | None]:
-        if self._username is None:
-            username_env = os.environ.get("EARTHDATA_USERNAME")
-            if username_env is None:
-                self._username = input("EarthData username: ")
-            else:
-                self._username = username_env
-
-        if self._password is None:
-            password_env = os.environ.get("EARTHDATA_PASSWORD")
-            if password_env is None:
-                self._password = getpass("EarthData password: ")
-            else:
-                self._password = password_env
-
-        return self._username, self._password
+        earthaccess.login()
 
     def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
-        auth = self._get_credentials()
+        creds = earthaccess.auth_environ()
+        auth = creds.get("EARTHDATA_USERNAME"), creds.get("EARTHDATA_PASSWORD")
         downloader = pooch.HTTPDownloader(auth=auth, progressbar=True)
-        try:
-            login = requests.get(url, timeout=30)
-            downloader(login.url, output_file, dataset)
-        except requests.exceptions.HTTPError as error:
-            if "Unauthorized" in str(error):
-                pooch.get_logger().error("Wrong username/password!")
-                self._username = None
-                self._password = None
-            raise error
+        login = requests.get(url, timeout=30)
+        downloader(login.url, output_file, dataset)
 
 
 def sample_shp(name: str) -> str:
@@ -315,8 +291,7 @@ def mass_change(
 ) -> typing.Any:
     """
     Ice-sheet height and thickness changes from ICESat to ICESat-2 for both Antarctica
-    and Greenland
-    from :footcite:t:`smithpervasive2020`.
+    and Greenland from :footcite:t:`smithpervasive2020`.
 
     Choose a version of the data to download with the format: "ICESHEET_VERSION_TYPE"
     where ICESHEET is "ais" or "gris", for Antarctica or Greenland, which is
@@ -341,13 +316,14 @@ def mass_change(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a calculated grid of Antarctic ice mass change in meters/year.
 
     References
     ----------
     .. footbibliography::
     """
+
     hemisphere = utils.default_hemisphere(hemisphere)
 
     # This is the path to the processed (magnitude) grid
@@ -417,13 +393,14 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a dataarray of basal melt rate values
 
     References
     ----------
     .. footbibliography::
     """
+
     # This is the path to the processed (magnitude) grid
     url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
 
@@ -526,13 +503,14 @@ def ice_vel(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a calculated grid of ice velocity in meters/year.
 
     References
     ----------
     .. footbibliography::
     """
+
     hemisphere = utils.default_hemisphere(hemisphere)
 
     if hemisphere == "south":
@@ -571,6 +549,7 @@ def ice_vel(
             Load the .nc file, calculate velocity magnitude, resample to 5k, save it
             back
             """
+
             fname1 = Path(fname)
             # Rename to the file to ***_preprocessed_5k.nc
             fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
@@ -766,6 +745,7 @@ def modis(
     ----------
     .. footbibliography::
     """
+
     hemisphere = utils.default_hemisphere(hemisphere)
 
     if version is None:
@@ -854,8 +834,7 @@ def modis_mog(version: str = "500m") -> str:
 def imagery() -> str:
     """
     Load the file path of Antarctic imagery geotiff from LIMA from
-    :footcite:t:`bindschadlerlandsat2008`.
-    accessed from https://lima.usgs.gov/
+    :footcite:t:`bindschadlerlandsat2008`. accessed from https://lima.usgs.gov/
 
     will replace with below once figured out login issue with pooch
     MODIS Mosaic of Antarctica: https://doi.org/10.5067/68TBT0CGJSOJ
@@ -870,6 +849,7 @@ def imagery() -> str:
     ----------
     .. footbibliography::
     """
+
     path = pooch.retrieve(
         url="https://lima.usgs.gov/tiff_90pct.zip",
         fname="lima.zip",
@@ -902,13 +882,14 @@ def geomap(
 
     Returns
     -------
-    gpd.GeoDataFrame
+    geopandas.GeoDataFrame
         Returns a geodataframe
 
     References
     ----------
     .. footbibliography::
     """
+
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
 
@@ -1028,6 +1009,7 @@ def groundingline(
     ----------
     .. footbibliography::
     """
+
     if version == "depoorter-2013":
         path = pooch.retrieve(
             url="https://doi.pangaea.de/10013/epic.42133.d001",
@@ -1153,6 +1135,7 @@ def antarctic_boundaries(
     ----------
     .. footbibliography::
     """
+
     # path to store the downloaded files
     path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
 
@@ -1275,13 +1258,14 @@ def sediment_thickness(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of sediment thickness.
 
     References
     ----------
     .. footbibliography::
     """
+
     if version == "ANTASed":
         # found with df.describe()
         initial_region = (-2350000.0, 2490000.0, -1990000.0, 2090000.0)
@@ -1533,7 +1517,7 @@ def ibcso_coverage(
 
     Returns
     -------
-    tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]
+    tuple[geopandas.GeoDataFrame, geopandas.GeoDataFrame]
         Returns two geodataframes; points and polygons for a subset of IBCSO v2 point
         measurement locations.
 
@@ -1541,6 +1525,7 @@ def ibcso_coverage(
     ----------
     .. footbibliography::
     """
+
     # download / retrieve the geopackage file
     path = pooch.retrieve(
         url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg",
@@ -1600,13 +1585,14 @@ def ibcso(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of IBCSO data.
 
     References
     ----------
     .. footbibliography::
     """
+
     original_spacing = 500
 
     # preprocessing for full, 500m resolution
@@ -1837,13 +1823,14 @@ def bedmachine(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmachine.
 
     References
     ----------
     .. footbibliography::
     """
+
     hemisphere = utils.default_hemisphere(hemisphere)
 
     if hemisphere == "north":
@@ -1963,17 +1950,16 @@ def bedmap_points(
     Load bedmap point data, choose from Bedmap 1, 2 or 3
 
     version == 'bedmap1'
-        from :footcite:t:`lythebedmap2001`.
-        accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01619
+    from :footcite:t:`lythebedmap2001`.
+    accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01619
 
     version == 'bedmap2'
-        from :footcite:t:`fretwellbedmap22013`.
-        accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01616
-
+    from :footcite:t:`fretwellbedmap22013`.
+    accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01616
 
     version == 'bedmap3'
-        from :footcite:t:`fremandbedmap32022`.
-        accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01614
+    from :footcite:t:`fremandbedmap32022`.
+    accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01614
 
     Parameters
     ----------
@@ -1985,7 +1971,7 @@ def bedmap_points(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Return a dataframe, optionally subset by a region
 
     References
@@ -2098,7 +2084,7 @@ def bedmap2(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of Bedmap2.
 
     References
@@ -2364,7 +2350,7 @@ def rema(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of the REMA DEM.
 
     References
@@ -2518,7 +2504,7 @@ def deepbedmap(
     )
 
     with xr.open_dataarray(path) as da:
-        grid = da.squeeze()
+        grid = da.squeeze().drop_vars(["band", "spatial_ref"])
 
     return resample_grid(
         grid,
@@ -2581,7 +2567,7 @@ def gravity(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of either observed, free-air
         or Bouguer gravity anomalies.
 
@@ -2820,7 +2806,7 @@ def etopo(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of topography.
 
     References
@@ -2918,9 +2904,9 @@ def geoid(
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin
     DOI: 10.5281/zenodo.5882205
+
     Parameters
     ----------
-
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -2935,7 +2921,7 @@ def geoid(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of geoid height.
 
     References
@@ -3055,13 +3041,14 @@ def magnetics(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Returns a loaded, and optional clip/resampled grid of magnetic anomalies.
 
     References
     ----------
     .. footbibliography::
     """
+
     if version == "admap1":
         # was in lat long, so just using standard values here
         initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
@@ -3270,7 +3257,7 @@ def ghf(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
          Returns a loaded, and optional clip/resampled grid of GHF data.
 
     References
@@ -3727,7 +3714,7 @@ def gia(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
          Returns a loaded, and optional clip/resampled grid of GIA data.
 
     References
@@ -3755,7 +3742,7 @@ def gia(
             known_hash="cb579c9606f98dfd28239183ba28de33e6e288a4256b27da7249c3741a24b7e8",
             progressbar=True,
         )
-        grid = xr.load_dataarray(path).squeeze()
+        grid = xr.load_dataarray(path).squeeze().drop_vars(["band", "spatial_ref"])
 
         resampled = resample_grid(
             grid,
@@ -3815,13 +3802,14 @@ def crustal_thickness(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
 
     References
     ----------
     .. footbibliography::
     """
+
     if version == "shen-2018":
         msg = "the link to the shen-2018 data appears to be broken"
         raise ValueError(msg)
@@ -4024,7 +4012,7 @@ def moho(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
          Returns a loaded, and optional clip/resampled grid of crustal thickness.
 
     References

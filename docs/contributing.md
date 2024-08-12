@@ -102,11 +102,22 @@ If you're new to working with git, GitHub, and the Unix Shell, we recommend
 starting with the [Software Carpentry](https://software-carpentry.org/) lessons,
 which are available in English and Spanish:
 
-* :gb: [Version Control with Git](http://swcarpentry.github.io/git-novice/) / :es: [Control de
+* 🇬🇧 [Version Control with Git](http://swcarpentry.github.io/git-novice/) / 🇪🇸 [Control de
 versiones con Git](https://swcarpentry.github.io/git-novice-es/)
-* :gb: [The Unix Shell](http://swcarpentry.github.io/shell-novice/) / :es:
+* 🇬🇧 [The Unix Shell](http://swcarpentry.github.io/shell-novice/) / 🇪🇸
 [La Terminal de Unix](https://swcarpentry.github.io/shell-novice-es/)
 
+
+### Setting up `make`
+
+Most of the commands used in the development of `PolarToolkit` use the tool `make`.
+The `make` commands are defined in the file [`Makefile`](https://github.com/mdtanker/polartoolkit/blob/main/Makefile), and are run in the terminal / command prompt with the format ```make <<command name>>```.
+
+If you don't want to use `make`, you can always open the `Makefile` and copy and past the command you need into the terminal.
+
+`make` is typically included in most unix systems, but can be installed explicitly with a package manager such as `Homebrew` for MacOS, or `RPM` or`DNF` for Linux, or `Chocalatey` for Windows.
+
+Run `make -version` to test that `make` is correctly installed.
 
 ### Setting up your environment
 
@@ -121,18 +132,18 @@ Change into the directory:
 cd polartoolkit
 ```
 
-Run the following command to make a new environment and install the package dependencies:
+Run the following `make` command to create a new environment and install the package dependencies:
 
 ```
-  make create
+make create
 ```
 Activate the environment:
 ```
-    conda activate polartoolkit
+conda activate polartoolkit
 ```
 Install your local version:
 ```
-  make install
+make install
 ```
 This environment now contains your local, editable version of PolarToolkit, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
@@ -143,11 +154,11 @@ This environment now contains your local, editable version of PolarToolkit, mean
 We use [Ruff](https://docs.astral.sh/ruff/) to format the code so we don't have to
 think about it. This allows you to not think about proper indentation, line length, or aligning your code while to development. Before committing, or periodically while you code, run the following to automatically format your code:
 ```
-    make format
+make format
 ```
 Some formatting changes can't be applied automatically. Running the following to see these.
 ```
-    make check
+make check
 ```
 Go through the output of this and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
 
@@ -201,13 +212,13 @@ anyway.
 We will help you create the tests and sort out any kind of problem during code review.
 
 Run the tests and calculate test coverage using:
-
-    make test
-
+```
+make test
+```
 To run a specific test by name:
-
-    pytest --cov=. -k "test_name"
-
+```
+pytest --cov=. -k "test_name"
+```
 The coverage report will let you know which lines of code are touched by the tests.
 **Strive to get 100% coverage for the lines you changed.**
 It's OK if you can't or don't know how to test something.
@@ -220,23 +231,21 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 > **Note:** The docs are automatically built on PR's by `RTD`, but it's good practice to build them manually before a PR, to check them for errors.
 
 #### Run all .ipynb's to update them
-
-    make run_doc_files
-
+```
+make run_doc_files
+```
 If your edits haven't changed any part of the core package, then there is no need to re-run the notebooks. If you changed a notebook, just clear it's contents and re-run that one notebook.
 
 #### Check the build manually (optional)
 
-You can build the docs using, but this will require pandoc to be install on your machine:
-
+You can build the docs using:
 ```bash
-nox -s docs
+    nox -s docs
 ```
 
-You can see a preview with:
-
+or if you don't want them to automatically update
 ```bash
-nox -s docs -- --serve
+    nox -s docs --non-interactive
 ```
 
 #### Automatically build the docs

@@ -78,7 +78,7 @@ datasets/greenland_arctic/index.md
 :maxdepth: 2
 :hidden:
 :caption: 📖 Reference documentation
-api/polartoolkit
+autoapi/polartoolkit/index
 changelog.md
 references.rst
 ```
@@ -119,7 +119,7 @@ Start a discussion on GitHub!
 :::{grid-item-card} {octicon}`file-badge` Reference documentation
 :text-align: center
 A list of modules and functions
-```{button-ref} api/polartoolkit
+```{button-ref} autoapi/polartoolkit/index
     :click-parent:
     :color: primary
     :outline:

@@ -8,7 +8,7 @@ specific features.
 
 ```{nbgallery}
 ---
-"numbered": true
+"numbered":
 ---
 01_download_data
 02_specify_download_parameters

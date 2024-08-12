@@ -29,7 +29,7 @@ import pygmt
 import pyogrio
 import verde as vd
 import xarray as xr
-from nptyping import NDArray
+from numpy.typing import NDArray
 from pyproj import Transformer
 
 import polartoolkit
@@ -82,7 +82,7 @@ def rmse(data: typing.Any, as_median: bool = False) -> float:
 
     Parameters
     ----------
-    data : NDArray[typing.Any, typing.Any]
+    data : numpy.ndarray[typing.Any, typing.Any]
         input data
     as_median : bool, optional
         choose to give root median squared error instead, by default False
@@ -124,7 +124,7 @@ def get_grid_info(
     -------
     tuple
         (string of grid spacing,
-        array with the region boundaries,
+        array with the region boundary,
         data min,
         data max,
         grid registration)
@@ -244,7 +244,7 @@ def region_to_df(
 
     Parameters
     ----------
-    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
+    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pandas.DataFrame
         bounding region in format [xmin, xmax, ymin, ymax] or, if `reverse` is True,
         a DataFrame with coordinate columns with names set by `cood_names`
     coord_names : tuple[str, str], optional
@@ -255,7 +255,7 @@ def region_to_df(
 
     Returns
     -------
-    tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame
+    tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pandas.DataFrame
         Dataframe with easting and northing columns, and a row for each corner of the
         region, or, if `reverse` is True, an array in the format
         [xmin, xmax, ymin, ymax].
@@ -290,8 +290,9 @@ def region_xy_to_ll(
         choose between the "north" or "south" hemispheres
     region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
         region boundaries in format [xmin, xmax, ymin, ymax] in meters
-    dms: bool, False
-        if True, will return results as deg:min:sec instead of decimal degrees
+    dms: bool
+        if True, will return results as deg:min:sec instead of decimal degrees, by
+        default False
 
     Returns
     -------
@@ -386,7 +387,7 @@ def latlon_to_epsg3031(
 
     Parameters
     ----------
-    df : pd.DataFrame or NDArray[typing.Any, typing.Any]
+    df : pandas.DataFrame or numpy.ndarray[typing.Any, typing.Any]
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -397,9 +398,9 @@ def latlon_to_epsg3031(
 
     Returns
     -------
-    pd.DataFrame or NDArray[typing.Any, typing.Any]
-        Updated dataframe with new easting and northing columns or NDArray in format
-        [xmin, xmax, ymin, ymax]
+    pandas.DataFrame or numpy.ndarray[typing.Any, typing.Any]
+        Updated dataframe with new easting and northing columns or numpy.ndarray in
+        format [xmin, xmax, ymin, ymax]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
 
@@ -438,7 +439,7 @@ def epsg3031_to_latlon(
 
     Parameters
     ----------
-    df : pd.DataFrame or list[typing.Any]
+    df : pandas.DataFrame or list[typing.Any]
         input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -449,9 +450,9 @@ def epsg3031_to_latlon(
 
     Returns
     -------
-    pd.DataFrame or list[typing.Any]
-        Updated dataframe with new latitude and longitude columns, NDArray in format
-        [xmin, xmax, ymin, ymax], or list in format [lat, lon]
+    pandas.DataFrame or list[typing.Any]
+        Updated dataframe with new latitude and longitude columns, numpy.ndarray in
+        format [xmin, xmax, ymin, ymax], or list in format [lat, lon]
     """
 
     transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
@@ -490,7 +491,7 @@ def latlon_to_epsg3413(
 
     Parameters
     ----------
-    df : pd.DataFrame or NDArray[typing.Any, typing.Any]
+    df : pandas.DataFrame or numpy.ndarray[typing.Any, typing.Any]
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -501,9 +502,9 @@ def latlon_to_epsg3413(
 
     Returns
     -------
-    pd.DataFrame or NDArray[typing.Any, typing.Any]
-        Updated dataframe with new easting and northing columns or NDArray in format
-        [xmin, xmax, ymin, ymax]
+    pandas.DataFrame or numpy.ndarray[typing.Any, typing.Any]
+        Updated dataframe with new easting and northing columns or numpy.ndarray in
+        format [xmin, xmax, ymin, ymax]
     """
     transformer = Transformer.from_crs("epsg:4326", "epsg:3413")
 
@@ -542,7 +543,7 @@ def epsg3413_to_latlon(
 
     Parameters
     ----------
-    df : pd.DataFrame or list[typing.Any]
+    df : pandas.DataFrame or list[typing.Any]
         input dataframe with easting and northing columns, or list [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
@@ -553,9 +554,9 @@ def epsg3413_to_latlon(
 
     Returns
     -------
-    pd.DataFrame or list[typing.Any]
-        Updated dataframe with new latitude and longitude columns, NDArray in format
-        [xmin, xmax, ymin, ymax], or list in format [lat, lon]
+    pandas.DataFrame or list[typing.Any]
+        Updated dataframe with new latitude and longitude columns, numpy.ndarray in
+        format [xmin, xmax, ymin, ymax], or list in format [lat, lon]
     """
 
     transformer = Transformer.from_crs("epsg:3413", "epsg:4326")
@@ -593,7 +594,7 @@ def points_inside_region(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         dataframe with columns 'x','y' to use for defining if within region
     region : tuple[float, float, float, float]
         bounding region in format [xmin, xmax, ymin, ymax] for bounds of new subset
@@ -605,7 +606,7 @@ def points_inside_region(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
        returns a subset dataframe
     """
     # make a copy of the dataframe
@@ -640,7 +641,7 @@ def block_reduce(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         data to block reduce
     reduction : typing.Callable
         function to use in reduction, e.g. np.mean
@@ -651,7 +652,7 @@ def block_reduce(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         a block-reduced dataframe
     """
     # define verde reducer function
@@ -701,7 +702,7 @@ def mask_from_shp(
 
     Parameters
     ----------
-    shapefile : str or gpd.geodataframe.GeoDataFrame]
+    shapefile : str or geopandas.GeoDataFrame
         either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
         been loaded into a geodataframe.
@@ -710,7 +711,7 @@ def mask_from_shp(
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
-    xr_grid : xr.DataArray, optional
+    xr_grid : xarray.DataArray, optional
         _xarray.DataArray; to use to define region, or to mask, by default None
     grid_file : str, optional
         path to a .nc or .tif file to use to define region or to mask, by default None
@@ -878,7 +879,7 @@ def grd_trend(
 
     Parameters
     ----------
-    da : xr.DataArray
+    da : xarray.DataArray
         input grid
     coords : tuple[str, str, str], optional
         coordinate names of the supplied grid, by default ['x', 'y', 'z']
@@ -886,13 +887,13 @@ def grd_trend(
         trend order to use, by default 1
     plot : bool, optional
         plot the results, by default False
-    plot_type : str, by default "pygmt"
-        choose to plot results with pygmt or xarray
+    plot_type : str
+        choose to plot results with pygmt or xarray, by default "pygmt"
 
     Returns
     -------
-    tuple[xr.DataArray, xr.DataArray]
-        returns xr.DataArrays of the fitted surface, and the detrended grid.
+    tuple[xarray.DataArray, xarray.DataArray]
+        returns xarray.DataArrays of the fitted surface, and the detrended grid.
     """
 
     # convert grid to a dataframe
@@ -967,7 +968,7 @@ def grd_trend(
             coast: typing.Any = kwargs.get("coast", True)
             inset: typing.Any = kwargs.get("inset", True)
             inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
-            origin_shift: typing.Any = kwargs.get("origin_shift", "yshift")
+            origin_shift: typing.Any = kwargs.get("origin_shift", "y")
             fit_label: typing.Any = kwargs.get(
                 "fit_label", f"fitted trend (order {deg})"
             )
@@ -1026,9 +1027,9 @@ def get_combined_min_max(
 
     Parameters
     ----------
-    grids : tuple[xr.DataArray]
+    grids : tuple[xarray.DataArray]
         grids to get values for
-    shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
+    shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
         choose whether to return the 2nd and 98th percentile values, instead of the
@@ -1082,9 +1083,9 @@ def grd_compare(
 
     Parameters
     ----------
-    da1 : xr.DataArray or str
+    da1 : xarray.DataArray or str
         first grid, loaded grid of filename
-    da2 : xr.DataArray or str
+    da2 : xarray.DataArray or str
         second grid, loaded grid of filename
     plot : bool, optional
         plot the results, by default False
@@ -1107,8 +1108,8 @@ def grd_compare(
 
     Returns
     -------
-    tuple[xr.DataArray, xr.DataArray, xr.DataArray]
-        three xr.DataArrays: (diff, resampled grid1, resampled grid2)
+    tuple[xarray.DataArray, xarray.DataArray, xarray.DataArray]
+        three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask", None)
     region: tuple[float, float, float, float] = kwargs.get("region", None)
@@ -1243,7 +1244,7 @@ def grd_compare(
         if plot_type == "pygmt":
             fig_height = kwargs.get("fig_height", 12)
             coast = kwargs.get("coast", False)
-            origin_shift = kwargs.get("origin_shift", "xshift")
+            origin_shift = kwargs.get("origin_shift", "x")
             cmap = kwargs.get("cmap", "viridis")
             subplot_labels = kwargs.get("subplot_labels", False)
 
@@ -1442,8 +1443,8 @@ def make_grid(
 
     Returns
     -------
-    xr.DataArray
-        Returns a xr.DataArray with 1 variable of constant value.
+    xarray.DataArray
+        Returns a xarray.DataArray with 1 variable of constant value.
     """
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) * value
@@ -1455,7 +1456,7 @@ def make_grid(
 
 def raps(
     data: pd.DataFrame | xr.DataArray | xr.Dataset,
-    names: NDArray[typing.Any, typing.Any],
+    names: typing.Any,
     plot_type: str = "mpl",
     filter_str: str | None = None,
     **kwargs: typing.Any,
@@ -1465,13 +1466,13 @@ def raps(
 
     Parameters
     ----------
-    data : Union[pd.DataFrame, str, list, xr.Dataset, xr.DataArray]
+    data : Union[pandas.DataFrame, str, list, xarray.Dataset, xarray.DataArray]
         if dataframe: need with columns 'x', 'y', and other columns to calc RAPS for.
         if str: should be a .nc or .tif file.
         if list: list of grids or filenames.
-    names : NDArray[typing.Any, typing.Any]
-        names of pd.dataframe columns, xr.Dataset variables, xr.DataArray variable, or
-        files to calculate and plot RAPS for.
+    names : typing.Any
+        names of pandas.dataframe columns, xarray.Dataset variables, xarray.DataArray
+        variable, or files to calculate and plot RAPS for.
     plot_type : str, optional
         choose whether to plot with PyGMT or matplotlib, by default 'mpl'
     filter_str : str
@@ -1589,16 +1590,16 @@ def coherency(
     ----------
     grids : list
         list of 2 grids to calculate the cohereny between.
-        grid format can be str (filename), xr.DataArray, or pd.DataFrame.
+        grid format can be str (filename), xarray.DataArray, or pandas.DataFrame.
     label : str
         used to label line.
 
     Keyword Args
     ------------
     region : str | tuple[float, float, float, float]
-        grid region if input is pd.DataFrame, in format [xmin, xmax, ymin, ymax]
+        grid region if input is pandas.DataFrame, in format [xmin, xmax, ymin, ymax]
     spacing : float
-        grid spacing if input is pd.DataFrame
+        grid spacing if input is pandas.DataFrame
     """
 
     # Check if seaborn is installed
@@ -1690,17 +1691,18 @@ def square_subplots(n: int) -> tuple[int, int]:
         example a 3 x 2 grid would be represented as ``(3, 3)``, because there are 2
         rows of length 3.
     """
-    special_cases = {
-        1: (1, 1),
-        2: (1, 2),
-        3: (2, 2),
-        4: (2, 2),
-        5: (2, 3),
-        6: (2, 3),
-        7: (3, 3),
-        8: (3, 3),
-        9: (3, 3),
-    }
+    # special_cases = {
+    #     1: (1, 1),
+    #     2: (1, 2),
+    #     3: (2, 2),
+    #     4: (2, 2),
+    #     5: (2, 3),
+    #     6: (2, 3),
+    #     7: (3, 3),
+    #     8: (3, 3),
+    #     9: (3, 3),
+    # }
+    special_cases = {3: (2, 1), 5: (2, 3)}
     if n in special_cases:
         return special_cases[n]
 
@@ -1728,8 +1730,7 @@ def square_subplots(n: int) -> tuple[int, int]:
 
     if n == x * y:
         # There are no deficient rows, so we can just return from here
-        val = tuple(x for i in range(y))
-        return typing.cast(tuple[int, int], val)
+        return x, y  # tuple(x for i in range(y))
 
     # If exactly one of these is odd, make it the rows
     if (x % 2) != (y % 2) and (x % 2):
@@ -1762,14 +1763,14 @@ def subset_grid(
 
     Parameters
     ----------
-    grid : xr.DataArray
+    grid : xarray.DataArray
         grid to be clipped
     region : tuple[float, float, float, float]
         region to clip to, in format [xmin, xmax, ymin, ymax]
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         clipped grid
     """
     ew = [region[0], region[1]]
@@ -1795,9 +1796,9 @@ def get_min_max(
 
     Parameters
     ----------
-    grid : xr.DataArray
+    grid : xarray.DataArray
         grid to get values for
-    shapefile : Union[str or gpd.geodataframe.GeoDataFrame], optional
+    shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
         choose whether to return the 2nd and 98th percentile values, instead of the
@@ -1862,7 +1863,7 @@ def shapes_to_df(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Dataframe with x, y, and shape_num.
     """
     hemisphere = default_hemisphere(hemisphere)
@@ -1943,7 +1944,7 @@ def mask_from_polygon(
         reverse the sense of masking, by default False
     drop_nans : bool, optional
         drop nans after masking, by default False
-    grid : Union[str, xr.DataArray], optional
+    grid : Union[str, xarray.DataArray], optional
         grid to mask, by default None
     region : tuple[float, float, float, float], optional
         region to create a grid if none is supplied, in format [xmin, xmax, ymin, ymax],
@@ -1953,7 +1954,7 @@ def mask_from_polygon(
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         masked grid or mask grid with 1's inside the mask.
     """
     hemisphere = default_hemisphere(hemisphere)
@@ -2014,13 +2015,13 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
 
     Parameters
     ----------
-    grid : xr.DataArray
+    grid : xarray.DataArray
         input grid to change the reg for.
 
     Returns
     -------
-    xr.DataArray
-        returns a xr.DataArray with switched reg type.
+    xarray.DataArray
+        returns a xarray.DataArray with switched reg type.
     """
     with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
@@ -2042,15 +2043,15 @@ def grd_blend(
 
     Parameters
     ----------
-    grid1 : xr.DataArray
+    grid1 : xarray.DataArray
         input grid to change the reg for.
 
-    grid2 : xr.DataArray
+    grid2 : xarray.DataArray
         input grid to change the reg for.
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         returns a blended grid.
     """
     with pygmt.clib.Session() as session:  # noqa: SIM117
@@ -2117,48 +2118,3 @@ def gmt_str_to_list(region: tuple[float, float, float, float]) -> str:
         a GMT style region string
     """
     return "".join([str(x) + "/" for x in region])[:-1]
-
-
-def grd_mask(
-    df: pd.DataFrame,
-    spacing: float,
-    region: tuple[float, float, float, float],
-    clobber: str = "o",
-    values: str = "0/0/1",
-    radius: str = "0c",
-) -> xr.DataArray:
-    """
-    Wrapper for GMT grdmask function
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        _description_
-    spacing : float
-        _description_
-    region : tuple[float, float, float, float]
-        bounding region in format [xmin, xmax, ymin, ymax]
-    clobber : str, optional
-        _description_, by default "o"
-    values : str, optional
-        _description_, by default "0/0/1"
-    radius : str, optional
-        _description_, by default "0c"
-
-    Returns
-    -------
-    xr.DataArray
-        _description_
-    """
-    with pygmt.clib.Session() as ses:  # noqa: SIM117
-        # store the input grid in a virtual file so GMT can read it from a dataarray
-        with ses.virtualfile_from_data(x=df.x, y=df.y, z=df.z) as f_in:
-            # send the output to a file so that we can read it
-            with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-                args = (
-                    f"{f_in} -I{spacing} -R{gmt_str_to_list(region)!s}",
-                    f"-C{clobber} -N{values} -S{radius} -G{tmpfile.name}",
-                )
-                ses.call_module("grdmask", args)
-                f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
-    return f_out
