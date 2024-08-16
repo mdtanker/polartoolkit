@@ -60,7 +60,7 @@ Acknowledgement of any financial support.
 # Summary \hfill ![](../docs/logo_light.png){ width=15% } \hfill \phantom{Summary}
 <!-- describing the high-level functionality and purpose of the software for a diverse, non-specialist audience. -->
 **PolarToolkit** (formerly known as Antarctic-Plots) is a Python package with the goal of making polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible.
-The software does this by providing; 1) convenient functions for downloading and pre-processing a wide range of commonly used polar datasets, 2) tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions), 3) code to easily create publication-quality maps, data profiles, and cross-sections, and 4) a means to interactively explore datasets.
+The software does this by providing: 1) convenient functions for downloading and pre-processing a wide range of commonly used polar datasets; 2) tools for common geospatial tasks (i.e. changing data resolution, subsetting data by geographic regions); 3) code to easily create publication-quality maps, data profiles, and cross-sections; and 4) a means to interactively explore datasets.
 
 # Statement of need
 <!-- clearly illustrates the research purpose of the software and places it in the context of related work. -->
@@ -68,10 +68,10 @@ A common workflow for a geospatial scientist might be: navigate to an online rep
 These workflows typically require many separate tools (i.e. internet browser, file browser, spatial analysis software, and mapping software), and are often manually repeated many times throughout a manuscript revision process and the scientist's career.
 
 `PolarToolkit` aims to consolidate this workflow to be entirely contained within Python, making it both easier and faster to perform all these steps.
-Scripting workflows like this has several advantages: 1) it decreases the chance of human errors, for example using an old version of the downloaded data or accidentally altering a pre-processing steps, such as referencing a raster of elevation data to the geoid instead of the ellipsoid, and 2) it allows entire workflows to be shared easily between collaborators with a single Python file or Jupyter Notebook.
+Scripting workflows like this has several advantages: 1) it decreases the chance of human errors, for example using an old version of the downloaded data or accidentally altering pre-processing steps, such as referencing a raster of elevation data to the geoid instead of the ellipsoid, and 2) it allows entire workflows to be shared easily between collaborators with a single Python file or Jupyter Notebook.
 
 Written in easy-to-learn Python, and utilizing common geospatial data structures, `PolarToolkit` is designed to be familiar to use for experienced Python users, while also being approachable for beginner coders.
-It is built upon several open-source packages, such as [Pooch](https://www.fatiando.org/pooch/latest/) for data downloading [@uiedapooch2020], [PyGMT](https://www.pygmt.org/latest/) for creating figures [@uiedapygmt2021], and [Xarray](https://docs.xarray.dev/en/stable/) and [Verde](https://www.fatiando.org/verde/latest/) for geospatial data processing [@hoyerxarray2017; @uiedaverde2018]. `PolarToolkit` is designed for generic work with polar data while there are other packages available for more specific objectives, such as [ITS_LIVE](https://github.com/nasa-jpl/itslive-py) for working with glacier velocity data [@itslive2024], [icepyx](https://github.com/icesat2py/icepyx) for working with ICESat-2 data [@scheickicepyx2023], and [earthspy](https://github.com/AdrienWehrle/earthspy) for downloading satellite data [@earthspy2024]. Other similar software exists but differ from `PolarToolkit` in being either focused on specific objectives [icepack for glacier flow modelling, @shaperoicepack2023] or using different programming languages which require users to have paid licenses [Antarctic Mapping Tools, @greeneantarctic2017].
+It is built upon several open-source packages, such as [Pooch](https://www.fatiando.org/pooch/latest/) for data downloading [@uiedapooch2020], [PyGMT](https://www.pygmt.org/latest/) for creating figures [@uiedapygmt2021], and [Xarray](https://docs.xarray.dev/en/stable/) and [Verde](https://www.fatiando.org/verde/latest/) for geospatial data processing [@hoyerxarray2017; @uiedaverde2018]. `PolarToolkit` is designed for generic work with polar data while there are other packages available for more specific objectives, such as [ITS_LIVE](https://github.com/nasa-jpl/itslive-py) for working with glacier velocity data [@itslive2024], [icepyx](https://github.com/icesat2py/icepyx) for working with ICESat-2 data [@scheickicepyx2023], and [earthspy](https://github.com/AdrienWehrle/earthspy) for downloading satellite data [@earthspy2024]. Other similar software exists but differs from `PolarToolkit` in being either focused on specific objectives [icepack for glacier flow modelling, @shaperoicepack2023] or using different programming languages which require users to have paid licenses [Antarctic Mapping Tools, @greeneantarctic2017].
 Comprehensive documentation, API reference, tutorials, and how-to guides are available at [https://polartoolkit.readthedocs.io/en/](https://polartoolkit.readthedocs.io/en/), and development occurs in the [GitHub repository](https://github.com/mdtanker/polartoolkit).
 
 
@@ -103,7 +103,7 @@ The below example demonstrates some of the functionality of `PolarToolkit`. Runn
 3) Create a map
   * plot a basemap of imagery
   * plot water column thickness data
-  * add a colorbar histogram to show data distribution
+  * add a colorbar histogram to show the data distribution
   * add features like a scale bar, inset map, and a title
 
 ```python
@@ -150,6 +150,6 @@ fig.show()
 ![Example map output from above code implemented in `PolarToolkit`. Water column thickness [@fretwellbedmap22013] beneath the ice shelves of Antarctica's Saunders Coast. Inset map shows figure location. Grounding line and coastlines shown by black line [@depoorterantarctic2013]. Background imagery from LIMA [@bindschadlerlandsat2008]. Colorbar histogram shows data distribution.](example_figure.png){ width=70% }
 
 # Acknowledgements
-I would like to acknowledge the support in the early stages of this project from Wei Ji Leong, who taught me many of the skills necessary for developing this package, as well as the team at PyGMT, Fatiando a Terra, and the community of Software Underground for all the technical support and providing open-source software which inspired this project.I greatly appreciate the suggestions from reviewers Penny How and Jessica Scheick.
+I would like to acknowledge the support in the early stages of this project from Wei Ji Leong, who taught me many of the skills necessary for developing this package, as well as the team at PyGMT, Fatiando a Terra, and the community of Software Underground for all the technical support and providing open-source software which inspired this project. I greatly appreciate the suggestions from reviewers Penny How and Jessica Scheick.
 
 # References
