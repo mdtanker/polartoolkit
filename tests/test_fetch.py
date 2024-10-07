@@ -52,8 +52,8 @@ skip_earthdata = pytest.mark.skipif(
 )
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @deprecation.fail_if_not_removed
 def test_measures_boundaries():
@@ -205,7 +205,7 @@ resample_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), resample_test)
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_resample_grid(test_input, expected):
@@ -231,9 +231,9 @@ def test_resample_grid(test_input, expected):
 
 
 # %% ice_vel
-@pytest.mark.fetch()
-@pytest.mark.slow()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_lowres():
@@ -251,9 +251,9 @@ def test_ice_vel_lowres():
     )
 
 
-@pytest.mark.fetch()
-@pytest.mark.slow()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_highres():
@@ -293,9 +293,9 @@ def test_ice_vel_highres():
 # %% modis
 
 
-@pytest.mark.fetch()
-@pytest.mark.slow()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_modis():
@@ -338,16 +338,16 @@ def test_modis():
 # utils.get_grid_info(grid)
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @deprecation.fail_if_not_removed
 def test_modis_moa():
     fetch.modis_moa()
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @deprecation.fail_if_not_removed
 def test_modis_mog():
@@ -357,9 +357,9 @@ def test_modis_mog():
 # %% imagery
 
 
-@pytest.mark.fetch()
-@pytest.mark.slow()
-@pytest.mark.issue()
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_imagery():
     grid = fetch.imagery()
@@ -418,7 +418,7 @@ sediment_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), sediment_test)
 def test_sediment_thickness(test_input, expected):
@@ -444,7 +444,7 @@ geomap_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), geomap_test)
 def test_geomap(test_input, expected):
     # collect a few points
@@ -459,7 +459,7 @@ def test_geomap(test_input, expected):
 # %% IBCSO coverage data
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 def test_ibcso_coverage():
     # collect a few points
     points, polygons = fetch.ibcso_coverage(
@@ -554,8 +554,8 @@ ibcso_test = [
 ]
 
 
-@pytest.mark.fetch()
-@pytest.mark.issue()
+@pytest.mark.fetch
+@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), ibcso_test)
 def test_ibcso(test_input, expected):
@@ -688,8 +688,8 @@ bedmachine_test = [
 ]
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected", "hemisphere"), bedmachine_test)
@@ -704,8 +704,8 @@ def test_bedmachine(test_input, expected, hemisphere):
     )
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmachine_reference_south():
@@ -745,8 +745,8 @@ def test_bedmachine_reference_south():
     assert BM_eigen_6c4 == pytest.approx(eigen_6c4, rel=0.1)
 
 
-@pytest.mark.fetch()
-@pytest.mark.earthdata()
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmachine_reference_north():
@@ -837,7 +837,7 @@ bedmap2_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), bedmap2_test)
 def test_bedmap2(test_input, expected):
@@ -851,7 +851,7 @@ def test_bedmap2(test_input, expected):
     )
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmap2_reference():
     # fetch variations of grids and reference models
@@ -910,7 +910,7 @@ bedmap2_fill_nans_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), bedmap2_fill_nans_test)
 def test_bedmap2_fill_nans(test_input, expected):
     grid = fetch.bedmap2(**test_input)
@@ -926,7 +926,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 # %% Bedmap points
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 def test_bedmap_points():
     df = fetch.bedmap_points(version="bedmap1")
     expected = [
@@ -1010,7 +1010,7 @@ gravity_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), gravity_test)
 def test_gravity(test_input, expected):
@@ -1059,7 +1059,7 @@ magnetics_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), magnetics_test)
 def test_magnetics(test_input, expected):
@@ -1126,8 +1126,8 @@ mass_change_test = [
 ]
 
 
-@pytest.mark.fetch()
-@pytest.mark.issue()
+@pytest.mark.fetch
+@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected", "hemisphere"), mass_change_test)
 def test_mass_change(test_input, expected, hemisphere):
@@ -1158,8 +1158,8 @@ basal_melt_test = [
 
 
 @pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
-@pytest.mark.fetch()
-@pytest.mark.issue()
+@pytest.mark.fetch
+@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
@@ -1218,7 +1218,7 @@ ghf_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), ghf_test)
 def test_ghf(test_input, expected):
@@ -1232,7 +1232,7 @@ def test_ghf(test_input, expected):
     )
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 def test_ghf_points():
     df = fetch.ghf(version="burton-johnson-2020", points=True)
     expected = [
@@ -1278,7 +1278,7 @@ gia_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), gia_test)
 def test_gia(test_input, expected):
@@ -1321,7 +1321,7 @@ crust_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), crust_test)
 def test_crustal_thickness(test_input, expected):
@@ -1364,7 +1364,7 @@ moho_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), moho_test)
 def test_moho(test_input, expected):
@@ -1407,7 +1407,7 @@ geoid_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), geoid_test)
 def test_geoid(test_input, expected):
@@ -1451,7 +1451,7 @@ etopo_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), etopo_test)
 def test_etopo(test_input, expected):
@@ -1495,7 +1495,7 @@ rema_test = [
 ]
 
 
-@pytest.mark.fetch()
+@pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), rema_test)
 def test_rema(test_input, expected):
