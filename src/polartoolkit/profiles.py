@@ -557,7 +557,7 @@ def plot_profile(
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     gridlines = kwargs.get("gridlines", True)
-    map_points = kwargs.get("map_points", None)
+    map_points = kwargs.get("map_points")
     coast = kwargs.get("coast", True)
 
     # create dataframe of points
@@ -573,8 +573,8 @@ def plot_profile(
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
             # region=vd.get_region((points.x, points.y)),
-            reference=kwargs.get("default_layers_reference", None),
-            spacing=kwargs.get("default_layers_spacing", None),
+            reference=kwargs.get("default_layers_reference"),
+            spacing=kwargs.get("default_layers_spacing"),
             hemisphere=hemisphere,
         )
 
@@ -609,15 +609,15 @@ def plot_profile(
             raise ValueError(msg)
         df_layers = shorten(
             df_layers,
-            max_dist=kwargs.get("max_dist", None),
-            min_dist=kwargs.get("min_dist", None),
+            max_dist=kwargs.get("max_dist"),
+            min_dist=kwargs.get("min_dist"),
         )
 
         if data_dict is not None:
             df_data = shorten(
                 df_data,
-                max_dist=kwargs.get("max_dist", None),
-                min_dist=kwargs.get("min_dist", None),
+                max_dist=kwargs.get("max_dist"),
+                min_dist=kwargs.get("min_dist"),
             )
 
     fig = pygmt.Figure()
@@ -657,7 +657,7 @@ def plot_profile(
             else:
                 ax1_min_max.append(utils.get_min_max(df_data[k]))
 
-        frames = kwargs.get("data_frame", None)
+        frames = kwargs.get("data_frame")
 
         if isinstance(frames, (str, type(None))):  # noqa: SIM114
             frames = [frames]
@@ -705,7 +705,7 @@ def plot_profile(
             ]
 
             # plot data
-            if kwargs.get("data_line_cmap", None) is None:
+            if kwargs.get("data_line_cmap") is None:
                 # plot data as lines
                 data_pen = kwargs.get("data_pen")
                 if isinstance(data_pen, list):
@@ -717,20 +717,20 @@ def plot_profile(
                     if isinstance(thick, (float, int)):
                         thick = [thick] * len(data_dict.items())
 
-                    color = kwargs.get("data_pen_color", None)
+                    color = kwargs.get("data_pen_color")
                     if isinstance(color, list):
                         color = color[i]
                     if color is None:
                         color = v["color"]
 
-                    style = kwargs.get("data_pen_style", None)
+                    style = kwargs.get("data_pen_style")
                     if isinstance(style, list):
                         style = style[i]
                     if style is None:
                         style = ""
                 pen = f"{thick[i]}p,{color},{style}"
 
-                data_line_style = kwargs.get("data_line_style", None)
+                data_line_style = kwargs.get("data_line_style")
                 if isinstance(data_line_style, list):
                     data_line_style = data_line_style[i]
 
@@ -783,7 +783,7 @@ def plot_profile(
                     S=kwargs.get("data_legend_scale", 1),
                 )
 
-        if kwargs.get("data_line_cmap", None) is not None:
+        if kwargs.get("data_line_cmap") is not None:
             fig.colorbar(
                 cmap=True,
                 frame=f"a+l{kwargs.get('data_line_cmap_label', ' ')}",
@@ -835,20 +835,20 @@ def plot_profile(
                 if isinstance(thick, (float, int)):
                     thick = [thick] * len(layers_dict.items())
 
-                color = kwargs.get("layers_pen_color", None)
+                color = kwargs.get("layers_pen_color")
                 if isinstance(color, list):
                     color = color[i]
                 if color is None:
                     color = "black"
 
-                style = kwargs.get("layers_pen_style", None)
+                style = kwargs.get("layers_pen_style")
                 if isinstance(style, list):
                     style = style[i]
                 if style is None:
                     style = ""
                 pen = f"{thick[i]}p,{color},{style}"
 
-            layers_line_style = kwargs.get("layers_line_style", None)
+            layers_line_style = kwargs.get("layers_line_style")
             if isinstance(layers_line_style, list):
                 layers_line_style = layers_line_style[i]
             # plot lines between df_layers
@@ -868,7 +868,7 @@ def plot_profile(
             )
         # dont fill layers, just draw lines
         else:
-            if kwargs.get("layers_line_cmap", None) is None:
+            if kwargs.get("layers_line_cmap") is None:
                 # get pen properties
                 layers_pen = kwargs.get("layers_pen")
                 if isinstance(layers_pen, list):
@@ -880,13 +880,13 @@ def plot_profile(
                     if isinstance(thick, (float, int)):
                         thick = [thick] * len(layers_dict.items())
 
-                    color = kwargs.get("layers_pen_color", None)
+                    color = kwargs.get("layers_pen_color")
                     if isinstance(color, list):
                         color = color[i]
                     if color is None:
                         color = v["color"]
 
-                    style = kwargs.get("layers_pen_style", None)
+                    style = kwargs.get("layers_pen_style")
                     if isinstance(style, list):
                         style = style[i]
                     if style is None:
@@ -919,7 +919,7 @@ def plot_profile(
                     zvalue=v["color"],
                 )
 
-    if kwargs.get("layers_line_cmap", None) is not None:
+    if kwargs.get("layers_line_cmap") is not None:
         fig.colorbar(
             cmap=True,
             frame=f"a+l{kwargs.get('layers_line_cmap_label', ' ')}",
@@ -1023,7 +1023,7 @@ def plot_profile(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd because it reset projection
-        background = kwargs.get("map_background", None)
+        background = kwargs.get("map_background")
         if background is None:
             if hemisphere == "south":
                 background = fetch.imagery()
@@ -1067,7 +1067,7 @@ def plot_profile(
 
         # plot groundingline and coastlines
         if coast is True:
-            coast_version = kwargs.get("coast_version", None)
+            coast_version = kwargs.get("coast_version")
             if coast_version is None:
                 if hemisphere == "north":
                     coast_version = "BAS"
@@ -1087,7 +1087,7 @@ def plot_profile(
                 projection=map_proj,
                 pen=kwargs.get("coast_pen", "1.2p,black"),
                 no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version", None),
+                version=kwargs.get("coast_version"),
             )
 
         # add lat long grid lines
@@ -1096,8 +1096,8 @@ def plot_profile(
                 fig,
                 map_reg,
                 map_proj_ll,
-                x_spacing=kwargs.get("x_spacing", None),
-                y_spacing=kwargs.get("y_spacing", None),
+                x_spacing=kwargs.get("x_spacing"),
+                y_spacing=kwargs.get("y_spacing"),
             )
 
         # plot profile location, and endpoints on map
@@ -1145,7 +1145,7 @@ def plot_profile(
                 region=map_reg,
                 inset_pos=kwargs.get("inset_pos", "TL"),
                 inset_width=kwargs.get("inset_width", 0.25),
-                inset_reg=kwargs.get("inset_reg", None),
+                inset_reg=kwargs.get("inset_reg"),
             )
 
     if kwargs.get("save") is True:
@@ -1226,7 +1226,7 @@ def plot_data(
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
     gridlines = kwargs.get("gridlines", True)
-    map_points = kwargs.get("map_points", None)
+    map_points = kwargs.get("map_points")
     coast = kwargs.get("coast", True)
 
     # create dataframe of points
@@ -1254,8 +1254,8 @@ def plot_data(
             raise ValueError(msg)
     df_data = shorten(
         df_data,
-        max_dist=kwargs.get("max_dist", None),
-        min_dist=kwargs.get("min_dist", None),
+        max_dist=kwargs.get("max_dist"),
+        min_dist=kwargs.get("min_dist"),
     )
 
     fig = pygmt.Figure()
@@ -1277,7 +1277,7 @@ def plot_data(
         else:
             ax1_min_max.append(utils.get_min_max(df_data[k]))
 
-    frames = kwargs.get("data_frame", None)
+    frames = kwargs.get("data_frame")
 
     if isinstance(frames, (str, type(None))):  # noqa: SIM114
         frames = [frames]
@@ -1325,7 +1325,7 @@ def plot_data(
         ]
 
         # plot data
-        if kwargs.get("data_line_cmap", None) is None:
+        if kwargs.get("data_line_cmap") is None:
             # plot data as lines
             data_pen = kwargs.get("data_pen")
             if isinstance(data_pen, list):
@@ -1337,20 +1337,20 @@ def plot_data(
                 if isinstance(thick, (float, int)):
                     thick = [thick] * len(data_dict.items())
 
-                color = kwargs.get("data_pen_color", None)
+                color = kwargs.get("data_pen_color")
                 if isinstance(color, list):
                     color = color[i]
                 if color is None:
                     color = v["color"]
 
-                style = kwargs.get("data_pen_style", None)
+                style = kwargs.get("data_pen_style")
                 if isinstance(style, list):
                     style = style[i]
                 if style is None:
                     style = ""
             pen = f"{thick[i]}p,{color},{style}"
 
-            data_line_style = kwargs.get("data_line_style", None)
+            data_line_style = kwargs.get("data_line_style")
             if isinstance(data_line_style, list):
                 data_line_style = data_line_style[i]
 
@@ -1394,7 +1394,7 @@ def plot_data(
                 box=kwargs.get("data_legend_box", False),
                 S=kwargs.get("data_legend_scale", 1),
             )
-    if kwargs.get("data_line_cmap", None) is not None:
+    if kwargs.get("data_line_cmap") is not None:
         fig.colorbar(
             cmap=True,
             frame=f"a+l{kwargs.get('data_line_cmap_label', ' ')}",
@@ -1463,7 +1463,7 @@ def plot_data(
 
         # plot imagery, or supplied grid as background
         # can't use maps.plot_grd because it reset projection
-        background = kwargs.get("map_background", None)
+        background = kwargs.get("map_background")
         if background is None:
             if hemisphere == "south":
                 background = fetch.imagery()
@@ -1500,7 +1500,7 @@ def plot_data(
                 projection=map_proj,
                 pen=kwargs.get("coast_pen", "1.2p,black"),
                 no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version", None),
+                version=kwargs.get("coast_version"),
             )
 
         # add lat long grid lines
@@ -1509,8 +1509,8 @@ def plot_data(
                 fig,
                 map_reg,
                 map_proj_ll,
-                x_spacing=kwargs.get("x_spacing", None),
-                y_spacing=kwargs.get("y_spacing", None),
+                x_spacing=kwargs.get("x_spacing"),
+                y_spacing=kwargs.get("y_spacing"),
             )
 
         # plot profile location, and endpoints on map
