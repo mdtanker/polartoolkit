@@ -1111,8 +1111,8 @@ def grd_compare(
     tuple[xarray.DataArray, xarray.DataArray, xarray.DataArray]
         three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
-    shp_mask = kwargs.get("shp_mask", None)
-    region: tuple[float, float, float, float] = kwargs.get("region", None)
+    shp_mask = kwargs.get("shp_mask")
+    region: tuple[float, float, float, float] = kwargs.get("region")
     verbose = kwargs.get("verbose", "e")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
@@ -1173,10 +1173,10 @@ def grd_compare(
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
-        if kwargs.get("registration", None) is None:
+        if kwargs.get("registration") is None:
             registration = get_grid_info(da1)[4]
         else:
-            registration = kwargs.get("registration", None)
+            registration = kwargs.get("registration")
         # resample grids
         grid1 = fetch.resample_grid(
             da1,
@@ -1204,13 +1204,13 @@ def grd_compare(
         grid1,
         shp_mask,
         robust=robust,
-        hemisphere=kwargs.get("hemisphere", None),
+        hemisphere=kwargs.get("hemisphere"),
     )
     grid2_cpt_lims = get_min_max(
         grid2,
         shp_mask,
         robust=robust,
-        hemisphere=kwargs.get("hemisphere", None),
+        hemisphere=kwargs.get("hemisphere"),
     )
 
     diff_maxabs = kwargs.get("diff_maxabs", True)
@@ -1219,7 +1219,7 @@ def grd_compare(
             dif,
             shp_mask,
             robust=robust,
-            hemisphere=kwargs.get("hemisphere", None),
+            hemisphere=kwargs.get("hemisphere"),
         )
     else:
         diff_maxabs = vd.maxabs(
@@ -1227,7 +1227,7 @@ def grd_compare(
                 dif,
                 shp_mask,
                 robust=robust,
-                hemisphere=kwargs.get("hemisphere", None),
+                hemisphere=kwargs.get("hemisphere"),
             )
         )
         diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
@@ -1404,10 +1404,10 @@ def grd_compare(
                 a.set_xlabel("")
                 a.set_ylabel("")
                 a.set_aspect("equal")
-                if kwargs.get("points", None) is not None:
+                if kwargs.get("points") is not None:
                     a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")  # type: ignore[union-attr]
-                if kwargs.get("show_region", None) is not None:
-                    show_region = kwargs.get("show_region", None)
+                if kwargs.get("show_region") is not None:
+                    show_region = kwargs.get("show_region")
                     a.add_patch(
                         mpl.patches.Rectangle(
                             xy=(show_region[0], show_region[2]),
@@ -1491,8 +1491,8 @@ def raps(
         msg = "Missing optional dependency 'seaborn' required for plotting."
         raise ImportError(msg)
 
-    region = kwargs.get("region", None)
-    spacing = kwargs.get("spacing", None)
+    region = kwargs.get("region")
+    spacing = kwargs.get("spacing")
 
     if plot_type == "pygmt":
         spec = pygmt.Figure()
@@ -1607,8 +1607,8 @@ def coherency(
         msg = "Missing optional dependency 'seaborn' required for plotting."
         raise ImportError(msg)
 
-    region = kwargs.get("region", None)
-    spacing = kwargs.get("spacing", None)
+    region = kwargs.get("region")
+    spacing = kwargs.get("spacing")
 
     plt.figure()
 

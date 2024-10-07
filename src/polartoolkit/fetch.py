@@ -2576,7 +2576,7 @@ def gravity(
     .. footbibliography::
     """
 
-    anomaly_type = kwargs.get("anomaly_type", None)
+    anomaly_type = kwargs.get("anomaly_type")
 
     if version == "antgg":
         # found with utils.get_grid_info()
