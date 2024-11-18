@@ -1,4 +1,12 @@
 # How to contribute
+
+## TLDR (Too long; didn't read)
+* open a [GitHub Issue](https://github.com/mdtanker/polartoolkit/issues/new/choose) describing what you want to do
+* [fork](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) the main branch and clone it locally
+* [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits
+* make your changes, and commit them using the [Angular Commits Convention](https://www.conventionalcommits.org/en/v1.0.0-beta.4/#summary)
+* [make a Pull Request](http://makeapullrequest.com/) for your branch
+
 🎉 Thanks for considering contributing to this package! 🎉
 
 <sub>Adapted from the great contribution guidelines of the [Fatiando a Terra](https://www.fatiando.org/) packages<sub>.
@@ -33,11 +41,13 @@ contributions.
 * [Reporting a Bug](#reporting-a-bug)
 * [Editing the Documentation](#editing-the-documentation)
 * [Contributing Code](#contributing-code)
+  - [Setting up Make](#setting-up-make)
   - [Setting up your environment](#setting-up-your-environment)
   - [Code style and linting](#code-style-and-linting)
   - [Testing your code](#testing-your-code)
   - [Documentation](#documentation)
-  - [Code Review](#code-review)
+  - [Committing changes](#committing-changes)
+  - [Code review](#code-review)
 * [Publish a new release](#publish-a-new-release)
 * [Update the Dependencies](#update-the-dependencies)
 * [Create a conda environment file](#create-a-conda-environment-file)
@@ -73,14 +83,11 @@ improved, please consider letting us know by [creating an issue](#reporting-a-bu
 submitting a fix (even better 🌟). You can submit fixes to the documentation pages completely online without having to
 download and install anything:
 
-* On each documentation page, there should be a " ✏️ Suggest edit" link at the very
-  top (click on the GitHub logo).
+* On each documentation page, there should be a " ✏️ Suggest edit" link at the very top (click on the GitHub logo).
 * Click on that link to open the respective source file on GitHub for editing online (you'll need a GitHub account).
 * Make your desired changes.
 * When you're done, scroll to the bottom of the page.
-* Fill out the two fields under "Commit changes": the first is a short title describing
-  your fixes; the second is a more detailed description of the changes. Try to be as
-  detailed as possible and describe *why* you changed something.
+* Fill out the two fields under "Commit changes": the first is a short title describing your fixes, start this with `docs: `, then your short title; the second is a more detailed description of the changes. Try to be as detailed as possible and describe *why* you changed something.
 * Click on the "Commit changes" button to open a pull request (see below).
 * We'll review your changes and then merge them in if everything is OK.
 * Done 🎉🍺
@@ -107,6 +114,34 @@ versiones con Git](https://swcarpentry.github.io/git-novice-es/)
 * 🇬🇧 [The Unix Shell](http://swcarpentry.github.io/shell-novice/) / 🇪🇸
 [La Terminal de Unix](https://swcarpentry.github.io/shell-novice-es/)
 
+### General guidelines
+
+We follow the [git pull request workflow](http://www.asmeurer.com/git-workflow/) to
+make changes to our codebase.
+Every change made to the codebase goes through a pull request so that our
+[continuous integration](https://en.wikipedia.org/wiki/Continuous_integration) services
+have a chance to check that the code is up to standards and passes all our tests.
+This way, the *main* branch is always stable.
+
+General guidelines for pull requests (PRs):
+
+* **Open an issue first** describing what you want to do. If there is already an issue
+  that matches your PR, leave a comment there instead to let us know what you plan to
+  do.
+* Each pull request should consist of a **small** and logical collection of changes.
+* Larger changes should be broken down into smaller components and integrated
+  separately.
+* Bug fixes should be submitted in separate PRs.
+* Describe what your PR changes and *why* this is a good thing. Be as specific as you
+  can. The PR description is how we keep track of the changes made to the project over
+  time.
+* Write descriptive commit messages. Chris Beams has written a
+  [guide](https://chris.beams.io/posts/git-commit/) on how to write good commit
+  messages.
+* Be willing to accept criticism and work on improving your code; we don't want to break
+  other users' code, so care must be taken not to introduce bugs.
+* Be aware that the pull request review process is not immediate, and is generally
+  proportional to the size of the pull request.
 
 ### Setting up `make`
 
@@ -252,7 +287,43 @@ In each PR, you will see section of the checks for `RTD`. Click on this to previ
 
 `RTD` uses the conda environment specified in `env/RTD_env.yml` when it's building.
 
-### Code Review
+### Committing changes
+
+Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Angular Commits Convention](https://www.conventionalcommits.org/en/v1.0.0-beta.4/#summary) for commit messages. This allows automatic creation of the Changelogs, and automatic determination of what the next version will be. All commits should follow the below structure:
+```
+<type>: <description>
+
+[optional body]
+```
+
+Where `type` is one of the following:
+   * `docs` --> a change to the documents
+   * `style`--> simple fixes to the styling of the code
+   * `feat` --> any new features
+   * `fix` --> bug fixes
+   * `build` --> changes to the package build process, i.e. dependencies, changelogs etc.
+   * `chore` --> maintenance changes, like GitHub Action workflows
+   * `refactor` --> refactoring of the code without user-seen changes
+
+The `optional body` can include any detailed description, and can optionally start with `BREAKING CHANGE: `.
+
+Based on the commit message, one of four things will happen when;
+1) no new version will be released
+2) a `PATCH` version will be released (`v1.1.0 -> v1.1.1`)
+3) a `MINOR` version will be released (`v1.1.0 -> v1.2.0`)
+4) a `MAJOR` version will be released (`v1.1.0 -> v2.0.0`)
+
+This follows [Semantic Versioning](https://semver.org/#summary) where given a version number `MAJOR.MINOR.PATCH`, the software should increment the:
+1) `MAJOR` version when you make incompatible API changes
+2) `MINOR` version when you add functionality in a backward compatible manner
+3) `PATCH` version when you make backward compatible bug fixes
+
+The following will occur based on your commit message:
+* `BREAKING CHANGE: ` will always result in a `MAJOR` release
+* `feat` will always result in a `MINOR` release
+* `fix` will always result in a `PATCH` release
+
+### Code review
 
 After you've submitted a pull request, you should expect to hear at least a comment
 within a couple of days.
