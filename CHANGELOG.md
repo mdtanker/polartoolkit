@@ -9,7 +9,13 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ### 🧰 Chores / Maintenance
 * remove ruff commands and use pre-commit ([`e73a310`](https://github.com/mdtanker/polartoolkit/commit/e73a3100a21a39bde2c5d2d048c815713603cdca))
 ### 📖 Documentation
+* rerun docs ([`fba71d7`](https://github.com/mdtanker/polartoolkit/commit/fba71d7e5350ab6425ada571dc50c42b0d8306dc))
+* add commit message convention to contribute guide ([`959f6f4`](https://github.com/mdtanker/polartoolkit/commit/959f6f49abe2da3c8404fb8354e671630057a7b8))
+* add JOSS to citing page ([`54d8273`](https://github.com/mdtanker/polartoolkit/commit/54d827391ac988f14070c37fe12730d7c58427bd))
 * fix issue in contrib guide ([`f776f03`](https://github.com/mdtanker/polartoolkit/commit/f776f03d56c581683688d27552eaec71f4b59029))
+### 🚀 Features
+* add ANTGG2021 gravity compilation ([`f782a85`](https://github.com/mdtanker/polartoolkit/commit/f782a8551a34c1f01f2fa877690ccf1fb7cede3b))
+* allow setting y limits in profile plots ([`894fafb`](https://github.com/mdtanker/polartoolkit/commit/894fafb10bdcebac6f4ff13323888c6f0bdf0182))
 ### ✏️ Formatting
 * pre-commit fixes ([`7514e3a`](https://github.com/mdtanker/polartoolkit/commit/7514e3a80dd919e322953faa40b274294070f981))
 
