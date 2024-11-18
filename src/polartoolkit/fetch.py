@@ -2537,6 +2537,10 @@ def gravity(
     Updates on 2016 AntGG compilation.
     Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/
 
+    version='antgg-2021'
+    Updates on 2016 AntGG compilation.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.971238?format=html#download
+
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
     (ellipsoidal) height from :footcite:t:`forsteeigen6c42014`.
@@ -2699,6 +2703,65 @@ def gravity(
 
         resampled = resample_grid(
             grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+
+    elif version == "antgg-2021":
+        # found with utils.get_grid_info()
+        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
+        initial_spacing = 5e3
+        initial_registration = "g"
+
+        # if region is None:
+        #     region = initial_region
+        # if spacing is None:
+        #     spacing = initial_spacing
+        # if registration is None:
+        #     registration = initial_registration
+
+        if anomaly_type == "FA":
+            url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity-anomaly.nc"
+            fname = "antgg_2021_FA.nc"
+        elif anomaly_type == "DG":
+            url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity_disturbance_at-surface.nc"
+            fname = "antgg_2021_DG.nc"
+        elif anomaly_type == "BA":
+            url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Bouguer-anomaly.nc"
+            fname = "antgg_2021_BA.nc"
+        elif anomaly_type == "Err":
+            url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Standard-deviation_GA-from-LSC.nc"
+            fname = "antgg_2021_Err.nc"
+        else:
+            msg = "invalid anomaly type"
+            raise ValueError(msg)
+
+        path = pooch.retrieve(
+            url=url,
+            fname=fname,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        file = xr.load_dataset(path)
+
+        if anomaly_type == "FA":
+            file = file.grav_anom
+        elif anomaly_type == "DG":
+            file = file.grav_dist
+        elif anomaly_type == "BA":
+            file = file.Boug_anom
+        elif anomaly_type == "Err":
+            file = file.std_grav_anom
+
+        resampled = resample_grid(
+            file,
             initial_spacing,
             initial_region,
             initial_registration,
