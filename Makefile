@@ -43,19 +43,13 @@ test_fetch:
 ####
 ####
 
-format:
-	ruff format $(STYLE_CHECK_FILES)
-
 check:
-	ruff check --fix $(STYLE_CHECK_FILES)
-
-lint:
 	pre-commit run --all-files
 
 pylint:
 	pylint $(PROJECT)
 
-style: format check lint pylint
+style: check pylint
 
 mypy:
 	mypy src/$(PROJECT)
