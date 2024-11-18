@@ -626,6 +626,9 @@ def plot_profile(
     # get max and min of all the layers
     layers_min = df_layers[df_layers.columns[3:]].min().min()
     layers_max = df_layers[df_layers.columns[3:]].max().max()
+    if kwargs.get("layers_ylims") is not None:
+        layers_min = kwargs["layers_ylims"][0]
+        layers_max = kwargs["layers_ylims"][1]
     # add space above and below top and bottom of cross-section
     y_buffer = (layers_max - layers_min) * kwargs.get("layer_buffer", 0.1)
     # set region for x-section
@@ -693,6 +696,11 @@ def plot_profile(
                         "nEsw",
                         f"ya+l{kwargs.get('data_y1_label',' ')}",
                     ]
+
+            if kwargs.get("data_ylims") is not None:
+                data_min = kwargs["data_ylims"][0]
+                data_max = kwargs["data_ylims"][1]
+
             # add space above and below top and bottom of graph
             y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
 
@@ -1313,6 +1321,10 @@ def plot_data(
                     "nEsw",
                     f"ya+l{kwargs.get('data_y1_label',' ')}",
                 ]
+
+        if kwargs.get("data_ylims") is not None:
+            data_min = kwargs["data_ylims"][0]
+            data_max = kwargs["data_ylims"][1]
         # add space above and below top and bottom of graph
         y_buffer = (data_max - data_min) * kwargs.get("data_buffer", 0.1)
 
