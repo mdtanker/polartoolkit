@@ -1567,29 +1567,28 @@ def add_gridlines(
         x_frames = ["xag", "xa"]
     else:
         x_frames = [
-            f"xa{x_spacing}g{x_spacing/2}",
-            f"xa{x_spacing}",
+            f"xa{x_spacing*2}g{x_spacing}",
+            f"xa{x_spacing*2}",
         ]
 
     if y_spacing is None:
         y_frames = ["yag", "ya"]
     else:
         y_frames = [
-            f"ya{y_spacing}g{y_spacing/2}",
-            f"ya{y_spacing}",
+            f"ya{y_spacing*2}g{y_spacing}",
+            f"ya{y_spacing*2}",
         ]
 
     with pygmt.config(
         MAP_ANNOT_OFFSET_PRIMARY=annotation_offset,  # move annotations in/out
         MAP_ANNOT_MIN_ANGLE=0,
+        MAP_ANNOT_MIN_SPACING="auto",
         MAP_FRAME_TYPE="inside",
-        MAP_ANNOT_OBLIQUE=0,  # rotate relative to lines
+        MAP_ANNOT_OBLIQUE="anywhere",
         FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
         MAP_GRID_PEN_PRIMARY="auto,gray",
-        MAP_TICK_LENGTH_PRIMARY="-5p",
+        MAP_TICK_LENGTH_PRIMARY="auto",
         MAP_TICK_PEN_PRIMARY="auto,gray",
-        # FORMAT_GEO_MAP="dddF",
-        # MAP_POLAR_CAP="90/90",
     ):
         # plot semi-transparent lines and annotations with black font and white shadow
         fig.basemap(
@@ -1601,7 +1600,6 @@ def add_gridlines(
                 y_frames[0],
             ],
             transparency=50,
-            # verbose="q",
         )
         # re-plot annotations with no transparency
         with pygmt.config(FONT_ANNOT_PRIMARY="8p,black"):
@@ -1613,7 +1611,6 @@ def add_gridlines(
                     x_frames[0],
                     y_frames[0],
                 ],
-                # verbose="q",
             )
 
 
