@@ -86,7 +86,6 @@ docs = [
 ]
 dev = [
     "polartoolkit[interactive,viz,test,docs]",
-    "ruff",
     "nox",
     "pre-commit",
     "pylint>=3.2",

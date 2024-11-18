@@ -1112,7 +1112,7 @@ def grd_compare(
         three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
     shp_mask = kwargs.get("shp_mask")
-    region: tuple[float, float, float, float] = kwargs.get("region")
+    region = kwargs.get("region")
     verbose = kwargs.get("verbose", "e")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
@@ -1406,8 +1406,8 @@ def grd_compare(
                 a.set_aspect("equal")
                 if kwargs.get("points") is not None:
                     a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")  # type: ignore[union-attr]
-                if kwargs.get("show_region") is not None:
-                    show_region = kwargs.get("show_region")
+                show_region = kwargs.get("show_region")
+                if show_region is not None:
                     a.add_patch(
                         mpl.patches.Rectangle(
                             xy=(show_region[0], show_region[2]),

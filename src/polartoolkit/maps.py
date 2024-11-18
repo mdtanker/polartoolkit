@@ -420,7 +420,7 @@ def basemap(
         add_box(
             fig,
             show_region,
-            pen=kwargs.get("region_pen"),
+            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
         )
 
     # add datapoints
@@ -1087,7 +1087,7 @@ def plot_grd(
         add_box(
             fig,
             show_region,
-            pen=kwargs.get("region_pen"),
+            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
         )
 
     # plot groundingline and coastlines
@@ -1293,7 +1293,7 @@ def add_colorbar(
         # if no region supplied, get region of current PyGMT figure
         if region is None:
             with pygmt.clib.Session() as lib:
-                region = list(lib.extract_region())
+                region = tuple(lib.extract_region())
                 assert len(region) == 4
 
         # clip grid to plot region
@@ -2200,35 +2200,24 @@ def subplots(
         for i, j in enumerate(grids):
             with fig.set_panel(panel=i):
                 # if list of cmaps provided, use them
-                if kwargs.get("cmaps") is not None:
-                    cmap = kwargs.get("cmaps")[i]
-                # if not, use viridis
-                else:
-                    cmap = "viridis"
+                cmaps = kwargs.get("cmaps")
+                cmap = cmaps[i] if cmaps is not None else "viridis"
 
                 # if list of titles provided, use them
-                if kwargs.get("subplot_titles") is not None:
-                    sub_title = kwargs.get("subplot_titles")[i]
-                else:
-                    sub_title = None
+                subplot_titles = kwargs.get("subplot_titles")
+                sub_title = subplot_titles[i] if subplot_titles is not None else None
 
                 # if list of colorbar labels provided, use them
-                if kwargs.get("cbar_labels") is not None:
-                    cbar_label = kwargs.get("cbar_labels")[i]
-                else:
-                    cbar_label = " "
+                cbar_labels = kwargs.get("cbar_labels")
+                cbar_label = cbar_labels[i] if cbar_labels is not None else " "
 
                 # if list of colorbar units provided, use them
-                if kwargs.get("cbar_units") is not None:
-                    cbar_unit = kwargs.get("cbar_units")[i]
-                else:
-                    cbar_unit = " "
+                cbar_units = kwargs.get("cbar_units")
+                cbar_unit = cbar_units[i] if cbar_units is not None else " "
 
                 # if list of cmaps limits provided, use them
-                if kwargs.get("cpt_limits") is not None:
-                    cpt_lims = kwargs.get("cpt_limits")[i]
-                else:
-                    cpt_lims = None
+                cpt_limits = kwargs.get("cpt_limits")
+                cpt_lims = cpt_limits[i] if cpt_limits is not None else None
 
                 # plot the grids
                 plot_grd(
@@ -2313,7 +2302,6 @@ def plot_3d(
     num_grids = len(grids)
 
     # if not provided as a list, make it a list the length of num_grids
-
     if not isinstance(cbar_labels, list):
         cbar_labels = [cbar_labels] * num_grids
     if not isinstance(modis, list):
@@ -2338,9 +2326,7 @@ def plot_3d(
         & (all(isinstance(x, float) for x in cpt_lims_list))
     ):
         cpt_lims_list = [cpt_lims_list] * num_grids
-    if cmap_region is None:
-        cmap_region = [None] * num_grids
-    elif (
+    if (
         isinstance(cmap_region, list)
         & (len(cmap_region) == 4)
         & (all(isinstance(x, float) for x in cmap_region))

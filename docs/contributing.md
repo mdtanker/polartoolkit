@@ -151,15 +151,11 @@ This environment now contains your local, editable version of PolarToolkit, mean
 
 ### Code style and linting
 
-We use [Ruff](https://docs.astral.sh/ruff/) to format the code so we don't have to
-think about it. This allows you to not think about proper indentation, line length, or aligning your code while to development. Before committing, or periodically while you code, run the following to automatically format your code:
-```
-make format
-```
-Some formatting changes can't be applied automatically. Running the following to see these.
+We use [pre-commit](https://pre-commit.com/) to check code style. This can be used locally, by installing pre-commit, or can be used as a pre-commit hook, where it is automatically run by git for each commit to the repository. This pre-commit hook wont add or commit any changes, but will just inform your of what should be changed. Pre-commit is setup within the `.pre-commit-config.yaml` file. There are lots of hooks (processes) which run for each pre-commit call, including [Ruff](https://docs.astral.sh/ruff/) to format and lint the code. This allows you to not think about proper indentation, line length, or aligning your code during development. Before committing, or periodically while you code, run the following to automatically format your code:
 ```
 make check
 ```
+
 Go through the output of this and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
 
 We also use [Pylint](https://pylint.readthedocs.io/en/latest/), which performs static-linting on the code. This checks the code and catches many common bugs and errors, without running any of the code. This check is slightly slower the the `Ruff` check. Run it with the following:
@@ -168,7 +164,7 @@ make pylint
 ```
 Similar to using `Ruff`, go through the output of this, search the error codes on the [Pylint documentation](https://pylint.readthedocs.io/en/latest/) for help, and try and fix all the errors and warnings. If there are false-positives, or your confident you don't agree with the warning, add ` # pylint: disable=` at the end of the lines, with the warning code following the `=`.
 
-To run all three of the code checks, use:
+To run both pre-commit and pylint together use:
 ```
 make style
 ```
