@@ -7,8 +7,11 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 ### 📦️ Build
 * update backup env yml for`v0.5.1` ([`7a1b984`](https://github.com/mdtanker/polartoolkit/commit/7a1b98434fed49a94d097a77557252a5a5314dce))
 ### 🧰 Chores / Maintenance
+* remove ruff commands and use pre-commit ([`e73a310`](https://github.com/mdtanker/polartoolkit/commit/e73a3100a21a39bde2c5d2d048c815713603cdca))
 ### 📖 Documentation
 * fix issue in contrib guide ([`f776f03`](https://github.com/mdtanker/polartoolkit/commit/f776f03d56c581683688d27552eaec71f4b59029))
+### ✏️ Formatting
+* pre-commit fixes ([`7514e3a`](https://github.com/mdtanker/polartoolkit/commit/7514e3a80dd919e322953faa40b274294070f981))
 
 
 ## v0.5.1 (2024-08-05)
