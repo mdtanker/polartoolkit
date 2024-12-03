@@ -18,6 +18,14 @@ etopo
 modis_mog
 ```
 
+## Geophysical data
+
+```{nbgallery}
+---
+---
+magnetics
+```
+
 ## Geophysically-derived data
 
 ```{nbgallery}

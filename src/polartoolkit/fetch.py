@@ -3068,6 +3068,7 @@ def magnetics(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
@@ -3099,6 +3100,9 @@ def magnetics(
     registration : str, optional,
         choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
         the original type of the grid
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
     kwargs : typing.Any
         key word arguments to pass to resample_grid.
 
@@ -3259,6 +3263,103 @@ def magnetics(
             progressbar=True,
         )
         resampled = path
+
+    elif version == "LCS-1":
+        hemisphere = utils.default_hemisphere(hemisphere)
+
+        initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
+        initial_spacing = 10e3  # .25 degree resolution, ~20 km
+        initial_registration = "g"
+
+        if hemisphere == "south":
+            proj = "EPSG:3031"
+        elif hemisphere == "north":
+            proj = "EPSG:3413"
+        else:
+            msg = "invalid hemisphere"
+            raise ValueError(msg)
+
+        if region is None:
+            region = initial_region
+        if spacing is None:
+            spacing = initial_spacing
+        if registration is None:
+            registration = initial_registration
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Unzip the folder, grid the data, and save it back as a .nc"
+            path = pooch.Unzip()(fname, action, _pooch2)
+            fname1 = Path(path[0])
+
+            # Rename to the file to ***_preprocessed.nc
+            if hemisphere == "south":
+                fname_pre = fname1.with_stem(fname1.stem + "epsg3031_preprocessed")
+            elif hemisphere == "north":
+                fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
+            else:
+                msg = "invalid hemisphere"
+                raise ValueError(msg)
+            fname_processed = fname_pre.with_suffix(".nc")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    header=None,
+                    skiprows=6,
+                    sep=r"\s+",
+                    names=["lon", "lat", "nT"],
+                )
+
+                # re-project to polar stereographic
+                transformer = Transformer.from_crs("epsg:4326", proj)
+                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
+                    df.lat.tolist(), df.lon.tolist()
+                )
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "nT"]],
+                    spacing=initial_spacing,
+                    region=initial_region,
+                    registration=initial_registration,
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "nT"]],
+                    spacing=initial_spacing,
+                    region=initial_region,
+                    registration=initial_registration,
+                    maxradius="1c",
+                )
+                # Save to disk
+                processed.to_netcdf(fname_processed)
+            return str(fname_processed)
+
+        url = "https://www.spacecenter.dk/files/magnetic-models/LCS-1/F_LCS-1_ellipsoid_14-185_ASC.zip"
+
+        path = pooch.retrieve(
+            url=url,
+            fname="F_LCS-1_ellipsoid_14-185_ASC.zip",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.load_dataarray(path)
+
+        resampled = resample_grid(
+            grid,
+            initial_spacing,
+            initial_region,
+            initial_registration,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+
     else:
         msg = "invalid version string"
         raise ValueError(msg)
