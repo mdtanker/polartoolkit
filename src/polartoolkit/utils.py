@@ -760,7 +760,7 @@ def mask_from_shp(
         ds = vd.make_xarray_grid(
             coords,
             np.ones_like(coords[0]),
-            dims=reversed(input_coord_names),
+            dims=input_coord_names[::-1],
             data_names="z",
         )
         xds = ds.z.rio.write_crs(crs)
