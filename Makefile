@@ -1,7 +1,8 @@
 # Build, package, test, and clean
 PROJECT=polartoolkit
-STYLE_CHECK_FILES=.
+VERSION := $(shell grep -m 1 'version =' pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
 
+print-%  : ; @echo $* = $($*)
 ####
 ####
 # install commands
@@ -14,14 +15,14 @@ create:
 install:
 	pip install -e .[all]
 
-install_test:
-	pip install $(PROJECT)[all]
-
 remove:
 	mamba remove --name $(PROJECT) --all
 
+pip_install:
+	pip install $(PROJECT)[all]==$(VERSION)
+
 conda_install:
-	mamba create --name $(PROJECT) --yes --force --channel conda-forge $(PROJECT) pytest pytest-cov deepdiff
+	mamba create --name $(PROJECT) --yes --force --channel conda-forge $(PROJECT)=$(VERSION) pytest pytest-cov deepdiff ipykernel
 
 conda_export:
 	mamba env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
