@@ -180,12 +180,24 @@ def sample_grids(
     except KeyError:
         df1 = df.copy()
 
+    if "index" in df1.columns:
+        msg = "index column must be removed or renamed before sampling"
+        raise ValueError(msg)
+
     df2 = df1.copy()
 
     # reset the index
     df3 = df2.reset_index()
 
+    # get x and y column names
     x, y = kwargs.get("coord_names", ("x", "y"))
+
+    # check column names exist, if not, use other common names
+    if (x in df3.columns) and (y in df3.columns):
+        pass
+    elif ("easting" in df3.columns) and ("northing" in df3.columns):
+        x, y = ("easting", "northing")
+
     # get points to sample at
     points = df3[[x, y]].copy()
 
