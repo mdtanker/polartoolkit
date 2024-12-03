@@ -392,9 +392,9 @@ def latlon_to_epsg3031(
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
     input_coord_names : list, optional
-        set names for input coordinate columns, by default ["lon", "lat"]
+        set names for input coordinate columns, by default ("lon", "lat")
     output_coord_names : list, optional
-        set names for output coordinate columns, by default ["x", "y"]
+        set names for output coordinate columns, by default ("x", "y")
 
     Returns
     -------
@@ -444,9 +444,10 @@ def epsg3031_to_latlon(
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
     input_coord_names : list, optional
-        set names for input coordinate columns, by default ["x", "y"]
+        set names for input coordinate columns, by default ("x", "y") or
+        ("easting", "northing")
     output_coord_names : list, optional
-        set names for output coordinate columns, by default ["lon", "lat"]
+        set names for output coordinate columns, by default ("lon", "lat")
 
     Returns
     -------
@@ -496,9 +497,9 @@ def latlon_to_epsg3413(
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
     input_coord_names : list, optional
-        set names for input coordinate columns, by default ["lon", "lat"]
+        set names for input coordinate columns, by default ("lon", "lat")
     output_coord_names : list, optional
-        set names for output coordinate columns, by default ["x", "y"]
+        set names for output coordinate columns, by default ("x", "y")
 
     Returns
     -------
@@ -548,9 +549,10 @@ def epsg3413_to_latlon(
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
     input_coord_names : list, optional
-        set names for input coordinate columns, by default ["x", "y"]
+        set names for input coordinate columns, by default ("x", "y") or
+        ("easting", "northing")
     output_coord_names : list, optional
-        set names for output coordinate columns, by default ["lon", "lat"]
+        set names for output coordinate columns, by default ("lon", "lat")
 
     Returns
     -------
@@ -600,7 +602,8 @@ def points_inside_region(
         bounding region in format [xmin, xmax, ymin, ymax] for bounds of new subset
         dataframe
     names : tuple[str, str], optional
-        column names to use for x and y coordinates, by default ("x", "y")
+        column names to use for x and y coordinates, by default ("x", "y") or
+        ("easting", "northing")
     reverse : bool, optional
         if True, will return points outside the region, by default False
 
@@ -646,7 +649,8 @@ def block_reduce(
     reduction : typing.Callable
         function to use in reduction, e.g. np.mean
     input_coord_names : tuple[str, str], optional
-        strings of coordinate column names, by default ("x", "y")
+        strings of coordinate column names, by default ("x", "y") or
+        ("easting", "northing")
     input_data_names : typing.Any | None, optional
         strings of data column names, by default None
 
@@ -724,6 +728,11 @@ def mask_from_shp(
     masked : bool, optional
         choose whether to return the masked grid (True) or the mask itself (False), by
         default False
+    pixel_register : bool, optional
+        choose whether the grid is pixel registered (True) or grid registered (False),
+        by default True
+    input_coord_names : tuple[str, str], optional
+        set names for input coordinate columns, by default ("x", "y")
 
     Returns
     -------
