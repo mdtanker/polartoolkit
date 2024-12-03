@@ -461,6 +461,12 @@ def epsg3031_to_latlon(
     df_out = df.copy()
 
     if isinstance(df, pd.DataFrame):
+        # check for coord column names
+        if ("x" in df_out.columns) and ("y" in df_out.columns):  # type: ignore[union-attr]
+            pass
+        elif ("easting" in df_out.columns) and ("northing" in df_out.columns):  # type: ignore[union-attr]
+            input_coord_names = ("easting", "northing")
+
         (  # pylint: disable=unpacking-non-sequence
             df_out[output_coord_names[1]],  # type: ignore[call-overload]
             df_out[output_coord_names[0]],  # type: ignore[call-overload]
@@ -566,6 +572,12 @@ def epsg3413_to_latlon(
     df_out = df.copy()
 
     if isinstance(df, pd.DataFrame):
+        # check for coord column names
+        if ("x" in df_out.columns) and ("y" in df_out.columns):  # type: ignore[union-attr]
+            pass
+        elif ("easting" in df_out.columns) and ("northing" in df_out.columns):  # type: ignore[union-attr]
+            input_coord_names = ("easting", "northing")
+
         (  # pylint: disable=unpacking-non-sequence
             df_out[output_coord_names[1]],  # type: ignore[call-overload]
             df_out[output_coord_names[0]],  # type: ignore[call-overload]
@@ -615,6 +627,12 @@ def points_inside_region(
     # make a copy of the dataframe
     df1 = df.copy()
 
+    # check for coord column names
+    if ("x" in df1.columns) and ("y" in df1.columns):
+        pass
+    elif ("easting" in df1.columns) and ("northing" in df1.columns):
+        names = ("easting", "northing")
+
     # make column of booleans for whether row is within the region
     df1["inside_tmp"] = vd.inside(
         coordinates=(df1[names[0]], df1[names[1]]), region=region
@@ -661,6 +679,12 @@ def block_reduce(
     """
     # define verde reducer function
     reducer = vd.BlockReduce(reduction, **kwargs)
+
+    # check for coord column names
+    if ("x" in df.columns) and ("y" in df.columns):
+        pass
+    elif ("easting" in df.columns) and ("northing" in df.columns):
+        input_coord_names = ("easting", "northing")
 
     # if no data names provided, use all columns
     if input_data_names is None:
