@@ -1984,8 +1984,8 @@ def interactive_map(
     points : pandas.DataFrame, optional
         choose to plot points supplied as columns x, y, in EPSG:3031 in a dataframe
     basemap_type : str, optional
-        choose what basemap to plot, options are 'BlueMarble', 'Imagery', and 'Basemap',
-        by default 'BlueMarble'
+        choose what basemap to plot, options are 'BlueMarble', 'Imagery', 'Basemap', and
+        "IceVelocity", by default 'BlueMarble'
 
     Returns
     -------
@@ -2059,7 +2059,7 @@ def interactive_map(
 
     if hemisphere == "south":
         if basemap_type == "BlueMarble":
-            base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3031  # pylint: disable=no-member
+            base = ipyleaflet.basemaps.NASAGIBS.BlueMarbleBathymetry3031  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3031.NASAGIBS
         elif basemap_type == "Imagery":
             base = ipyleaflet.basemaps.Esri.AntarcticImagery  # pylint: disable=no-member
@@ -2067,19 +2067,28 @@ def interactive_map(
         elif basemap_type == "Basemap":
             base = ipyleaflet.basemaps.Esri.AntarcticBasemap  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3031.ESRIBasemap
+        elif basemap_type == "IceVelocity":
+            base = ipyleaflet.basemaps.NASAGIBS.MEaSUREsIceVelocity3031  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3031.NASAGIBS
         else:
             msg = "invalid string for basemap_type"
             raise ValueError(msg)
     elif hemisphere == "north":
         if basemap_type == "BlueMarble":
-            base = ipyleaflet.basemaps.NASAGIBS.BlueMarble3413  # pylint: disable=no-member
+            base = ipyleaflet.basemaps.NASAGIBS.BlueMarbleBathymetry3413  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3413.NASAGIBS
         # elif basemap_type == "Imagery":
-        #     base = ipyleaflet.basemaps.Esri.ArcticImagery  # pylint: disable=no-member
-        #     proj = ipyleaflet.projections.EPSG5936.ESRIImagery
+        #   base = ipyleaflet.basemaps.Esri.ArcticImagery  # pylint: disable=no-member
+        #   proj = ipyleaflet.projections.EPSG5936.ESRIImagery
         # elif basemap_type == "Basemap":
-        #     base = ipyleaflet.basemaps.Esri.OceanBasemap  # pylint: disable=no-member
-        #     proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
+        #   base = ipyleaflet.basemaps.Esri.OceanBasemap  # pylint: disable=no-member
+        #   proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
+        #   base = ipyleaflet.basemaps.Esri.ArcticOceanBase  # pylint: disable=no-member
+        #   proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
+        elif basemap_type == "IceVelocity":
+            base = ipyleaflet.basemaps.NASAGIBS.MEaSUREsIceVelocity3413  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3413.NASAGIBS
+
         else:
             msg = "invalid string for basemap_type"
             raise ValueError(msg)
