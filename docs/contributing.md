@@ -398,5 +398,14 @@ Now, when submitting a PR, RTD will automatically build the docs and update the 
 * wait for `conda` to publish the new version [here](https://anaconda.org/conda-forge/polartoolkit)
 * update backup `env/environment.yml`
 * update polartoolkit version in `environment.yml` in [PolarToolkit-Binder repo](https://github.com/mdtanker/polartoolkit-binder/blob/main/environment.yml)
-* test `PyPI` version with `make install_test` and `make test`
-* test `conda` version with `make conda_install` and `make test`
+* test `PyPI` version with:
+    - `make remove`
+    - `make create`
+    - `mamba activate polartoolkit`
+    - `make pip_install`
+    - `make test`
+* test `conda` version with:
+    - `make remove`
+    - `make conda_install`
+    - `mamba activate polartoolkit`
+    - `make test`
