@@ -69,7 +69,6 @@ how_to/index.md
 ```{toctree}
 :hidden:
 :caption: 📂 Available datasets
-datasets/index.md
 datasets/antarctica/index.md
 datasets/greenland_arctic/index.md
 ```
