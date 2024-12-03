@@ -2540,10 +2540,11 @@ def gravity(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Loads 1 of 3 'versions' of Antarctic gravity grids.
+    Loads gravity anomaly data for the Arctic and Antarctic.
 
     version='antgg'
     Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne
@@ -2577,6 +2578,9 @@ def gravity(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    hemisphere : str, optional
+        choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid and set the anomaly_type.
 
@@ -2790,9 +2794,19 @@ def gravity(
         )
 
     elif version == "eigen":
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
+        hemisphere = utils.default_hemisphere(hemisphere)
+
+        initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
         initial_spacing = 5e3
         initial_registration = "g"
+
+        if hemisphere == "south":
+            proj = "EPSG:3031"
+        elif hemisphere == "north":
+            proj = "EPSG:3413"
+        else:
+            msg = "invalid hemisphere"
+            raise ValueError(msg)
 
         if region is None:
             region = initial_region
@@ -2804,8 +2818,17 @@ def gravity(
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .nc file, reproject, and save it back"
             fname1 = Path(fname)
+
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+            if hemisphere == "south":
+                fname_pre = fname1.with_stem(fname1.stem + "epsg3031_preprocessed")
+            elif hemisphere == "north":
+                fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
+            else:
+                msg = "invalid hemisphere"
+                raise ValueError(msg)
+            fname_processed = fname_pre.with_suffix(".nc")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
@@ -2814,7 +2837,7 @@ def gravity(
                 # reproject to polar stereographic
                 grid2 = pygmt.grdproject(
                     grid,
-                    projection="EPSG:3031",
+                    projection=proj,
                     spacing=initial_spacing,
                 )
                 # get just antarctica region
@@ -3090,7 +3113,7 @@ def magnetics(
     **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
-    Load 1 of 3 'versions' of Antarctic magnetic anomaly grid.
+    Load magnetic anomaly data for the Arctic and Antarctic.
     from :footcite:t:`golynskynew2018` and :footcite:t:`golynskyadmap2006`.
 
     version='admap1'
@@ -3106,10 +3129,15 @@ def magnetics(
     Geosoft-specific .gdb abridged files :footcite:t:`golynskyadmap22018`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.892722?format=html#download
 
+    version='LCS-1'
+    Satellite-only derived magnetic anomaly at Earth's surface (WGS84 ellipsoid) for
+    spherical harmonic degrees n=14-185
+    Accessed from https://www.spacecenter.dk/files/magnetic-models/LCS-1/
+
     Parameters
     ----------
     version : str
-        Either 'admap1', 'admap2', or 'admap2_gdb'
+        Either 'admap1', 'admap2', 'admap2_gdb' or 'LCS-1'.
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip

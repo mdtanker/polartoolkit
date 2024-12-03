@@ -986,6 +986,7 @@ gravity_test = [
             204.800003052,
             "g",
         ),
+        None,
     ),
     (
         "antgg-update",
@@ -996,6 +997,7 @@ gravity_test = [
             171.86000061,
             "g",
         ),
+        None,
     ),
     (
         "antgg-2021",
@@ -1006,25 +1008,38 @@ gravity_test = [
             308.477203369,
             "g",
         ),
+        None,
     ),
     (
         "eigen",
         (
-            5000,
-            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
-            977835.3125,
+            5000.0,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            977667.5625,
             980167.75,
             "g",
         ),
+        "south",
+    ),
+    (
+        "eigen",
+        (
+            5000.0,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            977640.875,
+            980201.9375,
+            "g",
+        ),
+        "north",
     ),
 ]
 
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected"), gravity_test)
-def test_gravity(test_input, expected):
-    grid = fetch.gravity(test_input, anomaly_type="FA")
+@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), gravity_test)
+def test_gravity(test_input, expected, hemisphere):
+    grid = fetch.gravity(test_input, anomaly_type="FA", hemisphere=hemisphere)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
