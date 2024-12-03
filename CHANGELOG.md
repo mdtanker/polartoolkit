@@ -5,7 +5,27 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 
 ## Unreleased
 ### 🧰 Chores / Maintenance
+* update make test install commands and instructions ([`c236a9e`](https://github.com/mdtanker/polartoolkit/commit/c236a9e15ef78febb3cf7559587b6bc8a9c97c6c))
 * update backup environmental.yml for `v0.6.0` ([`5626d22`](https://github.com/mdtanker/polartoolkit/commit/5626d221d22fc7af8e6bb2985d10abc21d42344d))
+### 📖 Documentation
+* remove overall dataset gallery ([`99dadb2`](https://github.com/mdtanker/polartoolkit/commit/99dadb2ef29dbbefefdf9ce4bc09cf1d3df727d7))
+* fixes to some docstrings ([`bf2b747`](https://github.com/mdtanker/polartoolkit/commit/bf2b747021aa17216ed4b690618442dbcc7f1bfa))
+* rerun notebook ([`37edf1d`](https://github.com/mdtanker/polartoolkit/commit/37edf1dcd6abeb8e139bad6b583c63cad91f0295))
+### 🚀 Features
+* add EIGEN gravity data for Arctic ([`a1b1943`](https://github.com/mdtanker/polartoolkit/commit/a1b19433a59731c5851aa56d6e68ef01be5744f8))
+* add ice velocity basemap to `interactive_map` ([`7f410f8`](https://github.com/mdtanker/polartoolkit/commit/7f410f8b99480d6517ac8bed7e5a2f623b0e9a91))
+* allow easting and northing as backups for x and y for coord column names in various functions ([`8f8ae84`](https://github.com/mdtanker/polartoolkit/commit/8f8ae84053963fac3390ef773cf318a00e8b264c))
+* add LCS-1 satellite magnetic anomaly grids ([`3b400f9`](https://github.com/mdtanker/polartoolkit/commit/3b400f9e659a05bcbb800d359c9e79c51e0311fa))
+### 🐛 Bug Fixes
+* broken shading parameter in `plot_grd` ([`97ec19b`](https://github.com/mdtanker/polartoolkit/commit/97ec19b243a570176b5cb44a6a71a9466aee4979))
+* bug in `mask_from_shp` ([`b3e3dbc`](https://github.com/mdtanker/polartoolkit/commit/b3e3dbcf4d3513ec2c9013c2a46920c59673b567))
+* raise warning if passing buffer to `alter_region` ([`be16120`](https://github.com/mdtanker/polartoolkit/commit/be16120628eb84b68f62e57d1943787381008fe9))
+* bug in `square_subplots` ([`861310c`](https://github.com/mdtanker/polartoolkit/commit/861310ca886edb7ad3b534e8371136744fdc89ff))
+* allow easting and northing as coordinate column names as backups for x and y in `sample_grids` ([`8cb9f8a`](https://github.com/mdtanker/polartoolkit/commit/8cb9f8a36cb359d395a2ea7fb1e3953344b3fee2))
+* check for valid version strings in `fetch.mass_change` ([`24cd984`](https://github.com/mdtanker/polartoolkit/commit/24cd984953c08aa753b45714c9f72e6f04d34d7f))
+### ✏️ Formatting
+* pre-commit fixes ([`1082e32`](https://github.com/mdtanker/polartoolkit/commit/1082e32db7eb799562d512a861db7ae6021cf3de))
+* pre-commit fixes ([`4d9be74`](https://github.com/mdtanker/polartoolkit/commit/4d9be74566def222d6794eb20aa8b7a83716a212))
 
 
 ## v0.6.0 (2024-11-18)
