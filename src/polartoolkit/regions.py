@@ -236,8 +236,6 @@ def alter_region(
         shift north, or south if negative, in meters, by default 0
     w_shift : float, optional
         shift west, or east if negative, in meters, by default 0
-    buffer : float, optional
-        create new region which is zoomed out in all direction, in meters, by default 0
 
     Returns
     -------
