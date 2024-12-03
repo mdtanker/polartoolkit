@@ -1702,7 +1702,7 @@ def square_subplots(n: int) -> tuple[int, int]:
     #     8: (3, 3),
     #     9: (3, 3),
     # }
-    special_cases = {3: (2, 1), 5: (2, 3)}
+    special_cases = {3: (1, 3), 5: (2, 3)}
     if n in special_cases:
         return special_cases[n]
 
