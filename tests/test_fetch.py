@@ -1050,6 +1050,7 @@ magnetics_test = [
             1766.1373291,
             "g",
         ),
+        None,
     ),
     (
         "admap2",
@@ -1060,20 +1061,38 @@ magnetics_test = [
             4851.73828125,
             "g",
         ),
+        None,
     ),
-    # (
-    #     "admap2_gdb",
-    #     (
-    #     ),
-    # ),
+    (
+        "LCS-1",
+        (
+            10000.0,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -316.829925537,
+            601.757263184,
+            "g",
+        ),
+        "south",
+    ),
+    (
+        "LCS-1",
+        (
+            10000.0,
+            (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+            -359.858154297,
+            570.593200684,
+            "g",
+        ),
+        "north",
+    ),
 ]
 
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected"), magnetics_test)
-def test_magnetics(test_input, expected):
-    grid = fetch.magnetics(test_input)
+@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), magnetics_test)
+def test_magnetics(test_input, expected, hemisphere):
+    grid = fetch.magnetics(test_input, hemisphere=hemisphere)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),

@@ -38,6 +38,7 @@ greenland_arctic/groundingline
 greenland_arctic/bedmachine
 greenland_arctic/geoid
 greenland_arctic/etopo
+greenland_arctic/magnetics
 greenland_arctic/mass_change
 greenland_arctic/ice_velocity
 ```
