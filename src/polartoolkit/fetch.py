@@ -340,6 +340,24 @@ def mass_change(
             version = "dhdt_grounded"
         elif hemisphere == "north":
             version = "dhdt"
+    else:
+        valid_versions = [
+            "dhdt",
+            "dmdt",
+            "dhdt_grounded",
+            "dhdt_floating",
+            "dmdt_floating",
+            "dmdt_grounded",
+            "dhdt_filt",
+            "dmdt_filt",
+            "dhdt_grounded_filt",
+            "dhdt_floating_filt",
+            "dmdt_floating_filt",
+            "dmdt_grounded_filt",
+        ]
+        if version not in valid_versions:
+            msg = "invalid version string"
+            raise ValueError(msg)
 
     if hemisphere == "south":
         version = f"ais_{version}"
