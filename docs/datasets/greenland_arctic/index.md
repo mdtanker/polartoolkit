@@ -23,6 +23,7 @@ modis_mog
 ```{nbgallery}
 ---
 ---
+gravity
 magnetics
 ```
 

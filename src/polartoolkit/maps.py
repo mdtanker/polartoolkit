@@ -1052,7 +1052,7 @@ def plot_grd(
     )
 
     shading = kwargs.get("shading")
-    if shading is not None:
+    if shading is not None:  # noqa: SIM108
         nan_transparent = False
     else:
         nan_transparent = True
