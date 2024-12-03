@@ -1051,17 +1051,23 @@ def plot_grd(
         **kwargs,
     )
 
+    shading = kwargs.get("shading")
+    if shading is not None:
+        nan_transparent = False
+    else:
+        nan_transparent = True
+
     # display grid
     fig.grdimage(
         grid=grid,
         cmap=cmap,
         projection=proj,
         region=region,
-        nan_transparent=True,
+        nan_transparent=nan_transparent,
         frame=kwargs.get("frame"),
-        shading=kwargs.get("shading"),
+        shading=shading,
         transparency=kwargs.get("transparency", 0),
-        verbose="q",
+        # verbose="q",
     )
 
     # add datapoints
