@@ -949,25 +949,25 @@ def test_bedmap_points():
 # %% deepbedmap
 
 
-# @pytest.mark.fetch()
-# @pytest.mark.slow()
-# @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-# def test_deepbedmap():
-#     grid = fetch.deepbedmap()
-#     expected = (
-#         250,
-#         (-2700000.0, 2800000.0, -2199750.0, 2299750.0),
-#         -6156.0,
-#         4215.0,
-#         "p",
-#     )
-#     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-#     assert not deepdiff.DeepDiff(
-#         utils.get_grid_info(grid),
-#         expected,
-#         ignore_order=True,
-#         significant_digits=2,
-#     )
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_deepbedmap():
+    grid = fetch.deepbedmap()
+    expected = (
+        250,
+        (-2700000.0, 2800000.0, -2199750.0, 2299750.0),
+        -6156.0,
+        4215.0,
+        "p",
+    )
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=2,
+    )
 
 
 # grid = fetch.deepbedmap()
@@ -1555,3 +1555,14 @@ def test_rema(test_input, expected):
 
 # grid = fetch.rema(version="500m")
 # utils.get_grid_info(grid)
+
+
+## Missing tests
+
+
+def test_groundingline():
+    pass
+
+
+def test_antarctic_boundaries():
+    pass
