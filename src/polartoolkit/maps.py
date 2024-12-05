@@ -75,8 +75,7 @@ def _set_figure_spec(
         # by default use figure height to set projection
         if fig_width is None:
             if fig_height is None:
-                msg = "fig_height must be set if fig_width is not set."
-                raise ValueError(msg)
+                fig_height = 15
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -129,9 +128,9 @@ def _set_figure_spec(
                 DeprecationWarning,
                 stacklevel=2,
             )
+        if fig_height is None:
+            fig_height = utils.get_fig_height()
         if origin_shift == "x":
-            if fig_height is None:
-                fig_height = utils.get_fig_height()
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -139,8 +138,6 @@ def _set_figure_spec(
             )
             fig.shift_origin(xshift=xshift_amount * (fig_width + 0.4))
         elif origin_shift == "y":
-            if fig_height is None:
-                fig_height = utils.get_fig_height()
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -148,8 +145,6 @@ def _set_figure_spec(
             )
             fig.shift_origin(yshift=yshift_amount * (fig_height + 3))
         elif origin_shift == "both":
-            if fig_height is None:
-                fig_height = utils.get_fig_height()
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -160,8 +155,6 @@ def _set_figure_spec(
                 yshift=yshift_amount * (fig_height + 3),
             )
         elif origin_shift is None:
-            if fig_height is None:
-                fig_height = utils.get_fig_height()
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
                 region,
                 fig_height=fig_height,
@@ -338,7 +331,7 @@ def basemap(
         region=region,
         fig=fig,
         origin_shift=origin_shift,
-        fig_height=kwargs.get("fig_height", 15),
+        fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
         yshift_amount=kwargs.get("yshift_amount", 1),
@@ -1018,7 +1011,7 @@ def plot_grd(
         region=region,
         fig=fig,
         origin_shift=origin_shift,
-        fig_height=kwargs.get("fig_height", 15),
+        fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
         yshift_amount=kwargs.get("yshift_amount", 1),

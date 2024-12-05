@@ -949,25 +949,25 @@ def test_bedmap_points():
 # %% deepbedmap
 
 
-# @pytest.mark.fetch()
-# @pytest.mark.slow()
-# @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-# def test_deepbedmap():
-#     grid = fetch.deepbedmap()
-#     expected = (
-#         250,
-#         (-2700000.0, 2800000.0, -2199750.0, 2299750.0),
-#         -6156.0,
-#         4215.0,
-#         "p",
-#     )
-#     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-#     assert not deepdiff.DeepDiff(
-#         utils.get_grid_info(grid),
-#         expected,
-#         ignore_order=True,
-#         significant_digits=2,
-#     )
+@pytest.mark.fetch
+@pytest.mark.slow
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_deepbedmap():
+    grid = fetch.deepbedmap()
+    expected = (
+        250,
+        (-2700000.0, 2800000.0, -2199750.0, 2299750.0),
+        -6156.0,
+        4215.0,
+        "p",
+    )
+    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=2,
+    )
 
 
 # grid = fetch.deepbedmap()
@@ -1555,3 +1555,92 @@ def test_rema(test_input, expected):
 
 # grid = fetch.rema(version="500m")
 # utils.get_grid_info(grid)
+
+
+groundingline_test = [
+    (
+        "depoorter-2013",
+        {
+            "Id": 4,
+            "Id_text": "Ice shelf",
+            "Area_km2": 60302.95,
+        },
+    ),
+    (
+        "measures-v2",
+        {
+            "NAME": "Grounded",
+            "TYPE": "GR",
+        },
+    ),
+    (
+        "measures-greenland",
+        {
+            "GM_LABEL": "SEACST",
+            "GM_SOURCE_": "KMS",
+        },
+    ),
+]
+
+
+@pytest.mark.fetch
+@pytest.mark.parametrize(("test_input", "expected"), groundingline_test)
+def test_groundingline(test_input, expected):
+    # download file and read first row
+    df = gpd.read_file(
+        fetch.groundingline(version=test_input),
+        rows=1,
+    ).drop(columns=["geometry"])
+
+    # df_expected = pd.DataFrame(expected)
+    # assert_assert_frame_equal(df, df_expected)
+
+    if test_input == "depoorter-2013":
+        assert df.Id.iloc[0] == expected["Id"]
+        assert df.Id_text.iloc[0] == expected["Id_text"]
+        assert df.Area_km2.iloc[0] == expected["Area_km2"]
+    elif test_input == "measures-v2":
+        assert df.NAME.iloc[0] == expected["NAME"]
+        assert df.TYPE.iloc[0] == expected["TYPE"]
+    elif test_input == "measures-greenland":
+        assert df.GM_LABEL.iloc[0] == expected["GM_LABEL"]
+        assert df.GM_SOURCE_.iloc[0] == expected["GM_SOURCE_"]
+
+
+antarctic_boundaries_test = [
+    (
+        "Coastline",
+        {
+            "NAME": "Coastline",
+        },
+    ),
+    (
+        "Basins_Antarctica",
+        {
+            "NAME": "LarsenE",
+            "Regions": "Peninsula",
+        },
+    ),
+]
+
+
+@pytest.mark.fetch
+@pytest.mark.parametrize(("test_input", "expected"), antarctic_boundaries_test)
+def test_antarctic_boundaries(test_input, expected):
+    # download file and read first row
+    df = gpd.read_file(
+        fetch.antarctic_boundaries(version=test_input),
+        rows=1,
+    ).drop(columns=["geometry"])
+
+    # df_expected = pd.DataFrame(expected)
+    # assert_assert_frame_equal(df, df_expected)
+
+    if test_input == "Coastline":
+        assert df.NAME.iloc[0] == expected["NAME"]
+    elif test_input == "Basins_Antarctica":
+        assert df.NAME.iloc[0] == expected["NAME"]
+        assert df.Regions.iloc[0] == expected["Regions"]
+
+
+# %%
