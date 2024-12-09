@@ -236,7 +236,15 @@ class EarthDataDownloader:
     """
 
     def __init__(self) -> None:
-        earthaccess.login()
+        auth = earthaccess.login()
+        auth = earthaccess.__auth__
+
+        if auth.authenticated is False:
+            msg = (
+                "EarthData login failed, please check your Username and Password are "
+                "correct"
+            )
+            raise ValueError(msg)
 
     def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
         creds = earthaccess.auth_environ()
