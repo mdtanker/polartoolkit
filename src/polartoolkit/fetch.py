@@ -236,7 +236,15 @@ class EarthDataDownloader:
     """
 
     def __init__(self) -> None:
-        earthaccess.login()
+        auth = earthaccess.login()
+        auth = earthaccess.__auth__
+
+        if auth.authenticated is False:
+            msg = (
+                "EarthData login failed, please check your Username and Password are "
+                "correct"
+            )
+            raise ValueError(msg)
 
     def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
         creds = earthaccess.auth_environ()
@@ -328,9 +336,8 @@ def mass_change(
 
     # This is the path to the processed (magnitude) grid
     url = (
-        "https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/"
-        "45388/ICESat1_ICESat2_mass_change_updated_2_2021%20%281%29.zip?sequence"
-        "=4&isAllowed=y"
+        "https://digital.lib.washington.edu/researchworks/bitstreams/"
+        "cc12195c-b71e-4e26-bf85-0978dd9ce933/download"
     )
 
     zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
