@@ -638,6 +638,10 @@ def plot_profile(
     # get max and min of all the layers
     layers_min = df_layers[df_layers.columns[3:]].min().min()
     layers_max = df_layers[df_layers.columns[3:]].max().max()
+    if layers_min == layers_max:
+        layers_min -= 0.00001
+        layers_max += 0.00001
+
     if kwargs.get("layers_ylims") is not None:
         layers_min = kwargs["layers_ylims"][0]
         layers_max = kwargs["layers_ylims"][1]
@@ -683,7 +687,9 @@ def plot_profile(
             if v["axis"] == axes.unique()[0]:
                 data_min = np.min([a for (a, b) in ax0_min_max])
                 data_max = np.max([b for (a, b) in ax0_min_max])
-
+                if data_min == data_max:
+                    data_min -= 0.00001
+                    data_max += 0.00001
                 if frames[0] is None:
                     frame = [
                         "neSW",
@@ -695,6 +701,9 @@ def plot_profile(
             else:
                 data_min = next(np.min(a) for (a, b) in ax1_min_max)
                 data_max = next(np.max(b) for (a, b) in ax1_min_max)
+                if data_min == data_max:
+                    data_min -= 0.00001
+                    data_max += 0.00001
                 try:
                     if frames[1] is None:
                         frame = [
@@ -1308,7 +1317,9 @@ def plot_data(
         if v["axis"] == axes.unique()[0]:
             data_min = np.min([a for (a, b) in ax0_min_max])
             data_max = np.max([b for (a, b) in ax0_min_max])
-
+            if data_min == data_max:
+                data_min -= 0.00001
+                data_max += 0.00001
             if frames[0] is None:
                 frame = [
                     "neSW",
@@ -1320,6 +1331,9 @@ def plot_data(
         else:
             data_min = next(np.min(a) for (a, b) in ax1_min_max)
             data_max = next(np.max(b) for (a, b) in ax1_min_max)
+            if data_min == data_max:
+                data_min -= 0.00001
+                data_max += 0.00001
             try:
                 if frames[1] is None:
                     frame = [
