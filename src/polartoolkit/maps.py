@@ -1231,7 +1231,7 @@ def add_colorbar(
 
     # if plotting a histogram add 2cm of spacing instead of .2cm
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 2)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 1.5)
     else:
         cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
 
