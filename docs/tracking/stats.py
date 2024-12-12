@@ -5,14 +5,6 @@
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
-# Copyright (c) 2022 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
-# package = "antarctic-plots"
 # # package = "polartoolkit"
 # # Show overall downloads over time, excluding mirrors
 # data = pypistats.overall(package, total=True, format="pandas")
