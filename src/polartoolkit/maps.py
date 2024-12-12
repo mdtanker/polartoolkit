@@ -56,7 +56,7 @@ def _set_figure_spec(
     fig_height: float | None = None,
     fig_width: float | None = None,
     hemisphere: str | None = None,
-    yshift_amount: float = 1,
+    yshift_amount: float = -1,
     xshift_amount: float = 1,
 ) -> tuple[pygmt.Figure, str, str | None, float, float]:
     """determine what to do with figure"""
@@ -89,6 +89,7 @@ def _set_figure_spec(
             )
             raise ValueError(msg)
 
+        # allow various alternative strings for origin_shift
         if (origin_shift == "x_shift") | (origin_shift == "xshift"):
             origin_shift = "x"
             msg = "`origin_shift` parameter has changed, use 'x' instead."
@@ -121,38 +122,33 @@ def _set_figure_spec(
                 DeprecationWarning,
                 stacklevel=2,
             )
+
+        # get figure height if not set
         if fig_height is None:
             fig_height = utils.get_fig_height()
+
+        # get existing figure parameters
+        proj, proj_latlon, fig_width, fig_height = utils.set_proj(
+            region,
+            fig_height=fig_height,
+            hemisphere=hemisphere,
+        )
+
+        # determine default values for x and y shift
+        # add .4 to account for the space between figures
+        xshift = xshift_amount * (fig_width + 0.4)
+        # add 3 to account for colorbar and titles
+        yshift = yshift_amount * (fig_height + 3)
+
+        # shift origin of figure depending on origin_shift
         if origin_shift == "x":
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(xshift=xshift_amount * (fig_width + 0.4))
+            fig.shift_origin(xshift=xshift)
         elif origin_shift == "y":
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(yshift=yshift_amount * (fig_height + 3))
+            fig.shift_origin(yshift=yshift)
         elif origin_shift == "both":
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            fig.shift_origin(
-                xshift=xshift_amount * (fig_width + 0.4),
-                yshift=yshift_amount * (fig_height + 3),
-            )
+            fig.shift_origin(xshift=xshift, yshift=yshift)
         elif origin_shift is None:
-            proj, proj_latlon, fig_width, fig_height = utils.set_proj(
-                region,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
+            pass
         else:
             msg = "invalid string for origin shift"
             raise ValueError(msg)
@@ -238,7 +234,7 @@ def basemap(
         instance width, by default is 1.
     yshift_amount : int or float
         amount to shift the origin in the y direction in multiples of current figure
-        instance height, by default is 1.
+        instance height, by default is -1.
     frame : str
         GMT frame string to use for the basemap, by default is None
     transparency : int
@@ -327,7 +323,7 @@ def basemap(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", 1),
+        yshift_amount=kwargs.get("yshift_amount", -1),
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
@@ -878,7 +874,7 @@ def plot_grd(
         instance width, by default is 1.
     yshift_amount : int or float
         amount to shift the origin in the y direction in multiples of current figure
-        instance height, by default is 1.
+        instance height, by default is -1.
     frame : str
         GMT frame string to use for the basemap, by default is None
     modis : bool
@@ -1007,7 +1003,7 @@ def plot_grd(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", 1),
+        yshift_amount=kwargs.get("yshift_amount", -1),
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
@@ -1553,7 +1549,7 @@ def add_gridlines(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region_converted = (*region, "+ue")  # codespell-ignore
+    region_converted = (*region, "+ue")  # codespell:ignore ue
 
     if x_spacing is None:
         x_frames = ["xag", "xa"]
@@ -1855,7 +1851,7 @@ def add_scalebar(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region_converted = (*region, "+ue")  # codespell-ignore
+    region_converted = (*region, "+ue")  # codespell:ignore ue
 
     def round_to_1(x: float) -> float:
         return round(x, -int(floor(log10(abs(x)))))
@@ -1910,7 +1906,7 @@ def add_north_arrow(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region_converted = (*region, "+ue")  # codespell-ignore
+    region_converted = (*region, "+ue")  # codespell:ignore ue
 
     rose_str = kwargs.get("rose_str", f"{position}+w{rose_size}")
 
