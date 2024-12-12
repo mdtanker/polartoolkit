@@ -42,12 +42,11 @@ dependencies = [
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "harmonica>=0.6.0",
     "pyproj",
-    "pyogrio",
     "rioxarray",
     "scipy",
     "numpy",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
-    "geopandas<1.0",
+    "geopandas<1.0", # issue with pyogrio registering drivers
     "zarr",
     "python-dotenv",
     "requests",
