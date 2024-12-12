@@ -224,7 +224,7 @@ class EarthDataDownloader:
     session.
     """
 
-    def __init__(self) -> None:
+    def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
         auth = earthaccess.login()
         auth = earthaccess.__auth__
 
@@ -235,7 +235,6 @@ class EarthDataDownloader:
             )
             raise ValueError(msg)
 
-    def __call__(self, url: str, output_file: str, dataset: typing.Any) -> None:
         creds = earthaccess.auth_environ()
         auth = creds.get("EARTHDATA_USERNAME"), creds.get("EARTHDATA_PASSWORD")
         downloader = pooch.HTTPDownloader(auth=auth, progressbar=True)
