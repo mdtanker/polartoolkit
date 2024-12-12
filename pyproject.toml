@@ -35,7 +35,7 @@ keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting
 
 dependencies = [
     "pandas",
-    "openpyxl",
+    "openpyxl", # needed for fetch.ghf to read an excel file into pandas
     "pooch",
     "tqdm",
     "verde>=1.8.0",
@@ -68,16 +68,16 @@ test = [
 ]
 docs = [
   "sphinx>=4.0",
-  "myst_parser",
-  "sphinx_copybutton",
-  "sphinx_autoapi",
-  "sphinx_autodoc_typehints",
   "sphinx-book-theme>=0.3",
-  "sphinx_design",
   "nbsphinx",
   "nbconvert",
   "sphinxcontrib-bibtex",
   "ipython",
+  "myst_parser",
+  "sphinx_copybutton",
+  "sphinx_autoapi",
+  "sphinx_autodoc_typehints",
+  "sphinx_design",
 ]
 dev = [
     "polartoolkit[interactive,test,docs]",
