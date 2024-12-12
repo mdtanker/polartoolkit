@@ -12,18 +12,14 @@ from __future__ import annotations
 import logging
 import typing
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pygmt
-import pyogrio
 import verde as vd
 import xarray as xr
 
-# import polartoolkit.fetch as fetch
 from polartoolkit import fetch, maps, regions, utils
-
-# import polartoolkit.maps as maps
-# import polartoolkit.utils as utils
 
 try:
     from IPython.display import display
@@ -95,7 +91,7 @@ def create_profile(
         if shapefile is None:
             msg = f"If method = {method}, need to provide a valid shapefile"
             raise ValueError(msg)
-        shp = pyogrio.read_dataframe(shapefile)
+        shp = gpd.read_file(shapefile)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates_rel = df.coords.apply(pd.Series, index=["x", "y"])

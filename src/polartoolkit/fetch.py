@@ -19,15 +19,11 @@ from pathlib import Path
 
 import deprecation
 import earthaccess
-
-if typing.TYPE_CHECKING:
-    import geopandas as gpd
-
+import geopandas as gpd
 import harmonica as hm
 import pandas as pd
 import pooch
 import pygmt
-import pyogrio
 import requests
 import xarray as xr
 import zarr
@@ -973,9 +969,9 @@ def geomap(
         raise ValueError(msg)
 
     if region is None:
-        data = pyogrio.read_dataframe(fname2, layer=layer)
+        data = gpd.read_file(fname2, layer=layer)
     else:
-        data = pyogrio.read_dataframe(
+        data = gpd.read_file(
             fname2,
             bbox=tuple(utils.region_to_bounding_box(region)),
             layer=layer,
@@ -1554,7 +1550,7 @@ def ibcso_coverage(
     )
 
     # extract the geometries which are within the supplied region
-    data = pyogrio.read_dataframe(
+    data = gpd.read_file(
         path,
         layer="IBCSO_coverage",
         bbox=tuple(utils.region_to_bounding_box(region)),

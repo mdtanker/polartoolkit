@@ -14,10 +14,10 @@ import typing
 import warnings
 
 import deprecation
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pygmt
-import pyogrio
 import verde as vd
 import xarray as xr
 from numpy.typing import NDArray
@@ -26,8 +26,6 @@ from pyproj import Transformer
 import polartoolkit
 from polartoolkit import fetch, maps, regions
 
-if typing.TYPE_CHECKING:
-    import geopandas as gpd
 
 def default_hemisphere(hemisphere: str | None) -> str:
     """
@@ -750,7 +748,7 @@ def mask_from_shp(
     """
     hemisphere = default_hemisphere(hemisphere)
 
-    shp = pyogrio.read_dataframe(shapefile) if isinstance(shapefile, str) else shapefile
+    shp = gpd.read_file(shapefile) if isinstance(shapefile, str) else shapefile
 
     if hemisphere == "north":
         crs = "epsg:3413"
