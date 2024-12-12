@@ -263,7 +263,7 @@ The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned
 
 #### Run all .ipynb's to update them
 ```
-make run_doc_files
+make run_docs
 ```
 If your edits haven't changed any part of the core package, then there is no need to re-run the notebooks. If you changed a notebook, just clear it's contents and re-run that one notebook.
 

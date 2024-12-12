@@ -81,14 +81,28 @@ license-check:
 ####
 ####
 
-run_gallery:
-	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
+clear_datasets:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/datasets/**/*.ipynb
 
-run_tutorials:
+run_datasets: clear_datasets
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/datasets/**/*.ipynb
+
+clear_tutorial:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/tutorial/*.ipynb
+
+run_tutorial: clear_tutorial
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/tutorial/*.ipynb
 
-run_doc_files:
-	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
-	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*/*.ipynb
+clear_how_to:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/how_to/*.ipynb
 
-run_notebooks: run_gallery run_tutorials run_doc_files
+run_how_to: clear_how_to
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/how_to/*.ipynb
+
+clear_docs:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/*.ipynb
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/**/*.ipynb
+
+run_docs: clear_docs
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/**/*.ipynb
