@@ -5,13 +5,6 @@
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
-# Copyright (c) 2022 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
 # %%
 """
 Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify
