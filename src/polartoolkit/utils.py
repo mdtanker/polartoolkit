@@ -10,12 +10,10 @@ from __future__ import annotations
 
 import logging
 import os
-import random
 import typing
+import warnings
 
 import deprecation
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pygmt
@@ -30,12 +28,6 @@ from polartoolkit import fetch, maps, regions
 
 if typing.TYPE_CHECKING:
     import geopandas as gpd
-
-try:
-    import seaborn as sns
-except ImportError:
-    sns = None
-
 
 def default_hemisphere(hemisphere: str | None) -> str:
     """
@@ -896,7 +888,6 @@ def grd_trend(
     coords: tuple[str, str, str] = ("x", "y", "z"),
     deg: int = 1,
     plot: bool = False,
-    plot_type: str = "pygmt",
     **kwargs: typing.Any,
 ) -> tuple[xr.DataArray, xr.DataArray]:
     """
@@ -912,8 +903,6 @@ def grd_trend(
         trend order to use, by default 1
     plot : bool, optional
         plot the results, by default False
-    plot_type : str
-        choose to plot results with pygmt or xarray, by default "pygmt"
 
     Returns
     -------
@@ -954,88 +943,57 @@ def grd_trend(
     )
 
     if plot is True:
-        if plot_type == "xarray":
-            fig, ax = plt.subplots(ncols=3, nrows=1, figsize=(20, 20))
-            da.plot(
-                ax=ax[0],
-                robust=True,
-                cmap="viridis",
-                cbar_kwargs={
-                    "orientation": "horizontal",
-                    "anchor": (1, 1.8),
-                    "label": "test",
-                },
-            )
-            ax[0].set_title("Input grid")
-            fit.plot(
-                ax=ax[1],
-                robust=True,
-                cmap="viridis",
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-            )
-            ax[1].set_title(f"Trend order {deg}")
-            detrend.plot(
-                ax=ax[2],
-                robust=True,
-                cmap="viridis",
-                cbar_kwargs={"orientation": "horizontal", "anchor": (1, 1.8)},
-            )
-            ax[2].set_title("Detrended")
-            for a in ax:
-                a.set_xticklabels([])
-                a.set_yticklabels([])
-                a.set_xlabel("")
-                a.set_ylabel("")
-                a.set_aspect("equal")
+        cmap: typing.Any = kwargs.get("cmap", "plasma")
+        coast: typing.Any = kwargs.get("coast", True)
+        inset: typing.Any = kwargs.get("inset", True)
+        inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
+        origin_shift: typing.Any = kwargs.get("origin_shift", "y")
+        fit_label: typing.Any = kwargs.get("fit_label", f"fitted trend (order {deg})")
+        input_label: typing.Any = kwargs.get("input_label", "input grid")
+        title: typing.Any = kwargs.get("title", "Detrending a grid")
+        detrended_label: typing.Any = kwargs.get("detrended_label", "detrended")
 
-        elif plot_type == "pygmt":
-            cmap: typing.Any = kwargs.get("cmap", "plasma")
-            coast: typing.Any = kwargs.get("coast", True)
-            inset: typing.Any = kwargs.get("inset", True)
-            inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
-            origin_shift: typing.Any = kwargs.get("origin_shift", "y")
-            fit_label: typing.Any = kwargs.get(
-                "fit_label", f"fitted trend (order {deg})"
-            )
-            input_label: typing.Any = kwargs.get("input_label", "input grid")
-            title: typing.Any = kwargs.get("title", "Detrending a grid")
-            detrended_label: typing.Any = kwargs.get("detrended_label", "detrended")
+        fig = maps.plot_grd(
+            da,
+            cbar_label=input_label,
+            title=title,
+            cmap=cmap,
+            # grd2cpt=True,
+            inset=inset,
+            inset_pos=inset_pos,
+            coast=coast,
+            hist=True,
+            robust=True,
+            **kwargs,
+        )
 
-            fig = maps.plot_grd(
-                detrend,
-                cmap=cmap,
-                grd2cpt=True,
-                coast=coast,
-                cbar_label=detrended_label,
-                **kwargs,
-            )
+        fig = maps.plot_grd(
+            fit,
+            fig=fig,
+            cmap=cmap,
+            # grd2cpt=True,
+            cbar_label=fit_label,
+            origin_shift=origin_shift,
+            coast=coast,
+            hist=True,
+            robust=True,
+            **kwargs,
+        )
 
-            fig = maps.plot_grd(
-                fit,
-                fig=fig,
-                cmap=cmap,
-                grd2cpt=True,
-                coast=coast,
-                cbar_label=fit_label,
-                inset=inset,
-                inset_pos=inset_pos,
-                origin_shift=origin_shift,
-                **kwargs,
-            )
+        fig = maps.plot_grd(
+            detrend,
+            fig=fig,
+            cmap=cmap,
+            # grd2cpt=True,
+            cbar_label=detrended_label,
+            origin_shift=origin_shift,
+            coast=coast,
+            hist=True,
+            robust=True,
+            **kwargs,
+        )
 
-            fig = maps.plot_grd(
-                da,
-                fig=fig,
-                cmap=cmap,
-                grd2cpt=True,
-                coast=coast,
-                cbar_label=input_label,
-                title=title,
-                origin_shift=origin_shift,
-                **kwargs,
-            )
-
-            fig.show()
+        fig.show()
 
     return fit, detrend
 
@@ -1098,7 +1056,7 @@ def grd_compare(
     da1: xr.DataArray | str,
     da2: xr.DataArray | str,
     plot: bool = False,
-    plot_type: str = "pygmt",
+    plot_type: typing.Any | None = None,
     robust: bool = False,
     **kwargs: typing.Any,
 ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
@@ -1114,9 +1072,8 @@ def grd_compare(
         second grid, loaded grid of filename
     plot : bool, optional
         plot the results, by default False
-    plot_type : str, optional
-        choose the style of plot, by default is pygmt, can choose xarray for faster,
-        simpler plots.
+    plot_type : typing.Any or None, optional
+        this argument has been deprecated and will default to 'pygmt'
     robust : bool, optional
         use xarray robust color lims instead of min and max, by default is False.
 
@@ -1136,6 +1093,12 @@ def grd_compare(
     tuple[xarray.DataArray, xarray.DataArray, xarray.DataArray]
         three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
+    if plot_type is not None:
+        warnings.warn(
+            "plot_type has been deprecated and will default to 'pygmt'",
+            DeprecationWarning,
+            stacklevel=2,
+        )
     shp_mask = kwargs.get("shp_mask")
     region = kwargs.get("region")
     verbose = kwargs.get("verbose", "e")
@@ -1266,182 +1229,100 @@ def grd_compare(
         if kwargs.get("rmse_in_title", True) is True:
             title += f", RMSE: {round(rmse(dif),kwargs.get('RMSE_decimals', 2))}"
 
-        if plot_type == "pygmt":
-            fig_height = kwargs.get("fig_height", 12)
-            coast = kwargs.get("coast", False)
-            origin_shift = kwargs.get("origin_shift", "x")
-            cmap = kwargs.get("cmap", "viridis")
-            subplot_labels = kwargs.get("subplot_labels", False)
+        fig_height = kwargs.get("fig_height", 12)
+        coast = kwargs.get("coast", False)
+        origin_shift = kwargs.get("origin_shift", "x")
+        cmap = kwargs.get("cmap", "viridis")
+        subplot_labels = kwargs.get("subplot_labels", False)
 
-            new_kwargs = {
-                key: value
-                for key, value in kwargs.items()
-                if key
-                not in [
-                    "cmap",
-                    "region",
-                    "coast",
-                    "title",
-                    "cpt_lims",
-                    "fig_height",
-                    "inset",
-                    "inset_pos",
-                    "shp_mask",
-                ]
-            }
-            diff_kwargs = {
-                key: value
-                for key, value in new_kwargs.items()
-                if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
-            }
-            fig = maps.plot_grd(
-                grid1,
-                cmap=cmap,
-                region=region,
-                coast=coast,
-                title=kwargs.get("grid1_name", "grid 1"),
-                cpt_lims=(vmin, vmax),
-                fig_height=fig_height,
-                **new_kwargs,
+        new_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key
+            not in [
+                "cmap",
+                "region",
+                "coast",
+                "title",
+                "cpt_lims",
+                "fig_height",
+                "inset",
+                "inset_pos",
+                "shp_mask",
+            ]
+        }
+        diff_kwargs = {
+            key: value
+            for key, value in new_kwargs.items()
+            if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
+        }
+        fig = maps.plot_grd(
+            grid1,
+            cmap=cmap,
+            region=region,
+            coast=coast,
+            title=kwargs.get("grid1_name", "grid 1"),
+            cpt_lims=(vmin, vmax),
+            fig_height=fig_height,
+            **new_kwargs,
+        )
+
+        if subplot_labels is True:
+            fig.text(
+                position="TL",
+                justify="BL",
+                text="a)",
+                font=kwargs.get("label_font", "18p,Helvetica,black"),
+                offset=kwargs.get("label_offset", "j0/.3"),
+                no_clip=True,
+            )
+        fig = maps.plot_grd(
+            dif,
+            cmap=kwargs.get("diff_cmap", "balance+h0"),
+            region=region,
+            coast=coast,
+            origin_shift=origin_shift,
+            cbar_label="difference",
+            cpt_lims=diff_lims,
+            fig=fig,
+            title=title,
+            inset=kwargs.get("inset", True),
+            inset_pos=kwargs.get("inset_pos", "TL"),
+            fig_height=fig_height,
+            **diff_kwargs,
+        )
+        if subplot_labels is True:
+            fig.text(
+                position="TL",
+                justify="BL",
+                text="b)",
+                font=kwargs.get("label_font", "20p,Helvetica,black"),
+                offset=kwargs.get("label_offset", "j0/.3"),
+                no_clip=True,
+            )
+        fig = maps.plot_grd(
+            grid2,
+            cmap=cmap,
+            region=region,
+            coast=coast,
+            origin_shift=origin_shift,
+            fig=fig,
+            title=kwargs.get("grid2_name", "grid 2"),
+            cpt_lims=(vmin, vmax),
+            fig_height=fig_height,
+            **new_kwargs,
+        )
+        if subplot_labels is True:
+            fig.text(
+                position="TL",
+                justify="BL",
+                text="c)",
+                font=kwargs.get("label_font", "20p,Helvetica,black"),
+                offset=kwargs.get("label_offset", "j0/.3"),
+                no_clip=True,
             )
 
-            if subplot_labels is True:
-                fig.text(
-                    position="TL",
-                    justify="BL",
-                    text="a)",
-                    font=kwargs.get("label_font", "18p,Helvetica,black"),
-                    offset=kwargs.get("label_offset", "j0/.3"),
-                    no_clip=True,
-                )
-            fig = maps.plot_grd(
-                dif,
-                cmap=kwargs.get("diff_cmap", "balance+h0"),
-                region=region,
-                coast=coast,
-                origin_shift=origin_shift,
-                cbar_label="difference",
-                cpt_lims=diff_lims,
-                fig=fig,
-                title=title,
-                inset=kwargs.get("inset", True),
-                inset_pos=kwargs.get("inset_pos", "TL"),
-                fig_height=fig_height,
-                **diff_kwargs,
-            )
-            if subplot_labels is True:
-                fig.text(
-                    position="TL",
-                    justify="BL",
-                    text="b)",
-                    font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset=kwargs.get("label_offset", "j0/.3"),
-                    no_clip=True,
-                )
-            fig = maps.plot_grd(
-                grid2,
-                cmap=cmap,
-                region=region,
-                coast=coast,
-                origin_shift=origin_shift,
-                fig=fig,
-                title=kwargs.get("grid2_name", "grid 2"),
-                cpt_lims=(vmin, vmax),
-                fig_height=fig_height,
-                **new_kwargs,
-            )
-            if subplot_labels is True:
-                fig.text(
-                    position="TL",
-                    justify="BL",
-                    text="c)",
-                    font=kwargs.get("label_font", "20p,Helvetica,black"),
-                    offset=kwargs.get("label_offset", "j0/.3"),
-                    no_clip=True,
-                )
-
-            fig.show()
-
-        elif plot_type == "xarray":
-            if robust:
-                vmin, vmax = None, None
-                diff_lims = (None, None)
-            cmap = kwargs.get("cmap", "viridis")
-
-            sub_width = 5
-            nrows, ncols = 1, 3
-            # setup subplot figure
-            fig, ax = plt.subplots(
-                nrows=nrows,
-                ncols=ncols,
-                figsize=(sub_width * ncols, sub_width * nrows),
-            )
-
-            grid1.plot(
-                ax=ax[0],
-                cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
-                robust=True,
-                cbar_kwargs={
-                    "orientation": "horizontal",
-                    "anchor": (1, 1),
-                    "fraction": 0.05,
-                    "pad": 0.04,
-                },
-            )
-            ax[0].set_title(kwargs.get("grid1_name", "grid 1"))
-
-            dif.plot(
-                ax=ax[1],
-                vmin=diff_lims[0],
-                vmax=diff_lims[1],
-                robust=True,
-                cmap=kwargs.get("diff_cmap", "RdBu_r"),
-                cbar_kwargs={
-                    "orientation": "horizontal",
-                    "anchor": (1, 1),
-                    "fraction": 0.05,
-                    "pad": 0.04,
-                },
-            )
-
-            ax[1].set_title(title)
-
-            grid2.plot(
-                ax=ax[2],
-                cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
-                robust=True,
-                cbar_kwargs={
-                    "orientation": "horizontal",
-                    "anchor": (1, 1),
-                    "fraction": 0.05,
-                    "pad": 0.04,
-                },
-            )
-            ax[2].set_title(kwargs.get("grid2_name", "grid 2"))
-
-            for a in ax:
-                a.set_xticklabels([])
-                a.set_yticklabels([])
-                a.set_xlabel("")
-                a.set_ylabel("")
-                a.set_aspect("equal")
-                if kwargs.get("points") is not None:
-                    a.plot(kwargs.get("points").x, kwargs.get("points").y, "k+")  # type: ignore[union-attr]
-                show_region = kwargs.get("show_region")
-                if show_region is not None:
-                    a.add_patch(
-                        mpl.patches.Rectangle(
-                            xy=(show_region[0], show_region[2]),
-                            width=(show_region[1] - show_region[0]),
-                            height=(show_region[3] - show_region[2]),
-                            linewidth=1,
-                            fill=False,
-                        )
-                    )
+        fig.show()
 
     return (dif, grid1, grid2)
 

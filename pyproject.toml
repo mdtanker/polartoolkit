@@ -42,7 +42,6 @@ dependencies = [
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
     "harmonica>=0.6.0",
     "pyproj",
-    "matplotlib",
     "pyogrio",
     "rioxarray",
     "scipy",
@@ -63,9 +62,6 @@ interactive = [
     "ipyleaflet",
     "ipython",
 ]
-viz = [
-    "seaborn",
-]
 test = [
   "pytest >=6",
   "pytest-cov >=3",
@@ -85,7 +81,7 @@ docs = [
   "ipython",
 ]
 dev = [
-    "polartoolkit[interactive,viz,test,docs]",
+    "polartoolkit[interactive,test,docs]",
     "nox",
     "pre-commit",
     "pylint>=3.2",
@@ -96,7 +92,7 @@ dev = [
     "pathspec",
 ]
 all = [
-  "polartoolkit[interactive,viz,test,dev,docs]",
+  "polartoolkit[interactive,test,dev,docs]",
 ]
 
 [project.urls]
