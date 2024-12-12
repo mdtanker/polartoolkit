@@ -10,13 +10,13 @@ print-%  : ; @echo $* = $($*)
 ####
 
 create:
-	mamba create --name $(PROJECT) --yes --force --channel conda-forge pygmt geopandas python=3.11
+	mamba env create --file environment.yml
 
 install:
-	pip install -e .[all]
+	pip install --no-deps -e .
 
 remove:
-	mamba remove --name $(PROJECT) --all
+	mamba env remove --name $(PROJECT) --yes
 
 pip_install:
 	pip install $(PROJECT)[all]==$(VERSION)

@@ -1,0 +1,65 @@
+name: polartoolkit
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  # Required dependencies
+  - pandas
+  - openpyxl
+  - pooch
+  - tqdm
+  - verde>=1.8.0
+  - xarray
+  - harmonica>=0.6.0
+  - pyproj
+  - rioxarray
+  - scipy
+  - numpy
+  - pygmt>=0.10.0
+  - geopandas<1.0
+  - zarr
+  - python-dotenv
+  - requests
+  - deprecation
+  - earthaccess
+  # Optional dependencies
+  # interactive
+  - geoviews
+  - cartopy
+  - ipyleaflet
+  - ipython
+  # test
+  - pytest>=6
+  - pytest-cov>=3
+  - deepdiff
+  # docs
+  - sphinx>=4.0
+  - sphinx-book-theme>=0.3
+  - nbsphinx
+  - nbconvert
+  - sphinxcontrib-bibtex
+  # - ipython # repeat
+  # included with pip below
+  # - myst_parser
+  # - sphinx_copybutton
+  # - sphinx_autoapi
+  # - sphinx_autodoc_typehints
+  # - sphinx_design
+  # dev
+  - nox
+  - pre-commit
+  - pylint>=3.2
+  - python-semantic-release>=8
+  - ipykernel
+  - jupyterlab
+  - mypy
+  - pathspec
+  # below packages need to be installed with pip
+  - pip
+  - pip:
+    - sphinx_design
+    - sphinx_copybutton
+    - sphinx_autodoc_typehints
+    - sphinx_autoapi
+    - myst_parser
