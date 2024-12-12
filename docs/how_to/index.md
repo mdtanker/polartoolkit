@@ -10,7 +10,6 @@ manipulating_regions
 map_features
 use_with_pygmt
 colormaps
-subplot_layout
 3D_plotting
 profiles
 ```
