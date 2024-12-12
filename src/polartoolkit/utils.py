@@ -1376,18 +1376,18 @@ def square_subplots(n: int) -> tuple[int, int]:
         example a 3 x 2 grid would be represented as ``(3, 3)``, because there are 2
         rows of length 3.
     """
-    # special_cases = {
-    #     1: (1, 1),
-    #     2: (1, 2),
-    #     3: (2, 2),
-    #     4: (2, 2),
-    #     5: (2, 3),
-    #     6: (2, 3),
-    #     7: (3, 3),
-    #     8: (3, 3),
-    #     9: (3, 3),
-    # }
-    special_cases = {3: (1, 3), 5: (2, 3)}
+    special_cases = {
+        1: (1, 1),
+        2: (1, 2),
+        3: (1, 3),
+        4: (2, 2),
+        5: (2, 3),
+        6: (2, 3),
+        7: (2, 4),
+        8: (2, 4),
+        9: (3, 3),
+        10: (3, 4),
+    }
     if n in special_cases:
         return special_cases[n]
 
