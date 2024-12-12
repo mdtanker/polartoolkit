@@ -1517,7 +1517,7 @@ def sediment_thickness(
 
 
 def ibcso_coverage(
-    region: tuple[float, float, float, float],
+    region: tuple[float, float, float, float] | None = None,
 ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
     Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
@@ -1525,7 +1525,7 @@ def ibcso_coverage(
 
     Parameters
     ----------
-    region : tuple[float, float, float, float]
+    region : tuple[float, float, float, float] or None
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
 
@@ -1550,10 +1550,14 @@ def ibcso_coverage(
     )
 
     # extract the geometries which are within the supplied region
+    if region is None:
+        bbox = None
+    else:
+        bbox = tuple(utils.region_to_bounding_box(region))
     data = gpd.read_file(
         path,
         layer="IBCSO_coverage",
-        bbox=tuple(utils.region_to_bounding_box(region)),
+        bbox=bbox,
     )
 
     # expand from multipoint/mulitpolygon to point/polygon
