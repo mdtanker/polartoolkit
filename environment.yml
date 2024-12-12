@@ -58,8 +58,8 @@ dependencies:
   # below packages need to be installed with pip
   - pip
   - pip:
-    - sphinx_design
-    - sphinx_copybutton
-    - sphinx_autodoc_typehints
-    - sphinx_autoapi
-    - myst_parser
+      - sphinx_design
+      - sphinx_copybutton
+      - sphinx_autodoc_typehints
+      - sphinx_autoapi
+      - myst_parser
