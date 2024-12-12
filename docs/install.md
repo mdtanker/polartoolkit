@@ -6,31 +6,77 @@ See below for the full installation instructions. If instead you'd like to use t
 
 ## Install Python
 
-Before installing _PolarToolkit_, ensure you have Python 3.9 or greater downloaded.
+Before installing _PolarToolkit_, ensure you have Python 3.9 or greater installed.
 If you don't, I recommend setting up Python with Miniforge.
 See the install instructions [here](https://github.com/conda-forge/miniforge).
 
-## Install _PolarToolkit_ Locally
+## Install _PolarToolkit_
 
-There are 3 main ways to install `polartoolkit`. We show them here in order of simplest to hardest.
+The fastest way to install PolarToolkit is with the [mamba](https://mamba.readthedocs.io/en/latest/)
+or [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/index.html)
+package manager which takes care of setting up a virtual environment, as well as the
+installation of PolarToolkit and all its dependencies:
 
-### Conda / Mamba
-
-```{note}
-`conda` and `mamba` are interchangeable
+:::: {tab-set}
+::: {tab-item} mamba
+:sync: mamba
 ```
-
-The easiest way to install this package and it's dependencies is with conda or mamba into a new virtual environment:
-
+mamba create --name polartoolkit --channel conda-forge polartoolkit
 ```
-mamba create --name polartoolkit --yes --force polartoolkit --channel conda-forge
+:::
+
+::: {tab-item} conda
+:sync: conda
 ```
+conda create --name polartoolkit --channel conda-forge polartoolkit
+```
+:::
+::::
 
-Activate the environment:
+To activate the virtual environment, you can do:
 
+:::: {tab-set}
+::: {tab-item} mamba
+:sync: mamba
 ```
 mamba activate polartoolkit
 ```
+:::
+
+::: {tab-item} conda
+:sync: conda
+```
+conda activate polartoolkit
+```
+:::
+::::
+
+## Test your install
+
+After this, check that everything works by running the following in a Python interpreter
+(e.g., in a Jupyter notebook):
+```python
+import polartoolkit
+polartoolkit.__version__
+```
+
+This should tell you which version was installed.
+
+To further test, you can clone the GitHub repository and run the suite of tests, see the [Contributors Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html).
+
+A simpler method to ensure the basics are working would be to download any of the Tutorials or How-to guides and run them locally. On the documentation, each of the examples should have a drop down button in the top right corner to download the `.ipynb`.
+
+You are now ready to use PolarToolkit! Start by looking at our [Quickstart Guide](quickstart),
+[Tutorials](tutorial/index.md), or [How-To Guides](how_to/index.md). Good luck!
+
+:::{note}
+The sections below provide more detailed, step by step instructions to install and test
+PolarToolkit for those who may have a slightly different setup or want to install the latest
+development version.
+:::
+
+
+## Alternative Install methods
 
 ### Pip
 
@@ -39,14 +85,43 @@ This is because {mod}`pygmt`, {mod}`geopandas`, and {mod}`cartopy` all rely on C
 
 Create a new virtual environment:
 
+:::: {tab-set}
+::: {tab-item} mamba
+:sync: mamba
 ```
-mamba create --name polartoolkit --yes --force pygmt geopandas cartopy --channel conda-forge
+mamba create --name polartoolkit --channel conda-forge pygmt geopandas cartopy
 ```
+:::
 
-activate the environment and use `pip` to install `polartoolkit`:
+::: {tab-item} conda
+:sync: conda
+```
+conda create --name polartoolkit --channel conda-forge polartoolkit
+```
+:::
+::::
 
+To activate the virtual environment, you can do:
+
+:::: {tab-set}
+::: {tab-item} mamba
+:sync: mamba
 ```
 mamba activate polartoolkit
+```
+:::
+
+::: {tab-item} conda
+:sync: conda
+```
+conda activate polartoolkit
+```
+:::
+::::
+
+Install `polartoolkit` with pip:
+
+```
 pip install polartoolkit
 ```
 
@@ -73,7 +148,7 @@ If you get errors related to GDAL and GMT, try reinstalling Geopandas and PyGMT 
 
     mamba install geopandas pygmt --force-reinstall -y --channel conda-forge
 
-If you get errors related to the PyProj EPSG database, try the following:
+If you get errors related to the PyProj, try the following:
 
     mamba install -c conda-forge proj-data --force-reinstall -y --channel conda-forge
 
@@ -86,24 +161,9 @@ If you get an error related to traitlets run the following command as discussed 
 
     mamba install ipykernel --update-deps --force-reinstall -y
 
-If you are still having errors, then you can download the `environment.yml` file from [here]() and create a conda environment directly from this:
+If you are still having errors, then you can download the `environment.yml` file from [here](https://github.com/mdtanker/polartoolkit/blob/main/env/environment.yml) and create a conda environment directly from this:
 
     mamba create --file PATH_TO_FILE
 
 where you replace PATH_TO_FILE with the path to your downloaded `environment.yml` file.
-
-## Test your install
-
-Run the following inside a Python interpreter:
-
-```python
-import polartoolkit
-polartoolkit.__version__
-```
-
-This should tell you which version was installed.
-
-To further test, you can clone the GitHub repository and run the suite of tests, see the [Contributors Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html).
-
-A simpler method to ensure the basics are working would be to download any of the Tutorials or How-to guides and run them locally. On the documentation, each of the examples should have a drop down button in the top right corner to download the `.ipynb`.
 
