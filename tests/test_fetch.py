@@ -1117,7 +1117,7 @@ def test_magnetics(test_input, expected, hemisphere):
 
 mass_change_test = [
     (
-        "dhdt_floating",
+        "ais_dhdt_floating",
         (
             5001.18699879,
             (-2521652.10412, 2843360.03282, -2229531.47932, 2336552.25058),
@@ -1125,10 +1125,9 @@ mass_change_test = [
             11.7978229523,
             "p",
         ),
-        "south",
     ),
     (
-        "dmdt_grounded",
+        "ais_dmdt_grounded",
         (
             5000.0,
             (-2526157.06916, 2648842.93084, -2124966.01441, 2180033.98559),
@@ -1136,10 +1135,9 @@ mass_change_test = [
             1.0233386755,
             "p",
         ),
-        "south",
     ),
     (
-        "dhdt",
+        "gris_dhdt",
         (
             5000.0,
             (-626302.876984, 818697.123016, -3236440.11184, -681440.111839),
@@ -1147,10 +1145,9 @@ mass_change_test = [
             1.15196788311,
             "p",
         ),
-        "north",
     ),
     (
-        "dmdt_filt",
+        "gris_dmdt_filt",
         (
             5000.0,
             (-626302.876984, 818697.123016, -3236440.11184, -681440.111839),
@@ -1158,7 +1155,6 @@ mass_change_test = [
             0.690221190453,
             "p",
         ),
-        "north",
     ),
 ]
 
@@ -1166,9 +1162,9 @@ mass_change_test = [
 @pytest.mark.fetch
 @pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), mass_change_test)
-def test_mass_change(test_input, expected, hemisphere):
-    grid = fetch.mass_change(version=test_input, hemisphere=hemisphere)
+@pytest.mark.parametrize(("test_input", "expected"), mass_change_test)
+def test_mass_change(test_input, expected):
+    grid = fetch.mass_change(version=test_input)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),

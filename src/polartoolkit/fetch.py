@@ -290,12 +290,11 @@ def mass_change(
     and Greenland from :footcite:t:`smithpervasive2020`.
 
     Choose a version of the data to download with the format: "ICESHEET_VERSION_TYPE"
-    where ICESHEET is "ais" or "gris", for Antarctica or Greenland, which is
-    automatically set via the hemisphere variable. VERSION is "dhdt" for total thickness
-    change or "dmdt" for corrected for firn-air content. For Antarctica data, TYPE is
-    "floating" or "grounded".
+    where ICESHEET is "ais" or "gris", for Antarctica or Greenland, VERSION is "dhdt"
+    for total thickness change or "dmdt" for corrected for firn-air content. For
+    Antarctic data, TYPE is "floating" or "grounded".
 
-    add "_filt" to retrieve a filtered version of the data.
+    add "_filt" to retrieve a filtered version of the data for some versions.
 
     accessed from https://digital.lib.washington.edu/researchworks/handle/1773/45388
 
@@ -304,8 +303,8 @@ def mass_change(
     Parameters
     ----------
     version : str, optional,
-        choose which version to retrieve, by default is "dhdt_grounded" for Antarctica
-        and "dhdt" for Greenland.
+        choose which version to retrieve, by default is "ais_dhdt_grounded" for
+        Antarctica and "gris_dhdt" for Greenland.
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
@@ -313,14 +312,21 @@ def mass_change(
     Returns
     -------
     xarray.DataArray
-        Returns a calculated grid of Antarctic ice mass change in meters/year.
+        Returns a grid of Antarctic or Greeland ice mass change in meters/year.
 
     References
     ----------
     .. footbibliography::
     """
-
-    hemisphere = utils.default_hemisphere(hemisphere)
+    if version is None:
+        hemisphere = utils.default_hemisphere(hemisphere)
+        if hemisphere == "south":
+            version = "ais_dhdt_grounded"
+        elif hemisphere == "north":
+            version = "gris_dhdt"
+        else:
+            msg = "if version is None, must provide 'hemisphere'"
+            raise ValueError(msg)
 
     # This is the path to the processed (magnitude) grid
     url = (
@@ -330,39 +336,25 @@ def mass_change(
 
     zip_fname = "ICESat1_ICESat2_mass_change_updated_2_2021.zip"
 
-    if version is None:
-        if hemisphere == "south":
-            version = "dhdt_grounded"
-        elif hemisphere == "north":
-            version = "dhdt"
-    else:
-        valid_versions = [
-            "dhdt",
-            "dmdt",
-            "dhdt_grounded",
-            "dhdt_floating",
-            "dmdt_floating",
-            "dmdt_grounded",
-            "dhdt_filt",
-            "dmdt_filt",
-            "dhdt_grounded_filt",
-            "dhdt_floating_filt",
-            "dmdt_floating_filt",
-            "dmdt_grounded_filt",
-        ]
-        if version not in valid_versions:
-            msg = "invalid version string"
-            raise ValueError(msg)
-
-    if hemisphere == "south":
-        version = f"ais_{version}"
-    elif hemisphere == "north":
-        version = f"gris_{version}"
-
-    if "dhdt" in version:  # type: ignore[operator]
-        fname = f"dhdt/{version}.tif"
-    elif "dmdt" in version:  # type: ignore[operator]
-        fname = f"dmdt/{version}.tif"
+    valid_versions = [
+        # dhdt
+        "ais_dhdt_floating",
+        "ais_dhdt_floating_filt",
+        "ais_dhdt_grounded",
+        "ais_dhdt_grounded_filt",
+        "gris_dhdt",
+        "gris_dhdt_filt",
+        # dmdt
+        "ais_dmdt_floating",
+        "ais_dmdt_floating_filt",
+        "ais_dmdt_grounded",
+        "ais_dmdt_grounded_filt",
+        "gris_dmdt",
+        "gris_dmdt_filt",
+    ]
+    if version not in valid_versions:
+        msg = "invalid version string %s"
+        raise ValueError(msg, version)
 
     path = pooch.retrieve(
         url=url,
@@ -374,11 +366,12 @@ def mass_change(
             extract_dir="Smith_2020",
         ),
     )
-    fname1 = next(p for p in path if p.endswith(fname))
+
+    fname = next(p for p in path if p.endswith(f"{version}.tif"))
 
     return (
         xr.load_dataarray(
-            fname1,
+            fname,
             engine="rasterio",
         )
         .squeeze()
