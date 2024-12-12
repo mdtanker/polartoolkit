@@ -1542,10 +1542,7 @@ def ibcso_coverage(
     )
 
     # extract the geometries which are within the supplied region
-    if region is None:
-        bbox = None
-    else:
-        bbox = tuple(utils.region_to_bounding_box(region))
+    bbox = None if region is None else tuple(utils.region_to_bounding_box(region))
     data = gpd.read_file(
         path,
         layer="IBCSO_coverage",
@@ -1556,7 +1553,7 @@ def ibcso_coverage(
     data_coords = data.explode(index_parts=False)
 
     # extract the single points/polygons within region
-    data_subset = data_coords.clip(mask=utils.region_to_bounding_box(region))
+    data_subset = data_coords.clip(mask=utils.region_to_bounding_box(region))  # type: ignore[arg-type]
 
     # separate points and polygons
     points = data_subset[data_subset.geometry.type == "Point"]
