@@ -1356,7 +1356,7 @@ def add_colorbar(
         data = df2[df2.between(zmin, zmax)]
 
         bin_width = kwargs.get("hist_bin_width")
-        bin_num = kwargs.get("hist_bin_num", 100)
+        bin_num = kwargs.get("hist_bin_num", 50)
 
         if bin_width is not None:
             # if bin width is set, will plot x amount of bins of width=bin_width
