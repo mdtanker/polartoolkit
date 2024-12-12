@@ -8,8 +8,10 @@
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
+import copy
 import logging
 import pathlib
+import string
 import typing
 import warnings
 from math import floor, log10
@@ -2122,6 +2124,10 @@ def subplots(
     hemisphere: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     dims: tuple[int, int] | None = None,
+    fig_title: str | None = None,
+    fig_title_font: str = "30p,Helvetica-Bold",
+    subplot_labels: bool = True,
+    subplot_labels_loc: str = "TL",
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
@@ -2133,101 +2139,127 @@ def subplots(
     ----------
     grids : list
         list of xarray.DataArray's to be plotted
+    hemisphere : str, optional
+        choose between plotting in the "north" or "south" hemispheres, by default None
     region : tuple[float, float, float, float], optional
         choose to subset the grids to a specified region, in format
         [xmin, xmax, ymin, ymax], by default None
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
         `utils.square_subplots()` to make a square(~ish) layout.
-    hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+    fig_title : str, optional
+        add a title to the figure, by default None
+    fig_title_font : str, optional
+        font for the figure title, by default "30p,Helvetica-Bold"
+    subplot_labels : bool, optional
+        add subplot labels (a, b, c ...), by default True
+    subplot_labels_loc : str, optional
+        location of subplot labels, by default "TL"
+
     Returns
     -------
     pygmt.Figure
         Returns a figure object, which can be used by other PyGMT plotting functions.
-
     """
+
+    kwargs = copy.deepcopy(kwargs)
+
     # if no define region, get from first grid in list
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
         except Exception as e:  # pylint: disable=broad-exception-caught
-            # pygmt.exceptions.GMTInvalidInput:
             logging.exception(e)
             logging.warning("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
-
     region = typing.cast(tuple[float, float, float, float], region)
 
-    # get square dimensions for subplot
-    subplot_dimensions = utils.square_subplots(len(grids)) if dims is None else dims
+    # get best dimensions for subplot
+    _nrows, ncols = utils.square_subplots(len(grids)) if dims is None else dims
 
-    # set subplot projection and size from input region and figure dimensions
-    # by default use figure height to set projection
-    if kwargs.get("fig_width") is None:
-        _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_height=kwargs.pop("fig_height", 15),
-            hemisphere=hemisphere,
-        )
-    # if fig_width is set, use it to set projection
+    # get amounts to shift each figure (multiples of figure width and height)
+    xshift_amount = kwargs.pop("xshift_amount", 1)
+    if kwargs.get("hist", False) is True:
+        yshift_amount = kwargs.pop("yshift_amount", -1.1)
     else:
-        _proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
-            region,
-            fig_width=kwargs.get("fig_width"),
+        yshift_amount = kwargs.pop("yshift_amount", -1)
+
+    # extra lists of args for each grid
+    cpt_limits = kwargs.pop("cpt_limits", None)
+    cmaps = kwargs.pop("cmaps", None)
+    titles = kwargs.pop("titles", kwargs.pop("subplot_titles", None))
+    cbar_labels = kwargs.pop("cbar_labels", None)
+    cbar_units = kwargs.pop("cbar_units", None)
+
+    new_kwargs = {
+        "cpt_lims": cpt_limits,
+        "cmap": cmaps,
+        "title": titles,
+        "cbar_label": cbar_labels,
+        "cbar_unit": cbar_units,
+    }
+    # check in not none they are the correct length
+    for k, v in new_kwargs.items():
+        if v is not None:
+            if len(v) != len(grids):
+                msg = (
+                    f"Length of supplied list of `{k}` must match the number of grids."
+                )
+                raise ValueError(msg)
+            if not isinstance(v, list):
+                msg = f"`{k}` must be a list."
+
+    for i, g in enumerate(grids):
+        xshift = xshift_amount
+        yshift = yshift_amount
+
+        kwargs2 = copy.deepcopy(kwargs)
+
+        if i == 0:
+            fig = (None,)
+            origin_shift = "initialize"
+        elif i % ncols == 0:
+            origin_shift = "both"
+            xshift = (-ncols + 1) * xshift
+        else:
+            origin_shift = "x"
+
+        for k, v in new_kwargs.items():
+            if (v is not None) & (kwargs2.get(k) is None):
+                kwargs2[k] = v[i]
+
+        fig = plot_grd(
+            g,
+            fig=fig,
+            origin_shift=origin_shift,
+            xshift_amount=xshift,
+            yshift_amount=yshift,
+            region=region,
             hemisphere=hemisphere,
+            **kwargs2,
         )
 
-    # initialize figure
-    fig = pygmt.Figure()
+        # add overall title
+        if (fig_title is not None) & (i == 0):
+            fig_width = utils.get_fig_width()
+            fig.text(  # type: ignore[attr-defined]
+                text=fig_title,
+                position="TC",
+                font=fig_title_font,
+                offset=f"{(((fig_width*xshift)/2)*(ncols-1))}c/2c",
+                no_clip=True,
+            )
 
-    with fig.subplot(
-        nrows=subplot_dimensions[0],
-        ncols=subplot_dimensions[1],
-        subsize=(fig_width, fig_height),
-        frame=kwargs.get("frame", "f"),
-        clearance=kwargs.get("clearance"),  # edges of figure
-        title=kwargs.get("fig_title"),
-        margins=kwargs.get("margins", "0.5c"),  # between suplots
-        autolabel=kwargs.get("autolabel"),
-    ):
-        for i, j in enumerate(grids):
-            with fig.set_panel(panel=i):
-                # if list of cmaps provided, use them
-                cmaps = kwargs.get("cmaps")
-                cmap = cmaps[i] if cmaps is not None else "viridis"
-
-                # if list of titles provided, use them
-                subplot_titles = kwargs.get("subplot_titles")
-                sub_title = subplot_titles[i] if subplot_titles is not None else None
-
-                # if list of colorbar labels provided, use them
-                cbar_labels = kwargs.get("cbar_labels")
-                cbar_label = cbar_labels[i] if cbar_labels is not None else " "
-
-                # if list of colorbar units provided, use them
-                cbar_units = kwargs.get("cbar_units")
-                cbar_unit = cbar_units[i] if cbar_units is not None else " "
-
-                # if list of cmaps limits provided, use them
-                cpt_limits = kwargs.get("cpt_limits")
-                cpt_lims = cpt_limits[i] if cpt_limits is not None else None
-
-                # plot the grids
-                plot_grd(
-                    j,
-                    fig=fig,
-                    fig_height=fig_height,
-                    origin_shift=None,
-                    region=region,
-                    cmap=cmap,
-                    title=sub_title,
-                    cbar_label=cbar_label,
-                    cbar_unit=cbar_unit,
-                    cpt_lims=cpt_lims,
-                    hemisphere=hemisphere,
-                    **kwargs,
-                )
+        if subplot_labels:
+            fig.text(  # type: ignore[attr-defined]
+                position=subplot_labels_loc,
+                justify="TL",
+                text=f"{string.ascii_lowercase[i]})",
+                font="18p,Helvetica,black",
+                offset="j.1c",
+                no_clip=True,
+                fill="white",
+            )
     return fig
 
 
