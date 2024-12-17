@@ -3,6 +3,39 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 🧰 Chores / Maintenance
+* update run docs commands ([`533dd69`](https://github.com/mdtanker/polartoolkit/commit/533dd694a62f90cffd8fcc02f2e40c4ba94c081c))
+* dev install with environment.yml ([`74b9afd`](https://github.com/mdtanker/polartoolkit/commit/74b9afdc8d6bf996d4c5740cf740682236ef530b))
+* remove codespell ignore-regrex ([`6b6affc`](https://github.com/mdtanker/polartoolkit/commit/6b6affc8611abe539c452262b972b5b3d7a5e9fb))
+* remove unused `raps` and `coherency` functions ([`315f562`](https://github.com/mdtanker/polartoolkit/commit/315f56229f11a4b30bb40c8482c563bc910da3d7))
+* clean up .py license headers ([`4853222`](https://github.com/mdtanker/polartoolkit/commit/4853222db398670928885303e3c5d4cad41a8005))
+* update backup yml ([`a8f7809`](https://github.com/mdtanker/polartoolkit/commit/a8f7809387e25d215d070ea1884c7d271cdeab89))
+* add tests for fetch `groundingline` and `antarctic_boundaries` ([`ff7d9a2`](https://github.com/mdtanker/polartoolkit/commit/ff7d9a2a2ccd30b9469e74d742be010512831e96))
+### 📖 Documentation
+* update install instructions ([`c2e9845`](https://github.com/mdtanker/polartoolkit/commit/c2e9845b16a6fa968d63816367b1403ca4812934))
+* update and rerun all docs ipynb ([`0e8e6eb`](https://github.com/mdtanker/polartoolkit/commit/0e8e6eb4af8d0380fe8ad875c14dce6c389c97d0))
+### 🐛 Bug Fixes
+* update `maps.subplots()` to be more user friendly ([`1f3bc35`](https://github.com/mdtanker/polartoolkit/commit/1f3bc353151639afdc3d72f00a64fe348c3e05e0))
+* raise error if EarthData login doesn&#39;t work ([`1576c00`](https://github.com/mdtanker/polartoolkit/commit/1576c009352fe5dadeba7ea7c636b028a7dd4f65))
+* make region parameter of `ibcso_coverage` options ([`0064c05`](https://github.com/mdtanker/polartoolkit/commit/0064c0582907a7c3f3f4a47eee17825b7361fe24))
+* more special cases with `square_subplots` ([`466eb56`](https://github.com/mdtanker/polartoolkit/commit/466eb56a3b9df8f7271c75afffb54b068af65d54))
+* raise error if EarthData login fails ([`4f6762d`](https://github.com/mdtanker/polartoolkit/commit/4f6762d1e94f6ca836cf53b2fec59b3f8e07b151))
+* bug with `plot_profile` and `plot_data` ([`23bde34`](https://github.com/mdtanker/polartoolkit/commit/23bde342e19dfd155ac21c5703458834586f0ba2))
+* extract previous fig_height for subplots ([`cb9e93f`](https://github.com/mdtanker/polartoolkit/commit/cb9e93f148479fc407e47ebd21e2150c60085f88))
+* re-add test for deepbedmap ([`c825e67`](https://github.com/mdtanker/polartoolkit/commit/c825e670359383321f06e98633eac7eec5468be8))
+* bad link in fetch `mass_change` ([`54b67d1`](https://github.com/mdtanker/polartoolkit/commit/54b67d1606fd7ff86ca319cc01de78633b623f34))
+###  🎨 Refactor
+* reduce default number of cbar histogram bins ([`75543fb`](https://github.com/mdtanker/polartoolkit/commit/75543fbc02de9272ffab4f85d7f9dba1c3aea0b3))
+* reduce default cbar y offset ([`04cd3ed`](https://github.com/mdtanker/polartoolkit/commit/04cd3ed42796e360f107ee40d88efd14ced63c20))
+* change default vertical origin shift to down instead of up ([`e3a9e3c`](https://github.com/mdtanker/polartoolkit/commit/e3a9e3c4f1c9f2763e4c2eb7829cffdd80c152b2))
+* need to specify `ais` or `gris` in `fetch.mass_change` ([`26ae3d6`](https://github.com/mdtanker/polartoolkit/commit/26ae3d64ce4bda1376ad26393da95cbe2bd8b03c))
+* remove pyogrio dependency and replace with geopandas ([`3b4c315`](https://github.com/mdtanker/polartoolkit/commit/3b4c315cf4fa870416ebe40990c808a85d1daaa3))
+* remove matplotlib plotting options, and matplotib and seaborn dependencies ([`b0458c9`](https://github.com/mdtanker/polartoolkit/commit/b0458c9b96f8ec885c6ffbeebf4f34a9b0107c2d))
+### ✏️ Formatting
+* pre-commit fixes ([`522f18e`](https://github.com/mdtanker/polartoolkit/commit/522f18e7d8544f53ee1ac9a8a7fd3d10f45a0676))
+* ruff fixes ([`70e59a1`](https://github.com/mdtanker/polartoolkit/commit/70e59a11a70d764e52e3eaad0d59bfc26e838256))
+
 
 ## v0.7.0 (2024-12-03)
 ### 🧰 Chores / Maintenance
