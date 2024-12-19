@@ -3,6 +3,12 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [angular commits](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits).
 
+## Unreleased
+### 🧰 Chores / Maintenance
+* update backup env to `v0.7.1` ([`ef1f621`](https://github.com/mdtanker/polartoolkit/commit/ef1f621cbb8bc9bf1dc8e0429e026ab2f372594f))
+### Other
+* add setuptools to RTD_env to fix issue ([`ee5178a`](https://github.com/mdtanker/polartoolkit/commit/ee5178a03aab4589a92ade2e14597fcd37381402))
+
 
 ## v0.7.1 (2024-12-17)
 ### 🧰 Chores / Maintenance
