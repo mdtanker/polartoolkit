@@ -326,6 +326,11 @@ def basemap(
         else:
             msg = "Region must be specified if hemisphere is not specified."
             raise ValueError(msg)
+    if kwargs.get("hist") is True:
+        yshift_amount = kwargs.get("yshift_amount", -1.1)
+    else:
+        yshift_amount = kwargs.get("yshift_amount", -1)
+
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
         fig=fig,
@@ -333,7 +338,7 @@ def basemap(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", -1),
+        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
@@ -1005,6 +1010,10 @@ def plot_grd(
             raise ValueError(msg) from e
 
     region = typing.cast(tuple[float, float, float, float], region)
+    if kwargs.get("hist") is True:
+        yshift_amount = kwargs.get("yshift_amount", -1.1)
+    else:
+        yshift_amount = kwargs.get("yshift_amount", -1)
 
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
@@ -1013,7 +1022,7 @@ def plot_grd(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", -1),
+        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
