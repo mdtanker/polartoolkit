@@ -31,6 +31,14 @@ from geopandas.testing import assert_geodataframe_equal
 
 from polartoolkit import fetch, regions, utils
 
+try:
+    import pyogrio
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
+
 load_dotenv()
 
 earthdata_login = [
@@ -1579,6 +1587,7 @@ def test_groundingline(test_input, expected):
     df = gpd.read_file(
         fetch.groundingline(version=test_input),
         rows=1,
+        engine=ENGINE,
     ).drop(columns=["geometry"])
 
     # df_expected = pd.DataFrame(expected)
@@ -1620,6 +1629,7 @@ def test_antarctic_boundaries(test_input, expected):
     df = gpd.read_file(
         fetch.antarctic_boundaries(version=test_input),
         rows=1,
+        engine=ENGINE,
     ).drop(columns=["geometry"])
 
     # df_expected = pd.DataFrame(expected)
