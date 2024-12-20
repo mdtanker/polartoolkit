@@ -2791,15 +2791,14 @@ def geoviews_points(
         msg = "Missing optional dependency 'cartopy' required for interactive plotting."
         raise ImportError(msg)
 
+    gv_points = gv.Points(
+        data=points,
+        crs=crs.SouthPolarStereo(),
+    )
+
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color
         # turn points into geoviews dataset
-        gv_points = gv.Points(
-            points,
-            crs=crs.SouthPolarStereo(),
-        )
-
-        # change options
         gv_points.opts(
             color=points_color,
             cmap=points_cmap,
@@ -2810,28 +2809,35 @@ def geoviews_points(
             alpha=kwargs.get("alpha", 1),
             size=kwargs.get("size", 4),
         )
-
     else:
-        # if more than 2 columns, color points by third column
-        # turn points into geoviews dataset
-        gv_points = gv.Points(
-            data=points,
-            vdims=[points_z],
-            crs=crs.SouthPolarStereo(),
-        )
-
-        # change options
-        gv_points.opts(
-            color=points_z,
-            cmap=points_cmap,
-            colorbar=True,
-            colorbar_position="top",
-            tools=["hover"],
-            marker=kwargs.get("marker", "circle"),
-            alpha=kwargs.get("alpha", 1),
-            size=kwargs.get("size", 4),
-        )
-
+        if points_z is None:
+            # change options
+            gv_points.opts(
+                tools=["hover"],
+                marker=kwargs.get("marker", "circle"),
+                alpha=kwargs.get("alpha", 1),
+                size=kwargs.get("size", 4),
+            )
+        else:
+            # if more than 2 columns, color points by third column
+            # turn points into geoviews dataset
+            clim = kwargs.get("cpt_lims")
+            if clim is None:
+                clim = utils.get_min_max(
+                    points[points_z],
+                    robust=kwargs.get("robust", True),
+                )
+            gv_points.opts(
+                color=points_z,
+                cmap=points_cmap,
+                clim=clim,
+                colorbar=True,
+                colorbar_position="top",
+                tools=["hover"],
+                marker=kwargs.get("marker", "circle"),
+                alpha=kwargs.get("alpha", 1),
+                size=kwargs.get("size", 4),
+            )
     gv_points.opts(
         projection=crs.SouthPolarStereo(),
         data_aspect=1,
