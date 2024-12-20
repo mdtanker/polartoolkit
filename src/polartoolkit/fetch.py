@@ -1570,14 +1570,20 @@ def ibcso_coverage(
     data = gpd.read_file(path, layer="IBCSO_coverage", bbox=bbox, engine=ENGINE)
 
     # expand from multipoint/mulitpolygon to point/polygon
-    data_coords = data.explode(index_parts=False)
+    # this is slow!
+    data_coords = data.explode(index_parts=False).copy()
 
     # extract the single points/polygons within region
-    data_subset = data_coords.clip(mask=utils.region_to_bounding_box(region))  # type: ignore[arg-type]
+    if region is not None:
+        data_coords = data_coords.clip(mask=utils.region_to_bounding_box(region)).copy()
 
     # separate points and polygons
-    points = data_subset[data_subset.geometry.type == "Point"]
-    polygons = data_subset[data_subset.geometry.type == "Polygon"]
+    points = data_coords[data_coords.geometry.type == "Point"].copy()
+    polygons = data_coords[data_coords.geometry.type == "Polygon"].copy()
+
+    # add easting and northing columns
+    points["easting"] = points.get_coordinates().x
+    points["northing"] = points.get_coordinates().y
 
     # this isn't working currently
     # points_3031 = points.to_crs(epsg=3031)
