@@ -37,6 +37,14 @@ from polartoolkit import (  # pylint: disable=import-self
     utils,
 )
 
+try:
+    import pyogrio  # pylint: disable=unused-import
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
+
 load_dotenv()
 
 
@@ -896,6 +904,14 @@ def geomap(
     .. footbibliography::
     """
 
+    # warn that pyogrio is faster
+    if ENGINE == "fiona":
+        msg = (
+            "Consider installing pyogrio for faster performance when reading "
+            "shapefiles."
+        )
+        logging.warning(msg)
+
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
 
@@ -961,12 +977,13 @@ def geomap(
         raise ValueError(msg)
 
     if region is None:
-        data = gpd.read_file(fname2, layer=layer)
+        data = gpd.read_file(fname2, layer=layer, engine=ENGINE)
     else:
         data = gpd.read_file(
             fname2,
             bbox=tuple(utils.region_to_bounding_box(region)),
             layer=layer,
+            engine=ENGINE,
         )
 
     if version == "units":
@@ -1531,6 +1548,13 @@ def ibcso_coverage(
     ----------
     .. footbibliography::
     """
+    # warn that pyogrio is faster
+    if ENGINE == "fiona":
+        msg = (
+            "Consider installing pyogrio for faster performance when reading "
+            "shapefiles."
+        )
+        logging.warning(msg)
 
     # download / retrieve the geopackage file
     path = pooch.retrieve(
@@ -1543,11 +1567,7 @@ def ibcso_coverage(
 
     # extract the geometries which are within the supplied region
     bbox = None if region is None else tuple(utils.region_to_bounding_box(region))
-    data = gpd.read_file(
-        path,
-        layer="IBCSO_coverage",
-        bbox=bbox,
-    )
+    data = gpd.read_file(path, layer="IBCSO_coverage", bbox=bbox, engine=ENGINE)
 
     # expand from multipoint/mulitpolygon to point/polygon
     data_coords = data.explode(index_parts=False)

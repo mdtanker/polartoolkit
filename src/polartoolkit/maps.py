@@ -26,6 +26,14 @@ import xarray as xr
 from polartoolkit import fetch, regions, utils
 
 try:
+    import pyogrio  # pylint: disable=unused-import
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
+
+try:
     from IPython.display import display
 except ImportError:
     display = None
@@ -1780,7 +1788,7 @@ def add_inset(
                 logging.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("BAS"))
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -1798,7 +1806,7 @@ def add_inset(
                 logging.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"))
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -2567,12 +2575,12 @@ def interactive_data(
 
     # initialize figure with coastline
     if hemisphere == "north":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"))
-        # crsys=crs.epsg(3413)
+        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine=ENGINE)
         crsys = crs.NorthPolarStereo()
     elif hemisphere == "south":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="depoorter-2013"))
-        # crsys=crs.epsg(3031)
+        coast_gdf = gpd.read_file(
+            fetch.groundingline(version="depoorter-2013"), engine=ENGINE
+        )
         crsys = crs.SouthPolarStereo()
     else:
         msg = "hemisphere must be north or south"
