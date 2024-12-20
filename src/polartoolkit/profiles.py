@@ -30,6 +30,13 @@ try:
     import ipyleaflet
 except ImportError:
     ipyleaflet = None
+try:
+    import pyogrio  # pylint: disable=unused-import
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
 
 
 def create_profile(
@@ -91,7 +98,7 @@ def create_profile(
         if shapefile is None:
             msg = f"If method = {method}, need to provide a valid shapefile"
             raise ValueError(msg)
-        shp = gpd.read_file(shapefile)
+        shp = gpd.read_file(shapefile, engine=ENGINE)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates_rel = df.coords.apply(pd.Series, index=["x", "y"])

@@ -22,8 +22,17 @@ import pandas as pd
 import pygmt
 import verde as vd
 import xarray as xr
+from numpy.typing import NDArray
 
 from polartoolkit import fetch, regions, utils
+
+try:
+    import pyogrio  # pylint: disable=unused-import
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
 
 try:
     from IPython.display import display
@@ -175,10 +184,15 @@ def basemap(
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
-    Create a figure without plotting a grid. Can be used as a basemap to plot your own
-    data, or features can be automatically data such as coastline and grounding lines,
-    inset figure location maps, background imagery, scalebars, gridlines and
-    northarrows.
+    Create a figure basemap in polar stereographic projection, and add a range of
+    features such as coastline and grounding lines, inset figure location maps,
+    background imagery, scalebars, gridlines and northarrows. Plot supplied points with
+    either constant color or colored by a colormap. Reuse the figure instance to either
+    plot additional features on top, or shift the plot to create subplots. There are
+    many keyword arguments which can either be passed along to the various functions in
+    the `maps` module, or specified specifically. Kwargs can be passed directly to the
+    following functions: `add_colorbar`, `add_north_arrow`, `add_scalebar`, `add_inset`,
+    `set_cmap`. Other kwargs are specified below.
 
     Parameters
     ----------
@@ -260,7 +274,20 @@ def basemap(
     points_pen : str
         pen color and width of points, by default is '1p,black'.
     points_cmap : str
-        colormap to use for points, by default is None.
+        GMT color scale to use for coloring points, by default 'viridis'. If True, will
+        use the last used in PyGMT.
+    cpt_lims : str or tuple]
+        limits to use for color scale max and min, by default is max and min of data.
+    cmap_region : str or tuple[float, float, float, float]
+        region to use to define color scale limits, in format [xmin, xmax, ymin, ymax],
+        by default is region
+    robust : bool
+        use the 2nd and 98th percentile of the data to set color scale limits, by
+        default is False.
+    reverse_cpt : bool
+        reverse the color scale, by default is False.
+    cbar_label : str
+        label to add to colorbar.
     colorbar : bool
         choose to add a colorbar for the points to the plot, by default is False.
     scale_font_color : str
@@ -318,6 +345,11 @@ def basemap(
         else:
             msg = "Region must be specified if hemisphere is not specified."
             raise ValueError(msg)
+    if kwargs.get("hist") is True:
+        yshift_amount = kwargs.get("yshift_amount", -1.1)
+    else:
+        yshift_amount = kwargs.get("yshift_amount", -1)
+
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
         fig=fig,
@@ -325,7 +357,7 @@ def basemap(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", -1),
+        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
@@ -410,35 +442,54 @@ def basemap(
     # add datapoints
     if points is not None:
         if ("x" in points.columns) and ("y" in points.columns):
-            x, y = points.x, points.y
+            x_col, y_col = "x", "y"
         elif ("easting" in points.columns) and ("northing" in points.columns):
-            x, y = points.easting, points.northing
+            x_col, y_col = "easting", "northing"
         else:
             msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
             raise ValueError(msg)
+        # define cmap for points
+        points_fill = kwargs.get("points_fill", "black")
+        cmap = kwargs.get("points_cmap", "viridis")
+        if isinstance(points_fill, str):
+            colorbar = False
+            cmap = None
+            cpt_lims = None
+        else:
+            cmap, cbar, cpt_lims = set_cmap(
+                cmap,
+                points=points_fill,
+                hemisphere=hemisphere,
+                **kwargs,
+            )
+            colorbar = kwargs.get("colorbar", cbar)
+        # plot points
         fig.plot(
-            x=x,
-            y=y,
+            x=points[x_col],
+            y=points[y_col],
             style=kwargs.get("points_style", "c.2c"),
-            fill=kwargs.get("points_fill", "black"),
+            fill=points_fill,
             pen=kwargs.get("points_pen", "1p,black"),
-            cmap=kwargs.get("points_cmap"),
+            cmap=cmap,
         )
         # display colorbar
-        if kwargs.get("colorbar", False) is True:
+        if colorbar is True:
             # removed duplicate kwargs before passing to add_colorbar
             cbar_kwargs = {
                 key: value
                 for key, value in kwargs.items()
                 if key
                 not in [
+                    "cpt_lims",
                     "fig_width",
                     "fig",
                 ]
             }
             add_colorbar(
                 fig,
-                cmap=kwargs.get("points_cmap"),
+                hist_cmap=cmap,
+                grid=points[[x_col, y_col, points_fill.name]],
+                cpt_lims=cpt_lims,
                 fig_width=fig_width,
                 region=region,
                 **cbar_kwargs,
@@ -513,6 +564,7 @@ def basemap(
 def set_cmap(
     cmap: str | bool,
     grid: str | xr.DataArray | None = None,
+    points: pd.Series | NDArray | None = None,
     modis: bool = False,
     grd2cpt: bool = False,
     cpt_lims: tuple[float, float] | None = None,
@@ -533,7 +585,10 @@ def set_cmap(
         a string of either a PyGMT cpt file (.cpt), or a preset PyGMT color ramp, or
         alternatively a value of True will use the last used cmap.
     grid : str | xarray.DataArray | None, optional
-       grid used for grd2cpt colormap equalization, by default None
+       grid used to determine colormap limits and grd2cpt colormap equalization, by
+       default None
+    points : pandas.Series | numpy.ndarray | None, optional
+        point values to use to determine colormap limits, by default None
     modis : bool, optional
         choose appropriate cmap for plotting modis data, by default False
     grd2cpt : bool, optional
@@ -541,14 +596,16 @@ def set_cmap(
     cpt_lims : tuple[float, float] | None, optional
         limits to set for the colormap, by default None
     cmap_region : tuple[float, float, float, float] | None, optional
-        extract colormap limits from a subset of the grid, in format
+        extract colormap limits from a subset of the grid or points, in format
         [xmin, xmax, ymin, ymax], by default None
     robust : bool, optional
-        use the 2nd and 98th percentile of the data from the grid, by default False
+        use the 2nd and 98th percentile of the data from the grid or points, by default
+        False
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
     shp_mask : geopandas.GeoDataFrame | str | None, optional
-        a shapefile to mask the grid by before extracting limits, by default None
+        a shapefile to mask the grid or points by before extracting limits, by default
+        None
     hemisphere : str | None, optional
         "north" or "south" hemisphere needed for using shp_mask, by default None
     colorbar : bool, optional
@@ -560,6 +617,10 @@ def set_cmap(
         a tuple with the pygmt colormap, as a string or boolean, a boolean of whether to
         plot the colorbar, and a tuple of 2 floats with the cpt limits.
     """
+
+    if (grid is not None) and (points is not None):
+        msg = "Only one of `grid` or `points` can be passed to `set_cmap`."
+        raise ValueError(msg)
 
     # set cmap
     if isinstance(cmap, str) and cmap.endswith(".cpt"):
@@ -730,23 +791,19 @@ def set_cmap(
         # 3) grd2cpt is False
         # 4) cpt_lims aren't set
         try:
-            if isinstance(grid, (xr.DataArray)):
-                zmin, zmax = utils.get_min_max(
-                    grid,
-                    shp_mask,
-                    region=cmap_region,
-                    robust=robust,
-                    hemisphere=hemisphere,
-                )
+            if points is not None:
+                values = points
+            elif isinstance(grid, (xr.DataArray)):
+                values = grid
             else:
-                with xr.load_dataarray(grid) as da:
-                    zmin, zmax = utils.get_min_max(
-                        da,
-                        shp_mask,
-                        region=cmap_region,
-                        robust=robust,
-                        hemisphere=hemisphere,
-                    )
+                values = xr.load_dataarray(grid)
+            zmin, zmax = utils.get_min_max(
+                values,
+                shp_mask,
+                region=cmap_region,
+                robust=robust,
+                hemisphere=hemisphere,
+            )
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -757,7 +814,7 @@ def set_cmap(
             )
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
-                logging.warning("grid's min value is greater or equal to its max value")
+                logging.warning("supplied min value is greater or equal to max value")
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -997,6 +1054,10 @@ def plot_grd(
             raise ValueError(msg) from e
 
     region = typing.cast(tuple[float, float, float, float], region)
+    if kwargs.get("hist") is True:
+        yshift_amount = kwargs.get("yshift_amount", -1.1)
+    else:
+        yshift_amount = kwargs.get("yshift_amount", -1)
 
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
@@ -1005,7 +1066,7 @@ def plot_grd(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=kwargs.get("yshift_amount", -1),
+        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
     )
 
@@ -1212,7 +1273,8 @@ def add_colorbar(
     **kwargs: typing.Any,
 ) -> None:
     """
-    Add a colorbar and optionally a histogram based on the last cmap used by PyGMT.
+    Add a colorbar based on the last cmap used by PyGMT and optionally a histogram of
+    the data values.
 
     Parameters
     ----------
@@ -1224,6 +1286,8 @@ def add_colorbar(
         cpt lims to use for the colorbar histogram, must match those used to create the
         colormap. If not supplied, will attempt to get values from kwargs `grid`, by
         default None
+    cbar_frame : list[str] | str, optional
+        frame for the colorbar, by default None
     """
     # get the current figure width
     fig_width = utils.get_fig_width()
@@ -1269,16 +1333,16 @@ def add_colorbar(
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropriate value
     if hist is True:
-        # get grid to use
-        grid = kwargs.get("grid")
+        # get values to use
+        values = kwargs.get("grid")
 
         hist_cmap = kwargs.get("hist_cmap", True)
 
-        if grid is None:
+        if values is None:
             msg = "if hist is True, grid must be provided."
             raise ValueError(msg)
 
-        # clip grid to plot region
+        # define plot region
         region = kwargs.get("region")
         # if no region supplied, get region of current PyGMT figure
         if region is None:
@@ -1286,14 +1350,29 @@ def add_colorbar(
                 region = tuple(lib.extract_region())
                 assert len(region) == 4
 
-        # clip grid to plot region
-        if region != utils.get_grid_info(grid)[1]:
-            grid_clipped = utils.subset_grid(grid, region)
-
-            # if subplotting, region will be in figure units and grid will be clipped
+        # clip values to plot region
+        if isinstance(values, (xr.DataArray | str)):
+            if region != utils.get_grid_info(values)[1]:
+                values_clipped = utils.subset_grid(values, region)
+                # if subplotting, region will be in figure units and grid will be
+                # clipped incorrectly, hacky solution is to check if clipped figure is
+                # smaller than a few data points, if so, use grids full region
+                if len(values_clipped[list(values_clipped.sizes.keys())[0]].values) < 5:  # noqa: RUF015
+                    reg = kwargs.get("region")
+                    if reg is None:
+                        msg = (
+                            "Issue with detecting figure region for adding colorbar "
+                            "histogram, please provide region kwarg."
+                        )
+                        raise ValueError(msg)
+                    values_clipped = utils.subset_grid(values, reg)
+                values = values_clipped
+        elif isinstance(values, pd.DataFrame):  # type: ignore[unreachable]
+            values_clipped = utils.points_inside_region(values, region)
+            # if subplotting, region will be in figure units and points will be clipped
             # incorrectly, hacky solution is to check if clipped figure is smaller than
-            # a few data points, if so, use grids full region
-            if len(grid_clipped[list(grid_clipped.sizes.keys())[0]].values) < 5:  # noqa: RUF015
+            # a few data points, if so, use points full region
+            if len(values_clipped) < 5:
                 reg = kwargs.get("region")
                 if reg is None:
                     msg = (
@@ -1301,9 +1380,8 @@ def add_colorbar(
                         "histogram, please provide region kwarg."
                     )
                     raise ValueError(msg)
-                grid_clipped = utils.subset_grid(grid, reg)
-
-            grid = grid_clipped
+                values_clipped = utils.points_inside_region(values, reg)
+            values = values_clipped
 
         if isinstance(hist_cmap, str) and hist_cmap.endswith(".cpt"):
             # extract cpt_lims from cmap
@@ -1336,12 +1414,13 @@ def add_colorbar(
 
         elif (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
-                "getting max/min values from grid, if cpt_lims were used to create the "
-                "colorscale, histogram will not properly align with colorbar!",
+                "getting max/min values from grid/points, if cpt_lims were used to "
+                "create the colorscale, histogram will not properly align with "
+                "colorbar!",
                 stacklevel=2,
             )
             zmin, zmax = utils.get_min_max(
-                grid,
+                values,
                 shapefile=kwargs.get("shp_mask"),
                 region=kwargs.get("cmap_region"),
                 robust=kwargs.get("robust", False),
@@ -1350,8 +1429,13 @@ def add_colorbar(
         else:
             zmin, zmax = cpt_lims
 
-        # get grid's data for histogram
-        df = vd.grid_to_table(grid)
+        # get grid's/point's data for histogram
+        if isinstance(values, xr.DataArray):
+            df = vd.grid_to_table(values)
+        elif isinstance(values, pd.DataFrame):
+            df = values
+        else:
+            df = values
         df2 = df.iloc[:, -1:].squeeze()
 
         # subset data between cbar min and max
@@ -1387,7 +1471,7 @@ def add_colorbar(
             raise ValueError(msg)
 
         if zmin == zmax:
-            msg = "Grid is a constant value, can't make a colorbar histogram!"
+            msg = "Grid/points are a constant value, can't make a colorbar histogram!"
             logging.warning(msg)
             return
 
@@ -1492,12 +1576,14 @@ def add_coast(
         if no_coast is False:
             data = fetch.groundingline(version=version)
         elif no_coast is True:
-            gdf = gpd.read_file(fetch.groundingline(version=version))
+            gdf = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
             data = gdf[gdf.Id_text == "Grounded ice or land"]
     elif version == "measures-v2":
         if no_coast is False:
-            gl = gpd.read_file(fetch.groundingline(version=version))
-            coast = gpd.read_file(fetch.antarctic_boundaries(version="Coastline"))
+            gl = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            coast = gpd.read_file(
+                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+            )
             data = pd.concat([gl, coast])
         elif no_coast is True:
             data = fetch.groundingline(version=version)
@@ -1780,7 +1866,7 @@ def add_inset(
                 logging.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("BAS"))
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -1798,7 +1884,7 @@ def add_inset(
                 logging.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"))
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -2567,12 +2653,12 @@ def interactive_data(
 
     # initialize figure with coastline
     if hemisphere == "north":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"))
-        # crsys=crs.epsg(3413)
+        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine=ENGINE)
         crsys = crs.NorthPolarStereo()
     elif hemisphere == "south":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="depoorter-2013"))
-        # crsys=crs.epsg(3031)
+        coast_gdf = gpd.read_file(
+            fetch.groundingline(version="depoorter-2013"), engine=ENGINE
+        )
         crsys = crs.SouthPolarStereo()
     else:
         msg = "hemisphere must be north or south"
@@ -2707,15 +2793,14 @@ def geoviews_points(
         msg = "Missing optional dependency 'cartopy' required for interactive plotting."
         raise ImportError(msg)
 
+    gv_points = gv.Points(
+        data=points,
+        crs=crs.SouthPolarStereo(),
+    )
+
     if len(points.columns) < 3:
         # if only 2 cols are given, give points a constant color
         # turn points into geoviews dataset
-        gv_points = gv.Points(
-            points,
-            crs=crs.SouthPolarStereo(),
-        )
-
-        # change options
         gv_points.opts(
             color=points_color,
             cmap=points_cmap,
@@ -2726,28 +2811,35 @@ def geoviews_points(
             alpha=kwargs.get("alpha", 1),
             size=kwargs.get("size", 4),
         )
-
     else:
-        # if more than 2 columns, color points by third column
-        # turn points into geoviews dataset
-        gv_points = gv.Points(
-            data=points,
-            vdims=[points_z],
-            crs=crs.SouthPolarStereo(),
-        )
-
-        # change options
-        gv_points.opts(
-            color=points_z,
-            cmap=points_cmap,
-            colorbar=True,
-            colorbar_position="top",
-            tools=["hover"],
-            marker=kwargs.get("marker", "circle"),
-            alpha=kwargs.get("alpha", 1),
-            size=kwargs.get("size", 4),
-        )
-
+        if points_z is None:
+            # change options
+            gv_points.opts(
+                tools=["hover"],
+                marker=kwargs.get("marker", "circle"),
+                alpha=kwargs.get("alpha", 1),
+                size=kwargs.get("size", 4),
+            )
+        else:
+            # if more than 2 columns, color points by third column
+            # turn points into geoviews dataset
+            clim = kwargs.get("cpt_lims")
+            if clim is None:
+                clim = utils.get_min_max(
+                    points[points_z],
+                    robust=kwargs.get("robust", True),
+                )
+            gv_points.opts(
+                color=points_z,
+                cmap=points_cmap,
+                clim=clim,
+                colorbar=True,
+                colorbar_position="top",
+                tools=["hover"],
+                marker=kwargs.get("marker", "circle"),
+                alpha=kwargs.get("alpha", 1),
+                size=kwargs.get("size", 4),
+            )
     gv_points.opts(
         projection=crs.SouthPolarStereo(),
         data_aspect=1,

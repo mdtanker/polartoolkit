@@ -26,6 +26,14 @@ from pyproj import Transformer
 import polartoolkit
 from polartoolkit import fetch, maps, regions
 
+try:
+    import pyogrio  # pylint: disable=unused-import
+
+    ENGINE = "pyogrio"
+except ImportError:
+    pyogrio = None
+    ENGINE = "fiona"
+
 
 def default_hemisphere(hemisphere: str | None) -> str:
     """
@@ -748,7 +756,11 @@ def mask_from_shp(
     """
     hemisphere = default_hemisphere(hemisphere)
 
-    shp = gpd.read_file(shapefile) if isinstance(shapefile, str) else shapefile
+    shp = (
+        gpd.read_file(shapefile, engine=ENGINE)
+        if isinstance(shapefile, str)
+        else shapefile
+    )
 
     if hemisphere == "north":
         crs = "epsg:3413"
@@ -997,7 +1009,7 @@ def grd_trend(
 
 
 def get_combined_min_max(
-    grids: tuple[xr.DataArray],
+    values: tuple[xr.DataArray | pd.Series | NDArray],
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1008,8 +1020,8 @@ def get_combined_min_max(
 
     Parameters
     ----------
-    grids : tuple[xarray.DataArray]
-        grids to get values for
+    values : tuple[xarray.DataArray | pandas.Series | numpy.ndarray]
+        values to get min and max for
     shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
@@ -1033,10 +1045,10 @@ def get_combined_min_max(
 
     # get min max of each grid
     limits = []
-    for g in grids:
+    for v in values:
         limits.append(
             get_min_max(
-                g,
+                v,
                 robust=robust,
                 region=region,
                 shapefile=shapefile,
@@ -1085,6 +1097,10 @@ def grd_compare(
         choose a specific region to compare, in format [xmin, xmax, ymin, ymax].
     rmse_in_title: bool
         add the RMSE to the title, by default is True.
+    cpt_lims : tuple[float, float]
+        set the colorbar limits for the two grids.
+    diff_lims : tuple[float, float]
+        set the colorbar limits for the difference grid.
 
     Returns
     -------
@@ -1185,42 +1201,48 @@ def grd_compare(
 
     dif = grid1 - grid2
 
-    # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(
-        grid1,
-        shp_mask,
-        robust=robust,
-        hemisphere=kwargs.get("hemisphere"),
-    )
-    grid2_cpt_lims = get_min_max(
-        grid2,
-        shp_mask,
-        robust=robust,
-        hemisphere=kwargs.get("hemisphere"),
-    )
-
-    diff_maxabs = kwargs.get("diff_maxabs", True)
-    if diff_maxabs is False:
-        diff_lims: typing.Any = get_min_max(
-            dif,
+    cpt_lims = kwargs.get("cpt_lims")
+    if cpt_lims is not None:
+        vmin, vmax = cpt_lims
+    else:
+        # get individual min/max values (and masked values if shapefile is provided)
+        grid1_cpt_lims = get_min_max(
+            grid1,
             shp_mask,
             robust=robust,
             hemisphere=kwargs.get("hemisphere"),
         )
+        grid2_cpt_lims = get_min_max(
+            grid2,
+            shp_mask,
+            robust=robust,
+            hemisphere=kwargs.get("hemisphere"),
+        )
+        # get min and max of both grids together
+        vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
+        vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+
+    if kwargs.get("diff_lims") is not None:
+        diff_lims = kwargs.get("diff_lims")
     else:
-        diff_maxabs = vd.maxabs(
-            get_min_max(
+        diff_maxabs = kwargs.get("diff_maxabs", True)
+        if diff_maxabs is False:
+            diff_lims = get_min_max(
                 dif,
                 shp_mask,
                 robust=robust,
                 hemisphere=kwargs.get("hemisphere"),
             )
-        )
-        diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
-
-    # get min and max of both grids together
-    vmin: typing.Any = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-    vmax: typing.Any = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+        else:
+            diff_maxabs = vd.maxabs(
+                get_min_max(
+                    dif,
+                    shp_mask,
+                    robust=robust,
+                    hemisphere=kwargs.get("hemisphere"),
+                )
+            )
+            diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
@@ -1470,7 +1492,7 @@ def subset_grid(
 
 
 def get_min_max(
-    grid: xr.DataArray,
+    values: xr.DataArray | pd.Series | NDArray,
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1481,8 +1503,8 @@ def get_min_max(
 
     Parameters
     ----------
-    grid : xarray.DataArray
-        grid to get values for
+    values : xarray.DataArray or pandas.Series or numpy.ndarray
+        values to find min or max for
     shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
@@ -1505,22 +1527,25 @@ def get_min_max(
         hemisphere = None
 
     if region is not None:
-        grid = subset_grid(grid, region)
+        values = subset_grid(values, region)
 
     if shapefile is None:
         if robust:
-            v_min, v_max = np.nanquantile(grid, [0.02, 0.98])
+            v_min, v_max = np.nanquantile(values, [0.02, 0.98])
         else:
-            v_min, v_max = np.nanmin(grid), np.nanmax(grid)
-
+            v_min, v_max = np.nanmin(values), np.nanmax(values)
     elif shapefile is not None:
-        masked = mask_from_shp(
-            shapefile,
-            hemisphere=hemisphere,
-            xr_grid=grid,
-            masked=True,
-            invert=False,
-        )
+        if isinstance(values, xr.DataArray):
+            masked = mask_from_shp(
+                shapefile,
+                hemisphere=hemisphere,
+                xr_grid=values,
+                masked=True,
+                invert=False,
+            )
+        else:
+            msg = "values must be an xarray.DataArray to use shapefile masking"
+            raise ValueError(msg)
 
         if robust is True:
             v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
