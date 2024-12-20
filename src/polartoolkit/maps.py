@@ -184,10 +184,15 @@ def basemap(
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
-    Create a figure without plotting a grid. Can be used as a basemap to plot your own
-    data, or features can be automatically data such as coastline and grounding lines,
-    inset figure location maps, background imagery, scalebars, gridlines and
-    northarrows.
+    Create a figure basemap in polar stereographic projection, and add a range of
+    features such as coastline and grounding lines, inset figure location maps,
+    background imagery, scalebars, gridlines and northarrows. Plot supplied points with
+    either constant color or colored by a colormap. Reuse the figure instance to either
+    plot additional features on top, or shift the plot to create subplots. There are
+    many keyword arguments which can either be passed along to the various functions in
+    the `maps` module, or specified specifically. Kwargs can be passed directly to the
+    following functions: `add_colorbar`, `add_north_arrow`, `add_scalebar`, `add_inset`,
+    `set_cmap`. Other kwargs are specified below.
 
     Parameters
     ----------
@@ -269,7 +274,20 @@ def basemap(
     points_pen : str
         pen color and width of points, by default is '1p,black'.
     points_cmap : str
-        colormap to use for points, by default is None.
+        GMT color scale to use for coloring points, by default 'viridis'. If True, will
+        use the last used in PyGMT.
+    cpt_lims : str or tuple]
+        limits to use for color scale max and min, by default is max and min of data.
+    cmap_region : str or tuple[float, float, float, float]
+        region to use to define color scale limits, in format [xmin, xmax, ymin, ymax],
+        by default is region
+    robust : bool
+        use the 2nd and 98th percentile of the data to set color scale limits, by
+        default is False.
+    reverse_cpt : bool
+        reverse the color scale, by default is False.
+    cbar_label : str
+        label to add to colorbar.
     colorbar : bool
         choose to add a colorbar for the points to the plot, by default is False.
     scale_font_color : str
@@ -424,35 +442,54 @@ def basemap(
     # add datapoints
     if points is not None:
         if ("x" in points.columns) and ("y" in points.columns):
-            x, y = points.x, points.y
+            x_col, y_col = "x", "y"
         elif ("easting" in points.columns) and ("northing" in points.columns):
-            x, y = points.easting, points.northing
+            x_col, y_col = "easting", "northing"
         else:
             msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
             raise ValueError(msg)
+        # define cmap for points
+        points_fill = kwargs.get("points_fill", "black")
+        cmap = kwargs.get("points_cmap", "viridis")
+        if isinstance(points_fill, str):
+            colorbar = False
+            cmap = None
+            cpt_lims = None
+        else:
+            cmap, cbar, cpt_lims = set_cmap(
+                cmap,
+                points=points_fill,
+                hemisphere=hemisphere,
+                **kwargs,
+            )
+            colorbar = kwargs.get("colorbar", cbar)
+        # plot points
         fig.plot(
-            x=x,
-            y=y,
+            x=points[x_col],
+            y=points[y_col],
             style=kwargs.get("points_style", "c.2c"),
-            fill=kwargs.get("points_fill", "black"),
+            fill=points_fill,
             pen=kwargs.get("points_pen", "1p,black"),
-            cmap=kwargs.get("points_cmap"),
+            cmap=cmap,
         )
         # display colorbar
-        if kwargs.get("colorbar", False) is True:
+        if colorbar is True:
             # removed duplicate kwargs before passing to add_colorbar
             cbar_kwargs = {
                 key: value
                 for key, value in kwargs.items()
                 if key
                 not in [
+                    "cpt_lims",
                     "fig_width",
                     "fig",
                 ]
             }
             add_colorbar(
                 fig,
-                cmap=kwargs.get("points_cmap"),
+                hist_cmap=cmap,
+                grid=points[[x_col, y_col, points_fill.name]],
+                cpt_lims=cpt_lims,
                 fig_width=fig_width,
                 region=region,
                 **cbar_kwargs,
