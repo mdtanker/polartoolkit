@@ -1576,12 +1576,14 @@ def add_coast(
         if no_coast is False:
             data = fetch.groundingline(version=version)
         elif no_coast is True:
-            gdf = gpd.read_file(fetch.groundingline(version=version))
+            gdf = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
             data = gdf[gdf.Id_text == "Grounded ice or land"]
     elif version == "measures-v2":
         if no_coast is False:
-            gl = gpd.read_file(fetch.groundingline(version=version))
-            coast = gpd.read_file(fetch.antarctic_boundaries(version="Coastline"))
+            gl = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            coast = gpd.read_file(
+                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+            )
             data = pd.concat([gl, coast])
         elif no_coast is True:
             data = fetch.groundingline(version=version)
