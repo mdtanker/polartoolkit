@@ -1594,24 +1594,32 @@ def ibcso_coverage(
 
 def ibcso(
     layer: str,
+    reference: str = "geoid",
     region: tuple[float, float, float, float] | None = None,
-    spacing: float | int | None = None,
+    spacing: float | int = 500,
     registration: str | None = None,
 ) -> xr.DataArray:
     """
     Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
     :footcite:t:`dorschelinternational2022a`.
 
+    By default the elevations are relative to Mean Sea Level (the geoid). To convert
+    them to be relative to the WGS84 ellipsoid, set `reference="ellipsoid` which will
+    add the EIGEN-6C4 geoid anomaly.
+
     Parameters
     ----------
     layer : str
         choose which layer to fetch:
         'surface', 'bed'
+    reference : str, optional
+        choose which vertical reference to use, 'geoid' or 'ellipsoid', by default
+        'geoid'
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default
+        grid spacing to resample the loaded grid to, by default 500 m
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
@@ -1632,13 +1640,16 @@ def ibcso(
     def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
         fname1 = Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+
+        # Rename to the file to ***_preprocessed.zarr
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+        fname_processed = fname_pre.with_suffix(".zarr")
+
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
             logging.warning(
-                "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
@@ -1646,37 +1657,35 @@ def ibcso(
             grid = xr.load_dataset(fname1).z
             logging.info(utils.get_grid_info(grid))
 
-            # subset to a smaller region (buffer by 1 cell width)
-            cut = pygmt.grdcut(
-                grid=grid,
-                region=regions.alter_region(
-                    regions.antarctica,
-                    zoom=-original_spacing,
-                ),
-            )
-            logging.info(utils.get_grid_info(cut))
-
             # set the projection
-            cut = cut.rio.write_crs("EPSG:9354")
+            grid = grid.rio.write_crs("EPSG:9354")
 
             # reproject to EPSG:3031
-            reprojected = cut.rio.reproject("epsg:3031")
+            reprojected = grid.rio.reproject("EPSG:3031")
 
-            # need to save to .nc and reload, issues with pygmt
-            reprojected.to_netcdf("tmp.nc")
-            processed = xr.load_dataset("tmp.nc").z
-
-            # resample to correct spacing (remove buffer) and region and save to .nc
-            pygmt.grdsample(
-                grid=processed,
+            # resample to correct spacing, region and registration
+            resampled = pygmt.grdsample(
+                grid=reprojected,
                 spacing=original_spacing,
                 region=regions.antarctica,
-                registration="p",
-                outgrid=fname_processed,
+                registration="g",
             )
 
-            # remove tmp file
-            pathlib.Path("tmp.nc").unlink()
+            # convert to dataset for zarr
+            resampled = resampled.to_dataset(name=layer)
+
+            # Save to .zarr file
+            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+            enc = {x: {"compressor": compressor} for x in resampled}
+            resampled.to_zarr(
+                fname_processed,
+                encoding=enc,
+            )
+
+            # remove non-preprocessed file
+            # can't do this because pooch uses the original at each fetch call to check
+            # the hash
+            # pathlib.Path(fname1).unlink()
 
         return str(fname_processed)
 
@@ -1684,13 +1693,16 @@ def ibcso(
     def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject and resample to 5km, and save it back"
         fname1 = Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+
+        # Rename to the file to ***_preprocessed.zarr
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+        fname_processed = fname_pre.with_suffix(".zarr")
+
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
             logging.warning(
-                "WARNING; preprocessing for this grid (reprojecting to EPSG:3031) for"
+                "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
@@ -1698,61 +1710,53 @@ def ibcso(
             grid = xr.load_dataset(fname1).z
             logging.info(utils.get_grid_info(grid))
 
-            # cut and change spacing, with 1 cell buffer
-            cut = resample_grid(
-                grid,
-                initial_spacing=original_spacing,
-                initial_region=(-4800000, 4800000, -4800000, 4800000),
-                initial_registration="p",
-                spacing=5e3,
-                region=regions.alter_region(regions.antarctica, zoom=-5e3),
-                registration="p",
-            )
-            cut = typing.cast(xr.DataArray, cut)
-
-            logging.info(utils.get_grid_info(cut))
-
             # set the projection
-            cut = cut.rio.write_crs("EPSG:9354")
-
-            cut = typing.cast(xr.DataArray, cut)
+            grid = grid.rio.write_crs("EPSG:9354")
 
             # reproject to EPSG:3031
-            reprojected = cut.rio.reproject("epsg:3031")
+            reprojected = grid.rio.reproject("EPSG:3031")
 
-            # need to save to .nc and reload, issues with pygmt
-            reprojected.to_netcdf("tmp.nc")
-            processed = xr.load_dataset("tmp.nc").z
-
-            # resample to correct spacing (remove buffer) and region and save to .nc
-            pygmt.grdsample(
-                grid=processed,
+            # resample to correct spacing, region and registration
+            resampled = pygmt.grdsample(
+                grid=reprojected,
                 spacing=5e3,
                 region=regions.antarctica,
-                registration="p",
-                outgrid=fname_processed,
+                registration="g",
             )
 
-            # remove tmp file
-            pathlib.Path("tmp.nc").unlink()
+            # convert to dataset for zarr
+            resampled = resampled.to_dataset(name=layer)
+
+            # Save to .zarr file
+            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+            enc = {x: {"compressor": compressor} for x in resampled}
+            resampled.to_zarr(
+                fname_processed,
+                encoding=enc,
+            )
+
+            # remove non-preprocessed file
+            # can't do this because pooch uses the original at each fetch call to check
+            # the hash
+            # pathlib.Path(fname1).unlink()
 
         return str(fname_processed)
-
-    if spacing is None:
-        spacing = original_spacing
 
     # determine which resolution of preprocessed grid to use
     if spacing < 5e3:
         preprocessor = preprocessing_fullres
         initial_region = regions.antarctica
         initial_spacing = original_spacing
-        initial_registration = "p"
+        initial_registration = "g"
     elif spacing >= 5000:
         logging.info("using preprocessed 5km grid since spacing is > 5km")
         preprocessor = preprocessing_5k
         initial_region = regions.antarctica
         initial_spacing = 5000
-        initial_registration = "p"
+        initial_registration = "g"
+    else:
+        msg = "invalid value for spacing"
+        raise ValueError(msg)
 
     if region is None:
         region = initial_region  # pylint: disable=possibly-used-before-assignment
@@ -1762,7 +1766,7 @@ def ibcso(
     if layer == "surface":
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_ice-surface.nc",
-            fname="IBCSO_ice_surface.nc",
+            fname="IBCSO_v2_ice_surface.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="7748a79fffa41024c175cff7142066940b3e88f710eaf4080193c46b2b59e1f0",
             progressbar=True,
@@ -1771,7 +1775,7 @@ def ibcso(
     elif layer == "bed":
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.nc",
-            fname="IBCSO_bed.nc",
+            fname="IBCSO_v2_bed.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="74d55acb219deb87dc5be019d6dafeceb7b1ebcf9095866f257671d12670a5e2",
             progressbar=True,
@@ -1781,7 +1785,24 @@ def ibcso(
         msg = "invalid layer string"
         raise ValueError(msg)
 
-    grid = xr.load_dataset(path).z
+    grid = xr.open_zarr(path)[layer]
+
+    if reference == "ellipsoid":
+        logging.info("converting to be reference to the WGS84 ellipsoid")
+        # get a grid of EIGEN geoid values matching the user's input
+        eigen_correction = geoid(
+            spacing=initial_spacing,
+            region=initial_region,
+            registration=initial_registration,
+            hemisphere="south",
+        )
+        # convert from ellipsoid back to eigen geoid
+        grid = grid + eigen_correction
+    elif reference == "geoid":
+        pass
+    else:
+        msg = "invalid reference string"
+        raise ValueError(msg)
 
     resampled = resample_grid(
         grid,
