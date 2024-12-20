@@ -22,6 +22,7 @@ import pandas as pd
 import pygmt
 import verde as vd
 import xarray as xr
+from numpy.typing import NDArray
 
 from polartoolkit import fetch, regions, utils
 
@@ -526,6 +527,7 @@ def basemap(
 def set_cmap(
     cmap: str | bool,
     grid: str | xr.DataArray | None = None,
+    points: pd.Series | NDArray | None = None,
     modis: bool = False,
     grd2cpt: bool = False,
     cpt_lims: tuple[float, float] | None = None,
@@ -546,7 +548,10 @@ def set_cmap(
         a string of either a PyGMT cpt file (.cpt), or a preset PyGMT color ramp, or
         alternatively a value of True will use the last used cmap.
     grid : str | xarray.DataArray | None, optional
-       grid used for grd2cpt colormap equalization, by default None
+       grid used to determine colormap limits and grd2cpt colormap equalization, by
+       default None
+    points : pandas.Series | numpy.ndarray | None, optional
+        point values to use to determine colormap limits, by default None
     modis : bool, optional
         choose appropriate cmap for plotting modis data, by default False
     grd2cpt : bool, optional
@@ -554,14 +559,16 @@ def set_cmap(
     cpt_lims : tuple[float, float] | None, optional
         limits to set for the colormap, by default None
     cmap_region : tuple[float, float, float, float] | None, optional
-        extract colormap limits from a subset of the grid, in format
+        extract colormap limits from a subset of the grid or points, in format
         [xmin, xmax, ymin, ymax], by default None
     robust : bool, optional
-        use the 2nd and 98th percentile of the data from the grid, by default False
+        use the 2nd and 98th percentile of the data from the grid or points, by default
+        False
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
     shp_mask : geopandas.GeoDataFrame | str | None, optional
-        a shapefile to mask the grid by before extracting limits, by default None
+        a shapefile to mask the grid or points by before extracting limits, by default
+        None
     hemisphere : str | None, optional
         "north" or "south" hemisphere needed for using shp_mask, by default None
     colorbar : bool, optional
@@ -573,6 +580,10 @@ def set_cmap(
         a tuple with the pygmt colormap, as a string or boolean, a boolean of whether to
         plot the colorbar, and a tuple of 2 floats with the cpt limits.
     """
+
+    if (grid is not None) and (points is not None):
+        msg = "Only one of `grid` or `points` can be passed to `set_cmap`."
+        raise ValueError(msg)
 
     # set cmap
     if isinstance(cmap, str) and cmap.endswith(".cpt"):
@@ -743,23 +754,19 @@ def set_cmap(
         # 3) grd2cpt is False
         # 4) cpt_lims aren't set
         try:
-            if isinstance(grid, (xr.DataArray)):
-                zmin, zmax = utils.get_min_max(
-                    grid,
-                    shp_mask,
-                    region=cmap_region,
-                    robust=robust,
-                    hemisphere=hemisphere,
-                )
+            if points is not None:
+                values = points
+            elif isinstance(grid, (xr.DataArray)):
+                values = grid
             else:
-                with xr.load_dataarray(grid) as da:
-                    zmin, zmax = utils.get_min_max(
-                        da,
-                        shp_mask,
-                        region=cmap_region,
-                        robust=robust,
-                        hemisphere=hemisphere,
-                    )
+                values = xr.load_dataarray(grid)
+            zmin, zmax = utils.get_min_max(
+                values,
+                shp_mask,
+                region=cmap_region,
+                robust=robust,
+                hemisphere=hemisphere,
+            )
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -770,7 +777,7 @@ def set_cmap(
             )
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
-                logging.warning("grid's min value is greater or equal to its max value")
+                logging.warning("supplied min value is greater or equal to max value")
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -1229,7 +1236,8 @@ def add_colorbar(
     **kwargs: typing.Any,
 ) -> None:
     """
-    Add a colorbar and optionally a histogram based on the last cmap used by PyGMT.
+    Add a colorbar based on the last cmap used by PyGMT and optionally a histogram of
+    the data values.
 
     Parameters
     ----------
@@ -1241,6 +1249,8 @@ def add_colorbar(
         cpt lims to use for the colorbar histogram, must match those used to create the
         colormap. If not supplied, will attempt to get values from kwargs `grid`, by
         default None
+    cbar_frame : list[str] | str, optional
+        frame for the colorbar, by default None
     """
     # get the current figure width
     fig_width = utils.get_fig_width()
@@ -1286,16 +1296,16 @@ def add_colorbar(
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropriate value
     if hist is True:
-        # get grid to use
-        grid = kwargs.get("grid")
+        # get values to use
+        values = kwargs.get("grid")
 
         hist_cmap = kwargs.get("hist_cmap", True)
 
-        if grid is None:
+        if values is None:
             msg = "if hist is True, grid must be provided."
             raise ValueError(msg)
 
-        # clip grid to plot region
+        # define plot region
         region = kwargs.get("region")
         # if no region supplied, get region of current PyGMT figure
         if region is None:
@@ -1303,14 +1313,29 @@ def add_colorbar(
                 region = tuple(lib.extract_region())
                 assert len(region) == 4
 
-        # clip grid to plot region
-        if region != utils.get_grid_info(grid)[1]:
-            grid_clipped = utils.subset_grid(grid, region)
-
-            # if subplotting, region will be in figure units and grid will be clipped
+        # clip values to plot region
+        if isinstance(values, (xr.DataArray | str)):
+            if region != utils.get_grid_info(values)[1]:
+                values_clipped = utils.subset_grid(values, region)
+                # if subplotting, region will be in figure units and grid will be
+                # clipped incorrectly, hacky solution is to check if clipped figure is
+                # smaller than a few data points, if so, use grids full region
+                if len(values_clipped[list(values_clipped.sizes.keys())[0]].values) < 5:  # noqa: RUF015
+                    reg = kwargs.get("region")
+                    if reg is None:
+                        msg = (
+                            "Issue with detecting figure region for adding colorbar "
+                            "histogram, please provide region kwarg."
+                        )
+                        raise ValueError(msg)
+                    values_clipped = utils.subset_grid(values, reg)
+                values = values_clipped
+        elif isinstance(values, pd.DataFrame):  # type: ignore[unreachable]
+            values_clipped = utils.points_inside_region(values, region)
+            # if subplotting, region will be in figure units and points will be clipped
             # incorrectly, hacky solution is to check if clipped figure is smaller than
-            # a few data points, if so, use grids full region
-            if len(grid_clipped[list(grid_clipped.sizes.keys())[0]].values) < 5:  # noqa: RUF015
+            # a few data points, if so, use points full region
+            if len(values_clipped) < 5:
                 reg = kwargs.get("region")
                 if reg is None:
                     msg = (
@@ -1318,9 +1343,8 @@ def add_colorbar(
                         "histogram, please provide region kwarg."
                     )
                     raise ValueError(msg)
-                grid_clipped = utils.subset_grid(grid, reg)
-
-            grid = grid_clipped
+                values_clipped = utils.points_inside_region(values, reg)
+            values = values_clipped
 
         if isinstance(hist_cmap, str) and hist_cmap.endswith(".cpt"):
             # extract cpt_lims from cmap
@@ -1353,12 +1377,13 @@ def add_colorbar(
 
         elif (cpt_lims is None) or (np.isnan(cpt_lims).any()):
             warnings.warn(
-                "getting max/min values from grid, if cpt_lims were used to create the "
-                "colorscale, histogram will not properly align with colorbar!",
+                "getting max/min values from grid/points, if cpt_lims were used to "
+                "create the colorscale, histogram will not properly align with "
+                "colorbar!",
                 stacklevel=2,
             )
             zmin, zmax = utils.get_min_max(
-                grid,
+                values,
                 shapefile=kwargs.get("shp_mask"),
                 region=kwargs.get("cmap_region"),
                 robust=kwargs.get("robust", False),
@@ -1367,8 +1392,13 @@ def add_colorbar(
         else:
             zmin, zmax = cpt_lims
 
-        # get grid's data for histogram
-        df = vd.grid_to_table(grid)
+        # get grid's/point's data for histogram
+        if isinstance(values, xr.DataArray):
+            df = vd.grid_to_table(values)
+        elif isinstance(values, pd.DataFrame):
+            df = values
+        else:
+            df = values
         df2 = df.iloc[:, -1:].squeeze()
 
         # subset data between cbar min and max
@@ -1404,7 +1434,7 @@ def add_colorbar(
             raise ValueError(msg)
 
         if zmin == zmax:
-            msg = "Grid is a constant value, can't make a colorbar histogram!"
+            msg = "Grid/points are a constant value, can't make a colorbar histogram!"
             logging.warning(msg)
             return
 
