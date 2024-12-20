@@ -1097,6 +1097,10 @@ def grd_compare(
         choose a specific region to compare, in format [xmin, xmax, ymin, ymax].
     rmse_in_title: bool
         add the RMSE to the title, by default is True.
+    cpt_lims : tuple[float, float]
+        set the colorbar limits for the two grids.
+    diff_lims : tuple[float, float]
+        set the colorbar limits for the difference grid.
 
     Returns
     -------
@@ -1197,42 +1201,48 @@ def grd_compare(
 
     dif = grid1 - grid2
 
-    # get individual grid min/max values (and masked values if shapefile is provided)
-    grid1_cpt_lims = get_min_max(
-        grid1,
-        shp_mask,
-        robust=robust,
-        hemisphere=kwargs.get("hemisphere"),
-    )
-    grid2_cpt_lims = get_min_max(
-        grid2,
-        shp_mask,
-        robust=robust,
-        hemisphere=kwargs.get("hemisphere"),
-    )
-
-    diff_maxabs = kwargs.get("diff_maxabs", True)
-    if diff_maxabs is False:
-        diff_lims: typing.Any = get_min_max(
-            dif,
+    cpt_lims = kwargs.get("cpt_lims")
+    if cpt_lims is not None:
+        vmin, vmax = cpt_lims
+    else:
+        # get individual min/max values (and masked values if shapefile is provided)
+        grid1_cpt_lims = get_min_max(
+            grid1,
             shp_mask,
             robust=robust,
             hemisphere=kwargs.get("hemisphere"),
         )
+        grid2_cpt_lims = get_min_max(
+            grid2,
+            shp_mask,
+            robust=robust,
+            hemisphere=kwargs.get("hemisphere"),
+        )
+        # get min and max of both grids together
+        vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
+        vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+
+    if kwargs.get("diff_lims") is not None:
+        diff_lims = kwargs.get("diff_lims")
     else:
-        diff_maxabs = vd.maxabs(
-            get_min_max(
+        diff_maxabs = kwargs.get("diff_maxabs", True)
+        if diff_maxabs is False:
+            diff_lims = get_min_max(
                 dif,
                 shp_mask,
                 robust=robust,
                 hemisphere=kwargs.get("hemisphere"),
             )
-        )
-        diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
-
-    # get min and max of both grids together
-    vmin: typing.Any = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-    vmax: typing.Any = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+        else:
+            diff_maxabs = vd.maxabs(
+                get_min_max(
+                    dif,
+                    shp_mask,
+                    robust=robust,
+                    hemisphere=kwargs.get("hemisphere"),
+                )
+            )
+            diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
 
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
