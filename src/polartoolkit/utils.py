@@ -1009,7 +1009,7 @@ def grd_trend(
 
 
 def get_combined_min_max(
-    grids: tuple[xr.DataArray],
+    values: tuple[xr.DataArray | pd.Series | NDArray],
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1020,8 +1020,8 @@ def get_combined_min_max(
 
     Parameters
     ----------
-    grids : tuple[xarray.DataArray]
-        grids to get values for
+    values : tuple[xarray.DataArray | pandas.Series | numpy.ndarray]
+        values to get min and max for
     shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
@@ -1045,10 +1045,10 @@ def get_combined_min_max(
 
     # get min max of each grid
     limits = []
-    for g in grids:
+    for v in values:
         limits.append(
             get_min_max(
-                g,
+                v,
                 robust=robust,
                 region=region,
                 shapefile=shapefile,
@@ -1482,7 +1482,7 @@ def subset_grid(
 
 
 def get_min_max(
-    grid: xr.DataArray,
+    values: xr.DataArray | pd.Series | NDArray,
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1493,8 +1493,8 @@ def get_min_max(
 
     Parameters
     ----------
-    grid : xarray.DataArray
-        grid to get values for
+    values : xarray.DataArray or pandas.Series or numpy.ndarray
+        values to find min or max for
     shapefile : Union[str or geopandas.GeoDataFrame], optional
         path or loaded shapefile to use for a mask, by default None
     robust: bool, optional
@@ -1517,22 +1517,25 @@ def get_min_max(
         hemisphere = None
 
     if region is not None:
-        grid = subset_grid(grid, region)
+        values = subset_grid(values, region)
 
     if shapefile is None:
         if robust:
-            v_min, v_max = np.nanquantile(grid, [0.02, 0.98])
+            v_min, v_max = np.nanquantile(values, [0.02, 0.98])
         else:
-            v_min, v_max = np.nanmin(grid), np.nanmax(grid)
-
+            v_min, v_max = np.nanmin(values), np.nanmax(values)
     elif shapefile is not None:
-        masked = mask_from_shp(
-            shapefile,
-            hemisphere=hemisphere,
-            xr_grid=grid,
-            masked=True,
-            invert=False,
-        )
+        if isinstance(values, xr.DataArray):
+            masked = mask_from_shp(
+                shapefile,
+                hemisphere=hemisphere,
+                xr_grid=values,
+                masked=True,
+                invert=False,
+            )
+        else:
+            msg = "values must be an xarray.DataArray to use shapefile masking"
+            raise ValueError(msg)
 
         if robust is True:
             v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
