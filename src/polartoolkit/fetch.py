@@ -2003,6 +2003,8 @@ def bedmap_points(
     """
     Load bedmap point data, choose from Bedmap 1, 2 or 3
 
+    All elevations are in meters above the WGS84 ellipsoid.
+
     version == 'bedmap1'
     from :footcite:t:`lythebedmap2001`.
     accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01619
@@ -2013,7 +2015,9 @@ def bedmap_points(
 
     version == 'bedmap3'
     from :footcite:t:`fremandbedmap32022`.
-    accessed from https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01614
+    accessed from  https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/01614#access-data
+    download link was found from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=61100714-1e32-44af-a237-0a517529bc49
+    under DOI/BEDMAP3 datapoints, right click on the download link and copy link address
 
     Parameters
     ----------
@@ -3039,7 +3043,7 @@ def geoid(
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
     To convert a topographic grid which is referenced to the geoid to be reference to
-    the ellipsoid, subtract this grid.
+    the ellipsoid, add this grid.
 
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
     Accessed via the Fatiando data repository https://github.com/fatiando-data/earth-geoid-10arcmin
