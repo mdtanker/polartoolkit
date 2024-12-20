@@ -38,15 +38,15 @@ dependencies = [
     "openpyxl", # needed for fetch.ghf to read an excel file into pandas
     "pooch",
     "tqdm",
-    "verde>=1.8.0",
+    "verde",
     "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
-    "harmonica>=0.6.0",
+    "harmonica>=0.6.0", # need load_oasis_montaj_grid function
     "pyproj",
     "rioxarray",
     "scipy",
     "numpy",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
-    "geopandas<1.0", # issue with pyogrio registering drivers
+    "geopandas<1.0", # issue with pyogrio registering drivers, should be fixed in pygmt v0.14
     "zarr",
     "python-dotenv",
     "requests",
