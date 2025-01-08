@@ -1285,12 +1285,12 @@ def plot_data(
     data_projection = f"X{fig_width}c/{data_height}c"
 
     # get axes from data dict
-    axes = pd.Series([v["axis"] for k, v in data_dict.items()])
+    axes = pd.Series([v["axis"] for k, v in data_dict.items()])  # type: ignore[union-attr]
 
     # for each axis get overall max and min values
     ax0_min_max = []
     ax1_min_max = []
-    for k, v in data_dict.items():
+    for k, v in data_dict.items():  # type: ignore[union-attr]
         if v["axis"] == axes.unique()[0]:
             ax0_min_max.append(utils.get_min_max(df_data[k]))
         else:
@@ -1303,7 +1303,7 @@ def plot_data(
     elif isinstance(frames, list) and isinstance(frames[0], str):
         frames = [frames]
 
-    for i, (k, v) in enumerate(data_dict.items()):
+    for i, (k, v) in enumerate(data_dict.items()):  # type: ignore[union-attr]
         if v["axis"] == axes.unique()[0]:
             data_min = np.min([a for (a, b) in ax0_min_max])
             data_max = np.max([b for (a, b) in ax0_min_max])
@@ -1363,7 +1363,7 @@ def plot_data(
             else:
                 thick = kwargs.get("data_pen_thickness", 1)
                 if isinstance(thick, (float, int)):
-                    thick = [thick] * len(data_dict.items())
+                    thick = [thick] * len(data_dict.items())  # type: ignore[union-attr]
 
                 color = kwargs.get("data_pen_color")
                 if isinstance(color, list):
@@ -1397,8 +1397,8 @@ def plot_data(
             pygmt.makecpt(
                 cmap=kwargs.get("data_line_cmap"),
                 series=[
-                    np.min([v["color"] for k, v in data_dict.items()]),
-                    np.max([v["color"] for k, v in data_dict.items()]),
+                    np.min([v["color"] for k, v in data_dict.items()]),  # type: ignore[union-attr]
+                    np.max([v["color"] for k, v in data_dict.items()]),  # type: ignore[union-attr]
                 ],
             )
 
@@ -1408,7 +1408,7 @@ def plot_data(
                 frame=frame,
                 x=df_data.dist,
                 y=df_data[k],
-                pen=f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,+z",
+                pen=f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,+z",  # type: ignore[union-attr]
                 label=v["name"],
                 cmap=True,
                 zvalue=v["color"],
