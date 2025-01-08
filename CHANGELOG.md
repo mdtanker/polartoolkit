@@ -8,6 +8,8 @@ with commit parsing of [angular commits](https://github.com/angular/angular.js/b
 * update backup env to `v0.7.1` ([`ef1f621`](https://github.com/mdtanker/polartoolkit/commit/ef1f621cbb8bc9bf1dc8e0429e026ab2f372594f))
 ### Other
 * add setuptools to RTD_env to fix issue ([`ee5178a`](https://github.com/mdtanker/polartoolkit/commit/ee5178a03aab4589a92ade2e14597fcd37381402))
+### ✏️ Formatting
+* type checking fixes ([`f1e7ede`](https://github.com/mdtanker/polartoolkit/commit/f1e7ede6795bcb35259b7b63989cb2e2e8b2add3))
 
 
 ## v0.7.1 (2024-12-17)
