@@ -15,7 +15,6 @@ import re
 import shutil
 import typing
 from inspect import getmembers, isfunction
-from pathlib import Path
 
 import deprecation
 import earthaccess
@@ -423,7 +422,7 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Download the .h5 file, save to .zarr and return fname"
-        fname1 = Path(fname)
+        fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***.zarr
         fname_processed = fname1.with_suffix(".zarr")
@@ -612,18 +611,15 @@ def ice_vel(
         # preprocessing for full, 450m resolution
         def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .nc file, calculate velocity magnitude, save it back"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                msg = (
-                    "WARNING; this file is large (~7Gb) and may take some time to "
-                    "download!"
-                )
+                msg = "this file is large (~7Gb) and may take some time to download!"
                 logging.warning(msg)
                 msg = (
-                    "WARNING; preprocessing this grid in full resolution is very "
+                    "preprocessing this grid in full resolution is very "
                     "computationally demanding, consider choosing a lower resolution "
                     "using the parameter `spacing`."
                 )
@@ -641,17 +637,14 @@ def ice_vel(
             back
             """
 
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
             # Rename to the file to ***_preprocessed_5k.nc
             fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                msg = (
-                    "WARNING; this file is large (~7Gb) and may take some time to "
-                    "download!"
-                )
+                msg = "this file is large (~7Gb) and may take some time to download!"
                 logging.warning(msg)
-                msg = "WARNING; preprocessing this grid may take a long time."
+                msg = "preprocessing this grid may take a long time."
                 logging.warning(msg)
                 initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
                 initial_spacing = original_spacing
@@ -1003,7 +996,7 @@ def geomap(
     fname = "ATA_SCAR_GeoMAP_Geology_v2022_08.gpkg"
 
     fname1 = next(p for p in path if p.endswith(fname))
-    fname2 = Path(fname1)
+    fname2 = pathlib.Path(fname1)
 
     # found layer names with: fiona.listlayers(fname)
 
@@ -1013,7 +1006,7 @@ def geomap(
         layer = "ATA_GeoMAP_geological_units_v2022_08"
         qml_fname = "ATA geological units - Simple geology.qml"
         qml = next(p for p in path if p.endswith(qml_fname))
-        with Path(qml).open(encoding="utf8") as f:
+        with pathlib.Path(qml).open(encoding="utf8") as f:
             contents = f.read().replace("\n", "")
         symbol = re.findall(r'<rule symbol="(.*?)"', contents)
         simpcode = re.findall(r'filter="SIMPCODE = (.*?)"', contents)
@@ -1385,7 +1378,7 @@ def sediment_thickness(
                 extract_dir="Baranov_2021_sediment_thickness",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
-            fname2 = Path(fname1)
+            fname2 = pathlib.Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
@@ -1529,7 +1522,7 @@ def sediment_thickness(
                 extract_dir="GlobSed",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith("GlobSed-v3.nc"))
-            fname2 = Path(fname1)
+            fname2 = pathlib.Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname2.with_stem(fname2.stem + "_preprocessed")
@@ -1716,7 +1709,7 @@ def ibcso(
     # preprocessing for full, 500m resolution
     def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname1 = Path(fname)
+        fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_preprocessed.zarr
         fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
@@ -1769,7 +1762,7 @@ def ibcso(
     # preprocessing for filtered 5k resolution
     def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject and resample to 5km, and save it back"
-        fname1 = Path(fname)
+        fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_preprocessed.zarr
         fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_5k")
@@ -2287,7 +2280,7 @@ def bedmap2(
             members=member,
         )(fname, action, _pooch2)[0]
         # get the path to the layer's tif file
-        fname2 = Path(fname1)
+        fname2 = pathlib.Path(fname1)
 
         # Rename to the file to ***.zarr
         fname_processed = fname2.with_suffix(".zarr")
@@ -2535,7 +2528,7 @@ def rema(
         # extract the files and get the surface grid
         path = pooch.Untar(members=members)(fname, action, _pooch2)[0]
         # fname = [p for p in path if p.endswith("dem.tif")]#[0]
-        tiff_file = Path(path)
+        tiff_file = pathlib.Path(path)
         # Rename to the file to ***.zarr
         fname_processed = tiff_file.with_suffix(".zarr")
 
@@ -2934,7 +2927,7 @@ def gravity(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .nc file, reproject, and save it back"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             if hemisphere == "south":
@@ -3057,7 +3050,7 @@ def etopo(
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname1 = Path(fname)
+        fname1 = pathlib.Path(fname)
         # Rename to the file to ***_preprocessed.nc
         fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
         # Only recalculate if new download or the processed file doesn't exist yet
@@ -3172,7 +3165,7 @@ def geoid(
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
-        fname1 = Path(fname)
+        fname1 = pathlib.Path(fname)
         # Rename to the file to ***_preprocessed.nc
         fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
         # Only recalculate if new download or the processed file doesn't exist yet
@@ -3298,7 +3291,7 @@ def magnetics(
                 # extract_dir="Baranov_2021_sediment_thickness",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
-            fname2 = Path(fname1)
+            fname2 = pathlib.Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
@@ -3378,7 +3371,7 @@ def magnetics(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "convert geosoft grd to xarray dataarray and save it back as a .nc"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
@@ -3452,7 +3445,7 @@ def magnetics(
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the data, and save it back as a .nc"
             path = pooch.Unzip()(fname, action, _pooch2)
-            fname1 = Path(path[0])
+            fname1 = pathlib.Path(path[0])
 
             # Rename to the file to ***_preprocessed.nc
             if hemisphere == "south":
@@ -3608,7 +3601,7 @@ def ghf(
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the .nc file, and save it back"
             fname = pooch.Untar()(fname, action, _pooch2)[0]
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
@@ -3682,7 +3675,7 @@ def ghf(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .xyz file, grid it, and save it back as a .nc"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
@@ -3833,7 +3826,7 @@ def ghf(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
@@ -3947,7 +3940,7 @@ def ghf(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
-            fname1 = Path(fname)
+            fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
@@ -4154,7 +4147,7 @@ def crustal_thickness(
 
         # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         #     "Load the .dat file, grid it, and save it back as a .nc"
-        #     fname1 = Path(fname)
+        #     fname1 = pathlib.Path(fname)
 
         #     # Rename to the file to ***_preprocessed.nc
         #     fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
@@ -4237,7 +4230,7 @@ def crustal_thickness(
             path = pooch.Untar(
                 extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
             )(fname, action, _pooch2)
-            fname1 = Path(path[0])
+            fname1 = pathlib.Path(path[0])
             # Rename to the file to ***_preprocessed.nc
             fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
             # Only recalculate if new download or the processed file doesn't exist yet
@@ -4366,7 +4359,7 @@ def moho(
                 extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith("moho.final.dat"))
-            fname2 = Path(fname1)
+            fname2 = pathlib.Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
