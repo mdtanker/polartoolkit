@@ -978,7 +978,7 @@ def geomap(
     if ENGINE == "fiona":
         msg = (
             "Consider installing pyogrio for faster performance when reading "
-            "shapefiles."
+            "geodataframes."
         )
         logging.warning(msg)
 
@@ -1612,7 +1612,13 @@ def ibcso_coverage(
     -------
     tuple[geopandas.GeoDataFrame, geopandas.GeoDataFrame]
         Returns two geodataframes; points and polygons for a subset of IBCSO v2 point
-        measurement locations.
+        measurement locations. Column 'dataset_tid' is the type identifier from IBCSO.
+        The points geodataframe contains all individual point measurements, including
+        single-beam (TID 10), seismic points (TID 12), isolated soundings (TID 13),
+        ENC sounding (TID 14), grounded iceberg draft (TID 46), and gravity-inverted
+        bathymetry (TID 45). The polygon geodataframe contains all polygon measurements,
+        including multi-beam (swath) (TID 11), contours from charts (TID 42), or
+        other unknown sources (TID 71).
 
     References
     ----------
@@ -1622,12 +1628,12 @@ def ibcso_coverage(
     if ENGINE == "fiona":
         msg = (
             "Consider installing pyogrio for faster performance when reading "
-            "shapefiles."
+            "geodataframes."
         )
         logging.warning(msg)
 
     # download / retrieve the geopackage file
-    path = pooch.retrieve(
+    fname = pooch.retrieve(
         url="https://download.pangaea.de/dataset/937574/files/IBCSO_v2_coverage.gpkg",
         fname="IBCSO_v2_coverage.gpkg",
         path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
@@ -1636,8 +1642,22 @@ def ibcso_coverage(
     )
 
     # extract the geometries which are within the supplied region
-    bbox = None if region is None else tuple(utils.region_to_bounding_box(region))
-    data = gpd.read_file(path, layer="IBCSO_coverage", bbox=bbox, engine=ENGINE)
+    if region is None:
+        bbox = None
+    else:
+        # users supply region in EPSG:3031, but the data is in EPSG:9354
+        reg_df = utils.region_to_df(region)
+        region_epsg_9354 = utils.reproject(
+            reg_df,
+            input_crs="epsg:3031",
+            output_crs="epsg:9354",
+            reg=True,
+            input_coord_names=("x", "y"),
+            output_coord_names=("x", "y"),
+        )
+        bbox = utils.region_to_bounding_box(region_epsg_9354)  # type: ignore[arg-type]
+
+    data = gpd.read_file(fname, bbox=bbox, engine=ENGINE)
 
     # expand from multipoint/mulitpolygon to point/polygon
     # this is slow!
@@ -1645,19 +1665,19 @@ def ibcso_coverage(
 
     # extract the single points/polygons within region
     if region is not None:
-        data_coords = data_coords.clip(mask=utils.region_to_bounding_box(region)).copy()
+        data_coords = data_coords.clip(mask=bbox).copy()
 
     # separate points and polygons
     points = data_coords[data_coords.geometry.type == "Point"].copy()
     polygons = data_coords[data_coords.geometry.type == "Polygon"].copy()
 
-    # add easting and northing columns
+    # reproject to EPSG3031
+    points = points.to_crs(epsg=3031)
+    polygons = polygons.to_crs(epsg=3031)
+
+    # extract reprojected coordinates
     points["easting"] = points.get_coordinates().x
     points["northing"] = points.get_coordinates().y
-
-    # this isn't working currently
-    # points_3031 = points.to_crs(epsg=3031)
-    # polygons_3031 = polygons.to_crs(epsg=3031)
 
     return (points, polygons)
 
