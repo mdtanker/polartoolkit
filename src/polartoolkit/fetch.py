@@ -474,6 +474,82 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
     )[variable]
 
 
+def buttressing(
+    variable: str,
+    region: tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
+    registration: str | None = None,
+    **kwargs: typing.Any,
+) -> typing.Any:
+    """
+    Antarctic ice shelf buttressing.
+    from :footcite:t:`furstsafety2016`.
+
+    accessed from https://nsidc.org/data/nsidc-0664/versions/1
+
+    Units are in m/yr
+
+    Parameters
+    ----------
+    variable : str
+        choose which variable to load, either 'max' for maximum buttressing, 'min' for
+        minimum buttressing, 'flow' for along-flow buttressing, or 'viscosity' for
+        estimated ice viscosity values
+
+    Returns
+    -------
+    xarray.DataArray
+        Returns a dataarray of buttressing or viscosity values
+
+    References
+    ----------
+    .. footbibliography::
+    """
+
+    initial_region = regions.antarctica
+    initial_spacing = 1e3
+    initial_registration = "g"
+
+    base_url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0664_antarctic_iceshelf_buttress/"
+
+    if variable == "max":
+        var = "bmax"
+    elif variable == "min":
+        var = "bmin"
+    elif variable == "flow":
+        var = "bflow"
+    elif variable == "viscosity":
+        var = "visc"
+    else:
+        msg = "invalid variable string"
+        raise ValueError(msg)
+
+    fname = f"{var}_nsidc_sumer_buttressing_v1.0.nc"
+    url = base_url + fname
+
+    path = pooch.retrieve(
+        url=url,
+        fname=fname,
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/buttressing/",
+        known_hash=None,
+        progressbar=True,
+        downloader=EarthDataDownloader(),
+    )
+
+    grid = xr.load_dataset(path)[var]
+
+    return resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
+
+
 def ice_vel(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,

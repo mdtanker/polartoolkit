@@ -1553,6 +1553,65 @@ def test_rema(test_input, expected):
 # grid = fetch.rema(version="500m")
 # utils.get_grid_info(grid)
 
+# %% Buttressing
+
+
+buttressing_test = [
+    (
+        {"variable": "max"},
+        (
+            1000,
+            (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
+            -781.63,
+            717.83,
+            "g",
+        ),
+    ),
+    (
+        {"variable": "min"},
+        (
+            1000,
+            (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
+            -1537.85681152,
+            83.4083175659,
+            "g",
+        ),
+    ),
+    (
+        {"variable": "flow"},
+        (
+            1000,
+            (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
+            -1433.67492676,
+            102.327476501,
+            "g",
+        ),
+    ),
+    (
+        {"variable": "viscosity"},
+        (
+            1000,
+            (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
+            6.90586421115e-06,
+            384.891693115,
+            "g",
+        ),
+    ),
+]
+
+
+@pytest.mark.fetch
+@pytest.mark.parametrize(("test_input", "expected"), buttressing_test)
+def test_buttressing(test_input, expected):
+    grid = fetch.buttressing(**test_input)
+    print("\n\n\n GRID INFO", utils.get_grid_info(grid))
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+        ignore_order=True,
+        significant_digits=2,
+    )
+
 
 groundingline_test = [
     (

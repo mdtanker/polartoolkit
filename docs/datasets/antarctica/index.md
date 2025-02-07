@@ -47,6 +47,7 @@ glacial_isostatic_adjustment
 ice_velocity
 mass_change
 basal_melt
+ice_shelf_buttressing
 ```
 
 ## Shapefiles and Misc.
