@@ -2289,12 +2289,16 @@ def subplots(
     titles = kwargs.pop("titles", kwargs.pop("subplot_titles", None))
     cbar_labels = kwargs.pop("cbar_labels", None)
     cbar_units = kwargs.pop("cbar_units", None)
+    point_sets = kwargs.pop("point_sets", None)
     row_titles_font = kwargs.pop("row_titles_font", "38p,Helvetica,black")
     column_titles_font = kwargs.pop("column_titles_font", "38p,Helvetica,black")
     fig_x_axis_title_y_offset = kwargs.pop("fig_x_axis_title_y_offset", "2c")
     fig_y_axis_title_x_offset = kwargs.pop("fig_y_axis_title_x_offset", "2c")
     fig_axis_title_font = kwargs.pop("fig_axis_title_font", "30p,Helvetica-Bold")
     fig_title_y_offset = kwargs.pop("fig_title_y_offset", "2c")
+    reverse_cpts = kwargs.pop("reverse_cpts", None)
+    insets = kwargs.pop("insets", None)
+    scalebars = kwargs.pop("scalebars", None)
 
     new_kwargs = {
         "cpt_lims": cpt_limits,
@@ -2302,6 +2306,10 @@ def subplots(
         "title": titles,
         "cbar_label": cbar_labels,
         "cbar_unit": cbar_units,
+        "points": point_sets,
+        "reverse_cpt": reverse_cpts,
+        "inset": insets,
+        "scalebar": scalebars,
     }
     # check in not none they are the correct length
     for k, v in new_kwargs.items():
