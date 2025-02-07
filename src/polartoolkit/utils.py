@@ -702,7 +702,7 @@ def block_reduce(
 
     # if no data names provided, use all columns
     if input_data_names is None:
-        input_data_names = tuple(df.columns.drop(input_coord_names))
+        input_data_names = tuple(df.columns.drop(list(input_coord_names)))
 
     # get tuples of pd.Series
     input_coords = tuple([df[col] for col in input_coord_names])  # pylint: disable=consider-using-generator

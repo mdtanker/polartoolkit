@@ -2033,7 +2033,7 @@ def add_box(
 
 def interactive_map(
     hemisphere: str | None = None,
-    center_yx: list[float] | None = None,
+    center_yx: tuple[float] | None = None,
     zoom: float = 0,
     display_xy: bool = True,
     show: bool = True,
@@ -2049,7 +2049,7 @@ def interactive_map(
     ----------
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres
-    center_yx : list, optional
+    center_yx : tuple, optional
         choose center coordinates in EPSG3031 [y,x], by default [0,0]
     zoom : float, optional
         choose zoom level, by default 0
@@ -2118,17 +2118,17 @@ def interactive_map(
     else:
         # if no points, center map on 0, 0
         if hemisphere == "south":
-            center_ll = [-90, 0]
+            center_ll = (-90, 0)  # type: ignore[assignment]
         elif hemisphere == "north":
-            center_ll = [90, -45]
+            center_ll = (90, -45)  # type: ignore[assignment]
         else:
             msg = "hemisphere must be north or south"
             raise ValueError(msg)
     if center_yx is not None:
         if hemisphere == "south":
-            center_ll = utils.epsg3031_to_latlon(center_yx)
+            center_ll = utils.epsg3031_to_latlon(center_yx)  # type: ignore[assignment]
         elif hemisphere == "north":
-            center_ll = utils.epsg3413_to_latlon(center_yx)
+            center_ll = utils.epsg3413_to_latlon(center_yx)  # type: ignore[assignment]
         else:
             msg = "hemisphere must be north or south"
             raise ValueError(msg)

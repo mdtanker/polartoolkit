@@ -275,7 +275,7 @@ def combine_regions(
     return reg
 
 
-def draw_region(**kwargs: typing.Any) -> typing.Any:
+def draw_region(**kwargs: typing.Any) -> list[typing.Any]:
     """
     Plot an interactive map, and use the "Draw a Rectangle" button to draw a rectangle
     and get the bounding region. Vertices will be returned as the output of the
@@ -283,7 +283,7 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
 
     Returns
     -------
-    typing.Any
+    list[typing.Any]
         Returns a list of list of vertices for each polyline.
 
     Example
@@ -307,7 +307,7 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
     m = maps.interactive_map(**kwargs, show=False)
 
     def clear_m() -> None:
-        global poly  # noqa: PLW0603 # pylint: disable=global-variable-undefined
+        global poly  # pylint: disable=global-variable-undefined # noqa: PLW0603
         poly = []  # type: ignore[name-defined]
 
     clear_m()
@@ -340,4 +340,4 @@ def draw_region(**kwargs: typing.Any) -> typing.Any:
     clear_m()
     display(m)
 
-    return poly  # type: ignore[name-defined]
+    return poly  # type: ignore[no-any-return, name-defined]

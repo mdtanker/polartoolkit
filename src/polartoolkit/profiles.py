@@ -1684,14 +1684,14 @@ def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
     return df1
 
 
-def draw_lines(**kwargs: typing.Any) -> typing.Any:
+def draw_lines(**kwargs: typing.Any) -> list[typing.Any]:
     """
     Plot an interactive map, and use the "Draw a Polyline" button to create vertices of
     a line. Vertices will be returned as the output of the function.
 
     Returns
     -------
-    typing.Any
+    list[typing.Any]
         Returns a list of list of vertices for each polyline in lat long.
     """
 
@@ -1742,4 +1742,4 @@ def draw_lines(**kwargs: typing.Any) -> typing.Any:
     clear_m()
     display(m)
 
-    return lines  # type: ignore[name-defined]
+    return lines  # type: ignore[name-defined, no-any-return]
