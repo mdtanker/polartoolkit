@@ -367,6 +367,84 @@ def region_to_bounding_box(
     return (region[0], region[2], region[1], region[3])
 
 
+def epsg3031_to_latlon(
+    df: pd.DataFrame | tuple[typing.Any],
+    reg: bool = False,
+    input_coord_names: tuple[str, str] = ("x", "y"),
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
+) -> pd.DataFrame | tuple[typing.Any]:
+    """
+    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
+    EPSG:4326 WGS84 in decimal degrees.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame or tuple[typing.Any]
+        input dataframe with easting and northing columns, or tuple [x,y]
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input_coord_names : tuple, optional
+        set names for input coordinate columns, by default ("x", "y") or
+        ("easting", "northing")
+    output_coord_names : tuple, optional
+        set names for output coordinate columns, by default ("lon", "lat")
+
+    Returns
+    -------
+    pandas.DataFrame or tuple[typing.Any]
+        Updated dataframe with new latitude and longitude columns, numpy.ndarray in
+        format [xmin, xmax, ymin, ymax], or tuple in format [lat, lon]
+    """
+
+    return reproject(
+        df,
+        "epsg:3031",
+        "epsg:4326",
+        reg=reg,
+        input_coord_names=input_coord_names,
+        output_coord_names=output_coord_names,
+    )
+
+
+def epsg3413_to_latlon(
+    df: pd.DataFrame | tuple[typing.Any],
+    reg: bool = False,
+    input_coord_names: tuple[str, str] = ("x", "y"),
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
+) -> pd.DataFrame | tuple[typing.Any]:
+    """
+    Convert coordinates from EPSG:3413 North Polar Stereographic in meters to
+    EPSG:4326 WGS84 in decimal degrees.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame or tuple[typing.Any]
+        input dataframe with easting and northing columns, or tuple [x,y]
+    reg : bool, optional
+        if true, returns a GMT formatted region string, by default False
+    input_coord_names : tuple, optional
+        set names for input coordinate columns, by default ("x", "y") or
+        ("easting", "northing")
+    output_coord_names : tuple, optional
+        set names for output coordinate columns, by default ("lon", "lat")
+
+    Returns
+    -------
+    pandas.DataFrame or tuple[typing.Any]
+        Updated dataframe with new latitude and longitude columns, numpy.ndarray in
+        format [xmin, xmax, ymin, ymax], or tuple in format [lat, lon]
+    """
+
+    return reproject(
+        df,
+        "epsg:3413",
+        "epsg:4326",
+        reg=reg,
+        input_coord_names=input_coord_names,
+        output_coord_names=output_coord_names,
+    )
+
+
 def latlon_to_epsg3031(
     df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
@@ -383,9 +461,9 @@ def latlon_to_epsg3031(
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : list, optional
+    input_coord_names : tuple, optional
         set names for input coordinate columns, by default ("lon", "lat")
-    output_coord_names : list, optional
+    output_coord_names : tuple, optional
         set names for output coordinate columns, by default ("x", "y")
 
     Returns
@@ -394,88 +472,15 @@ def latlon_to_epsg3031(
         Updated dataframe with new easting and northing columns or numpy.ndarray in
         format [xmin, xmax, ymin, ymax]
     """
-    transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
 
-    if isinstance(df, pd.DataFrame):
-        df_new = df.copy()
-        (  # pylint: disable=unpacking-non-sequence
-            df_new[output_coord_names[0]],
-            df_new[output_coord_names[1]],
-        ) = transformer.transform(
-            df_new[input_coord_names[1]].tolist(), df_new[input_coord_names[0]].tolist()
-        )
-    else:
-        ll = df.copy()
-        df_new = list(transformer.transform(ll[0], ll[1]))
-
-    if reg is True:
-        df_new = [
-            df_new[output_coord_names[0]].min(),
-            df_new[output_coord_names[0]].max(),
-            df_new[output_coord_names[1]].min(),
-            df_new[output_coord_names[1]].max(),
-        ]
-
-    return df_new
-
-
-def epsg3031_to_latlon(
-    df: pd.DataFrame | list[typing.Any],
-    reg: bool = False,
-    input_coord_names: tuple[str, str] = ("x", "y"),
-    output_coord_names: tuple[str, str] = ("lon", "lat"),
-) -> pd.DataFrame | list[typing.Any]:
-    """
-    Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
-    EPSG:4326 WGS84 in decimal degrees.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame or list[typing.Any]
-        input dataframe with easting and northing columns, or list [x,y]
-    reg : bool, optional
-        if true, returns a GMT formatted region string, by default False
-    input_coord_names : list, optional
-        set names for input coordinate columns, by default ("x", "y") or
-        ("easting", "northing")
-    output_coord_names : list, optional
-        set names for output coordinate columns, by default ("lon", "lat")
-
-    Returns
-    -------
-    pandas.DataFrame or list[typing.Any]
-        Updated dataframe with new latitude and longitude columns, numpy.ndarray in
-        format [xmin, xmax, ymin, ymax], or list in format [lat, lon]
-    """
-
-    transformer = Transformer.from_crs("epsg:3031", "epsg:4326")
-
-    df_out = df.copy()
-
-    if isinstance(df, pd.DataFrame):
-        # check for coord column names
-        if ("x" in df_out.columns) and ("y" in df_out.columns):  # type: ignore[union-attr]
-            pass
-        elif ("easting" in df_out.columns) and ("northing" in df_out.columns):  # type: ignore[union-attr]
-            input_coord_names = ("easting", "northing")
-
-        (  # pylint: disable=unpacking-non-sequence
-            df_out[output_coord_names[1]],  # type: ignore[call-overload]
-            df_out[output_coord_names[0]],  # type: ignore[call-overload]
-        ) = transformer.transform(
-            df_out[input_coord_names[0]].tolist(),  # type: ignore[call-overload]
-            df_out[input_coord_names[1]].tolist(),  # type: ignore[call-overload]
-        )
-        if reg is True:
-            df_out = [
-                df_out[output_coord_names[0]].min(),  # type: ignore[call-overload]
-                df_out[output_coord_names[0]].max(),  # type: ignore[call-overload]
-                df_out[output_coord_names[1]].min(),  # type: ignore[call-overload]
-                df_out[output_coord_names[1]].max(),  # type: ignore[call-overload]
-            ]
-    else:
-        df_out = list(transformer.transform(df_out[0], df_out[1]))
-    return df_out
+    return reproject(
+        df,
+        "epsg:4326",
+        "epsg:3031",
+        reg=reg,
+        input_coord_names=input_coord_names,
+        output_coord_names=output_coord_names,
+    )
 
 
 def latlon_to_epsg3413(
@@ -494,9 +499,9 @@ def latlon_to_epsg3413(
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : list, optional
+    input_coord_names : tuple, optional
         set names for input coordinate columns, by default ("lon", "lat")
-    output_coord_names : list, optional
+    output_coord_names : tuple, optional
         set names for output coordinate columns, by default ("x", "y")
 
     Returns
@@ -505,88 +510,105 @@ def latlon_to_epsg3413(
         Updated dataframe with new easting and northing columns or numpy.ndarray in
         format [xmin, xmax, ymin, ymax]
     """
-    transformer = Transformer.from_crs("epsg:4326", "epsg:3413")
 
-    if isinstance(df, pd.DataFrame):
-        df_new = df.copy()
-        (  # pylint: disable=unpacking-non-sequence
-            df_new[output_coord_names[0]],
-            df_new[output_coord_names[1]],
-        ) = transformer.transform(
-            df_new[input_coord_names[1]].tolist(), df_new[input_coord_names[0]].tolist()
-        )
-    else:
-        ll = df.copy()
-        df_new = list(transformer.transform(ll[0], ll[1]))
-
-    if reg is True:
-        df_new = [
-            df_new[output_coord_names[0]].min(),
-            df_new[output_coord_names[0]].max(),
-            df_new[output_coord_names[1]].min(),
-            df_new[output_coord_names[1]].max(),
-        ]
-
-    return df_new
+    return reproject(
+        df,
+        "epsg:4326",
+        "epsg:3413",
+        reg=reg,
+        input_coord_names=input_coord_names,
+        output_coord_names=output_coord_names,
+    )
 
 
-def epsg3413_to_latlon(
-    df: pd.DataFrame | list[typing.Any],
+def reproject(
+    df: pd.DataFrame | tuple[typing.Any],
+    input_crs: str,
+    output_crs: str,
+    input_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] | None = None,
     reg: bool = False,
-    input_coord_names: tuple[str, str] = ("x", "y"),
-    output_coord_names: tuple[str, str] = ("lon", "lat"),
-) -> pd.DataFrame | list[typing.Any]:
+) -> pd.DataFrame | tuple[typing.Any]:
     """
-    Convert coordinates from EPSG:3413 North Polar Stereographic in meters to
-    EPSG:4326 WGS84 in decimal degrees.
+    Convert coordinates from input CRS to output CRS. Coordinates can be supplied as a
+    dataframe with coordinate columns set by input_coord_names, or as a tuple of a list
+    of x coordinates and a list of y coordinates.
 
     Parameters
     ----------
-    df : pandas.DataFrame or list[typing.Any]
-        input dataframe with easting and northing columns, or list [x,y]
+    df : pandas.DataFrame or tuple[typing.Any]
+        input dataframe with easting/longitude and northing/latitude columns, or tuple
+        [x,y]
+    input_crs : str
+        input CRS in EPSG format, e.g. "epsg:4326"
+    output_crs : str
+        output CRS in EPSG format, e.g. "epsg:3413"
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : list, optional
-        set names for input coordinate columns, by default ("x", "y") or
-        ("easting", "northing")
-    output_coord_names : list, optional
-        set names for output coordinate columns, by default ("lon", "lat")
+    input_coord_names : tuple, optional
+        set names for input coordinate columns, by default "x"/"y" or
+        "easting"/"northing" if input_crs is "epsg:3413" or "epsg:3031", or if input_crs
+        is "epsg_4326", "lon"/"lat"
+    output_coord_names : tuple, optional
+        set names for output coordinate columns, by default "x"/"y" if output_crs is
+        "epsg:3413" or "epsg:3031", or if output_crs is "epsg_4326", "lon"/"lat".
 
     Returns
     -------
-    pandas.DataFrame or list[typing.Any]
+    pandas.DataFrame or tuple[typing.Any]
         Updated dataframe with new latitude and longitude columns, numpy.ndarray in
-        format [xmin, xmax, ymin, ymax], or list in format [lat, lon]
+        format [xmin, xmax, ymin, ymax], or tuple in format [lat, lon]
     """
 
-    transformer = Transformer.from_crs("epsg:3413", "epsg:4326")
-
-    df_out = df.copy()
+    transformer = Transformer.from_crs(
+        input_crs,
+        output_crs,
+        always_xy=True,
+    )
 
     if isinstance(df, pd.DataFrame):
-        # check for coord column names
-        if ("x" in df_out.columns) and ("y" in df_out.columns):  # type: ignore[union-attr]
-            pass
-        elif ("easting" in df_out.columns) and ("northing" in df_out.columns):  # type: ignore[union-attr]
-            input_coord_names = ("easting", "northing")
+        df = df.copy()
+        # use sensible default coord names
+        if input_crs == "epsg:4326":
+            if input_coord_names is None:
+                input_coord_names = ("lon", "lat")
+        else:
+            if input_coord_names is None:
+                # check for coord column names
+                if ("x" in df.columns) and ("y" in df.columns):
+                    input_coord_names = ("x", "y")
+                elif ("easting" in df.columns) and ("northing" in df.columns):
+                    input_coord_names = ("easting", "northing")
 
+        if output_crs == "epsg:4326":
+            if output_coord_names is None:
+                output_coord_names = ("lon", "lat")
+        else:
+            if output_coord_names is None:
+                # check for coord column names
+                if ("x" in df.columns) and ("y" in df.columns):
+                    output_coord_names = ("x", "y")
+                elif ("easting" in df.columns) and ("northing" in df.columns):
+                    output_coord_names = ("easting", "northing")
+            if output_coord_names is None:
+                output_coord_names = ("lon", "lat")
         (  # pylint: disable=unpacking-non-sequence
-            df_out[output_coord_names[1]],  # type: ignore[call-overload]
-            df_out[output_coord_names[0]],  # type: ignore[call-overload]
+            df[output_coord_names[0]],
+            df[output_coord_names[1]],
         ) = transformer.transform(
-            df_out[input_coord_names[0]].tolist(),  # type: ignore[call-overload]
-            df_out[input_coord_names[1]].tolist(),  # type: ignore[call-overload]
+            df[input_coord_names[0]].tolist(),  # type: ignore[index]
+            df[input_coord_names[1]].tolist(),  # type: ignore[index]
         )
         if reg is True:
-            df_out = [
-                df_out[output_coord_names[0]].min(),  # type: ignore[call-overload]
-                df_out[output_coord_names[0]].max(),  # type: ignore[call-overload]
-                df_out[output_coord_names[1]].min(),  # type: ignore[call-overload]
-                df_out[output_coord_names[1]].max(),  # type: ignore[call-overload]
-            ]
+            df = (
+                df[output_coord_names[0]].min(),
+                df[output_coord_names[0]].max(),
+                df[output_coord_names[1]].min(),
+                df[output_coord_names[1]].max(),
+            )
     else:
-        df_out = list(transformer.transform(df_out[0], df_out[1]))
-    return df_out
+        df = tuple(transformer.transform(df[0], df[1]))  # type: ignore[misc]
+    return df
 
 
 def points_inside_region(
