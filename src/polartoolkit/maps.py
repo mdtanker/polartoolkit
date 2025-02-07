@@ -2212,9 +2212,13 @@ def subplots(
     region: tuple[float, float, float, float] | None = None,
     dims: tuple[int, int] | None = None,
     fig_title: str | None = None,
+    fig_x_axis_title: str | None = None,
+    fig_y_axis_title: str | None = None,
     fig_title_font: str = "30p,Helvetica-Bold",
     subplot_labels: bool = True,
     subplot_labels_loc: str = "TL",
+    row_titles: list[str] | None = None,
+    column_titles: list[str] | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
     """
@@ -2236,12 +2240,20 @@ def subplots(
         `utils.square_subplots()` to make a square(~ish) layout.
     fig_title : str, optional
         add a title to the figure, by default None
+    fig_x_axis_title : str, optional
+        add a title to the x axis of the figure, by default None
+    fig_y_axis_title : str, optional
+        add a title to the y axis of the figure, by default None
     fig_title_font : str, optional
         font for the figure title, by default "30p,Helvetica-Bold"
     subplot_labels : bool, optional
         add subplot labels (a, b, c ...), by default True
     subplot_labels_loc : str, optional
         location of subplot labels, by default "TL"
+    row_titles : list, optional
+        add titles to the left of each row, by default None
+    column_titles : list, optional
+        add titles above each column, by default None
 
     Returns
     -------
@@ -2262,7 +2274,7 @@ def subplots(
     region = typing.cast(tuple[float, float, float, float], region)
 
     # get best dimensions for subplot
-    _nrows, ncols = utils.square_subplots(len(grids)) if dims is None else dims
+    nrows, ncols = utils.square_subplots(len(grids)) if dims is None else dims
 
     # get amounts to shift each figure (multiples of figure width and height)
     xshift_amount = kwargs.pop("xshift_amount", 1)
@@ -2277,6 +2289,12 @@ def subplots(
     titles = kwargs.pop("titles", kwargs.pop("subplot_titles", None))
     cbar_labels = kwargs.pop("cbar_labels", None)
     cbar_units = kwargs.pop("cbar_units", None)
+    row_titles_font = kwargs.pop("row_titles_font", "38p,Helvetica,black")
+    column_titles_font = kwargs.pop("column_titles_font", "38p,Helvetica,black")
+    fig_x_axis_title_y_offset = kwargs.pop("fig_x_axis_title_y_offset", "2c")
+    fig_y_axis_title_x_offset = kwargs.pop("fig_y_axis_title_x_offset", "2c")
+    fig_axis_title_font = kwargs.pop("fig_axis_title_font", "30p,Helvetica-Bold")
+    fig_title_y_offset = kwargs.pop("fig_title_y_offset", "2c")
 
     new_kwargs = {
         "cpt_lims": cpt_limits,
@@ -2295,7 +2313,7 @@ def subplots(
                 raise ValueError(msg)
             if not isinstance(v, list):
                 msg = f"`{k}` must be a list."
-
+    row_num = 0
     for i, g in enumerate(grids):
         xshift = xshift_amount
         yshift = yshift_amount
@@ -2308,6 +2326,7 @@ def subplots(
         elif i % ncols == 0:
             origin_shift = "both"
             xshift = (-ncols + 1) * xshift
+            row_num += 1
         else:
             origin_shift = "x"
 
@@ -2336,6 +2355,29 @@ def subplots(
                 offset=f"{(((fig_width*xshift)/2)*(ncols-1))}c/2c",
                 no_clip=True,
             )
+        if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
+            fig.text(  # type: ignore[attr-defined]
+                text=fig_x_axis_title,
+                position="TC",
+                justify="BC",
+                font=fig_axis_title_font,
+                offset=f"0c/{fig_x_axis_title_y_offset}",
+                no_clip=True,
+            )
+        if (
+            (fig_y_axis_title is not None)
+            & (row_num == int(nrows / 2))
+            & (i % ncols == 0)
+        ):
+            fig.text(  # type: ignore[attr-defined]
+                text=fig_y_axis_title,
+                position="ML",
+                justify="BC",
+                font=fig_axis_title_font,
+                offset=f"-{fig_y_axis_title_x_offset}/0c",
+                no_clip=True,
+                angle=90,
+            )
 
         if subplot_labels:
             fig.text(  # type: ignore[attr-defined]
@@ -2347,6 +2389,29 @@ def subplots(
                 no_clip=True,
                 fill="white",
             )
+
+        # add vertical title to left of each row
+        if (row_titles is not None) & (i % ncols == 0):
+            fig.text(  # type: ignore[attr-defined]
+                justify="BC",
+                position="ML",
+                offset="-.5c/0c",
+                text=row_titles[int(i / ncols)],  # type: ignore[index]
+                angle=90,
+                font=row_titles_font,
+                no_clip=True,
+            )
+
+        # add horizontal title above each column
+        if (column_titles is not None) & (i < ncols):
+            fig.text(  # type: ignore[attr-defined]
+                justify="BC",
+                position="TC",
+                text=column_titles[i],  # type: ignore[index]
+                font=column_titles_font,
+                no_clip=True,
+            )
+
     return fig
 
 
