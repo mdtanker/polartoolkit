@@ -20,6 +20,7 @@ import deprecation
 import earthaccess
 import geopandas as gpd
 import harmonica as hm
+import numpy as np
 import pandas as pd
 import pooch
 import pygmt
@@ -28,6 +29,7 @@ import xarray as xr
 import zarr
 from dotenv import load_dotenv
 from pyproj import Transformer
+from tqdm.autonotebook import tqdm
 
 import polartoolkit
 from polartoolkit import (  # pylint: disable=import-self
@@ -36,6 +38,7 @@ from polartoolkit import (  # pylint: disable=import-self
     utils,
 )
 
+# pylint: disable=duplicate-code
 try:
     import pyogrio  # pylint: disable=unused-import
 
@@ -43,6 +46,15 @@ try:
 except ImportError:
     pyogrio = None
     ENGINE = "fiona"
+# pylint: enable=duplicate-code
+
+try:
+    import pyarrow as pa  # pylint: disable=unused-import # noqa: F401
+
+    USE_ARROW = True
+except ImportError:
+    USE_ARROW = False
+
 
 load_dotenv()
 
@@ -2091,7 +2103,7 @@ def bedmap_points(
     region: tuple[float, float, float, float] | None = None,
 ) -> pd.DataFrame:
     """
-    Load bedmap point data, choose from Bedmap 1, 2 or 3
+    Load bedmap point data, choose from Bedmap 1, 2 or 3 or all combined.
 
     All elevations are in meters above the WGS84 ellipsoid.
 
@@ -2112,7 +2124,7 @@ def bedmap_points(
     Parameters
     ----------
     version : str
-        choose between 'bedmap1', 'bedmap2', or 'bedmap3' point data
+        choose between 'bedmap1', 'bedmap2', 'bedmap3', or 'all', point data
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -2126,8 +2138,67 @@ def bedmap_points(
     ----------
     .. footbibliography::
     """
+    # warn that pyogrio is faster
+    if ENGINE == "fiona":
+        msg = (
+            "Consider installing pyogrio for faster performance when reading "
+            "geodataframes."
+        )
+        logging.warning(msg)
+
+    # warn that pyarrow is faster
+    if not USE_ARROW:
+        msg = (
+            "Consider installing pyarrow for faster performance when reading "
+            "geodataframes."
+        )
+        logging.warning(msg)
 
     if version == "bedmap1":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the csv and save as a geopackage"
+            # name to give the processed file
+            fname_processed = pathlib.Path(
+                f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap1_point_data.gpkg"
+            )
+
+            # Only perform if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                df = pd.read_csv(
+                    fname,
+                    skiprows=18,
+                    na_values=[-9999],  # set additional nan value
+                )
+
+                # reproject from lat/lon to EPSG:3031
+                df = utils.latlon_to_epsg3031(
+                    df,
+                    input_coord_names=(
+                        "longitude (degree_east)",
+                        "latitude (degree_north)",
+                    ),
+                )
+
+                df["project"] = np.nan
+
+                # convert to a geodataframe
+                gdf = gpd.GeoDataFrame(
+                    df,
+                    geometry=gpd.points_from_xy(df["x"], df["y"]),
+                    crs="EPSG:3031",
+                )
+
+                # save the dataframe
+                gdf.to_file(
+                    fname_processed,
+                    driver="GPKG",
+                    use_arrow=USE_ARROW,
+                    engine=ENGINE,
+                )
+
+            return str(fname_processed)
+
         url = (
             "https://ramadda.data.bas.ac.uk/repository/entry/get/BEDMAP1_1966-2000_"
             "AIR_BM1.csv?entryid=synth%3Af64815ec-4077-4432-9f55-"
@@ -2139,45 +2210,251 @@ def bedmap_points(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="77d10a0c41ff3401a2a3da1467ba292861a919c6a43a933c91a51d2e1ebe5f6e",
             progressbar=True,
+            processor=preprocessing,
         )
 
-        df = pd.read_csv(
+        bbox = utils.region_to_bounding_box(region) if region is not None else None
+
+        df = gpd.read_file(
             fname,
-            skiprows=18,
-            na_values=[-9999],  # set additional nan value
-        )
-
-        # drop columns with no entries
-        df = df.drop(
-            columns=[
-                "trace_number",
-                "date",
-                "time_UTC",
-                "two_way_travel_time (m)",
-                "aircraft_altitude (m)",
-                "along_track_distance (m)",
-            ],
-        )
-
-        # convert from lat lon to EPSG3031
-        df = utils.latlon_to_epsg3031(
-            df,
-            input_coord_names=("longitude (degree_east)", "latitude (degree_north)"),
+            use_arrow=USE_ARROW,
+            engine=ENGINE,
+            bbox=bbox,
         )
 
     elif version == "bedmap2":
-        msg = "fetch bedmap2 point data not implemented yet"
-        raise ValueError(msg)
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Unzip the folder, load csvs into pandas dataframe and save as a geopackage"
+            # name to give the processed file
+            fname_processed = pathlib.Path(
+                f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap2_point_data/bedmap2_point_data.gpkg"
+            )
+
+            # Only unzip and merge csv's if new download or the processed file doesn't
+            # exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                msg = (
+                    "this file is large and will take some time to "
+                    "download and preprocess!"
+                )
+                logging.warning(msg)
+
+                # extract the files and get list of csv paths
+                path = pooch.Unzip(extract_dir="bedmap2_point_data")(
+                    fname, action, _pooch2
+                )
+
+                # get folder name
+                fold = str(pathlib.Path(path[0]).parent)
+
+                # make new clean folder name
+                new_fold = fold.replace("-", "")
+                new_fold = new_fold.replace(",", "")
+                new_fold = new_fold.replace(" ", "_")
+                shutil.move(fold, new_fold)
+
+                # get all csv files
+                fnames = glob.glob(  # noqa: PTH207
+                    f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap2_point_data/*/*.csv"
+                )
+
+                # load all csv files into list of pandas dataframes
+                for f in tqdm(fnames, total=len(fnames), desc="csv files"):
+                    df = pd.read_csv(
+                        f,
+                        skiprows=18,  # metadata in first 18 rows
+                        na_values=[-9999],  # set additional nan value
+                    )
+                    df["project"] = pathlib.Path(f).stem
+
+                    # reproject from lat/lon to EPSG:3031
+                    df = utils.latlon_to_epsg3031(
+                        df,
+                        input_coord_names=(
+                            "longitude (degree_east)",
+                            "latitude (degree_north)",
+                        ),
+                    )
+
+                    # convert to a geodataframe
+                    df = gpd.GeoDataFrame(
+                        df,
+                        geometry=gpd.points_from_xy(df["x"], df["y"]),
+                        crs="EPSG:3031",
+                    )
+
+                    # save / append to a geopackage file
+                    df.to_file(
+                        fname_processed,
+                        driver="GPKG",
+                        # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
+                        engine=ENGINE,
+                        append=True,
+                    )
+
+                # delete the folder with csv files
+                shutil.rmtree(new_fold)
+
+            return str(fname_processed)
+
+        url = (
+            "https://ramadda.data.bas.ac.uk/repository/entry/show/UK+Polar+Data+Centre/"
+            "DOI/BEDMAP2+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica+-+"
+            "standardised+data+points?entryid=2fd95199-365e-4da1-ae26-3b6d48b3e6ac&"
+            "output=zip.zipgroup"
+        )
+
+        fname = pooch.retrieve(
+            url=url,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            fname="bedmap2_point_data.zip",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        if region is not None:
+            bbox = utils.region_to_bounding_box(region)
+        else:
+            bbox = None
+            msg = (
+                "this file is large, if you only need a subset of data please provide "
+                "a bounding box region via `region` to subset the data."
+            )
+            logging.warning(msg)
+
+        df = gpd.read_file(
+            fname,
+            use_arrow=USE_ARROW,
+            engine=ENGINE,
+            bbox=bbox,
+        )
+
     elif version == "bedmap3":
-        msg = "fetch bedmap3 point data not implemented yet"
-        raise ValueError(msg)
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Unzip the folder, load csvs into pandas dataframe and save as a geopackage"
+            # name to give the processed file
+            fname_processed = pathlib.Path(
+                f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap3_point_data/bedmap3_point_data.gpkg"
+            )
+
+            # Only unzip and merge csv's if new download or the processed file doesn't
+            # exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                msg = (
+                    "this file is large and will take some time to "
+                    "download and preprocess!"
+                )
+                logging.warning(msg)
+
+                # extract the files and get list of csv paths
+                path = pooch.Unzip(extract_dir="bedmap3_point_data")(
+                    fname, action, _pooch2
+                )
+
+                # get folder name
+                fold = str(pathlib.Path(path[0]).parent)
+
+                # make new clean folder name
+                new_fold = fold.replace("-", "")
+                new_fold = new_fold.replace(",", "")
+                new_fold = new_fold.replace(" ", "_")
+                shutil.move(fold, new_fold)
+
+                # get all csv files
+                fnames = glob.glob(  # noqa: PTH207
+                    f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap3_point_data/*/*.csv"
+                )
+
+                # load all csv files into list of pandas dataframes
+                for f in tqdm(fnames, total=len(fnames), desc="csv files"):
+                    df = pd.read_csv(
+                        f,
+                        skiprows=18,  # metadata in first 18 rows
+                        na_values=[-9999],  # set additional nan value
+                    )
+                    df["project"] = pathlib.Path(f).stem
+
+                    # reproject from lat/lon to EPSG:3031
+                    df = utils.latlon_to_epsg3031(
+                        df,
+                        input_coord_names=(
+                            "longitude (degree_east)",
+                            "latitude (degree_north)",
+                        ),
+                    )
+
+                    # convert to a geodataframe
+                    df = gpd.GeoDataFrame(
+                        df,
+                        geometry=gpd.points_from_xy(df["x"], df["y"]),
+                        crs="EPSG:3031",
+                    )
+
+                    # save / append to a geopackage file
+                    df.to_file(
+                        fname_processed,
+                        driver="GPKG",
+                        # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
+                        engine=ENGINE,
+                        append=True,
+                    )
+
+                # delete the folder with csv files
+                shutil.rmtree(new_fold)
+
+            return str(fname_processed)
+
+        url = (
+            "https://ramadda.data.bas.ac.uk/repository/entry/show/UK+Polar+Data+Centre/"
+            "DOI/BEDMAP3+-+Ice+thickness%2C+bed+and+surface+elevation+for+Antarctica+-+"
+            "standardised+data+points?entryid=91523ff9-d621-46b3-87f7-ffb6efcd1847&"
+            "output=zip.zipgroup"
+        )
+
+        fname = pooch.retrieve(
+            url=url,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            fname="bedmap3_point_data.zip",
+            known_hash=None,
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        if region is not None:
+            bbox = utils.region_to_bounding_box(region)
+        else:
+            bbox = None
+            msg = (
+                "this file is large, if you only need a subset of data please provide "
+                "a bounding box region via `region` to subset the data."
+            )
+            logging.warning(msg)
+
+        df = gpd.read_file(
+            fname,
+            use_arrow=USE_ARROW,
+            engine=ENGINE,
+            bbox=bbox,
+        )
+
+    elif version == "all":
+        # get individual dataframes
+        bedmap1_points = bedmap_points("bedmap1", region)
+        bedmap2_points = bedmap_points("bedmap2", region)
+        bedmap3_points = bedmap_points("bedmap3", region)
+
+        # add new columns to identify the source
+        bedmap1_points["bedmap_version"] = "bedmap1"
+        bedmap2_points["bedmap_version"] = "bedmap2"
+        bedmap3_points["bedmap_version"] = "bedmap3"
+
+        df = pd.concat([bedmap1_points, bedmap2_points, bedmap3_points])
     else:
         msg = "invalid layer string"
         raise ValueError(msg)
-
-    # get subset inside of region
-    if region is not None:
-        df = utils.points_inside_region(df, region)
 
     return df
 
