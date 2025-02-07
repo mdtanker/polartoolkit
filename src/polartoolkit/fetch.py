@@ -114,7 +114,8 @@ def resample_grid(
     """
 
     # get coordinate names
-    # original_dims = list(grid.sizes.keys())
+    # original_dims = tuple(grid.sizes.keys())
+
     verbose = kwargs.get("verbose", "w")
 
     # if initial values not given, extract from supplied grid
@@ -981,7 +982,7 @@ def geomap(
     else:
         data = gpd.read_file(
             fname2,
-            bbox=tuple(utils.region_to_bounding_box(region)),
+            bbox=utils.region_to_bounding_box(region),
             layer=layer,
             engine=ENGINE,
         )
