@@ -388,6 +388,7 @@ def basemap(
             projection=proj,
             frame=kwargs.get("frame", "nwse+gwhite"),
             verbose="e",
+            transparency=kwargs.get("transparency", 100),
         )
 
     # add lat long grid lines
