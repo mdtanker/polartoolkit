@@ -2189,6 +2189,7 @@ def bedmap2(
     spacing: float | None = None,
     registration: str | None = None,
     fill_nans: bool = False,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load bedmap2 data as xarray.DataArrays
@@ -2229,6 +2230,8 @@ def bedmap2(
         choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
         to reference to the geoid, will fill nan's before conversion, by default is
         False
+    **kwargs : optional
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -2446,6 +2449,7 @@ def bedmap2(
                 region=initial_region,
                 registration=initial_registration,
                 hemisphere="south",
+                **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
             grid = grid - eigen_correction
@@ -2463,6 +2467,7 @@ def bedmap2(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
@@ -3124,6 +3129,7 @@ def geoid(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 from
@@ -3152,6 +3158,8 @@ def geoid(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    kwargs : typing.Any
+        additional kwargs to pass to resample_grid.
 
     Returns
     -------
@@ -3198,6 +3206,7 @@ def geoid(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=initial_spacing,
+                verbose=kwargs.get("verbose", "w"),
             )
             # get just needed region
             processed = pygmt.grdsample(
@@ -3205,6 +3214,7 @@ def geoid(
                 region=initial_region,
                 spacing=initial_spacing,
                 registration=initial_registration,
+                verbose=kwargs.get("verbose", "w"),
             )
             # Save to disk
             processed.to_netcdf(fname_processed)
@@ -3229,6 +3239,7 @@ def geoid(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
