@@ -2962,15 +2962,14 @@ def gravity(
     Antarctic-wide gravity data compilation of ground-based, airborne, and shipborne
     data, from :footcite:t:`scheinertnew2016`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.848168
-
-    version='antgg-update'
-    Preliminary compilation of Antarctica gravity and gravity gradient data.
-    Updates on 2016 AntGG compilation.
-    Accessed from https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/
+    Anomalies are at the ice surface, or bedrock surface in areas of no ice. These
+    surfaces are defined by Bedmap2 and are relative to the ellipsoid.
 
     version='antgg-2021'
     Updates on 2016 AntGG compilation.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.971238?format=html#download
+    Anomalies are at the ice surface, or bedrock surface in areas of no ice. These
+    surfaces are defined by Bedmap2 and are relative to the ellipsoid.
 
     version='eigen'
     Earth gravity grid (eigen-6c4) at 10 arc-min resolution at 10km geometric
@@ -3037,36 +3036,50 @@ def gravity(
             progressbar=True,
         )
 
-        if anomaly_type == "FA":
-            anomaly_type = "free_air_anomaly"
-        elif anomaly_type == "BA":
-            anomaly_type = "bouguer_anomaly"
-        else:
-            msg = "invalid anomaly type"
-            raise ValueError(msg)
-
-        file = xr.load_dataset(path)[anomaly_type]
+        file = xr.load_dataset(path)
 
         # convert coordinates from km to m
         file_meters = file.copy()
         file_meters["x"] = file.x * 1000
         file_meters["y"] = file.y * 1000
 
-        resampled = resample_grid(
-            file_meters,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
-            **kwargs,
+        # drop some variables
+        file_meters = file_meters.drop(
+            [
+                "longitude",
+                "latitude",
+                "crs",
+            ]
         )
 
-    elif version == "antgg-update":
-        # found in documentation
+        resampled_vars = []
+        for var in file_meters.data_vars:
+            resampled_vars.append(
+                resample_grid(  # type: ignore[union-attr]
+                    file_meters[var],
+                    initial_spacing,
+                    initial_region,
+                    initial_registration,
+                    spacing,
+                    region,
+                    registration,
+                    **kwargs,
+                ).rename(var)
+            )
+
+        resampled = xr.merge(resampled_vars)
+
+        # rename variables to match antgg
+        resampled = resampled.rename(
+            {
+                "accuracy_measure": "error",
+            }
+        )
+
+    elif version == "antgg-2021":
+        # found with utils.get_grid_info()
         initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 10e3
+        initial_spacing = 5e3
         initial_registration = "g"
 
         if region is None:
@@ -3076,95 +3089,15 @@ def gravity(
         if registration is None:
             registration = initial_registration
 
-        available_anomalies = ["FA", "DG", "BA", "Err"]
-        if anomaly_type not in available_anomalies:
-            msg = "anomaly_type must be either 'FA', 'BA', 'Err' or 'DG'"
-            raise ValueError(msg)
-
-        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the .dat file, and save it back as a .nc"
-            path = pooch.Unzip()(fname, action, _pooch2)
-            fname1 = next(p for p in path if p.endswith(".dat"))
-            fname2 = Path(fname1)
-
-            # Rename to the file to ***_preprocessed.nc
-            fname_pre = fname2.with_stem(fname2.stem + f"_{anomaly_type}_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
-
-            # Only recalculate if new download or the processed file doesn't exist yet
-            if action in ("download", "update") or not fname_processed.exists():
-                # load data
-                df = pd.read_csv(
-                    fname2,
-                    sep=r"\s+",
-                    skiprows=3,
-                    names=["id", "lat", "lon", "FA", "Err", "DG", "BA"],
-                )
-                # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
-                )
-
-                # block-median and grid the data
-                df = pygmt.blockmedian(
-                    df[["x", "y", anomaly_type]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
-                )
-                processed = pygmt.surface(
-                    data=df[["x", "y", anomaly_type]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
-                    maxradius="1c",
-                )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
-            return str(fname_processed)
-
-        path = pooch.retrieve(
-            url="https://ftp.space.dtu.dk/pub/RF/4D-ANTARCTICA/ant4d_gravity.zip",
-            fname="antgg_update.zip",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash="1013a8fa610c16198bc3c901039fd535cf939e4f21f99e6434849bb505094974",
-            processor=preprocessing,
-            progressbar=True,
-        )
-
-        grid = xr.load_dataarray(path)
-
-        resampled = resample_grid(
-            grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
-            **kwargs,
-        )
-
-    elif version == "antgg-2021":
-        # found with utils.get_grid_info()
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        # if region is None:
-        #     region = initial_region
-        # if spacing is None:
-        #     spacing = initial_spacing
-        # if registration is None:
-        #     registration = initial_registration
-
+        # Free-air anomaly at the surface
         if anomaly_type == "FA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity-anomaly.nc"
             fname = "antgg_2021_FA.nc"
+        # Disturbance at the surface
         elif anomaly_type == "DG":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity_disturbance_at-surface.nc"
             fname = "antgg_2021_DG.nc"
+        # Bouguer anomaly
         elif anomaly_type == "BA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Bouguer-anomaly.nc"
             fname = "antgg_2021_BA.nc"
@@ -3185,25 +3118,39 @@ def gravity(
 
         file = xr.load_dataset(path)
 
-        if anomaly_type == "FA":
-            file = file.grav_anom
-        elif anomaly_type == "DG":
-            file = file.grav_dist
-        elif anomaly_type == "BA":
-            file = file.Boug_anom
-        elif anomaly_type == "Err":
-            file = file.std_grav_anom
+        resampled_vars = []
+        for var in file.data_vars:
+            resampled_vars.append(
+                resample_grid(  # type: ignore[union-attr]
+                    file[var],
+                    initial_spacing,
+                    initial_region,
+                    initial_registration,
+                    spacing,
+                    region,
+                    registration,
+                    **kwargs,
+                ).rename(var)
+            )
 
-        resampled = resample_grid(
-            file,
-            initial_spacing,
-            initial_region,
-            initial_registration,
-            spacing,
-            region,
-            registration,
-            **kwargs,
-        )
+        resampled = xr.merge(resampled_vars)
+
+        if "h_ellips" in resampled.data_vars:
+            resampled = resampled.rename({"h_ellips": "h_ell"})
+
+        # rename variables to match antgg
+        to_rename = [
+            {"h_ell": "ellipsoidal_height"},
+            {"grav_anom": "free_air_anomaly"},
+            {"Boug_anom": "bouguer_anomaly"},
+            {"grav_dist": "gravity_disturbance"},
+            {"std_grav_anom": "error"},
+        ]
+        for i in to_rename:
+            try:  # noqa: SIM105
+                resampled = resampled.rename(i)
+            except ValueError:
+                pass
 
     elif version == "eigen":
         hemisphere = utils.default_hemisphere(hemisphere)
@@ -3228,7 +3175,7 @@ def gravity(
             registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .nc file, reproject, and save it back"
+            "Load the .nc file, reproject, and save it as a zarr"
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
@@ -3239,7 +3186,7 @@ def gravity(
             else:
                 msg = "invalid hemisphere"
                 raise ValueError(msg)
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -3247,20 +3194,32 @@ def gravity(
                 grid = xr.load_dataset(fname1).gravity
 
                 # reproject to polar stereographic
-                grid2 = pygmt.grdproject(
+                grid = pygmt.grdproject(
                     grid,
                     projection=proj,
                     spacing=initial_spacing,
                 )
                 # get just antarctica region
-                processed = pygmt.grdsample(
-                    grid2,
+                grid = pygmt.grdsample(
+                    grid,
                     region=initial_region,
                     spacing=initial_spacing,
                     registration=initial_registration,
+                    verbose=kwargs.get("verbose", "w"),
+                ).rename("gravity")
+
+                # add ellipsoidal height of observations
+                ellipsoidal_height = xr.ones_like(grid) * 10e3
+                grid = xr.merge([grid, ellipsoidal_height.rename("ellipsoidal_height")])
+
+                # Save to .zarr file
+                compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+                enc = {x: {"compressor": compressor} for x in grid}
+                grid.to_zarr(
+                    fname_processed,
+                    encoding=enc,
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -3272,24 +3231,29 @@ def gravity(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.load_dataset(path)
 
-        resampled = resample_grid(
-            grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
-            spacing=spacing,
-            region=region,
-            registration=registration,
-            **kwargs,
-        )
+        resampled_vars = []
+        for var in grid.data_vars:
+            resampled_vars.append(
+                resample_grid(  # type: ignore[union-attr]
+                    grid[var],
+                    initial_spacing=initial_spacing,
+                    initial_region=initial_region,
+                    initial_registration=initial_registration,
+                    spacing=spacing,
+                    region=region,
+                    registration=registration,
+                    **kwargs,
+                ).rename(var)
+            )
+        resampled = xr.merge(resampled_vars)
 
     else:
         msg = "invalid version string"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)
+    return resampled  # typing.cast(xr.Dataset, resampled)
 
 
 def etopo(
@@ -3415,7 +3379,7 @@ def geoid(
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
-    To convert a topographic grid which is referenced to the geoid to be reference to
+    To convert a topographic grid which is referenced to the geoid to be referencde to
     the ellipsoid, add this grid.
 
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
