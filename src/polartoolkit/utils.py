@@ -15,11 +15,13 @@ import warnings
 
 import deprecation
 import geopandas as gpd
+import harmonica as hm
 import numpy as np
 import pandas as pd
 import pygmt
 import verde as vd
 import xarray as xr
+import xrft
 from numpy.typing import NDArray
 from pyproj import Transformer
 
@@ -768,6 +770,105 @@ def nearest_grid_fill(
                 list(filled.dims)[1]: original_dims[1],
             }
         )
+
+
+def filter_grid(
+    grid: xr.DataArray,
+    filter_width: float | None = None,
+    filt_type: str = "lowpass",
+    pad_width_factor: int = 3,
+) -> xr.DataArray:
+    """
+    Apply a spatial filter to a grid.
+
+    Parameters
+    ----------
+    grid : xarray.DataArray
+        grid to filter the values of
+    filter_width : float, optional
+        width of the filter in meters, by default None
+    filt_type : str, optional
+        type of filter to use, by default "lowpass"
+    pad_width_factor : int, optional
+        factor of grid width to pad the grid by, by default 3, which equates to a pad
+        with a width of 1/3 of the grid width.
+
+    Returns
+    -------
+    xarray.DataArray
+        a filtered grid
+    """
+    # get coordinate names
+    original_dims = tuple(grid.sizes.keys())
+
+    # get original grid name
+    original_name = grid.name
+
+    # if there are nan's, fill them with nearest neighbor
+    if grid.isnull().any():
+        filled = nearest_grid_fill(grid, method="verde")
+    else:
+        filled = grid.copy()
+
+    # reset coordinate names if changed
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="rename '")
+        filled = filled.rename(
+            {
+                next(iter(filled.dims)): original_dims[0],
+                list(filled.dims)[1]: original_dims[1],
+            }
+        )
+
+    # define width of padding in each direction
+    pad_width = {
+        original_dims[1]: grid[original_dims[1]].size // pad_width_factor,
+        original_dims[0]: grid[original_dims[0]].size // pad_width_factor,
+    }
+    # apply padding
+    padded = xrft.pad(filled, pad_width)
+
+    if filt_type == "lowpass":
+        filt = hm.gaussian_lowpass(padded, wavelength=filter_width).rename("filt")
+    elif filt_type == "highpass":
+        filt = hm.gaussian_highpass(padded, wavelength=filter_width).rename("filt")
+    elif filt_type == "up_deriv":
+        filt = hm.derivative_upward(padded).rename("filt")
+    elif filt_type == "easting_deriv":
+        filt = hm.derivative_easting(padded).rename("filt")
+    elif filt_type == "northing_deriv":
+        filt = hm.derivative_northing(padded).rename("filt")
+    else:
+        msg = "filt_type must be 'lowpass' or 'highpass'"
+        raise ValueError(msg)
+
+    unpadded = xrft.unpad(filt, pad_width)
+
+    # reset coordinate values to original (avoid rounding errors)
+    unpadded = unpadded.assign_coords(
+        {
+            original_dims[0]: grid[original_dims[0]].to_numpy(),
+            original_dims[1]: grid[original_dims[1]].to_numpy(),
+        }
+    )
+
+    if grid.isnull().any():
+        result: xr.DataArray = xr.where(grid.notnull(), unpadded, grid)
+    else:
+        result = unpadded.copy()
+
+    # reset coordinate names if changed
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="rename '")
+        result = result.rename(
+            {
+                next(iter(result.dims)): original_dims[0],
+                # list(result.dims)[0]: original_dims[0],
+                list(result.dims)[1]: original_dims[1],
+            }
+        )
+
+    return result.rename(original_name)
 
 
 def mask_from_shp(
