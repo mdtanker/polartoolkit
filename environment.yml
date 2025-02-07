@@ -23,6 +23,7 @@ dependencies:
   - requests
   - deprecation
   - earthaccess
+  - xrft
   # Optional dependencies
   # interactive
   - geoviews
