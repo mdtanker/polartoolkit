@@ -704,6 +704,72 @@ def block_reduce(
     return pd.DataFrame(data=coord_cols | data_cols)
 
 
+def nearest_grid_fill(
+    grid: xr.DataArray,
+    method: str = "verde",
+    crs: str | None = None,
+) -> xr.DataArray:
+    """
+    fill missing values in a grid with the nearest value.
+
+    Parameters
+    ----------
+    grid : xarray.DataArray
+        grid with missing values
+    method : str, optional
+        choose method of filling, by default "verde"
+    crs : str | None, optional
+        if method is 'rioxarray', provide the crs of the grid, in format 'epsg:xxxx',
+        by default None
+    Returns
+    -------
+    xarray.DataArray
+        filled grid
+    """
+
+    # get coordinate names
+    original_dims = tuple(grid.sizes.keys())
+
+    # get original grid name
+    original_name = grid.name
+
+    if method == "rioxarray":
+        filled: xr.DataArray = (
+            grid.rio.write_crs(crs)
+            .rio.set_spatial_dims(original_dims[1], original_dims[0])
+            .rio.write_nodata(np.nan)
+            .rio.interpolate_na(method="nearest")
+            .rename(original_name)
+        )
+    elif method == "verde":
+        df = vd.grid_to_table(grid)
+        df_dropped = df[df[grid.name].notnull()]
+        coords = (df_dropped[grid.dims[1]], df_dropped[grid.dims[0]])
+        region = vd.get_region((df[grid.dims[1]], df[grid.dims[0]]))
+        filled = (
+            vd.KNeighbors()
+            .fit(coords, df_dropped[grid.name])
+            .grid(region=region, shape=grid.shape, data_names=original_name)[
+                original_name
+            ]
+        )
+    # elif method == "pygmt":
+    #     filled = pygmt.grdfill(grid, mode="n", verbose="q").rename(original_name)
+    else:
+        msg = "method must be 'rioxarray', or 'verde'"
+        raise ValueError(msg)
+
+    # reset coordinate names if changed
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="rename '")
+        return filled.rename(
+            {
+                next(iter(filled.dims)): original_dims[0],
+                list(filled.dims)[1]: original_dims[1],
+            }
+        )
+
+
 def mask_from_shp(
     shapefile: str | gpd.geodataframe.GeoDataFrame,
     hemisphere: str | None = None,
