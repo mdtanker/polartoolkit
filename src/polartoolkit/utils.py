@@ -336,7 +336,6 @@ def region_ll_to_xy(
     else:
         msg = "hemisphere must be 'north' or 'south'"
         raise ValueError(msg)
-
     return df_proj
 
 
@@ -1181,6 +1180,8 @@ def get_combined_min_max(
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    absolute: bool = False,
+    robust_percentiles: tuple[float, float] = (0.02, 0.98),
 ) -> tuple[float, float]:
     """
     Get a grids max and min values.
@@ -1200,6 +1201,11 @@ def get_combined_min_max(
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
+    absolute : bool, optional
+        choose whether to return the absolute min and max values, by default False
+    robust_percentiles : tuple[float, float], optional
+        percentiles to use for robust min and max values, by default (0.02, 0.98)
+
     Returns
     -------
     tuple[float, float]
@@ -1220,6 +1226,8 @@ def get_combined_min_max(
                 region=region,
                 shapefile=shapefile,
                 hemisphere=hemisphere,
+                absolute=absolute,
+                robust_percentiles=robust_percentiles,
             )
         )
 
@@ -1392,24 +1400,13 @@ def grd_compare(
     if kwargs.get("diff_lims") is not None:
         diff_lims = kwargs.get("diff_lims")
     else:
-        diff_maxabs = kwargs.get("diff_maxabs", True)
-        if diff_maxabs is False:
-            diff_lims = get_min_max(
-                dif,
-                shp_mask,
-                robust=robust,
-                hemisphere=kwargs.get("hemisphere"),
-            )
-        else:
-            diff_maxabs = vd.maxabs(
-                get_min_max(
-                    dif,
-                    shp_mask,
-                    robust=robust,
-                    hemisphere=kwargs.get("hemisphere"),
-                )
-            )
-            diff_lims = kwargs.get("diff_lims", (-diff_maxabs, diff_maxabs))
+        diff_lims = get_min_max(
+            dif,
+            shp_mask,
+            robust=robust,
+            hemisphere=kwargs.get("hemisphere"),
+            absolute=kwargs.get("diff_maxabs", True),
+        )
 
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
@@ -1664,6 +1661,8 @@ def get_min_max(
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    absolute: bool = False,
+    robust_percentiles: tuple[float, float] = (0.02, 0.98),
 ) -> tuple[float, float]:
     """
     Get a grids max and min values.
@@ -1683,6 +1682,11 @@ def get_min_max(
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
+    absolute : bool, optional
+        return the absolute min and max values, by default False
+    robust_percentiles : tuple[float, float], optional
+        decimal percentiles to use for robust min and max, by default (0.02, 0.98)
+
     Returns
     -------
     tuple[float, float]
@@ -1698,7 +1702,7 @@ def get_min_max(
 
     if shapefile is None:
         if robust:
-            v_min, v_max = np.nanquantile(values, [0.02, 0.98])
+            v_min, v_max = np.nanquantile(values, robust_percentiles)
         else:
             v_min, v_max = np.nanmin(values), np.nanmax(values)
     elif shapefile is not None:
@@ -1715,9 +1719,12 @@ def get_min_max(
             raise ValueError(msg)
 
         if robust is True:
-            v_min, v_max = np.nanquantile(masked, [0.02, 0.98])
+            v_min, v_max = np.nanquantile(masked, robust_percentiles)
         elif robust is False:
             v_min, v_max = np.nanmin(masked), np.nanmax(masked)
+
+    if absolute is True:
+        v_min, v_max = -vd.maxabs([v_min, v_max]), vd.maxabs([v_min, v_max])  # pylint: disable=used-before-assignment
 
     assert v_min <= v_max, "min value should be less than or equal to max value"  # pylint: disable=possibly-used-before-assignment
     return (v_min, v_max)
