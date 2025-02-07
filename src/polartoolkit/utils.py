@@ -988,8 +988,16 @@ def mask_from_shp(
         msg = "can't supply both xr_grid and grid_file."
         raise ValueError(msg)
 
+    # if single geometry, convert to list
+    try:
+        iter(shp.geometry)
+    except TypeError:
+        geom = [shp.geometry]
+    else:
+        geom = shp.geometry
+
     masked_grd = xds.rio.clip(
-        shp.geometry,
+        geom,
         xds.rio.crs,
         drop=False,
         invert=invert,
