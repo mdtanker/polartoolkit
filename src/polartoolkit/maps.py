@@ -2352,7 +2352,7 @@ def subplots(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
-                offset=f"{(((fig_width*xshift)/2)*(ncols-1))}c/2c",
+                offset=f"{(((fig_width*xshift)/2)*(ncols-1))}c/{fig_title_y_offset}",
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
@@ -2380,10 +2380,25 @@ def subplots(
             )
 
         if subplot_labels:
+            if i < 26:
+                label = string.ascii_lowercase[i]
+            elif i < 26 * 2:
+                label = f"a{string.ascii_lowercase[i-26]}"
+            elif i < 26 * 3:
+                label = f"b{string.ascii_lowercase[i-(26*2)]}"
+            elif i < 26 * 4:
+                label = f"b{string.ascii_lowercase[i-(26*3)]}"
+            elif i < 26 * 5:
+                label = f"b{string.ascii_lowercase[i-(26*4)]}"
+            elif i < 26 * 6:
+                label = f"b{string.ascii_lowercase[i-(26*5)]}"
+            else:
+                label = None
+
             fig.text(  # type: ignore[attr-defined]
                 position=subplot_labels_loc,
                 justify="TL",
-                text=f"{string.ascii_lowercase[i]})",
+                text=f"{label})",
                 font="18p,Helvetica,black",
                 offset="j.1c",
                 no_clip=True,
