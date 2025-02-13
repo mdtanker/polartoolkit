@@ -891,6 +891,71 @@ def filter_grid(
     return result.rename(original_name)
 
 
+def points_inside_shp(
+    points: pd.DataFrame | gpd.geodataframe.GeoDataFrame,
+    shapefile: gpd.geodataframe.GeoDataFrame,
+    crs: str | None = None,
+    coord_names: tuple[str, str] | None = None,
+    hemisphere: str | None = None,
+) -> pd.DataFrame | gpd.geodataframe.GeoDataFrame:
+    """
+    Add a column to a dataframe indicating whether each point is inside a shapefile.
+
+    Parameters
+    ----------
+    points : pd.DataFrame | gpd.geodataframe.GeoDataFrame
+        dataframe with coordinate columns specified by coord_names to use for defining
+        if within shapefile
+    shapefile : gpd.geodataframe.GeoDataFrame
+        shapefile to use for defining if point are within it or not
+    crs : str | None, optional
+        if points is not a geodataframe, crs to use to convert into a geodataframe, by
+        default None
+    coord_names : tuple[str, str] | None, optional
+        names of coordinate columns, by default 'x' and 'y' or 'easting' and 'northing'
+    hemisphere : str | None, optional
+        hemisphere to use for automatically detecting crs, by default None
+
+    Returns
+    -------
+    pd.DataFrame | gpd.geodataframe.GeoDataFrame
+        Dataframe with a new column 'inside' which is True if the point is inside the
+        shapefile
+    """
+    points = points.copy()
+
+    if isinstance(points, pd.DataFrame):
+        if crs is None:
+            hemisphere = default_hemisphere(hemisphere)
+            if hemisphere == "north":
+                crs = "epsg:3413"
+            elif hemisphere == "south":
+                crs = "epsg:3031"
+            else:
+                msg = "provide 'crs' or set hemisphere to 'north' or 'south'"
+                raise ValueError(msg)
+
+        if coord_names is None:
+            # check for coord column names
+            if ("x" in points.columns) and ("y" in points.columns):
+                coord_names = ("x", "y")
+            elif ("easting" in points.columns) and ("northing" in points.columns):
+                coord_names = ("easting", "northing")
+
+        points = gpd.GeoDataFrame(
+            points,
+            geometry=gpd.points_from_xy(
+                x=points[coord_names[0]],  # type: ignore[index]
+                y=points[coord_names[1]],  # type: ignore[index]
+            ),
+            crs=crs,
+        )
+
+    points["inside"] = points.within(shapefile.geometry[0])
+
+    return points
+
+
 def mask_from_shp(
     shapefile: str | gpd.geodataframe.GeoDataFrame,
     hemisphere: str | None = None,
