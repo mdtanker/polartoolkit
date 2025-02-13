@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 import glob
-import logging
 import pathlib
 import re
 import shutil
@@ -34,6 +33,7 @@ from tqdm.autonotebook import tqdm
 import polartoolkit
 from polartoolkit import (  # pylint: disable=import-self
     fetch,  # noqa: PLW0406
+    logger,
     regions,
     utils,
 )
@@ -156,12 +156,12 @@ def resample_grid(
         registration == initial_registration,
     ]
     if all(rules):
-        logging.info("returning original grid")
+        logger.info("returning original grid")
         resampled = grid
 
     # if spacing is smaller, return resampled
     elif spacing < initial_spacing:
-        logging.warning(
+        logger.warning(
             "Warning, requested spacing (%s) is smaller than the original (%s).",
             spacing,
             initial_spacing,
@@ -200,7 +200,7 @@ def resample_grid(
 
     else:
         if verbose == "w":
-            logging.info(
+            logger.info(
                 "returning grid with new region and/or registration, same spacing"
             )
 
@@ -629,13 +629,13 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                logging.warning(msg)
+                logger.warning(msg)
                 msg = (
                     "preprocessing this grid in full resolution is very "
                     "computationally demanding, consider choosing a lower resolution "
                     "using the parameter `spacing`."
                 )
-                logging.warning(msg)
+                logger.warning(msg)
                 with xr.open_dataset(fname1) as ds:
                     processed = (ds.VX**2 + ds.VY**2) ** 0.5
                     # Save to disk
@@ -655,9 +655,9 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                logging.warning(msg)
+                logger.warning(msg)
                 msg = "preprocessing this grid may take a long time."
-                logging.warning(msg)
+                logger.warning(msg)
                 initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
                 initial_spacing = original_spacing
                 initial_registration = "g"
@@ -697,7 +697,7 @@ def ice_vel(
             initial_spacing = original_spacing
             initial_registration = "g"
         elif spacing >= 5000:
-            logging.info("using preprocessed 5km grid since spacing is > 5km")
+            logger.info("using preprocessed 5km grid since spacing is > 5km")
             preprocessor = preprocessing_5k
             initial_region = (-2800000.0, 2795000.0, -2795000.0, 2800000.0)
             initial_spacing = 5000
@@ -992,7 +992,7 @@ def geomap(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logging.warning(msg)
+        logger.warning(msg)
 
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
@@ -1642,7 +1642,7 @@ def ibcso_coverage(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logging.warning(msg)
+        logger.warning(msg)
 
     # download / retrieve the geopackage file
     fname = pooch.retrieve(
@@ -1750,14 +1750,13 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            logging.warning(
+            logger.warning(
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
             # load grid
             grid = xr.load_dataset(fname1).z
-            logging.info(utils.get_grid_info(grid))
 
             # set the projection
             grid = grid.rio.write_crs("EPSG:9354")
@@ -1803,14 +1802,13 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            logging.warning(
+            logger.warning(
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
 
             # load grid
             grid = xr.load_dataset(fname1).z
-            logging.info(utils.get_grid_info(grid))
 
             # set the projection
             grid = grid.rio.write_crs("EPSG:9354")
@@ -1851,7 +1849,7 @@ def ibcso(
         initial_spacing = original_spacing
         initial_registration = "g"
     elif spacing >= 5000:
-        logging.info("using preprocessed 5km grid since spacing is > 5km")
+        logger.info("using preprocessed 5km grid since spacing is > 5km")
         preprocessor = preprocessing_5k
         initial_region = regions.antarctica
         initial_spacing = 5000
@@ -2068,7 +2066,7 @@ def bedmachine(
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
-            logging.info("converting to be reference to the WGS84 ellipsoid")
+            logger.info("converting to be reference to the WGS84 ellipsoid")
             with xr.open_dataset(path) as ds:
                 geoid_grid = ds["geoid"]
             # save grid registration type
@@ -2144,7 +2142,7 @@ def bedmap_points(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logging.warning(msg)
+        logger.warning(msg)
 
     # warn that pyarrow is faster
     if not USE_ARROW:
@@ -2152,7 +2150,7 @@ def bedmap_points(
             "Consider installing pyarrow for faster performance when reading "
             "geodataframes."
         )
-        logging.warning(msg)
+        logger.warning(msg)
 
     if version == "bedmap1":
 
@@ -2238,7 +2236,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                logging.warning(msg)
+                logger.warning(msg)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap2_point_data")(
@@ -2322,7 +2320,7 @@ def bedmap_points(
                 "this file is large, if you only need a subset of data please provide "
                 "a bounding box region via `region` to subset the data."
             )
-            logging.warning(msg)
+            logger.warning(msg)
 
         df = gpd.read_file(
             fname,
@@ -2347,7 +2345,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                logging.warning(msg)
+                logger.warning(msg)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap3_point_data")(
@@ -2431,7 +2429,7 @@ def bedmap_points(
                 "this file is large, if you only need a subset of data please provide "
                 "a bounding box region via `region` to subset the data."
             )
-            logging.warning(msg)
+            logger.warning(msg)
 
         df = gpd.read_file(
             fname,
@@ -2640,14 +2638,14 @@ def bedmap2(
 
         # reset layer variable
         layer = "icebase"
-        logging.info("calculating icebase from surface and thickness grids")
+        logger.info("calculating icebase from surface and thickness grids")
     elif layer == "water_thickness":
         icebase = bedmap2(layer="icebase")
         bed = bedmap2(layer="bed")
 
         # calculate water thickness
         grid = icebase - bed
-        logging.info("calculating water thickness from bed and icebase grids")
+        logger.info("calculating water thickness from bed and icebase grids")
     elif layer in [
         "bed",
         "coverage",
@@ -2686,7 +2684,7 @@ def bedmap2(
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
-            logging.info("converting to be referenced to the WGS84 ellipsoid")
+            logger.info("converting to be referenced to the WGS84 ellipsoid")
             # set layer variable so pooch retrieves the geoid conversion file
             layer = "gl04c_geiod_to_WGS84"
             fname = pooch.retrieve(
@@ -2703,7 +2701,7 @@ def bedmap2(
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
         elif reference == "eigen-6c4":
-            logging.info("converting to be referenced to the EIGEN-6C4")
+            logger.info("converting to be referenced to the EIGEN-6C4")
             # set layer variable so pooch retrieves the geoid conversion file
             layer = "gl04c_geiod_to_WGS84"
             fname = pooch.retrieve(
@@ -3571,7 +3569,7 @@ def magnetics(
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                logging.info("unzipping %s", fname)
+                logger.info("unzipping %s", fname)
                 # load data
                 df = pd.read_csv(
                     fname1,
@@ -3603,7 +3601,7 @@ def magnetics(
                 # Save to disk
                 processed.to_netcdf(fname_processed)
 
-                logging.info(".dat file gridded and saved as %s", fname_processed)
+                logger.info(".dat file gridded and saved as %s", fname_processed)
 
             return str(fname_processed)
 

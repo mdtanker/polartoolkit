@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 import copy
-import logging
 import pathlib
 import string
 import typing
@@ -24,7 +23,7 @@ import verde as vd
 import xarray as xr
 from numpy.typing import NDArray
 
-from polartoolkit import fetch, regions, utils
+from polartoolkit import fetch, logger, regions, utils
 
 try:
     import pyogrio  # pylint: disable=unused-import
@@ -394,7 +393,7 @@ def basemap(
     # add lat long grid lines
     if gridlines is True:
         if hemisphere is None:
-            logging.warning(
+            logger.warning(
                 "Argument `hemisphere` not specified, will use meters for gridlines."
             )
 
@@ -815,7 +814,7 @@ def set_cmap(
             )
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
-                logging.warning("supplied min value is greater or equal to max value")
+                logger.warning("supplied min value is greater or equal to max value")
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -823,7 +822,7 @@ def set_cmap(
                     verbose="e",
                 )
             else:
-                logging.exception(e)
+                logger.exception(e)
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -832,7 +831,6 @@ def set_cmap(
                     verbose="e",
                 )
         cmap = True
-
         if zmin is None or zmax is None:  # noqa: SIM108
             cpt_lims = None
         else:
@@ -1171,7 +1169,7 @@ def plot_grd(
     # add lat long grid lines
     if gridlines is True:
         if hemisphere is None:
-            logging.warning(
+            logger.warning(
                 "Argument `hemisphere` not specified, will use meters for gridlines."
             )
 
@@ -1429,7 +1427,7 @@ def add_colorbar(
             )
         else:
             zmin, zmax = cpt_lims
-
+        logger.debug("using %s, %s for histogram limits", zmin, zmax)
         # get grid's/point's data for histogram
         if isinstance(values, xr.DataArray):
             df = vd.grid_to_table(values)
@@ -1445,13 +1443,14 @@ def add_colorbar(
         bin_width = kwargs.get("hist_bin_width")
         bin_num = kwargs.get("hist_bin_num", 50)
 
+        logger.debug("subset data")
         if bin_width is not None:
             # if bin width is set, will plot x amount of bins of width=bin_width
             bins = np.arange(zmin, zmax, step=bin_width)
         else:
             # if bin width isn't set, will plot bin_num of bins, by default = 100
             bins, bin_width = np.linspace(zmin, zmax, num=bin_num, retstep=True)
-
+        logger.debug("calculated bins")
         # set hist type
         hist_type = kwargs.get("hist_type", 0)
 
@@ -1473,7 +1472,7 @@ def add_colorbar(
 
         if zmin == zmax:
             msg = "Grid/points are a constant value, can't make a colorbar histogram!"
-            logging.warning(msg)
+            logger.warning(msg)
             return
 
         # define histogram region
@@ -1483,17 +1482,20 @@ def add_colorbar(
             kwargs.get("hist_ymin", 0),
             kwargs.get("hist_ymax", max_bin_height * 1.1),
         ]
-
+        logger.debug("defined hist reg")
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
         try:
             fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+            logger.debug("shifting origin")
         except pygmt.exceptions.GMTCLibError as e:
-            logging.warning(e)
-            logging.warning("issue with plotting histogram, skipping...")
+            logger.warning(e)
+            logger.warning("issue with plotting histogram, skipping...")
 
         # plot histograms above colorbar
         try:
+            logger.debug("plotting hist")
+            logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
                 projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
@@ -1512,15 +1514,16 @@ def add_colorbar(
                 histtype=hist_type,
             )
         except pygmt.exceptions.GMTCLibError as e:
-            logging.warning(e)
-            logging.warning("issue with plotting histogram, skipping...")
+            logger.warning(e)
+            logger.warning("issue with plotting histogram, skipping...")
 
         # shift figure back
         try:
             fig.shift_origin(xshift=f"{-xshift}c", yshift=f"{cbar_yoffset}c")
         except pygmt.exceptions.GMTCLibError as e:
-            logging.warning(e)
-            logging.warning("issue with plotting histogram, skipping...")
+            logger.warning(e)
+            logger.warning("issue with plotting histogram, skipping...")
+        logger.debug("finished")
 
 
 def add_coast(
@@ -1864,7 +1867,7 @@ def add_inset(
                     inset_reg = (-1300e3, 1500e3, -3400e3, -600e3)
 
             if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
-                logging.warning(
+                logger.warning(
                     "Inset region should be square or else projection will be off."
                 )
             gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
@@ -1882,7 +1885,7 @@ def add_inset(
             if inset_reg is None:
                 inset_reg = regions.antarctica
             if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
-                logging.warning(
+                logger.warning(
                     "Inset region should be square or else projection will be off."
                 )
             gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
@@ -2268,8 +2271,8 @@ def subplots(
         try:
             region = utils.get_grid_info(grids[0])[1]
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logging.exception(e)
-            logging.warning("grid region can't be extracted, using antarctic region.")
+            logger.exception(e)
+            logger.warning("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
     region = typing.cast(tuple[float, float, float, float], region)
 

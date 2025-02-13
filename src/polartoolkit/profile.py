@@ -5,9 +5,9 @@
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
-import logging
+from polartoolkit import logger
 
-logging.critical(
+logger.critical(
     "The PolarToolkit module `profile` has been renamed to `profiles` to match the "
     "plural nature of the `maps` and `regions` modules. \n"
     "Please change any imports with the new name."

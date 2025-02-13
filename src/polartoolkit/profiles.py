@@ -9,7 +9,6 @@
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
-import logging
 import typing
 
 import geopandas as gpd
@@ -19,7 +18,7 @@ import pygmt
 import verde as vd
 import xarray as xr
 
-from polartoolkit import fetch, maps, regions, utils
+from polartoolkit import fetch, logger, maps, regions, utils
 
 try:
     from IPython.display import display
@@ -133,7 +132,7 @@ def create_profile(
             else:
                 df2 = coords
         except ValueError:
-            logging.info(
+            logger.info(
                 (
                     "Issue with resampling, possibly due to number of points, ",
                     "you must provide at least 4 points. Returning unsampled points",
@@ -349,7 +348,7 @@ def default_layers(
     hemisphere = utils.default_hemisphere(hemisphere)
 
     if (spacing is not None) or (reference is not None) or (region is not None):
-        logging.warning(
+        logger.warning(
             "Supplying any spacing, reference, or region to `default_layers` will "
             "result in resampling of the grids, which will likely take longer than "
             "just using the full-resolution defaults."
