@@ -8,7 +8,6 @@
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
-import logging
 import os
 import typing
 import warnings
@@ -26,7 +25,7 @@ from numpy.typing import NDArray
 from pyproj import Transformer
 
 import polartoolkit
-from polartoolkit import fetch, maps, regions
+from polartoolkit import fetch, logger, maps, regions
 
 try:
     import pyogrio  # pylint: disable=unused-import
@@ -140,8 +139,8 @@ def get_grid_info(
         spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
     except Exception as e:  # pylint: disable=broad-exception-caught
         # pygmt.exceptions.GMTInvalidInput:
-        logging.exception(e)
-        logging.warning("grid spacing can't be extracted")
+        logger.exception(e)
+        logger.warning("grid spacing can't be extracted")
         spacing = None
 
     try:
@@ -150,31 +149,31 @@ def get_grid_info(
         )
     except Exception as e:  # pylint: disable=broad-exception-caught
         # pygmt.exceptions.GMTInvalidInput:
-        logging.exception(e)
-        logging.warning("grid region can't be extracted")
+        logger.exception(e)
+        logger.warning("grid region can't be extracted")
         region = None
 
     try:
         zmin: float | None = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
     except Exception as e:  # pylint: disable=broad-exception-caught
         # pygmt.exceptions.GMTInvalidInput:
-        logging.exception(e)
-        logging.warning("grid zmin can't be extracted")
+        logger.exception(e)
+        logger.warning("grid zmin can't be extracted")
         zmin = None
 
     try:
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
     except Exception as e:  # pylint: disable=broad-exception-caught
         # pygmt.exceptions.GMTInvalidInput:
-        logging.exception(e)
-        logging.warning("grid zmax can't be extracted")
+        logger.exception(e)
+        logger.warning("grid zmax can't be extracted")
         zmax = None
 
     try:
         reg = grid.gmt.registration  # type: ignore[union-attr]
         registration: str | None = "g" if reg == 0 else "p"
     except AttributeError:
-        logging.warning(
+        logger.warning(
             "grid registration not extracted, re-trying with file loaded as xarray grid"
         )
         # grid = xr.load_dataarray(grid)
@@ -183,11 +182,11 @@ def get_grid_info(
                 reg = da.gmt.registration
                 registration = "g" if reg == 0 else "p"
             except AttributeError:
-                logging.warning("grid registration can't be extracted, setting to 'g'.")
+                logger.warning("grid registration can't be extracted, setting to 'g'.")
                 registration = "g"
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logging.exception(e)
-        logging.warning("grid registration can't be extracted")
+        logger.exception(e)
+        logger.warning("grid registration can't be extracted")
         registration = None
 
     if print_info:
@@ -1012,7 +1011,7 @@ def mask_from_shp(
     try:
         output = output.drop_vars("spatial_ref")  # pylint: disable=used-before-assignment
     except ValueError as e:
-        logging.info(e)
+        logger.info(e)
 
     return typing.cast(xr.DataArray, output)
 
@@ -1363,7 +1362,7 @@ def grd_compare(
         # get minimum grid spacing of both grids
         if da1_spacing != da2_spacing:
             spacing = min(da1_spacing, da2_spacing)
-            logging.info(
+            logger.info(
                 "grid spacings don't match, using smaller spacing (%s m).",
                 spacing,
             )
@@ -1376,7 +1375,7 @@ def grd_compare(
             ymin = max(da1_reg[2], da2_reg[2])
             ymax = min(da1_reg[3], da2_reg[3])
             region = (xmin, xmax, ymin, ymax)
-            logging.info("grid regions dont match, using inner region %s", region)
+            logger.info("grid regions dont match, using inner region %s", region)
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
@@ -1825,7 +1824,7 @@ def polygon_to_region(
     df = shapes_to_df(shapes=polygon, hemisphere=hemisphere)
 
     if df.shape_num.max() > 0:
-        logging.info(
+        logger.info(
             "supplied dataframe has multiple polygons, only using the first one."
         )
         df = df[df.shape_num == 0]
@@ -1879,7 +1878,7 @@ def mask_from_polygon(
 
     # remove additional polygons
     if df.shape_num.max() > 0:
-        logging.info(
+        logger.info(
             "supplied dataframe has multiple polygons, only using the first one."
         )
         df = df[df.shape_num == 0]
