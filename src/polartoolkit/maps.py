@@ -173,6 +173,7 @@ def basemap(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    simple_basemap: bool = False,
     imagery_basemap: bool = False,
     title: str | None = None,
     inset: bool = False,
@@ -213,6 +214,9 @@ def basemap(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    simple_basemap: bool, optional
+        choose to plot a simple basemap with floating ice colored blue and grounded ice
+        colored grey, with boarders defined by `simple_basemap_version`.
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
@@ -390,6 +394,11 @@ def basemap(
             transparency=kwargs.get("transparency", 100),
         )
 
+    if simple_basemap is True:
+        add_simple_basemap(
+            fig,
+            version=kwargs.get("simple_basemap_version"),
+        )
     # add lat long grid lines
     if gridlines is True:
         if hemisphere is None:
@@ -848,6 +857,7 @@ def plot_grd(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    simple_basemap: bool = False,
     imagery_basemap: bool = False,
     title: str | None = None,
     inset: bool = False,
@@ -896,6 +906,9 @@ def plot_grd(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    simple_basemap: bool, optional
+        choose to plot a simple basemap with floating ice colored blue and grounded ice
+        colored grey.
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
@@ -1086,6 +1099,19 @@ def plot_grd(
             cmap=imagery_cmap,
             projection=proj,
             region=region,
+        )
+    elif simple_basemap is True:
+        # create blank basemap
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame=kwargs.get("frame", "nwse+gwhite"),
+            verbose="e",
+            transparency=kwargs.get("transparency", 100),
+        )
+        add_simple_basemap(
+            fig,
+            version=kwargs.get("simple_basemap_version"),
         )
 
     cmap, colorbar, cpt_lims = set_cmap(
@@ -1805,6 +1831,84 @@ def add_faults(
     fig.plot(
         faults, projection=projection, region=region, pen=pen, label=label, style=style
     )
+
+
+def add_simple_basemap(
+    fig: pygmt.Figure,
+    hemisphere: str | None = None,
+    version: str | None = None,
+    **kwargs: typing.Any,
+) -> None:
+    """
+    Add a simple basemap to a figure with grounded ice shown as grey and floating ice as
+    blue.
+
+    Parameters
+    ----------
+    fig : pygmt.Figure
+        PyGMT figure instance to add to
+    hemisphere : str | None, optional
+        hemisphere to get coastline data for, by default None
+    version : str | None, optional
+        which version of shapefiles to use for grounding line / coastline, by default
+        None
+    """
+
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    if hemisphere == "north":
+        if version is None:
+            version = "BAS"
+
+        if version == "BAS":
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
+            fig.plot(
+                data=gdf,
+                fill="grey",
+            )
+            fig.plot(
+                data=gdf,
+                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+            )
+        else:
+            msg = "version must be BAS for northern hemisphere"
+            raise ValueError(msg)
+
+    elif hemisphere == "south":
+        if version is None:
+            version = "depoorter-2013"
+
+        if version == "depoorter-2013":
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
+            # plot floating ice as blue
+            fig.plot(
+                data=gdf[gdf.Id_text == "Ice shelf"],
+                fill="skyblue",
+            )
+            # plot grounded ice as gray
+            fig.plot(
+                data=gdf[gdf.Id_text == "Grounded ice or land"],
+                fill="grey",
+            )
+            # plot coastline on top
+            fig.plot(data=gdf, pen=kwargs.get("inset_coast_pen", "0.2,black"))
+        elif version == "measures-v2":
+            fig.plot(
+                data=fetch.antarctic_boundaries(version="Coastline"),
+                fill="skyblue",
+            )
+            fig.plot(
+                data=fetch.groundingline(version="measures-v2"),
+                fill="grey",
+            )
+            fig.plot(
+                fetch.groundingline(version="measures-v2"),
+                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+            )
+
+    else:
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
 
 
 def add_inset(
