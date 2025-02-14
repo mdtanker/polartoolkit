@@ -175,6 +175,7 @@ def basemap(
     faults: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
+    modis_basemap: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -220,6 +221,8 @@ def basemap(
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
+    modis_basemap : bool, optional
+        choose to add a MODIS background imagery basemap, by default is False.
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -366,39 +369,39 @@ def basemap(
 
     show_region = kwargs.get("show_region")
 
+    # create blank basemap
+    fig.basemap(
+        region=region,
+        projection=proj,
+        frame=kwargs.get("frame", "nwse+gwhite"),
+        verbose="e",
+        transparency=kwargs.get("transparency", 100),
+    )
+
+    # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
-        if hemisphere == "north":
-            image = fetch.modis(version="500m", hemisphere="north")
-            imagery_cmap, _, _ = set_cmap(
-                True,
-                modis=True,
-            )
-        else:
-            image = fetch.imagery()
-            imagery_cmap = None
-        fig.grdimage(
-            grid=image,
-            cmap=imagery_cmap,
-            projection=proj,
-            region=region,
-            transparency=kwargs.get("transparency", 0),
-            frame=kwargs.get("frame", "nwse+gwhite"),
-        )
-    else:
-        # create blank basemap
-        fig.basemap(
-            region=region,
-            projection=proj,
-            frame=kwargs.get("frame", "nwse+gwhite"),
-            verbose="e",
-            transparency=kwargs.get("transparency", 100),
+        add_imagery(
+            fig,
+            hemisphere=hemisphere,
+            transparency=kwargs.get("imagery_transparency", 0),
         )
 
+    # add MODIS imagery as basemap
+    if modis_basemap is True:
+        add_modis(
+            fig,
+            hemisphere=hemisphere,
+            version=kwargs.get("modis_version"),
+            transparency=kwargs.get("modis_transparency", 0),
+        )
+
+    # add simple basemap
     if simple_basemap is True:
         add_simple_basemap(
             fig,
             hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
+            transparency=kwargs.get("simple_basemap_transparency", 0),
         )
     # add lat long grid lines
     if gridlines is True:
@@ -860,6 +863,7 @@ def plot_grd(
     faults: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
+    modis_basemap: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -913,6 +917,8 @@ def plot_grd(
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
+    modis_basemap : bool, optional
+        choose to add a MODIS background imagery basemap, by default is False.
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -1088,35 +1094,37 @@ def plot_grd(
 
     show_region = kwargs.get("show_region")
 
+    # create blank basemap
+    fig.basemap(
+        region=region,
+        projection=proj,
+        frame=kwargs.get("frame", "nwse+gwhite"),
+        verbose="e",
+        transparency=kwargs.get("transparency", 100),
+    )
+
+    # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
-        if hemisphere == "north":
-            image = fetch.modis(version="500m", hemisphere="north")
-            imagery_cmap, _, _ = set_cmap(
-                True,
-                modis=True,
-            )
-        else:
-            image = fetch.imagery()
-            imagery_cmap = None
-        fig.grdimage(
-            grid=image,
-            cmap=imagery_cmap,
-            projection=proj,
-            region=region,
+        add_imagery(
+            fig,
+            hemisphere=hemisphere,
+            transparency=kwargs.get("imagery_transparency", 0),
         )
-    elif simple_basemap is True:
-        # create blank basemap
-        fig.basemap(
-            region=region,
-            projection=proj,
-            frame=kwargs.get("frame", "nwse+gwhite"),
-            verbose="e",
-            transparency=kwargs.get("transparency", 100),
+    # add MODIS imagery as basemap
+    if modis_basemap is True:
+        add_modis(
+            fig,
+            hemisphere=hemisphere,
+            version=kwargs.get("modis_version"),
+            transparency=kwargs.get("modis_transparency", 0),
         )
+    # add simple basemap
+    if simple_basemap is True:
         add_simple_basemap(
             fig,
             hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
+            transparency=kwargs.get("simple_basemap_transparency", 0),
         )
 
     cmap, colorbar, cpt_lims = set_cmap(
@@ -1847,10 +1855,99 @@ def add_faults(
     )
 
 
+def add_imagery(
+    fig: pygmt.Figure,
+    hemisphere: str | None = None,
+    transparency: int = 0,
+) -> None:
+    """
+    Add satellite imagery to a figure. For southern hemisphere uses LIMA imagery, but
+    for northern hemisphere uses MODIS imagery.
+
+    Parameters
+    ----------
+    fig : pygmt.Figure
+        PyGMT figure instance to add to
+    hemisphere : str | None, optional
+        hemisphere to get data for, by default None
+    transparency : int, optional
+        transparency of the imagery, by default 0
+    """
+
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    if hemisphere == "north":
+        image = fetch.modis(version="500m", hemisphere="north")
+        cmap, _, _ = set_cmap(
+            True,
+            modis=True,
+        )
+    elif hemisphere == "south":
+        image = fetch.imagery()
+        cmap = None
+    else:
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
+
+    fig.grdimage(
+        grid=image,
+        cmap=cmap,
+        transparency=transparency,
+    )
+
+
+def add_modis(
+    fig: pygmt.Figure,
+    hemisphere: str | None = None,
+    version: str | None = None,
+    transparency: int = 0,
+) -> None:
+    """
+    Add MODIS imagery to a figure.
+
+    Parameters
+    ----------
+    fig : pygmt.Figure
+        PyGMT figure instance to add to
+    hemisphere : str | None, optional
+        hemisphere to get MODIS data for, by default None
+    version : str | None, optional
+        which version (resolution) of MODIS imagery to use, by default "750m" for
+        southern hemisphere and "500m" for northern hemisphere.
+    transparency : int, optional
+        transparency of the MODIS imagery, by default 0
+    """
+
+    hemisphere = utils.default_hemisphere(hemisphere)
+
+    if hemisphere == "north":
+        if version is None:
+            version = "500m"
+    elif hemisphere == "south":
+        if version is None:
+            version = "750m"
+    else:
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
+
+    image = fetch.modis(version=version, hemisphere=hemisphere)
+
+    imagery_cmap, _, _ = set_cmap(
+        True,
+        modis=True,
+    )
+    fig.grdimage(
+        grid=image,
+        cmap=imagery_cmap,
+        transparency=transparency,
+    )
+
+
 def add_simple_basemap(
     fig: pygmt.Figure,
     hemisphere: str | None = None,
     version: str | None = None,
+    transparency: int = 0,
     **kwargs: typing.Any,
 ) -> None:
     """
@@ -1866,6 +1963,8 @@ def add_simple_basemap(
     version : str | None, optional
         which version of shapefiles to use for grounding line / coastline, by default
         None
+    transparency : int, optional
+        transparency of all the plotted elements, by default 0
     """
 
     hemisphere = utils.default_hemisphere(hemisphere)
@@ -1879,10 +1978,12 @@ def add_simple_basemap(
             fig.plot(
                 data=gdf,
                 fill="grey",
+                transparency=transparency,
             )
             fig.plot(
                 data=gdf,
                 pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                transparency=transparency,
             )
         else:
             msg = "version must be BAS for northern hemisphere"
@@ -1898,26 +1999,35 @@ def add_simple_basemap(
             fig.plot(
                 data=gdf[gdf.Id_text == "Ice shelf"],
                 fill="skyblue",
+                transparency=transparency,
             )
             # plot grounded ice as gray
             fig.plot(
                 data=gdf[gdf.Id_text == "Grounded ice or land"],
                 fill="grey",
+                transparency=transparency,
             )
             # plot coastline on top
-            fig.plot(data=gdf, pen=kwargs.get("inset_coast_pen", "0.2,black"))
+            fig.plot(
+                data=gdf,
+                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                transparency=transparency,
+            )
         elif version == "measures-v2":
             fig.plot(
                 data=fetch.antarctic_boundaries(version="Coastline"),
                 fill="skyblue",
+                transparency=transparency,
             )
             fig.plot(
                 data=fetch.groundingline(version="measures-v2"),
                 fill="grey",
+                transparency=transparency,
             )
             fig.plot(
                 fetch.groundingline(version="measures-v2"),
                 pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                transparency=transparency,
             )
 
     else:
