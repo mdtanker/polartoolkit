@@ -536,7 +536,8 @@ def basal_melt(
 
 
 def buttressing(
-    variable: str,
+    version: str,
+    variable: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
@@ -552,8 +553,8 @@ def buttressing(
 
     Parameters
     ----------
-    variable : str
-        choose which variable to load, either 'max' for maximum buttressing, 'min' for
+    version : str
+        choose which version to load, either 'max' for maximum buttressing, 'min' for
         minimum buttressing, 'flow' for along-flow buttressing, or 'viscosity' for
         estimated ice viscosity values
 
@@ -567,22 +568,27 @@ def buttressing(
     .. footbibliography::
     """
 
+    if variable is not None:
+        version = variable
+        msg = "variable parameter is deprecated, please use version parameter instead"
+        logger.warning(msg)
+
     initial_region = regions.antarctica
     initial_spacing = 1e3
     initial_registration = "g"
 
     base_url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0664_antarctic_iceshelf_buttress/"
 
-    if variable == "max":
+    if version == "max":
         var = "bmax"
-    elif variable == "min":
+    elif version == "min":
         var = "bmin"
-    elif variable == "flow":
+    elif version == "flow":
         var = "bflow"
-    elif variable == "viscosity":
+    elif version == "viscosity":
         var = "visc"
     else:
-        msg = "invalid variable string"
+        msg = "invalid version string"
         raise ValueError(msg)
 
     fname = f"{var}_nsidc_sumer_buttressing_v1.0.nc"
@@ -1942,7 +1948,7 @@ def ibcso(
     grid = xr.open_zarr(path)[layer]
 
     if reference == "ellipsoid":
-        logging.info("converting to be reference to the WGS84 ellipsoid")
+        logger.info("converting to be reference to the WGS84 ellipsoid")
         # get a grid of EIGEN geoid values matching the user's input
         eigen_correction = geoid(
             spacing=initial_spacing,
