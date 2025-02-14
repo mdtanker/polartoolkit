@@ -130,9 +130,15 @@ def resample_grid(
     verbose = kwargs.get("verbose", "w")
 
     # if initial values not given, extract from supplied grid
-    grd_info = utils.get_grid_info(grid)
+    if (
+        (initial_spacing is None)
+        | (initial_region is None)
+        | (initial_registration is None)
+    ):
+        logger.debug("initial values not given for resampling, extracting from grid")
+        grd_info = utils.get_grid_info(grid)
     if initial_spacing is None:
-        initial_spacing = grd_info[0]
+        initial_spacing = grd_info[0]  # pylint: disable=possibly-used-before-assignment
         initial_spacing = typing.cast(float, initial_spacing)
     if initial_region is None:
         initial_region = grd_info[1]
@@ -140,6 +146,12 @@ def resample_grid(
     if initial_registration is None:
         initial_registration = grd_info[4]
         initial_registration = typing.cast(str, initial_registration)
+    logger.debug(
+        "using initial values: %s, %s, %s",
+        initial_spacing,
+        initial_region,
+        initial_registration,
+    )
 
     # if new values not given, set equal to initial values
     if spacing is None:
@@ -181,7 +193,7 @@ def resample_grid(
 
     # if spacing is larger, return filtered / resampled
     elif spacing > initial_spacing:
-        logging.info("spacing larger than original, filtering and resampling")
+        logger.info("spacing larger than original, filtering and resampling")
         filtered = pygmt.grdfilter(
             grid=grid,
             filter=f"g{spacing}",
@@ -1330,6 +1342,7 @@ def sediment_thickness(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load 1 of 4 'versions' of sediment thickness data.
@@ -1360,6 +1373,8 @@ def sediment_thickness(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -1446,6 +1461,7 @@ def sediment_thickness(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     elif version == "tankersley-2022":
@@ -1479,6 +1495,7 @@ def sediment_thickness(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     elif version == "lindeque-2016":
@@ -1512,6 +1529,7 @@ def sediment_thickness(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     elif version == "GlobSed":
@@ -1598,6 +1616,7 @@ def sediment_thickness(
             spacing=spacing,
             region=region,
             registration=registration,
+            **kwargs,
         )
 
     else:
@@ -1700,6 +1719,7 @@ def ibcso(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | int = 500,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load IBCSO v2 data, from :footcite:t:`dorschelinternational2022` and
@@ -1725,6 +1745,8 @@ def ibcso(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -1912,6 +1934,7 @@ def ibcso(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
@@ -1924,6 +1947,7 @@ def bedmachine(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load BedMachine topography data from either Greenland (v5) or Antarctica (v3),  from
@@ -1974,7 +1998,8 @@ def bedmachine(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
-
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
     Returns
     -------
     xarray.DataArray
@@ -2091,6 +2116,7 @@ def bedmachine(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
@@ -2753,6 +2779,7 @@ def rema(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Load the REMA surface elevation data from :footcite:t:`howatreference2019`. The data
@@ -2775,7 +2802,8 @@ def rema(
     registration : str, optional,
         choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
         the original type of the grid
-
+    **kwargs : optional
+        additional keyword arguments to pass to the resample_grid function
     Returns
     -------
     xarray.DataArray
@@ -2876,6 +2904,7 @@ def rema(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
@@ -2885,6 +2914,7 @@ def deepbedmap(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> str:
     """
     Load DeepBedMap data,  from :footcite:t:`leongdeepbedmap2020` and
@@ -2900,7 +2930,8 @@ def deepbedmap(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
-
+    **kwargs : optional
+        additional keyword arguments to pass to the resample_grid function
     Returns
     -------
     str
@@ -2942,6 +2973,7 @@ def deepbedmap(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
 
@@ -3259,6 +3291,7 @@ def etopo(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
     Loads a grid of Antarctic topography from ETOPO1 from :footcite:t:`etopo12009`.
@@ -3281,6 +3314,8 @@ def etopo(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    **kwargs : optional
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -3358,6 +3393,7 @@ def etopo(
         spacing=spacing,
         region=region,
         registration=registration,
+        **kwargs,
     )
 
     return typing.cast(xr.DataArray, resampled)
@@ -3844,6 +3880,8 @@ def ghf(
     kwargs : typing.Any
         if version='burton-johnson-2020', then kwargs are passed to return point
         measurements instead of the grid.
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -3928,6 +3966,7 @@ def ghf(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "martos-2017":
@@ -3989,6 +4028,7 @@ def ghf(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "burton-johnson-2020":
@@ -4079,6 +4119,7 @@ def ghf(
                 spacing,
                 region,
                 registration,
+                **kwargs,
             )
 
     elif version == "losing-ebbing-2021":
@@ -4159,6 +4200,7 @@ def ghf(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "aq1":
@@ -4193,6 +4235,7 @@ def ghf(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "shen-2020":
@@ -4268,6 +4311,7 @@ def ghf(
             spacing,
             region,
             registration,
+            **kwargs,
         )
     else:
         msg = "invalid version string"
@@ -4281,6 +4325,7 @@ def gia(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
     Load 1 of 1 'versions' of Antarctic glacial isostatic adjustment grids.
@@ -4301,7 +4346,8 @@ def gia(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
-
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
     Returns
     -------
     xarray.DataArray
@@ -4342,6 +4388,7 @@ def gia(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     else:
@@ -4356,6 +4403,7 @@ def crustal_thickness(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
     Load 1 of x 'versions' of Antarctic crustal thickness grids.
@@ -4389,7 +4437,8 @@ def crustal_thickness(
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
-
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
     Returns
     -------
     xarray.DataArray
@@ -4550,6 +4599,7 @@ def crustal_thickness(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     else:
@@ -4564,6 +4614,7 @@ def moho(
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
     Load 1 of x 'versions' of Antarctic Moho depth grids.
@@ -4599,6 +4650,8 @@ def moho(
     registration : str, optional,
         choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
         the original type of the grid
+    **kwargs : typing.Any
+        additional keyword arguments to pass to the resample_grid function
 
     Returns
     -------
@@ -4691,6 +4744,7 @@ def moho(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "an-2015":
@@ -4716,6 +4770,7 @@ def moho(
             spacing,
             region,
             registration,
+            **kwargs,
         )
 
     elif version == "pappa-2019":
