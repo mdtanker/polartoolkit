@@ -25,7 +25,6 @@ import pooch
 import pygmt
 import requests
 import xarray as xr
-import zarr
 from dotenv import load_dotenv
 from pyproj import Transformer
 from tqdm.autonotebook import tqdm
@@ -474,11 +473,8 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
             grid = grid.drop_vars(["x", "y"])
 
             # Save to .zarr file
-            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
-            enc = {x: {"compressor": compressor} for x in grid}
             grid.to_zarr(
                 fname_processed,
-                encoding=enc,
             )
 
         return str(fname_processed)
@@ -1798,11 +1794,8 @@ def ibcso(
             resampled = resampled.to_dataset(name=layer)
 
             # Save to .zarr file
-            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
-            enc = {x: {"compressor": compressor} for x in resampled}
             resampled.to_zarr(
                 fname_processed,
-                encoding=enc,
             )
 
             # remove non-preprocessed file
@@ -1850,11 +1843,8 @@ def ibcso(
             resampled = resampled.to_dataset(name=layer)
 
             # Save to .zarr file
-            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
-            enc = {x: {"compressor": compressor} for x in resampled}
             resampled.to_zarr(
                 fname_processed,
-                encoding=enc,
             )
 
             # remove non-preprocessed file
@@ -2623,10 +2613,8 @@ def bedmap2(
             grid = grid.to_dataset(name=layer)
 
             # Save to disk
-            compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
             grid.to_zarr(
                 fname_processed,
-                encoding={layer: {"compressor": compressor}},
             )
 
         return str(fname_processed)
@@ -2871,10 +2859,8 @@ def rema(
                 ds = grid.to_dataset(name="surface")
 
                 # Save to disk
-                compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
                 ds.to_zarr(
                     fname_processed,
-                    encoding={"surface": {"compressor": compressor}},
                 )
                 ds.close()
 
@@ -3243,11 +3229,8 @@ def gravity(
                 grid = xr.merge([grid, ellipsoidal_height.rename("ellipsoidal_height")])
 
                 # Save to .zarr file
-                compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
-                enc = {x: {"compressor": compressor} for x in grid}
                 grid.to_zarr(
                     fname_processed,
-                    encoding=enc,
                 )
 
             return str(fname_processed)
