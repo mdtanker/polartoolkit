@@ -333,17 +333,17 @@ def basemap(
     ...
     >>> fig.show()
     """
+    kwargs = copy.deepcopy(kwargs)
 
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
     except KeyError:
         hemisphere = None
-
     # if region not set, use antarctic or greenland regions
     if region is None:
         if hemisphere == "north":
             region = regions.greenland
-        if hemisphere == "south":
+        elif hemisphere == "south":
             region = regions.antarctica
         else:
             msg = "Region must be specified if hemisphere is not specified."
@@ -397,6 +397,7 @@ def basemap(
     if simple_basemap is True:
         add_simple_basemap(
             fig,
+            hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
         )
     # add lat long grid lines
@@ -459,7 +460,7 @@ def basemap(
             raise ValueError(msg)
         # define cmap for points
         points_fill = kwargs.get("points_fill", "black")
-        cmap = kwargs.get("points_cmap", "viridis")
+        cmap = kwargs.pop("points_cmap", "viridis")
         if isinstance(points_fill, str):
             colorbar = False
             cmap = None
@@ -1114,6 +1115,7 @@ def plot_grd(
         )
         add_simple_basemap(
             fig,
+            hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
         )
 
