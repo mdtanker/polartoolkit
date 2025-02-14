@@ -4,6 +4,7 @@
 ---
 ---
 download_NASA_data
+basemaps
 switch_between_hemispheres
 defining_regions
 manipulating_regions
