@@ -1137,7 +1137,7 @@ def plot_grd(
         frame=kwargs.get("frame"),
         shading=shading,
         transparency=kwargs.get("transparency", 0),
-        # verbose="q",
+        # verbose=True,
     )
 
     # add datapoints
@@ -1269,16 +1269,20 @@ def plot_grd(
                 "fig",
             ]
         }
-
-        add_colorbar(
-            fig,
-            hist_cmap=cmap,
-            grid=grid,
-            cpt_lims=cpt_lims,
-            fig_width=fig_width,
-            region=region,
-            **cbar_kwargs,
-        )
+        try:
+            logger.debug("plotting colorbar/histogram")
+            add_colorbar(
+                fig,
+                hist_cmap=cmap,
+                grid=grid,
+                cpt_lims=cpt_lims,
+                fig_width=fig_width,
+                region=region,
+                **cbar_kwargs,
+            )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.exception(e)
+            logger.error("error with plotting colorbar, skipping")
 
     # reset region and projection
     if title is None:
@@ -1375,6 +1379,8 @@ def add_colorbar(
                 region = tuple(lib.extract_region())
                 assert len(region) == 4
 
+        logger.debug("using region: %s", region)
+
         # clip values to plot region
         if isinstance(values, (xr.DataArray | str)):
             if region != utils.get_grid_info(values)[1]:
@@ -1392,6 +1398,8 @@ def add_colorbar(
                         raise ValueError(msg)
                     values_clipped = utils.subset_grid(values, reg)
                 values = values_clipped
+                logger.debug("clipped grid to region")
+
         elif isinstance(values, pd.DataFrame):  # type: ignore[unreachable]
             values_clipped = utils.points_inside_region(values, region)
             # if subplotting, region will be in figure units and points will be clipped
@@ -1407,6 +1415,7 @@ def add_colorbar(
                     raise ValueError(msg)
                 values_clipped = utils.points_inside_region(values, reg)
             values = values_clipped
+            logger.debug("clipped points to region")
 
         if isinstance(hist_cmap, str) and hist_cmap.endswith(".cpt"):
             # extract cpt_lims from cmap
