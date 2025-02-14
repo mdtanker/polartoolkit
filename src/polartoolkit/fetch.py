@@ -315,6 +315,10 @@ def sample_shp(name: str) -> str:
 def mass_change(
     version: str | None = None,
     hemisphere: str | None = None,
+    region: tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
+    registration: str | None = None,
+    **kwargs: typing.Any,
 ) -> typing.Any:
     """
     Ice-sheet height and thickness changes from ICESat to ICESat-2 for both Antarctica
@@ -339,11 +343,21 @@ def mass_change(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    region : tuple[float, float, float, float], optional
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
+    spacing : float, optional,
+        grid spacing to resample the loaded grid to, by default is 5km
+    registration : str, optional
+        change registration with either 'p' for pixel or 'g' for gridline registration,
+        by default is "p".
+    kwargs : typing.Any
+        additional keyword arguments to pass to resample_grid
 
     Returns
     -------
     xarray.DataArray
-        Returns a grid of Antarctic or Greeland ice mass change in meters/year.
+        Returns a grid of Antarctic or Greenland ice mass change in meters/year.
 
     References
     ----------
@@ -400,7 +414,7 @@ def mass_change(
 
     fname = next(p for p in path if p.endswith(f"{version}.tif"))
 
-    return (
+    grid = (
         xr.load_dataarray(
             fname,
             engine="rasterio",
@@ -409,8 +423,23 @@ def mass_change(
         .drop_vars(["band", "spatial_ref"])
     )
 
+    return resample_grid(
+        grid,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
 
-def basal_melt(variable: str = "w_b") -> typing.Any:
+
+def basal_melt(
+    version: str = "w_b",
+    variable: str | None = None,
+    region: tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
+    registration: str | None = None,
+    **kwargs: typing.Any,
+) -> typing.Any:
     """
     Antarctic ice shelf basal melt rates for 1994-2018 from satellite radar altimetry.
     from :footcite:t:`adusumilliinterannual2020`.
@@ -424,8 +453,8 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
 
     Parameters
     ----------
-    variable : str
-        choose which variable to load, either 'w_b' for basal melt rate, 'w_b_interp',
+    version : str
+        choose which version to load, either 'w_b' for basal melt rate, 'w_b_interp',
         for basal melt rate with interpolated values, and 'w_b_uncert' for uncertainty
 
     Returns
@@ -437,6 +466,11 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
     ----------
     .. footbibliography::
     """
+
+    if variable is not None:
+        version = variable
+        msg = "variable parameter is deprecated, please use version parameter instead"
+        logger.warning(msg)
 
     # This is the path to the processed (magnitude) grid
     url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
@@ -488,9 +522,17 @@ def basal_melt(variable: str = "w_b") -> typing.Any:
         processor=preprocessing,
     )
 
-    return xr.open_zarr(
+    grid = xr.open_zarr(
         path,  # consolidated=False,
-    )[variable]
+    )[version]
+
+    return resample_grid(
+        grid,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
 
 
 def buttressing(
