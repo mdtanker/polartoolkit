@@ -1042,6 +1042,9 @@ def plot_grd(
     else:
         grid = grid.copy()
 
+    if isinstance(grid, xr.Dataset):
+        msg = "grid must be a DataArray, not a Dataset."
+        raise ValueError(msg)
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
     except KeyError:
