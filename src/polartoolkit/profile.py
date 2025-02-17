@@ -5,10 +5,10 @@
 # This code is part of the package:
 # PolarToolkit (https://github.com/mdtanker/polartoolkit)
 #
-from polartoolkit import logger
 
-logger.critical(
-    "The PolarToolkit module `profile` has been renamed to `profiles` to match the "
-    "plural nature of the `maps` and `regions` modules. \n"
-    "Please change any imports with the new name."
+MSG = (
+    "The PolarToolkit module 'profile' has been renamed to 'profiles'. "
+    "Please change any imports to the new name."
 )
+
+raise ImportError(MSG)
