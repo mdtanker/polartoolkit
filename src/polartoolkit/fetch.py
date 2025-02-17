@@ -2631,7 +2631,7 @@ def bedmap2(
         registration = initial_registration
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Unzip the folder, convert the tiffs to compressed .zarr files"
+        "Unzip the folder, convert the tiffs to .zarr files"
         # extract each layer to it's own folder
         if layer == "gl04c_geiod_to_WGS84":
             member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
@@ -3244,9 +3244,9 @@ def gravity(
 
             # Rename to the file to ***_preprocessed.nc
             if hemisphere == "south":
-                fname_pre = fname1.with_stem(fname1.stem + "epsg3031_preprocessed")
+                fname_pre = fname1.with_stem(fname1.stem + "_epsg3031_preprocessed")
             elif hemisphere == "north":
-                fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
+                fname_pre = fname1.with_stem(fname1.stem + "_epsg3413_preprocessed")
             else:
                 msg = "invalid hemisphere"
                 raise ValueError(msg)
