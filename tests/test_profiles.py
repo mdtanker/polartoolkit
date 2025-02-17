@@ -42,9 +42,33 @@ default_layers_test = [
             -2127.135,
         ],
     ),
+    (
+        {
+            "version": "bedmachine",
+            "hemisphere": "south",
+        },
+        [  # mean values of grids
+            595.5868,
+            7.055721,
+            -2522.419,
+        ],
+    ),
+    (
+        {
+            "version": "bedmachine",
+            "hemisphere": "north",
+        },
+        [  # mean values of grids
+            934.1983,
+            231.09322,
+            -312.9952,
+        ],
+    ),
 ]
 
 
+@pytest.mark.fetch
+@pytest.mark.earthdata
 @pytest.mark.parametrize(("test_input", "expected"), default_layers_test)
 def test_default_layers(test_input, expected):
     """
