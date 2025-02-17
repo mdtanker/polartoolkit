@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 from importlib import reload
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -72,6 +72,7 @@ def test_draw_region_missing_ipython():
     """
     Check error raise after calling draw_region when ipython is missing
     """
+    sys.modules["ipyleaflet"] = MagicMock()
     with patch.dict(sys.modules, {"IPython.display": None}):
         reload(sys.modules["polartoolkit.regions"])
         with pytest.raises(ImportError) as exception:
