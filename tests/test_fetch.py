@@ -23,11 +23,18 @@ import os
 import deepdiff
 import deprecation
 import geopandas as gpd
+
+# This is only here to suppress the bug described in
+# https://github.com/pydata/xarray/issues/7259
+# We have to make sure that netcdf4 is imported before
+# numpy is imported for the first time, e.g. also via
+# importing xarray
+import netCDF4  # noqa: F401
 import numpy as np
 import pandas as pd
 import pytest
 from dotenv import load_dotenv
-from geopandas.testing import assert_geodataframe_equal
+from pandas.testing import assert_frame_equal
 
 from polartoolkit import fetch, regions, utils
 
@@ -210,7 +217,7 @@ resample_test = [
 @pytest.mark.parametrize(("test_input", "expected"), resample_test)
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_resample_grid(test_input, expected):
-    grid = fetch.gravity(version="antgg", anomaly_type="FA")
+    grid = fetch.gravity(version="antgg", anomaly_type="FA").free_air_anomaly
     resampled = fetch.resample_grid(grid, **test_input)
     # assert utils.get_grid_info(resampled) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
@@ -466,32 +473,32 @@ def test_ibcso_coverage():
     points, polygons = fetch.ibcso_coverage(
         region=regions.alter_region(regions.siple_coast, zoom=270e3)
     )
+    points = points.drop(columns=["geometry"])
 
     # re-create the expected geodataframe
-    df_points = pd.DataFrame(
+    expected = pd.DataFrame(
         {
             "dataset_name": [
+                "RossSea_seismic_usedbyTinto2019_PS65.xyz",
                 "RIGGS_7378_seismic_PS65.xyz",
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
             ],
-            "dataset_tid": np.array([12, 12, 12]).astype("int32"),
-            "weight": np.array([10, 10, 10]).astype("int32"),
-            "x": [-300114.000, -324498.000, -240709.000],
-            "y": [-810976.000, -747471.000, -736104.000],
+            "dataset_tid": np.array([12, 12, 12, 12]).astype("int32"),
+            "weight": np.array([10, 10, 10, 10]).astype("int32"),
+            "easting": [-242248.738888, -306281.045379, -331166.112422, -245655.331481],
+            "northing": [
+                -806606.217740,
+                -827640.753371,
+                -762830.788535,
+                -751230.207946,
+            ],
         },
-        index=[1, 0, 0],
-    )
-    expected = (
-        gpd.GeoDataFrame(
-            df_points, geometry=gpd.points_from_xy(df_points.x, df_points.y)
-        )
-        .drop(columns=["x", "y"])
-        .set_crs(epsg=9354)
+        index=[0, 1, 0, 0],
     )
 
     # check if they match
-    assert_geodataframe_equal(points, expected)
+    assert_frame_equal(points, expected, check_like=True)
     # check that the polygon geodataframe is empty
     assert len(polygons) == 0
 
@@ -508,9 +515,9 @@ ibcso_test = [
         (
             500,
             (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-            -6321.07080078,
-            4799.17333984,
-            "p",
+            -6322.51318359,
+            4790.52978516,
+            "g",
         ),
     ),
     (
@@ -521,9 +528,9 @@ ibcso_test = [
         (
             5000,
             (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-            -6223.27148438,
-            4134.63476563,
-            "p",
+            -6302.79589844,
+            4546.14599609,
+            "g",
         ),
     ),
     (
@@ -534,9 +541,9 @@ ibcso_test = [
         (
             500,
             (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-            -6321.07080078,
-            4723.67041016,
-            "p",
+            -6322.51318359,
+            4731.80712891,
+            "g",
         ),
     ),
     (
@@ -547,9 +554,9 @@ ibcso_test = [
         (
             5000,
             (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-            -6223.27148438,
-            4126.67089844,
-            "p",
+            -6302.79589844,
+            4568.85058594,
+            "g",
         ),
     ),
 ]
@@ -929,18 +936,28 @@ def test_bedmap2_fill_nans(test_input, expected):
 
 @pytest.mark.fetch
 def test_bedmap_points():
-    df = fetch.bedmap_points(version="bedmap1")
+    df = fetch.bedmap_points(
+        version="all",
+        region=regions.minna_bluff,
+    )
     expected = [
-        952525.5,
-        -50.57860974982828,
-        -76.06615223267103,
-        941.8317307441855,
-        989.0156562819874,
-        -119.0829515327895,
-        -419901.6480732197,
-        490531.6099745441,
+        np.nan,
+        166.26541073215904,
+        -78.3583361446912,
+        102.86136846208544,
+        280.40327021647704,
+        -54.59116960358044,
+        np.nan,
+        828.8807757122288,
+        np.nan,
+        300618.8269781072,
+        -1232077.35794502,
     ]
-    assert df.describe().iloc[1].tolist() == pytest.approx(expected, rel=0.1)
+    assert df.describe().iloc[1].tolist() == pytest.approx(
+        expected,
+        rel=0.1,
+        nan_ok=True,
+    )
 
 
 # df = fetch.bedmap_points(version='bedmap1')
@@ -990,17 +1007,6 @@ gravity_test = [
         None,
     ),
     (
-        "antgg-update",
-        (
-            10000,
-            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
-            -237.559997559,
-            171.86000061,
-            "g",
-        ),
-        None,
-    ),
-    (
         "antgg-2021",
         (
             5000,
@@ -1042,6 +1048,13 @@ gravity_test = [
 def test_gravity(test_input, expected, hemisphere):
     grid = fetch.gravity(test_input, anomaly_type="FA", hemisphere=hemisphere)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+    if test_input == "antgg":
+        grid = grid.free_air_anomaly
+    if test_input == "antgg-2021":
+        grid = grid.free_air_anomaly
+    if test_input == "eigen":
+        grid = grid.gravity
+
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
         expected,
@@ -1558,17 +1571,17 @@ def test_rema(test_input, expected):
 
 buttressing_test = [
     (
-        {"variable": "max"},
+        {"version": "max"},
         (
             1000,
             (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
-            -781.63,
-            717.83,
+            -781.639465332,
+            717.836303711,
             "g",
         ),
     ),
     (
-        {"variable": "min"},
+        {"version": "min"},
         (
             1000,
             (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
@@ -1578,7 +1591,7 @@ buttressing_test = [
         ),
     ),
     (
-        {"variable": "flow"},
+        {"version": "flow"},
         (
             1000,
             (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
@@ -1588,7 +1601,7 @@ buttressing_test = [
         ),
     ),
     (
-        {"variable": "viscosity"},
+        {"version": "viscosity"},
         (
             1000,
             (-2750000.0, 2750000.0, -2750000.0, 2750000.0),
