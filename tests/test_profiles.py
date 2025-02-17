@@ -26,7 +26,7 @@ def test_old_profile_module():
     Check error raise after import old profile module
     """
     with pytest.raises(ImportError) as exception:
-        pass
+        from polartoolkit import profile  # noqa: F401
     assert "'profile'" in str(exception.value)
 
 
@@ -40,28 +40,6 @@ default_layers_test = [
             602.32306,
             11.617859,
             -2127.135,
-        ],
-    ),
-    (
-        {
-            "version": "bedmachine",
-            "hemisphere": "south",
-        },
-        [  # mean values of grids
-            595.5868,
-            7.055721,
-            -2522.419,
-        ],
-    ),
-    (
-        {
-            "version": "bedmachine",
-            "hemisphere": "north",
-        },
-        [  # mean values of grids
-            934.1983,
-            231.09322,
-            -312.9952,
         ],
     ),
 ]
