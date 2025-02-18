@@ -462,15 +462,15 @@ def default_data(
     mag = typing.cast(xr.DataArray, mag)
 
     fa_grav = fetch.gravity(
-        version="antgg-update",
+        version="antgg-2021",
         anomaly_type="FA",
         region=region,
         # spacing=10e3,
         verbose=verbose,
-    )
+    ).free_air_anomaly
     data_names = [
         "ADMAP-1 magnetics",
-        "ANT-4d Free-air grav",
+        "AntGG-2021 Free-air grav",
     ]
     data_grids = [
         mag,
