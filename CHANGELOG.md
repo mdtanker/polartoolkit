@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v0.8.1 (2025-02-19)
 ### 🐛 Bug Fixes
 * update from angular to conventional commits to fix deprecation warning ([`079a5db`](https://github.com/mdtanker/polartoolkit/commit/079a5db21fa9a8c4bcab8caba93c1083d452b370))
 ### 🧰 Chores / Maintenance
@@ -16,7 +17,6 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * empty line ([`defa73e`](https://github.com/mdtanker/polartoolkit/commit/defa73e37eb3edd06460cdada810550ecc6cb6f3))
 ###  🎨 Refactor
 * add kwargs for legend labels for coasts and points ([`20c4d0e`](https://github.com/mdtanker/polartoolkit/commit/20c4d0e5c51f5698ac308afd99b17d701939fd54))
-
 
 ## v0.8.0 (2025-02-19)
 ### 🐛 Bug Fixes
