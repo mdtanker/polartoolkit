@@ -4,7 +4,7 @@
 * open a [GitHub Issue](https://github.com/mdtanker/polartoolkit/issues/new/choose) describing what you want to do
 * [fork](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) the main branch and clone it locally
 * [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits
-* make your changes, and commit them using the [Angular Commits Convention](https://www.conventionalcommits.org/en/v1.0.0-beta.4/#summary)
+* make your changes, and commit them using the [Conventional (Angular) Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
 * [make a Pull Request](http://makeapullrequest.com/) for your branch
 
 🎉 Thanks for considering contributing to this package! 🎉
@@ -289,7 +289,7 @@ In each PR, you will see section of the checks for `RTD`. Click on this to previ
 
 ### Committing changes
 
-Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Angular Commits Convention](https://www.conventionalcommits.org/en/v1.0.0-beta.4/#summary) for commit messages. This allows automatic creation of the Changelogs, and automatic determination of what the next version will be. All commits should follow the below structure:
+Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This allows automatic creation of the Changelogs, and automatic determination of what the next version will be. All commits should follow the below structure:
 ```
 <type>: <description>
 

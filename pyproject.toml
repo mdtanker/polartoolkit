@@ -239,7 +239,7 @@ build_command = """
     python -m pip install build
     python -m build .
 """
-commit_parser = "angular"
+commit_parser = "conventional"
 
 [tool.semantic_release.branches.main]
 match = "main"
