@@ -240,7 +240,7 @@ def test_resample_grid(test_input, expected):
 
 # %% ice_vel
 @pytest.mark.fetch
-@pytest.mark.slow
+
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -260,7 +260,6 @@ def test_ice_vel_lowres():
 
 
 @pytest.mark.fetch
-@pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -302,7 +301,6 @@ def test_ice_vel_highres():
 
 
 @pytest.mark.fetch
-@pytest.mark.slow
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -366,8 +364,6 @@ def test_modis_mog():
 
 
 @pytest.mark.fetch
-@pytest.mark.slow
-@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_imagery():
     grid = fetch.imagery()
@@ -563,7 +559,6 @@ ibcso_test = [
 
 
 @pytest.mark.fetch
-@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), ibcso_test)
 def test_ibcso(test_input, expected):
@@ -699,6 +694,7 @@ bedmachine_test = [
 @pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected", "hemisphere"), bedmachine_test)
 def test_bedmachine(test_input, expected, hemisphere):
@@ -756,6 +752,7 @@ def test_bedmachine_reference_south():
 @pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmachine_reference_north():
     # fetch variations of grids and reference models
@@ -1181,7 +1178,6 @@ mass_change_test = [
 
 
 @pytest.mark.fetch
-@pytest.mark.issue
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), mass_change_test)
 def test_mass_change(test_input, expected):
@@ -1213,7 +1209,7 @@ basal_melt_test = [
 
 @pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
 @pytest.mark.fetch
-@pytest.mark.issue
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
