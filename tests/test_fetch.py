@@ -480,8 +480,8 @@ def test_ibcso_coverage():
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
                 "RossSea_seismic_usedbyTinto2019_PS65.xyz",
             ],
-            "dataset_tid": np.array([12, 12, 12, 12]).astype("int32"),
-            "weight": np.array([10, 10, 10, 10]).astype("int32"),
+            "dataset_tid": np.array([12, 12, 12, 12]).astype("int64"),
+            "weight": np.array([10, 10, 10, 10]).astype("int64"),
             "easting": [-242248.738888, -306281.045379, -331166.112422, -245655.331481],
             "northing": [
                 -806606.217740,
@@ -938,22 +938,18 @@ def test_bedmap_points():
         region=regions.minna_bluff,
     )
     expected = [
-        np.nan,
         166.26541073215904,
         -78.3583361446912,
         102.86136846208544,
         280.40327021647704,
         -54.59116960358044,
-        np.nan,
         828.8807757122288,
-        np.nan,
         300618.8269781072,
         -1232077.35794502,
     ]
     assert df.describe().iloc[1].tolist() == pytest.approx(
         expected,
         rel=0.1,
-        nan_ok=True,
     )
 
 
