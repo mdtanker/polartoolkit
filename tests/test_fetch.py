@@ -240,7 +240,6 @@ def test_resample_grid(test_input, expected):
 
 # %% ice_vel
 @pytest.mark.fetch
-
 @pytest.mark.earthdata
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
