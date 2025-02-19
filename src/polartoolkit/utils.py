@@ -1083,7 +1083,7 @@ def mask_from_shp(
 
 @deprecation.deprecated(
     deprecated_in="0.4.0",
-    removed_in="0.8.0",
+    removed_in="1.0.0",
     current_version=polartoolkit.__version__,
     details="alter_region has been moved to the regions module, use that instead",
 )
