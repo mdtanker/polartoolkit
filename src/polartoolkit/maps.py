@@ -279,6 +279,8 @@ def basemap(
         fill color of points, by default is 'black'.
     points_pen : str
         pen color and width of points, by default is '1p,black'.
+    points_label : str
+        label to add to legend, by default is None
     points_cmap : str
         GMT color scale to use for coloring points, by default 'viridis'. If True, will
         use the last used in PyGMT.
@@ -309,6 +311,8 @@ def basemap(
         choose to not plot coastlines, just grounding lines, by default is False
     coast_version : str
         version of coastlines to plot, by default depends on the hemisphere
+    coast_label : str
+        label to add to coastlines, by default is None
     fault_label : str
         label to add to faults, by default is None
     fault_pen : str
@@ -428,6 +432,7 @@ def basemap(
             pen=kwargs.get("coast_pen"),
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version"),
+            label=kwargs.get("coast_label", None),
         )
 
     # plot faults
@@ -483,6 +488,7 @@ def basemap(
             style=kwargs.get("points_style", "c.2c"),
             fill=points_fill,
             pen=kwargs.get("points_pen", "1p,black"),
+            label=kwargs.get("points_label", None),
             cmap=cmap,
         )
         # display colorbar
@@ -997,6 +1003,8 @@ def plot_grd(
         fill color of points, by default is 'black'.
     points_pen : str
         pen color and width of points, by default is '1p,black'.
+    points_label : str
+        label to add to legend, by default is None
     points_cmap : str
         colormap to use for points, by default is None.
     scale_font_color : str
@@ -1012,6 +1020,8 @@ def plot_grd(
         choose to not plot coastlines, just grounding lines, by default is False
     coast_version : str
         version of coastlines to plot, by default depends on the hemisphere
+    coast_label : str
+        label to add to coastlines, by default is None
     fault_label : str
         label to add to faults, by default is None
     fault_pen : str
@@ -1169,6 +1179,7 @@ def plot_grd(
             fill=kwargs.get("points_fill", "black"),
             pen=kwargs.get("points_pen", "1p,black"),
             cmap=kwargs.get("points_cmap"),
+            label=kwargs.get("points_label"),
         )
 
     # add box showing region
@@ -1189,6 +1200,7 @@ def plot_grd(
             pen=kwargs.get("coast_pen"),
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version"),
+            label=kwargs.get("coast_label"),
         )
 
     # plot faults
@@ -1582,6 +1594,7 @@ def add_coast(
     no_coast: bool = False,
     pen: str | None = None,
     version: str | None = None,
+    label: str | None = None,
 ) -> None:
     """
     add coastline and or groundingline to figure.
@@ -1603,6 +1616,8 @@ def add_coast(
     version : str, optional
         version of groundingline to plot, by default is BAS for north hemisphere and
         Depoorter-2013 for south hemisphere
+    label : str, optional
+        label to add to the legend, by default is None
     """
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
@@ -1650,6 +1665,7 @@ def add_coast(
         projection=projection,
         region=region,
         pen=pen,
+        label=label,
     )
 
 
