@@ -3,6 +3,9 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## Unreleased
+### 🧰 Chores / Maintenance
+
 
 ## v0.8.1 (2025-02-19)
 ### 🐛 Bug Fixes
