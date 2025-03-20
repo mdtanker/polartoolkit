@@ -369,8 +369,8 @@ def region_to_bounding_box(
 def epsg3031_to_latlon(
     df: pd.DataFrame | tuple[typing.Any],
     reg: bool = False,
-    input_coord_names: tuple[str, str] = ("x", "y"),
-    output_coord_names: tuple[str, str] = ("lon", "lat"),
+    input_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] | None = None,
 ) -> pd.DataFrame | tuple[typing.Any]:
     """
     Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
@@ -382,10 +382,10 @@ def epsg3031_to_latlon(
         input dataframe with easting and northing columns, or tuple [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : tuple, optional
+    input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("x", "y") or
         ("easting", "northing")
-    output_coord_names : tuple, optional
+    output_coord_names : tuple | None, optional
         set names for output coordinate columns, by default ("lon", "lat")
 
     Returns
@@ -408,8 +408,8 @@ def epsg3031_to_latlon(
 def epsg3413_to_latlon(
     df: pd.DataFrame | tuple[typing.Any],
     reg: bool = False,
-    input_coord_names: tuple[str, str] = ("x", "y"),
-    output_coord_names: tuple[str, str] = ("lon", "lat"),
+    input_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] | None = None,
 ) -> pd.DataFrame | tuple[typing.Any]:
     """
     Convert coordinates from EPSG:3413 North Polar Stereographic in meters to
@@ -421,10 +421,10 @@ def epsg3413_to_latlon(
         input dataframe with easting and northing columns, or tuple [x,y]
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : tuple, optional
+    input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("x", "y") or
         ("easting", "northing")
-    output_coord_names : tuple, optional
+    output_coord_names : tuple | None, optional
         set names for output coordinate columns, by default ("lon", "lat")
 
     Returns
@@ -447,8 +447,8 @@ def epsg3413_to_latlon(
 def latlon_to_epsg3031(
     df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
-    input_coord_names: tuple[str, str] = ("lon", "lat"),
-    output_coord_names: tuple[str, str] = ("x", "y"),
+    input_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] | None = None,
 ) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
@@ -460,9 +460,9 @@ def latlon_to_epsg3031(
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : tuple, optional
+    input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("lon", "lat")
-    output_coord_names : tuple, optional
+    output_coord_names : tuple | None, optional
         set names for output coordinate columns, by default ("x", "y")
 
     Returns
@@ -485,8 +485,8 @@ def latlon_to_epsg3031(
 def latlon_to_epsg3413(
     df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
-    input_coord_names: tuple[str, str] = ("lon", "lat"),
-    output_coord_names: tuple[str, str] = ("x", "y"),
+    input_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] | None = None,
 ) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3413 North Polar
@@ -498,9 +498,9 @@ def latlon_to_epsg3413(
         input dataframe with latitude and longitude columns
     reg : bool, optional
         if true, returns a GMT formatted region string, by default False
-    input_coord_names : tuple, optional
+    input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("lon", "lat")
-    output_coord_names : tuple, optional
+    output_coord_names : tuple | None, optional
         set names for output coordinate columns, by default ("x", "y")
 
     Returns
