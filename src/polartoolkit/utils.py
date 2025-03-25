@@ -797,6 +797,9 @@ def filter_grid(
     filter_width: float | None = None,
     filt_type: str = "lowpass",
     pad_width_factor: int = 3,
+    pad_mode: str = "linear_ramp",
+    pad_constant: float | None = None,
+    pad_end_values: float | None = None,
 ) -> xr.DataArray:
     """
     Apply a spatial filter to a grid.
@@ -805,13 +808,20 @@ def filter_grid(
     ----------
     grid : xarray.DataArray
         grid to filter the values of
-    filter_width : float, optional
-        width of the filter in meters, by default None
+    filt_type : str, optional
+        type of filter to use from 'lowpass', 'highpass' 'up_deriv', 'easting_deriv',
+        'northing_deriv', or 'total_gradient' by default "lowpass"
     filt_type : str, optional
         type of filter to use, by default "lowpass"
     pad_width_factor : int, optional
         factor of grid width to pad the grid by, by default 3, which equates to a pad
         with a width of 1/3 of the grid width.
+    pad_mode : str, optional
+        mode of padding, can be "linear", by default "linear_ramp"
+    pad_constant : float | None, optional
+        constant value to use for padding, by default None
+    pad_end_values : float | None, optional
+        value to use for end of padding if pad_mode is "linear_ramp", by default None
 
     Returns
     -------
@@ -845,8 +855,32 @@ def filter_grid(
         original_dims[1]: grid[original_dims[1]].size // pad_width_factor,
         original_dims[0]: grid[original_dims[0]].size // pad_width_factor,
     }
+
+    if pad_mode == "constant":
+        if pad_constant is None:
+            pad_constant = filled.median()
+        pad_end_values = None
+
+    if (pad_mode == "linear_ramp") and (pad_end_values is None):
+        pad_end_values = filled.median()
+
+    if pad_mode != "constant":
+        pad_constant = (
+            None  # needed until https://github.com/xgcm/xrft/issues/211 is fixed
+        )
+
     # apply padding
-    padded = xrft.pad(filled, pad_width)
+    pad_kwargs = {
+        **pad_width,
+        "mode": pad_mode,
+        "constant_values": pad_constant,
+        "end_values": pad_end_values,
+    }
+
+    padded = xrft.pad(
+        filled,
+        **pad_kwargs,
+    )
 
     if filt_type == "lowpass":
         filt = hm.gaussian_lowpass(padded, wavelength=filter_width).rename("filt")
@@ -858,8 +892,13 @@ def filter_grid(
         filt = hm.derivative_easting(padded).rename("filt")
     elif filt_type == "northing_deriv":
         filt = hm.derivative_northing(padded).rename("filt")
+    elif filt_type == "total_gradient":
+        filt = hm.total_gradient_amplitude(padded).rename("filt")
     else:
-        msg = "filt_type must be 'lowpass' or 'highpass'"
+        msg = (
+            "filt_type must be 'lowpass', 'highpass' 'up_deriv', 'easting_deriv', "
+            "'northing_deriv', or 'total_gradient'"
+        )
         raise ValueError(msg)
 
     unpadded = xrft.unpad(filt, pad_width)
