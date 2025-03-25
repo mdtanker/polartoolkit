@@ -290,8 +290,10 @@ def basemap(
         region to use to define color scale limits, in format [xmin, xmax, ymin, ymax],
         by default is region
     robust : bool
-        use the 2nd and 98th percentile of the data to set color scale limits, by
-        default is False.
+        use the 2nd and 98th percentile (or those specified with 'robust_percentiles')
+        of the data to set color scale limits, by default is False.
+    robust_percentiles : tuple[float, float]
+        percentiles to use for robust colormap limits, by default is (0.02, 0.98).
     reverse_cpt : bool
         reverse the color scale, by default is False.
     cbar_label : str
@@ -589,6 +591,7 @@ def set_cmap(
     cpt_lims: tuple[float, float] | None = None,
     cmap_region: tuple[float, float, float, float] | None = None,
     robust: bool = False,
+    robust_percentiles: tuple[float, float] = (0.02, 0.98),
     reverse_cpt: bool = False,
     shp_mask: gpd.GeoDataFrame | str | None = None,
     hemisphere: str | None = None,
@@ -620,6 +623,8 @@ def set_cmap(
     robust : bool, optional
         use the 2nd and 98th percentile of the data from the grid or points, by default
         False
+    robust_percentiles : tuple[float, float], optional
+        percentiles to use for robust colormap limits, by default (0.02, 0.98)
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
     shp_mask : geopandas.GeoDataFrame | str | None, optional
@@ -704,6 +709,7 @@ def set_cmap(
                 region=cmap_region,
                 robust=robust,
                 hemisphere=hemisphere,
+                robust_percentiles=robust_percentiles,
             )
         elif cpt_lims is None and isinstance(grid, (str)):
             with xr.load_dataarray(grid) as da:
@@ -713,6 +719,7 @@ def set_cmap(
                     region=cmap_region,
                     robust=robust,
                     hemisphere=hemisphere,
+                    robust_percentiles=robust_percentiles,
                 )
         else:
             if cpt_lims is None:
@@ -822,6 +829,7 @@ def set_cmap(
                 region=cmap_region,
                 robust=robust,
                 hemisphere=hemisphere,
+                robust_percentiles=robust_percentiles,
             )
             pygmt.makecpt(
                 cmap=cmap,
@@ -971,8 +979,10 @@ def plot_grd(
         region to use to define color scale limits, in format [xmin, xmax, ymin, ymax],
         by default is region
     robust : bool
-        use the 2nd and 98th percentile of the data to set color scale limits, by
-        default is False.
+        use the 2nd and 98th percentile (or those specified with 'robust_percentiles')
+        of the data to set color scale limits, by default is False.
+    robust_percentiles : tuple[float, float]
+        percentiles to use for robust colormap limits, by default is (0.02, 0.98).
     reverse_cpt : bool
         reverse the color scale, by default is False.
     shp_mask : geopandas.GeoDataFrame | str
@@ -1484,6 +1494,7 @@ def add_colorbar(
                 region=kwargs.get("cmap_region"),
                 robust=kwargs.get("robust", False),
                 hemisphere=kwargs.get("hemisphere"),
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             )
         else:
             zmin, zmax = cpt_lims

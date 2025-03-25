@@ -1519,12 +1519,14 @@ def grd_compare(
             shp_mask,
             robust=robust,
             hemisphere=kwargs.get("hemisphere"),
+            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
         )
         grid2_cpt_lims = get_min_max(
             grid2,
             shp_mask,
             robust=robust,
             hemisphere=kwargs.get("hemisphere"),
+            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
         )
         # get min and max of both grids together
         vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
@@ -1537,6 +1539,7 @@ def grd_compare(
             dif,
             shp_mask,
             robust=robust,
+            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             hemisphere=kwargs.get("hemisphere"),
             absolute=kwargs.get("diff_maxabs", True),
         )
