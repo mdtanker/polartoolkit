@@ -1352,6 +1352,8 @@ def add_colorbar(
         default None
     cbar_frame : list[str] | str, optional
         frame for the colorbar, by default None
+    **kwargs : typing.Any
+        additional keyword arguments to pass
     """
     # get the current figure width
     fig_width = utils.get_fig_width()
@@ -2317,7 +2319,8 @@ def interactive_map(
     show : bool, optional
         choose whether to display the map, by default True
     points : pandas.DataFrame, optional
-        choose to plot points supplied as columns x, y, in EPSG:3031 in a dataframe
+        choose to plot points supplied as columns 'x', 'y', or 'easting', 'northing', in
+        EPSG:3031 in a dataframe
     basemap_type : str, optional
         choose what basemap to plot, options are 'BlueMarble', 'Imagery', 'Basemap', and
         "IceVelocity", by default 'BlueMarble'
@@ -2521,7 +2524,7 @@ def subplots(
 
     kwargs = copy.deepcopy(kwargs)
 
-    # if no define region, get from first grid in list
+    # if no defined region, get from first grid in list
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
