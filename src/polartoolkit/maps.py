@@ -1334,6 +1334,7 @@ def add_colorbar(
     hist: bool = False,
     cpt_lims: tuple[float, float] | None = None,
     cbar_frame: list[str] | str | None = None,
+    verbose: str = "w",
     **kwargs: typing.Any,
 ) -> None:
     """
@@ -1352,6 +1353,8 @@ def add_colorbar(
         default None
     cbar_frame : list[str] | str, optional
         frame for the colorbar, by default None
+    verbose : str, optional
+        verbosity level for pygmt, by default "w" for warnings
     **kwargs : typing.Any
         additional keyword arguments to pass
     """
@@ -1393,6 +1396,7 @@ def add_colorbar(
             frame=cbar_frame,
             scale=kwargs.get("cbar_scale", 1),
             log=kwargs.get("cbar_log"),
+            verbose=verbose,
         )
 
     # add histogram to colorbar
@@ -1585,6 +1589,7 @@ def add_colorbar(
                 stairs=kwargs.get("hist_stairs", False),
                 series=f"{zmin}/{zmax}/{bin_width}",
                 histtype=hist_type,
+                verbose=verbose,
             )
         except pygmt.exceptions.GMTCLibError as e:
             logger.warning(e)
@@ -2272,6 +2277,7 @@ def add_box(
     fig: pygmt.Figure,
     box: tuple[float, float, float, float],
     pen: str = "2p,black",
+    verbose: str = "w",
 ) -> None:
     """
     Plot a GMT region as a box.
@@ -2284,11 +2290,14 @@ def add_box(
         region in EPSG3031 in format [xmin, xmax, ymin, ymax] in meters
     pen : str, optional
         GMT pen string used for the box, by default "2p,black"
+    verbose : str, optional
+        verbosity level for pygmt, by default "w" for warnings
     """
     fig.plot(
         x=[box[0], box[0], box[1], box[1], box[0]],
         y=[box[2], box[3], box[3], box[2], box[2]],
         pen=pen,
+        verbose=verbose,
     )
 
 
