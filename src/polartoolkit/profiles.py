@@ -544,10 +544,14 @@ def plot_profile(
         Change vertical white space within cross-section (0-1), by default is 0.1.
     data_buffer: float
         Change vertical white space within data graph (0-1), by default is 0.1.
-    legend_loc: str
+    layers_legend_loc: str
         Change the legend location with a GMT position string, by default is
-        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
-        Right corner of the plot, with 0 offset.
+        "JBR+jBL+o0c".
+    data_legend_loc: str
+        Change the legend location with a GMT position string, by default is
+        "JBR+jBL+o0c".
+    layers_legend_columns: int
+        Change the number of columns in the legend, by default is 1.
     inset : bool
         choose to plot inset map showing figure location, by default is True
     inset_pos : str
@@ -918,13 +922,18 @@ def plot_profile(
                         style = ""
                     pen = f"{thick[i]}p,{color},{style}"
 
+                if i == 0:
+                    label = f"{v["name"]}+N{kwargs.get("layers_legend_columns",1)}"
+                else:
+                    label = v["name"]
+
                 fig.plot(
                     x=df_layers.dist,
                     y=df_layers[k],
                     # pen = f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,{v['color']}", # noqa: E501
                     pen=pen,
                     frame=kwargs.get("layers_frame", ["nSew", "a"]),
-                    label=v["name"],
+                    label=label,
                 )
             else:
                 pygmt.makecpt(
@@ -1230,10 +1239,9 @@ def plot_data(
         0.3.
     data_buffer: float
         Change vertical white space within data graph (0-1), by default is 0.1.
-    legend_loc: str
+    data_legend_loc: str
         Change the legend location with a GMT position string, by default is
-        "JBR+jBL+o0c" which puts the Bottom Left corner of the legend in the Bottom
-        Right corner of the plot, with 0 offset.
+        "JBR+jBL+o0c".
     inset : bool
         choose to plot inset map showing figure location, by default is True
     inset_pos : str
