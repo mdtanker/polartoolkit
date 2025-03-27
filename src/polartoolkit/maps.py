@@ -302,8 +302,11 @@ def basemap(
         choose to add a colorbar for the points to the plot, by default is False.
     scale_font_color : str
         color of the scalebar font, by default is 'black'.
+    scalebar_length_perc : float
+        percentage of the min dimension of the figure region to use for the scalebar,
+        by default is 0.25.
     scale_length_perc : float
-        percentage of the figure width to use for the scalebar, by default is 0.25.
+        deprecated, use scalebar_length_perc.
     scale_position : str
         position of the scalebar on the figure, by default is 'n.5/.05' which is bottom
         center of the plot.
@@ -539,12 +542,19 @@ def basemap(
             msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
             raise ValueError(msg)
 
+        scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
+        if kwargs.get("scale_length_perc", None) is not None:
+            msg = (
+                "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
+            )
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
         add_scalebar(
             fig=fig,
             region=region,
             projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
-            length_perc=kwargs.get("scale_length_perc", 0.25),
+            length_perc=scalebar_length_perc,
             position=kwargs.get("scale_position", "n.5/.05"),
             **kwargs,
         )
@@ -1019,8 +1029,11 @@ def plot_grd(
         colormap to use for points, by default is None.
     scale_font_color : str
         color of the scalebar font, by default is 'black'.
+    scalebar_length_perc : float
+        percentage of the min dimension of the figure region to use for the scalebar,
+        by default is 0.25.
     scale_length_perc : float
-        percentage of the figure width to use for the scalebar, by default is 0.25.
+        deprecated, use scalebar_length_perc.
     scale_position : str
         position of the scalebar on the figure, by default is 'n.5/.05' which is bottom
         center of the plot.
@@ -1265,12 +1278,21 @@ def plot_grd(
             msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
             raise ValueError(msg)
 
+        scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
+        if kwargs.get("scale_length_perc") is not None:
+            msg = (
+                "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
+            )
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            logger.warning(msg)
+            scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
+
         add_scalebar(
             fig=fig,
             region=region,
             projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
-            length_perc=kwargs.get("scale_length_perc", 0.25),
+            length_perc=scalebar_length_perc,
             position=kwargs.get("scale_position", "n.5/.05"),
             **kwargs,
         )
@@ -2195,7 +2217,7 @@ def add_scalebar(
 
     """
     font_color = kwargs.get("font_color", "black")
-    scale_length = kwargs.get("scale_length")
+    length = kwargs.get("length")
     length_perc = kwargs.get("length_perc", 0.25)
     position = kwargs.get("position", "n.5/.05")
 
@@ -2205,14 +2227,12 @@ def add_scalebar(
             region = tuple(lib.extract_region())
             assert len(region) == 4
 
-    region_converted = (*region, "+ue")  # codespell:ignore ue
-
     def round_to_1(x: float) -> float:
         return round(x, -int(floor(log10(abs(x)))))
 
-    if scale_length is None:
-        scale_length = typing.cast(float, scale_length)
-        scale_length = round_to_1((abs(region[1] - region[0])) / 1000 * length_perc)
+    region_converted = (*region, "+ue")  # codespell:ignore ue
+
+    if length is None:
 
     with pygmt.config(
         FONT_ANNOT_PRIMARY=f"10p,{font_color}",
@@ -2223,8 +2243,7 @@ def add_scalebar(
         fig.basemap(
             region=region_converted,
             projection=projection,
-            map_scale=f"{position}+w{scale_length}k+f+lkm+ar",
-            # verbose="e",
+            map_scale=f"{position}+w{length}k+f+lkm+ar",
             box=kwargs.get("scalebar_box", "+gwhite"),
         )
 
