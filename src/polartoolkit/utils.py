@@ -1373,7 +1373,7 @@ def get_combined_min_max(
 def grd_compare(
     da1: xr.DataArray | str,
     da2: xr.DataArray | str,
-    plot: bool = False,
+    plot: bool = True,
     plot_type: typing.Any | None = None,
     robust: bool = False,
     **kwargs: typing.Any,
@@ -1389,7 +1389,7 @@ def grd_compare(
     da2 : xarray.DataArray or str
         second grid, loaded grid of filename
     plot : bool, optional
-        plot the results, by default False
+        plot the results, by default True
     plot_type : typing.Any or None, optional
         this argument has been deprecated and will default to 'pygmt'
     robust : bool, optional
@@ -1606,8 +1606,7 @@ def grd_compare(
             cpt_lims=diff_lims,
             fig=fig,
             title=title,
-            inset=kwargs.get("inset", True),
-            inset_pos=kwargs.get("inset_pos", "TL"),
+            inset=kwargs.get("inset", False),
             fig_height=fig_height,
             **diff_kwargs,
         )
