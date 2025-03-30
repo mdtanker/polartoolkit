@@ -393,8 +393,48 @@ def basemap(
             msg = "Region must be specified if hemisphere is not specified."
             raise ValueError(msg)
     logger.debug("using %s for the basemap region", region)
+
+    # need fig width to determine real x/y shift amounts
+    _, _, _, fig_width, _ = _set_figure_spec(
+        region=region,
+        origin_shift="initialize",
+        fig_height=kwargs.get("fig_height"),
+        fig_width=kwargs.get("fig_width"),
+        hemisphere=hemisphere,
+    )
+
+    # need to determine if colorbar will be plotted for setting y shift
+    # only colorbar if points, and points_fill is a pd.Series
+    # not a string indicating a constant color
+    if points is None:
+        colorbar = False
     else:
-        yshift_amount = kwargs.get("yshift_amount", -1)
+        points_fill = kwargs.get("points_fill", "black")
+        if points_fill in points.columns:
+            colorbar = kwargs.get("colorbar", True)
+        else:
+            colorbar = False
+
+    # if currently plotting colorbar, or histogram, assume the past plot did as well and
+    # account for it in the y shift
+    yshift_extra = kwargs.get("yshift_extra", 0.4)
+    if colorbar is True:
+        # for thickness of cbar
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        if kwargs.get("hist"):
+            # for histogram thickness
+            yshift_extra += kwargs.get("cbar_hist_height", 1.5)
+            # for gap between cbar and map above and below
+            yshift_extra += kwargs.get("cbar_yoffset", 0.2)
+        else:
+            # for gap between cbar and map above and below
+            yshift_extra += kwargs.get("cbar_yoffset", 0.4)
+        # for cbar label text
+        if kwargs.get("cbar_label"):
+            yshift_extra += 1
+    if title is not None:
+        # for title text
+        yshift_extra += 1
 
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
@@ -1240,6 +1280,43 @@ def plot_grd(
 
     region = typing.cast(tuple[float, float, float, float], region)
     logger.debug("using %s for the basemap region", region)
+
+    # need fig width to determine real x/y shift amounts
+    _, _, _, fig_width, _ = _set_figure_spec(
+        region=region,
+        origin_shift="initialize",
+        fig_height=kwargs.get("fig_height"),
+        fig_width=kwargs.get("fig_width"),
+        hemisphere=hemisphere,
+    )
+
+    _, colorbar, _ = set_cmap(
+        cmap,
+        grid=grid,
+        hemisphere=hemisphere,
+        **kwargs,
+    )
+
+    # if currently plotting colorbar, or histogram, assume the past plot did as well and
+    # account for it in the y shift
+    yshift_extra = kwargs.get("yshift_extra", 0.4)
+    if colorbar is True:
+        # for thickness of cbar
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        if kwargs.get("hist"):
+            # for histogram thickness
+            yshift_extra += kwargs.get("cbar_hist_height", 1.5)
+            # for gap between cbar and map above and below
+            yshift_extra += kwargs.get("cbar_yoffset", 0.2)
+        else:
+            # for gap between cbar and map above and below
+            yshift_extra += kwargs.get("cbar_yoffset", 0.4)
+        # for cbar label text
+        if kwargs.get("cbar_label"):
+            yshift_extra += 1
+    if title is not None:
+        # for title text
+        yshift_extra += 1
 
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
