@@ -1529,7 +1529,6 @@ def plot_grd(
             if key
             not in [
                 "cpt_lims",
-                "fig_width",
                 "grid",
                 "fig",
             ]
@@ -1540,7 +1539,6 @@ def plot_grd(
                 hist_cmap=cmap,
                 grid=grid,
                 cpt_lims=cpt_lims,
-                fig_width=fig_width,
                 region=region,
                 **cbar_kwargs,
             )
