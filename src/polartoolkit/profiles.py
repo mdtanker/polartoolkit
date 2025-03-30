@@ -554,8 +554,8 @@ def plot_profile(
         Change the number of columns in the legend, by default is 1.
     inset : bool
         choose to plot inset map showing figure location, by default is True
-    inset_pos : str
-        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    inset_position : str
+        position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
     save: bool
         Choose to save the image, by default is False.
     path: str
@@ -1177,7 +1177,8 @@ def plot_profile(
                 fig,
                 hemisphere=hemisphere,
                 region=map_reg,
-                inset_pos=kwargs.get("inset_pos", "TL"),
+                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+                inset_pos=kwargs.get("inset_pos"),
                 inset_width=kwargs.get("inset_width", 0.25),
                 inset_reg=kwargs.get("inset_reg"),
             )
@@ -1244,8 +1245,8 @@ def plot_data(
         "JBR+jBL+o0c".
     inset : bool
         choose to plot inset map showing figure location, by default is True
-    inset_pos : str
-        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    inset_position : str
+        position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
     save: bool
         Choose to save the image, by default is False.
     path: str
@@ -1598,7 +1599,8 @@ def plot_data(
                 fig,
                 hemisphere=hemisphere,
                 region=map_reg,
-                inset_pos=kwargs.get("inset_pos", "TL"),
+                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+                inset_pos=kwargs.get("inset_pos"),
                 inset_width=kwargs.get("inset_width", 0.25),
                 inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
             )
