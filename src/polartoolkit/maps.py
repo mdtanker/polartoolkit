@@ -276,9 +276,11 @@ def basemap(
     points_style : str
         style of points to plot in GMT format, by default is 'c.2c'.
     points_fill : str
-        fill color of points, by default is 'black'.
+        fill color of points, either string of color name or column name to color
+        points by, by default is 'black'.
     points_pen : str
-        pen color and width of points, by default is '1p,black'.
+        pen color and width of points, by default is '1p,black' if constant color or
+        None if using a cmap.
     points_label : str
         label to add to legend, by default is None
     points_cmap : str
@@ -479,6 +481,13 @@ def basemap(
     # add datapoints
     if points is not None:
         logger.debug("adding points")
+
+        # subset points to plot region
+        points = points.copy()
+        points = utils.points_inside_region(
+            points,
+            region=region,
+        )
         if ("x" in points.columns) and ("y" in points.columns):
             x_col, y_col = "x", "y"
         elif ("easting" in points.columns) and ("northing" in points.columns):
@@ -486,31 +495,34 @@ def basemap(
         else:
             msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
             raise ValueError(msg)
-        # define cmap for points
-        points_fill = kwargs.get("points_fill", "black")
-        cmap = kwargs.pop("points_cmap", "viridis")
-        if isinstance(points_fill, str):
-            colorbar = False
-            cmap = None
-            cpt_lims = None
-        else:
-            cmap, cbar, cpt_lims = set_cmap(
-                cmap,
-                points=points_fill,
+        # plot points
+        if points_fill in points.columns:
+            cmap, _, cpt_lims = set_cmap(
+                kwargs.get("points_cmap", "viridis"),
+                points=points[points_fill],
                 hemisphere=hemisphere,
                 **kwargs,
             )
-            colorbar = kwargs.get("colorbar", cbar)
-        # plot points
-        fig.plot(
-            x=points[x_col],
-            y=points[y_col],
-            style=kwargs.get("points_style", "c.2c"),
-            fill=points_fill,
-            pen=kwargs.get("points_pen", "1p,black"),
-            label=kwargs.get("points_label", None),
-            cmap=cmap,
-        )
+            fig.plot(
+                x=points[x_col],
+                y=points[y_col],
+                style=kwargs.get("points_style", "c.2c"),
+                fill=points[points_fill],
+                pen=kwargs.get("points_pen"),
+                label=kwargs.get("points_label"),
+                cmap=cmap,
+            )
+        else:
+            fig.plot(
+                x=points[x_col],
+                y=points[y_col],
+                style=kwargs.get("points_style", "c.2c"),
+                fill=points_fill,
+                pen=kwargs.get("points_pen", "1p,black"),
+                label=kwargs.get("points_label"),
+            )
+            colorbar = False
+
         # display colorbar
         if colorbar is True:
             # removed duplicate kwargs before passing to add_colorbar
@@ -524,16 +536,25 @@ def basemap(
                     "fig",
                 ]
             }
-            add_colorbar(
-                fig,
-                hist_cmap=cmap,
-                grid=points[[x_col, y_col, points_fill.name]],
-                cpt_lims=cpt_lims,
-                fig_width=fig_width,
-                region=region,
-                **cbar_kwargs,
-            )
-
+            logger.debug("kwargs passed to 'add_colorbar': %s", cbar_kwargs)
+            if cbar_kwargs.get("hist") is True:
+                add_colorbar(
+                    fig,
+                    cmap=cmap,
+                    hist_cmap=cmap,
+                    grid=points[[x_col, y_col, points_fill]],
+                    cpt_lims=cpt_lims,  # pylint: disable=possibly-used-before-assignment
+                    region=region,
+                    **cbar_kwargs,
+                )
+            else:
+                add_colorbar(
+                    fig,
+                    cmap=cmap,
+                    cpt_lims=cpt_lims,
+                    region=region,
+                    **cbar_kwargs,
+                )
     # add inset map to show figure location
     if inset is True:
         # removed duplicate kwargs before passing to add_inset
@@ -1051,9 +1072,11 @@ def plot_grd(
     points_style : str
         style of points to plot in GMT format, by default is 'c.2c'.
     points_fill : str
-        fill color of points, by default is 'black'.
+        fill color of points, either string of color name or column name to color
+        points by, by default is 'black'.
     points_pen : str
-        pen color and width of points, by default is '1p,black'.
+        pen color and width of points, by default is '1p,black' if constant color or
+        None if using a cmap.
     points_label : str
         label to add to legend, by default is None
     points_cmap : str
@@ -1230,22 +1253,44 @@ def plot_grd(
     # add datapoints
     if points is not None:
         logger.debug("adding points")
+
+        # subset points to plot region
+        points = points.copy()
+        points = utils.points_inside_region(
+            points,
+            region=region,
+        )
         if ("x" in points.columns) and ("y" in points.columns):
-            x, y = points.x, points.y
+            x_col, y_col = "x", "y"
         elif ("easting" in points.columns) and ("northing" in points.columns):
-            x, y = points.easting, points.northing
+            x_col, y_col = "easting", "northing"
         else:
             msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
             raise ValueError(msg)
-        fig.plot(
-            x=x,
-            y=y,
-            style=kwargs.get("points_style", "c.2c"),
-            fill=kwargs.get("points_fill", "black"),
-            pen=kwargs.get("points_pen", "1p,black"),
-            cmap=kwargs.get("points_cmap"),
-            label=kwargs.get("points_label"),
-        )
+        if kwargs.get("points_cmap") is not None:
+            msg = "`points_cmap` is ignored since grid's cmap is being used."
+            logger.warning(msg)
+        # plot points
+        points_fill = kwargs.get("points_fill", "black")
+        if points_fill in points.columns:
+            fig.plot(
+                x=points[x_col],
+                y=points[y_col],
+                style=kwargs.get("points_style", "c.2c"),
+                fill=points[points_fill],
+                pen=kwargs.get("points_pen"),
+                label=kwargs.get("points_label"),
+                cmap=cmap,
+            )
+        else:
+            fig.plot(
+                x=points[x_col],
+                y=points[y_col],
+                style=kwargs.get("points_style", "c.2c"),
+                fill=points_fill,
+                pen=kwargs.get("points_pen", "1p,black"),
+                label=kwargs.get("points_label"),
+            )
 
     # add box showing region
     if show_region is not None:
