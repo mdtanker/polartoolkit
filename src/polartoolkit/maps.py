@@ -1378,7 +1378,6 @@ def plot_grd(
         if kwargs.get("scale_font_color") is not None:
             msg = "`scale_font_color` is deprecated, use `scalebar_font_color` instead."
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
-            logger.warning(msg)
             scalebar_font_color = kwargs.get("scale_font_color", "black")
 
         if kwargs.get("scale_length_perc") is not None:
@@ -1386,13 +1385,11 @@ def plot_grd(
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
             )
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
-            logger.warning(msg)
             scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
 
         if kwargs.get("scale_position") is not None:
             msg = "`scale_position` is deprecated, use `scalebar_position` instead."
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
-            logger.warning(msg)
             scalebar_position = kwargs.get("scale_position", "n.5/.05")
 
         add_scalebar(
@@ -2251,7 +2248,6 @@ def add_inset(
         inset_position = kwargs.get("inset_pos")  # type: ignore[assignment]
         msg = "inset_pos is deprecated, use inset_position instead"
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        logger.warning(msg)
     if kwargs.get("inset_offset") is not None:
         inset_position = inset_position + f"+o{kwargs.get('inset_offset')}"
         msg = (
@@ -2259,7 +2255,6 @@ def add_inset(
             "instead"
         )
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        logger.warning(msg)
 
     fig_width = utils.get_fig_width()
     fig_height = utils.get_fig_height()
