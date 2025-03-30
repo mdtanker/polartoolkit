@@ -207,7 +207,7 @@ def basemap(
         choose whether to plot coastline and grounding line, by default False. Version
         of shapefiles to plots depends on `hemisphere`, and can be changed with kwargs
         `coast_version`, which defaults to `BAS` for the northern hemisphere and
-        `depoorter-2013` for the southern.
+        `measures-v2` for the southern.
     north_arrow : bool, optional
         choose to add a north arrow to the plot, by default is False.
     scalebar : bool, optional
@@ -949,7 +949,7 @@ def plot_grd(
         choose whether to plot coastline and grounding line, by default False. Version
         of shapefiles to plots depends on `hemisphere`, and can be changed with kwargs
         `coast_version`, which defaults to `BAS` for the northern hemisphere and
-        `depoorter-2013` for the southern.
+        `measures-v2` for the southern.
     north_arrow : bool, optional
         choose to add a north arrow to the plot, by default is False.
     scalebar : bool, optional
@@ -1645,7 +1645,6 @@ def add_colorbar(
 
         # plot histograms above colorbar
         try:
-            logger.debug("plotting hist")
             logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
@@ -1708,8 +1707,8 @@ def add_coast(
     pen : None
         GMT pen string, by default "0.6p,black"
     version : str, optional
-        version of groundingline to plot, by default is BAS for north hemisphere and
-        Depoorter-2013 for south hemisphere
+        version of groundingline to plot, by default is 'BAS' for north hemisphere and
+        'measures-v2' for south hemisphere
     label : str, optional
         label to add to the legend, by default is None
     """
@@ -1725,7 +1724,7 @@ def add_coast(
         if hemisphere == "north":
             version = "BAS"
         elif hemisphere == "south":
-            version = "depoorter-2013"
+            version = "measures-v2"
         elif hemisphere is None:
             msg = "if version is not provided, must provide hemisphere"
             raise ValueError(msg)
@@ -2074,7 +2073,7 @@ def add_simple_basemap(
         hemisphere to get coastline data for, by default None
     version : str | None, optional
         which version of shapefiles to use for grounding line / coastline, by default
-        None
+        "measures-v2" for southern hemisphere and "BAS" for northern hemisphere
     transparency : int, optional
         transparency of all the plotted elements, by default 0
     pen : str, optional
@@ -2199,6 +2198,7 @@ def add_inset(
         logger.warning(msg)
 
     fig_width = utils.get_fig_width()
+    fig_height = utils.get_fig_height()
 
     inset_width = inset_width * (min(fig_width, fig_height))
     inset_map = f"X{inset_width}c"
@@ -2250,20 +2250,31 @@ def add_inset(
                 logger.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
             logger.debug("plotting floating ice")
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
-                data=gdf[gdf.Id_text == "Ice shelf"],
+                data=fetch.antarctic_boundaries(version="Coastline"),
                 fill="skyblue",
             )
             logger.debug("plotting grounded ice")
             fig.plot(
-                data=gdf[gdf.Id_text == "Grounded ice or land"],
+                data=fetch.groundingline(version="measures-v2"),
                 fill="grey",
             )
-            logger.debug("plotting coastline ice")
+            logger.debug("plotting coastline")
+            gl = gpd.read_file(
+                fetch.groundingline(version="measures-v2"),
+                engine=ENGINE,
+            )
+            coast = gpd.read_file(
+                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+            )
+            data = pd.concat([gl, coast])
+            fig.plot(
+                data,
+                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+            )
         else:
             msg = "hemisphere must be north or south"
             raise ValueError(msg)
@@ -3121,7 +3132,7 @@ def interactive_data(
         crsys = crs.NorthPolarStereo()
     elif hemisphere == "south":
         coast_gdf = gpd.read_file(
-            fetch.groundingline(version="depoorter-2013"), engine=ENGINE
+            fetch.groundingline(version="measures-v2"), engine=ENGINE
         )
         crsys = crs.SouthPolarStereo()
     else:

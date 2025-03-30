@@ -1133,7 +1133,7 @@ def geomap(
 
 
 def groundingline(
-    version: str = "depoorter-2013",
+    version: str = "measures-v2",
 ) -> str:
     """
     Load the file path of two versions of groundingline shapefiles
@@ -1159,7 +1159,7 @@ def groundingline(
     Parameters
     ----------
     version : str, optional
-        choose which version to retrieve, by default "depoorter-2013"
+        choose which version to retrieve, by default "measures-v2"
 
     Returns
     -------
