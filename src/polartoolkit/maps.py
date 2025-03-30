@@ -626,6 +626,7 @@ def basemap(
         }
         add_inset(
             fig,
+            region=region,
             hemisphere=hemisphere,
             **new_kwargs,
         )
@@ -1459,6 +1460,7 @@ def plot_grd(
         }
         add_inset(
             fig,
+            region=region,
             hemisphere=hemisphere,
             **new_kwargs,
         )
