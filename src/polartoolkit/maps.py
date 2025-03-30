@@ -68,6 +68,8 @@ def _set_figure_spec(
     hemisphere: str | None = None,
     yshift_amount: float = -1,
     xshift_amount: float = 1,
+    xshift_extra: float = 0.4,
+    yshift_extra: float = 0.4,
 ) -> tuple[pygmt.Figure, str, str | None, float, float]:
     """determine what to do with figure"""
 
@@ -146,9 +148,14 @@ def _set_figure_spec(
 
         # determine default values for x and y shift
         # add .4 to account for the space between figures
-        xshift = xshift_amount * (fig_width + 0.4)
+        xshift = xshift_amount * (fig_width + xshift_extra)
+        yshift = yshift_amount * (fig_height + yshift_extra)
+
         # add 3 to account for colorbar and titles
-        yshift = yshift_amount * (fig_height + 3)
+        # colorbar widths are automatically 80% figure width
+        # colorbar heights are 4% of colorbar width
+        # colorbar histograms are automatically 4*colorbar height
+        # yshift = yshift_amount * (fig_height + 0.4)
 
         # shift origin of figure depending on origin_shift
         if origin_shift == "x":
@@ -392,8 +399,10 @@ def basemap(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
+        yshift_amount=kwargs.get("yshift_amount", -1),
+        xshift_extra=kwargs.get("xshift_extra", 0.4),
+        yshift_extra=yshift_extra,
     )
 
     show_region = kwargs.get("show_region")
@@ -1232,8 +1241,10 @@ def plot_grd(
         fig_height=kwargs.get("fig_height"),
         fig_width=kwargs.get("fig_width"),
         hemisphere=hemisphere,
-        yshift_amount=yshift_amount,
         xshift_amount=kwargs.get("xshift_amount", 1),
+        yshift_amount=kwargs.get("yshift_amount", -1),
+        xshift_extra=kwargs.get("xshift_extra", 0.4),
+        yshift_extra=yshift_extra,
     )
 
     show_region = kwargs.get("show_region")
@@ -2817,10 +2828,7 @@ def subplots(
 
     # get amounts to shift each figure (multiples of figure width and height)
     xshift_amount = kwargs.pop("xshift_amount", 1)
-    if kwargs.get("hist", False) is True:
-        yshift_amount = kwargs.pop("yshift_amount", -1.1)
-    else:
-        yshift_amount = kwargs.pop("yshift_amount", -1)
+    yshift_amount = kwargs.pop("yshift_amount", -1)
 
     # extra lists of args for each grid
     cpt_limits = kwargs.pop("cpt_limits", None)
