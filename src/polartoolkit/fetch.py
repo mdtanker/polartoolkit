@@ -3874,6 +3874,7 @@ def ghf(
 
     version='martos-2017'
     From :footcite:t:`martosheat2017` and :footcite:t:`martosantarctic2017`.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.882503
 
     version='shen-2020':
     From :footcite:t:`shengeothermal2020`.
@@ -3889,9 +3890,11 @@ def ghf(
 
     version='losing-ebbing-2021'
     From :footcite:t:`losingpredicting2021` and :footcite:t:`losingpredicted2021`.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.930237
 
     version='aq1'
     From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
+    Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
 
     Parameters
     ----------
@@ -4121,6 +4124,13 @@ def ghf(
                 df["lat"].tolist(),
                 df["lon"].tolist(),
             )
+
+            # retain only points in the region
+            if region is not None:
+                df = utils.points_inside_region(
+                    df,
+                    region,
+                )
 
             resampled = df
 
