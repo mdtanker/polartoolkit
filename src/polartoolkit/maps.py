@@ -267,8 +267,12 @@ def basemap(
     yshift_amount : int or float
         amount to shift the origin in the y direction in multiples of current figure
         instance height, by default is -1.
-    frame : str
-        GMT frame string to use for the basemap, by default is None
+    frame : str | bool
+        GMT frame string to use for the basemap, by default is "nesw+gwhite"
+    frame_pen : str
+        GMT pen string to use for the frame, by default is "auto"
+    frame_font : str
+        GMT font string to use for the frame, by default is "auto"
     transparency : int
         transparency to use for the basemap, by default is 0
     inset_position : str
@@ -393,15 +397,50 @@ def basemap(
     )
 
     show_region = kwargs.get("show_region")
+    frame = kwargs.get("frame", "nesw+gwhite")
+    if frame is None:
+        frame = False
+    if title is None:
+        title = ""
+    # plot basemap with optional colored background (+gwhite) and frame
+    with pygmt.config(
+        MAP_FRAME_PEN=kwargs.get("frame_pen", "auto"),
+        FONT=kwargs.get("frame_font", "auto"),
+    ):
+        if frame is True:
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
+        elif frame is False:
+            pass
+        elif isinstance(frame, list):
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
+        else:
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
 
-    # create blank basemap
-    fig.basemap(
-        region=region,
-        projection=proj,
-        frame=kwargs.get("frame", "nwse+gwhite"),
-        verbose="e",
-        transparency=kwargs.get("transparency", 100),
-    )
+    with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame=f"+t{title}",
+            verbose="e",
+        )
 
     # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
@@ -635,19 +674,7 @@ def basemap(
         )
 
     # reset region and projection
-    if title is None:
-        fig.basemap(
-            region=region,
-            projection=proj,
-            frame="wesn",
-        )
-    else:
-        with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
-            fig.basemap(
-                region=region,
-                projection=proj,
-                frame=f"wesn+t{title}",
-            )
+    fig.basemap(region=region, projection=proj, frame="+t")
 
     return fig
 
@@ -1049,6 +1076,12 @@ def plot_grd(
     yshift_amount : int or float
         amount to shift the origin in the y direction in multiples of current figure
         instance height, by default is -1.
+    frame : str | bool
+        GMT frame string to use for the basemap, by default is "nesw+gwhite"
+    frame_pen : str
+        GMT pen string to use for the frame, by default is "auto"
+    frame_font : str
+        GMT font string to use for the frame, by default is "auto"
     transparency : int
         transparency to use for the basemap, by default is 0
     modis : bool
@@ -1204,15 +1237,51 @@ def plot_grd(
     )
 
     show_region = kwargs.get("show_region")
+    frame = kwargs.get("frame", "nesw+gwhite")
+    if frame is None:
+        frame = False
+    if title is None:
+        title = ""
+    # plot basemap with optional colored background (+gwhite) and frame
+    with pygmt.config(
+        MAP_FRAME_PEN=kwargs.get("frame_pen", "auto"),
+        FONT=kwargs.get("frame_font", "auto"),
+    ):
+        logger.debug("adding blank basemap")
+        if frame is True:
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
+        elif frame is False:
+            pass
+        elif isinstance(frame, list):
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
+        else:
+            fig.basemap(
+                region=region,
+                projection=proj,
+                frame=frame,
+                verbose="e",
+                transparency=kwargs.get("transparency", 0),
+            )
 
-    # create blank basemap
-    fig.basemap(
-        region=region,
-        projection=proj,
-        frame=kwargs.get("frame", "nwse+gwhite"),
-        verbose="e",
-        transparency=kwargs.get("transparency", 100),
-    )
+    with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
+        fig.basemap(
+            region=region,
+            projection=proj,
+            frame=f"+t{title}",
+            verbose="e",
+        )
 
     # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
@@ -1468,11 +1537,11 @@ def plot_grd(
 
     logger.debug("plotting complete, resetting projection and region")
     # reset region and projection
-    if title is None:
-        fig.basemap(region=region, projection=proj, frame="wesn")
-    else:
-        with pygmt.config(FONT_TITLE=kwargs.get("title_font", "auto")):
-            fig.basemap(region=region, projection=proj, frame=f"wesn+t{title}")
+    fig.basemap(
+        region=region,
+        projection=proj,
+        frame="+t",
+    )
 
     return fig
 
