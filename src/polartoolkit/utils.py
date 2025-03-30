@@ -370,7 +370,7 @@ def epsg3031_to_latlon(
     df: pd.DataFrame | tuple[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
-    output_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
 ) -> pd.DataFrame | tuple[typing.Any]:
     """
     Convert coordinates from EPSG:3031 Antarctic Polar Stereographic in meters to
@@ -409,7 +409,7 @@ def epsg3413_to_latlon(
     df: pd.DataFrame | tuple[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
-    output_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] = ("lon", "lat"),
 ) -> pd.DataFrame | tuple[typing.Any]:
     """
     Convert coordinates from EPSG:3413 North Polar Stereographic in meters to
@@ -448,7 +448,7 @@ def latlon_to_epsg3031(
     df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
-    output_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] = ("easting", "northing"),
 ) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
@@ -463,7 +463,7 @@ def latlon_to_epsg3031(
     input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("lon", "lat")
     output_coord_names : tuple | None, optional
-        set names for output coordinate columns, by default ("x", "y")
+        set names for output coordinate columns, by default ("easting", "northing")
 
     Returns
     -------
@@ -486,7 +486,7 @@ def latlon_to_epsg3413(
     df: pd.DataFrame | NDArray[typing.Any, typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
-    output_coord_names: tuple[str, str] | None = None,
+    output_coord_names: tuple[str, str] = ("easting", "northing"),
 ) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3413 North Polar
@@ -501,7 +501,7 @@ def latlon_to_epsg3413(
     input_coord_names : tuple | None, optional
         set names for input coordinate columns, by default ("lon", "lat")
     output_coord_names : tuple | None, optional
-        set names for output coordinate columns, by default ("x", "y")
+        set names for output coordinate columns, by default ("easting", "northing")
 
     Returns
     -------
