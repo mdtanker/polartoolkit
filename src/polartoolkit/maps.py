@@ -1583,10 +1583,12 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
-    # if plotting a histogram add 2cm of spacing instead of .2cm
+    # offset colorbar vertically from plot by 0.4cm, or 0.2 + histogram height
     if hist is True:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 1.5)
+        cbar_hist_height = kwargs.get("cbar_hist_height", 1.5)
+        cbar_yoffset = kwargs.get("cbar_yoffset", 0.2 + cbar_hist_height)
     else:
+        cbar_yoffset = kwargs.get("cbar_yoffset", 0.4)
     logger.debug("offset cbar vertically by %s", cbar_yoffset)
 
     if cbar_frame is None:
@@ -1607,16 +1609,20 @@ def add_colorbar(
     with pygmt.config(
         FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
+        position = (
+            f"jBC+jTC+w{fig_width*cbar_width_perc}c+{orientation}{text_location}"
+            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
+        )
+        logger.debug("cbar frame; %s", cbar_frame)
+        logger.debug("cbar position: %s", position)
+
         fig.colorbar(
             cmap=kwargs.get("cmap", True),
-            position=(
-                f"jBC+w{fig_width*cbar_width_perc}c+jTC+{orientation}{text_location}"
-                f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
-            ),
+            position=position,
             frame=cbar_frame,
             scale=kwargs.get("cbar_scale", 1),
             log=kwargs.get("cbar_log"),
-            verbose=verbose,
+            # verbose=verbose, # this is causing issues
         )
         logger.debug("finished standard colorbar plotting")
     # add histogram to colorbar
@@ -1786,7 +1792,7 @@ def add_colorbar(
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
         try:
-            fig.shift_origin(xshift=f"{xshift}c", yshift=f"-{cbar_yoffset}c")
+            fig.shift_origin(xshift=f"{xshift}c", yshift=f"{-cbar_yoffset}c")
             logger.debug("shifting origin")
         except pygmt.exceptions.GMTCLibError as e:
             logger.warning(e)
@@ -1797,7 +1803,7 @@ def add_colorbar(
             logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
-                projection=f"X{fig_width*cbar_width_perc}c/{cbar_yoffset-.1}c",
+                projection=f"X{fig_width*cbar_width_perc}c/{cbar_hist_height}c",
                 region=hist_reg,
                 frame=kwargs.get("hist_frame", False),
                 cmap=hist_cmap,
