@@ -16,7 +16,7 @@ install:
 	pip install --no-deps -e .
 
 remove:
-	mamba remove --name $(PROJECT) --all
+	mamba env remove --name $(PROJECT)
 
 pip_install:
 	pip install $(PROJECT)[all]==$(VERSION)
