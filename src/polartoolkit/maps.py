@@ -2114,7 +2114,8 @@ def add_inset(
     inset_pos : str, optional
         GMT location string for inset map, by default 'TL' (top left)
     inset_width : float, optional
-        Inset width as percentage of the total figure width, by default is 25% (0.25)
+        Inset width as percentage of the smallest figure dimension, by default is 25%
+        (0.25)
     inset_reg : tuple[float, float, float, float], optional
         Region of Antarctica/Greenland to plot for the inset map, by default is whole
         area
@@ -2123,7 +2124,8 @@ def add_inset(
 
     fig_width = utils.get_fig_width()
 
-    inset_map = f"X{fig_width*inset_width}c"
+    inset_width = inset_width * (min(fig_width, fig_height))
+    inset_map = f"X{inset_width}c"
 
     # if no region supplied, get region of current PyGMT figure
     if region is None:
@@ -2233,6 +2235,11 @@ def add_scalebar(
     region_converted = (*region, "+ue")  # codespell:ignore ue
 
     if length is None:
+        length = typing.cast(float, length)
+        # get shorter of east-west vs north-sides
+        width = abs(region[1] - region[0])
+        height = abs(region[3] - region[2])
+        length = round_to_1((min(width, height)) / 1000 * length_perc)
 
     with pygmt.config(
         FONT_ANNOT_PRIMARY=f"10p,{font_color}",
