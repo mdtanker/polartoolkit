@@ -853,67 +853,73 @@ def set_cmap(
         # gets here if
         # 1) cmap doesn't end in .cpt
         # 2) modis is False
-        if cpt_lims is None and isinstance(grid, (xr.DataArray)):
-            zmin, zmax = utils.get_min_max(
-                grid,
-                shp_mask,
-                region=cmap_region,
-                robust=robust,
-                hemisphere=hemisphere,
-                robust_percentiles=robust_percentiles,
+        if grid is None:
+            warnings.warn(
+                "`grd2cpt` ignored since no grid was passed",
+                stacklevel=2,
             )
-        elif cpt_lims is None and isinstance(grid, (str)):
-            with xr.load_dataarray(grid) as da:
+        else:
+            if cpt_lims is None and isinstance(grid, (xr.DataArray)):
                 zmin, zmax = utils.get_min_max(
-                    da,
+                    grid,
                     shp_mask,
                     region=cmap_region,
                     robust=robust,
                     hemisphere=hemisphere,
                     robust_percentiles=robust_percentiles,
                 )
-        else:
-            if cpt_lims is None:
-                zmin, zmax = None, None
+            elif cpt_lims is None and isinstance(grid, (str)):
+                with xr.load_dataarray(grid) as da:
+                    zmin, zmax = utils.get_min_max(
+                        da,
+                        shp_mask,
+                        region=cmap_region,
+                        robust=robust,
+                        hemisphere=hemisphere,
+                        robust_percentiles=robust_percentiles,
+                    )
             else:
-                zmin, zmax = cpt_lims
-        if cpt_lims is not None:
+                if cpt_lims is None:
+                    zmin, zmax = None, None
+                else:
+                    zmin, zmax = cpt_lims
+            if cpt_lims is not None:
 
-            def warn_msg(x: str) -> str:
-                return (
-                    f"Since limits were passed to `cpt_lims`, parameter `{x}` is"
-                    "unused."
-                )
+                def warn_msg(x: str) -> str:
+                    return (
+                        f"Since limits were passed to `cpt_lims`, parameter `{x}` is"
+                        "unused."
+                    )
 
-            if cmap_region is not None:
-                warnings.warn(
-                    warn_msg("cmap_region"),
-                    stacklevel=2,
-                )
-            if robust is True:
-                warnings.warn(
-                    warn_msg("robust"),
-                    stacklevel=2,
-                )
-            if shp_mask is not None:
-                warnings.warn(
-                    warn_msg("shp_mask"),
-                    stacklevel=2,
-                )
+                if cmap_region is not None:
+                    warnings.warn(
+                        warn_msg("cmap_region"),
+                        stacklevel=2,
+                    )
+                if robust is True:
+                    warnings.warn(
+                        warn_msg("robust"),
+                        stacklevel=2,
+                    )
+                if shp_mask is not None:
+                    warnings.warn(
+                        warn_msg("shp_mask"),
+                        stacklevel=2,
+                    )
 
-        pygmt.grd2cpt(
-            cmap=cmap,
-            grid=grid,
-            region=cmap_region,
-            background=True,
-            limit=(zmin, zmax),
-            continuous=kwargs.get("continuous", True),
-            color_model=kwargs.get("color_model", "R"),
-            categorical=kwargs.get("categorical", False),
-            reverse=reverse_cpt,
-            verbose="e",
-        )
-        cmap = True
+            pygmt.grd2cpt(
+                cmap=cmap,
+                grid=grid,
+                region=cmap_region,
+                background=True,
+                limit=(zmin, zmax),
+                continuous=kwargs.get("continuous", True),
+                color_model=kwargs.get("color_model", "R"),
+                categorical=kwargs.get("categorical", False),
+                reverse=reverse_cpt,
+                verbose="e",
+            )
+            cmap = True
     elif cpt_lims is not None:
         # gets here if
         # 1) cmap doesn't end in .cpt
