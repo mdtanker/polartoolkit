@@ -218,11 +218,21 @@ def basemap(
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey, with boarders defined by `simple_basemap_version`.
+    simple_basemap_transparency : int, optional
+        transparency to use for the simple basemap, by default is 0
+    simple_basemap_version : str, optional
+        version of the simple basemap to plot, by default is None
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
+    imagery_transparency : int, optional
+        transparency to use for the imagery basemap, by default is 0
     modis_basemap : bool, optional
         choose to add a MODIS background imagery basemap, by default is False.
+    modis_transparency : int, optional
+        transparency to use for the MODIS basemap, by default is 0
+    modis_version : str, optional
+        version of the MODIS basemap to plot, by default is None
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -260,7 +270,7 @@ def basemap(
     frame : str
         GMT frame string to use for the basemap, by default is None
     transparency : int
-        transparency to use for the background imagery, by default is 0
+        transparency to use for the basemap, by default is 0
     inset_position : str
         position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
     title_font : str
@@ -990,11 +1000,21 @@ def plot_grd(
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey.
+    simple_basemap_transparency : int, optional
+        transparency to use for the simple basemap, by default is 0
+    simple_basemap_version : str, optional
+        version of the simple basemap to plot, by default is None
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
+    imagery_transparency : int, optional
+        transparency to use for the imagery basemap, by default is 0
     modis_basemap : bool, optional
         choose to add a MODIS background imagery basemap, by default is False.
+    modis_transparency : int, optional
+        transparency to use for the MODIS basemap, by default is 0
+    modis_version : str, optional
+        version of the MODIS basemap to plot, by default is None
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -1029,8 +1049,8 @@ def plot_grd(
     yshift_amount : int or float
         amount to shift the origin in the y direction in multiples of current figure
         instance height, by default is -1.
-    frame : str
-        GMT frame string to use for the basemap, by default is None
+    transparency : int
+        transparency to use for the basemap, by default is 0
     modis : bool
         set to True if plotting MODIS data to use a nice colorscale.
     grd2cpt : bool
@@ -1055,7 +1075,7 @@ def plot_grd(
         label to add to colorbar.
     shading : str
         GMT shading string to use for the basemap, by default is None
-    transparency : int
+    grid_transparency : int
         transparency of the grid, by default is 0
     inset_position : str
         position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
@@ -1246,8 +1266,7 @@ def plot_grd(
         nan_transparent=nan_transparent,
         frame=kwargs.get("frame"),
         shading=shading,
-        transparency=kwargs.get("transparency", 0),
-        # verbose=True,
+        transparency=kwargs.get("grid_transparency", 0),
     )
 
     # add datapoints
