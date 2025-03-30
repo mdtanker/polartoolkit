@@ -261,8 +261,8 @@ def basemap(
         GMT frame string to use for the basemap, by default is None
     transparency : int
         transparency to use for the background imagery, by default is 0
-    inset_pos : str
-        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    inset_position : str
+        position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
     title_font : str
         font to use for the title, by default is 'auto'
     show_region : tuple[float, float, float, float]
@@ -1005,8 +1005,8 @@ def plot_grd(
         GMT shading string to use for the basemap, by default is None
     transparency : int
         transparency of the grid, by default is 0
-    inset_pos : str
-        position for inset map; either 'TL', 'TR', BL', 'BR', by default is 'TL'
+    inset_position : str
+        position for inset map with PyGMT syntax, by default is "jTL+jTL+o0/0"
     title_font : str
         font to use for the title, by default is 'auto'
     show_region : tuple[float, float, float, float]
@@ -2095,7 +2095,7 @@ def add_inset(
     fig: pygmt.Figure,
     hemisphere: str | None = None,
     region: tuple[float, float, float, float] | None = None,
-    inset_pos: str = "TL",
+    inset_position: str = "jTL+jTL+o0/0",
     inset_width: float = 0.25,
     inset_reg: tuple[float, float, float, float] | None = None,
     **kwargs: typing.Any,
@@ -2111,8 +2111,8 @@ def add_inset(
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], if not provided will
         try to extract from the current figure.
-    inset_pos : str, optional
-        GMT location string for inset map, by default 'TL' (top left)
+    inset_position : str, optional
+        GMT location string for inset map, by default 'jTL+jTL+o0/0' (top left)
     inset_width : float, optional
         Inset width as percentage of the smallest figure dimension, by default is 25%
         (0.25)
@@ -2121,6 +2121,20 @@ def add_inset(
         area
     """
     hemisphere = utils.default_hemisphere(hemisphere)
+
+    if kwargs.get("inset_pos") is not None:
+        inset_position = kwargs.get("inset_pos")  # type: ignore[assignment]
+        msg = "inset_pos is deprecated, use inset_position instead"
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        logger.warning(msg)
+    if kwargs.get("inset_offset") is not None:
+        inset_position = inset_position + f"+o{kwargs.get('inset_offset')}"
+        msg = (
+            "inset_offset is deprecated, add offset via '+o0c/0c' to inset_position "
+            "instead"
+        )
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        logger.warning(msg)
 
     fig_width = utils.get_fig_width()
 
@@ -2132,22 +2146,20 @@ def add_inset(
         with pygmt.clib.Session() as lib:
             region = tuple(lib.extract_region())
             assert len(region) == 4
+    position = f"{inset_position}+w{inset_width}c"
+    logger.debug("using position; %s", position)
 
     with fig.inset(
-        position=(
-            f"J{inset_pos}+j{inset_pos}+w{fig_width*inset_width}c"
-            f"+o{kwargs.get('inset_offset', '0/0')}"
-        ),
-        # verbose="q",
+        position=position,
         box=kwargs.get("inset_box", False),
     ):
         if hemisphere == "north":
             if inset_reg is None:
-                if "L" in inset_pos:
+                if "L" in inset_position[0:3]:
                     # inset reg needs to be square,
                     # if on left side, make square by adding to right side of region
                     inset_reg = (-800e3, 2000e3, -3400e3, -600e3)
-                elif "R" in inset_pos:
+                elif "R" in inset_position[0:3]:
                     inset_reg = (-1800e3, 1000e3, -3400e3, -600e3)
                 else:
                     inset_reg = (-1300e3, 1500e3, -3400e3, -600e3)

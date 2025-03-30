@@ -1255,7 +1255,8 @@ def grd_trend(
         cmap: typing.Any = kwargs.get("cmap", "plasma")
         coast: typing.Any = kwargs.get("coast", True)
         inset: typing.Any = kwargs.get("inset", True)
-        inset_pos: typing.Any = kwargs.get("inset_pos", "BL")
+        inset_position: typing.Any = kwargs.get("inset_position", "jTL+jTL+o0/0")
+        inset_pos: typing.Any = kwargs.get("inset_pos")
         origin_shift: typing.Any = kwargs.get("origin_shift", "y")
         fit_label: typing.Any = kwargs.get("fit_label", f"fitted trend (order {deg})")
         input_label: typing.Any = kwargs.get("input_label", "input grid")
@@ -1269,6 +1270,7 @@ def grd_trend(
             cmap=cmap,
             # grd2cpt=True,
             inset=inset,
+            inset_position=inset_position,
             inset_pos=inset_pos,
             coast=coast,
             hist=True,
@@ -1568,6 +1570,7 @@ def grd_compare(
                 "fig_height",
                 "inset",
                 "inset_pos",
+                "inset_position",
                 "shp_mask",
             ]
         }
@@ -1607,6 +1610,8 @@ def grd_compare(
             fig=fig,
             title=title,
             inset=kwargs.get("inset", False),
+            inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+            inset_pos=kwargs.get("inset_pos"),
             fig_height=fig_height,
             **diff_kwargs,
         )
