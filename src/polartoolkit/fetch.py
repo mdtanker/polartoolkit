@@ -2338,11 +2338,10 @@ def bedmap_points(
                             "latitude (degree_north)",
                         ),
                     )
-
                     # convert to a geodataframe
                     df = gpd.GeoDataFrame(
                         df,
-                        geometry=gpd.points_from_xy(df["x"], df["y"]),
+                        geometry=gpd.points_from_xy(df["easting"], df["northing"]),
                         crs="EPSG:3031",
                     )
 
