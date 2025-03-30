@@ -416,6 +416,9 @@ def basemap(
             hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
             transparency=kwargs.get("simple_basemap_transparency", 0),
+            pen=kwargs.get("simple_basemap_pen", "0.2p,black"),
+            grounded_color=kwargs.get("simple_basemap_grounded_color", "grey"),
+            floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
         )
     # add lat long grid lines
     if gridlines is True:
@@ -1182,14 +1185,10 @@ def plot_grd(
             hemisphere=hemisphere,
             version=kwargs.get("simple_basemap_version"),
             transparency=kwargs.get("simple_basemap_transparency", 0),
+            pen=kwargs.get("simple_basemap_pen", "0.2p,black"),
+            grounded_color=kwargs.get("simple_basemap_grounded_color", "grey"),
+            floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
         )
-
-    cmap, colorbar, cpt_lims = set_cmap(
-        cmap,
-        grid=grid,
-        hemisphere=hemisphere,
-        **kwargs,
-    )
 
     shading = kwargs.get("shading")
     if shading is not None:  # noqa: SIM108
@@ -1197,6 +1196,12 @@ def plot_grd(
     else:
         nan_transparent = True
 
+    cmap, colorbar, cpt_lims = set_cmap(
+        cmap,
+        grid=grid,
+        hemisphere=hemisphere,
+        **kwargs,
+    )
     # display grid
     logger.debug("plotting grid")
     fig.grdimage(
@@ -2053,7 +2058,9 @@ def add_simple_basemap(
     hemisphere: str | None = None,
     version: str | None = None,
     transparency: int = 0,
-    **kwargs: typing.Any,
+    pen: str = "0.2p,black",
+    grounded_color: str = "grey",
+    floating_color: str = "skyblue",
 ) -> None:
     """
     Add a simple basemap to a figure with grounded ice shown as grey and floating ice as
@@ -2070,6 +2077,12 @@ def add_simple_basemap(
         None
     transparency : int, optional
         transparency of all the plotted elements, by default 0
+    pen : str, optional
+        GMT pen string for the coastline, by default "0.2,black"
+    grounded_color : str, optional
+        color for the grounded ice, by default "grey"
+    floating_color : str, optional
+        color for the floating ice, by default "skyblue"
     """
 
     hemisphere = utils.default_hemisphere(hemisphere)
@@ -2082,12 +2095,12 @@ def add_simple_basemap(
             gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
             fig.plot(
                 data=gdf,
-                fill="grey",
+                fill=grounded_color,
                 transparency=transparency,
             )
             fig.plot(
                 data=gdf,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=pen,
                 transparency=transparency,
             )
         else:
@@ -2096,42 +2109,42 @@ def add_simple_basemap(
 
     elif hemisphere == "south":
         if version is None:
-            version = "depoorter-2013"
+            version = "measures-v2"
 
         if version == "depoorter-2013":
             gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
             # plot floating ice as blue
             fig.plot(
                 data=gdf[gdf.Id_text == "Ice shelf"],
-                fill="skyblue",
+                fill=floating_color,
                 transparency=transparency,
             )
             # plot grounded ice as gray
             fig.plot(
                 data=gdf[gdf.Id_text == "Grounded ice or land"],
-                fill="grey",
+                fill=grounded_color,
                 transparency=transparency,
             )
             # plot coastline on top
             fig.plot(
                 data=gdf,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=pen,
                 transparency=transparency,
             )
         elif version == "measures-v2":
             fig.plot(
                 data=fetch.antarctic_boundaries(version="Coastline"),
-                fill="skyblue",
+                fill=floating_color,
                 transparency=transparency,
             )
             fig.plot(
                 data=fetch.groundingline(version="measures-v2"),
-                fill="grey",
+                fill=grounded_color,
                 transparency=transparency,
             )
             fig.plot(
                 fetch.groundingline(version="measures-v2"),
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=pen,
                 transparency=transparency,
             )
 
