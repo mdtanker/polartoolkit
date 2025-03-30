@@ -1106,7 +1106,7 @@ def plot_profile(
                 if hemisphere == "north":
                     coast_version = "BAS"
                 elif hemisphere == "south":
-                    coast_version = "depoorter-2013"
+                    coast_version = "measures-v2"
                 elif hemisphere is None:
                     msg = (
                         "if coast is True and hemisphere is not provided, must provide "
