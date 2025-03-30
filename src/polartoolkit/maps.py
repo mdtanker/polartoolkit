@@ -307,9 +307,11 @@ def basemap(
         by default is 0.25.
     scale_length_perc : float
         deprecated, use scalebar_length_perc.
-    scale_position : str
+    scalebar_position : str
         position of the scalebar on the figure, by default is 'n.5/.05' which is bottom
         center of the plot.
+    scale_position : str
+        deprecated, use scalebar_position.
     coast_pen : str
         GMT pen string to use for the coastlines, by default is None
     no_coast : bool
@@ -389,6 +391,7 @@ def basemap(
 
     # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
+        logger.debug("adding background imagery")
         add_imagery(
             fig,
             hemisphere=hemisphere,
@@ -397,6 +400,7 @@ def basemap(
 
     # add MODIS imagery as basemap
     if modis_basemap is True:
+        logger.debug("adding MODIS imagery")
         add_modis(
             fig,
             hemisphere=hemisphere,
@@ -406,6 +410,7 @@ def basemap(
 
     # add simple basemap
     if simple_basemap is True:
+        logger.debug("adding simple basemap")
         add_simple_basemap(
             fig,
             hemisphere=hemisphere,
@@ -414,6 +419,7 @@ def basemap(
         )
     # add lat long grid lines
     if gridlines is True:
+        logger.debug("adding gridlines")
         if hemisphere is None:
             logger.warning(
                 "Argument `hemisphere` not specified, will use meters for gridlines."
@@ -429,6 +435,7 @@ def basemap(
 
     # plot groundingline and coastlines
     if coast is True:
+        logger.debug("adding coastlines")
         add_coast(
             fig,
             hemisphere=hemisphere,
@@ -442,6 +449,7 @@ def basemap(
 
     # plot faults
     if faults is True:
+        logger.debug("adding faults")
         add_faults(
             fig=fig,
             region=region,
@@ -456,6 +464,7 @@ def basemap(
 
     # add box showing region
     if show_region is not None:
+        logger.debug("adding region box")
         add_box(
             fig,
             show_region,
@@ -464,6 +473,7 @@ def basemap(
 
     # add datapoints
     if points is not None:
+        logger.debug("adding points")
         if ("x" in points.columns) and ("y" in points.columns):
             x_col, y_col = "x", "y"
         elif ("easting" in points.columns) and ("northing" in points.columns):
@@ -543,19 +553,26 @@ def basemap(
             raise ValueError(msg)
 
         scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
+        scalebar_position = kwargs.get("scalebar_position", "n.5/.05")
         if kwargs.get("scale_length_perc", None) is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
             )
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
             scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
+
+        if kwargs.get("scale_position", None) is not None:
+            msg = "`scale_position` is deprecated, use `scalebar_position` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            scalebar_position = kwargs.get("scale_position", "n.5/.05")
+
         add_scalebar(
             fig=fig,
             region=region,
             projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
             length_perc=scalebar_length_perc,
-            position=kwargs.get("scale_position", "n.5/.05"),
+            position=scalebar_position,
             **kwargs,
         )
 
@@ -809,7 +826,8 @@ def set_cmap(
                 reverse=reverse_cpt,
                 verbose="e",
             )
-        except pygmt.exceptions.GMTCLibError:
+        except pygmt.exceptions.GMTCLibError as e:
+            logger.exception(e)
             pygmt.makecpt(
                 cmap=cmap,
                 background=True,
@@ -852,6 +870,7 @@ def set_cmap(
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
+                logger.exception(e)
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -1034,9 +1053,11 @@ def plot_grd(
         by default is 0.25.
     scale_length_perc : float
         deprecated, use scalebar_length_perc.
-    scale_position : str
+    scalebar_position : str
         position of the scalebar on the figure, by default is 'n.5/.05' which is bottom
         center of the plot.
+    scale_position : str
+        deprecated, use scalebar_position.
     coast_pen : str
         GMT pen string to use for the coastlines, by default is None
     no_coast : bool
@@ -1138,6 +1159,7 @@ def plot_grd(
 
     # add satellite imagery (LIMA for Antarctica)
     if imagery_basemap is True:
+        logger.debug("adding background imagery")
         add_imagery(
             fig,
             hemisphere=hemisphere,
@@ -1145,6 +1167,7 @@ def plot_grd(
         )
     # add MODIS imagery as basemap
     if modis_basemap is True:
+        logger.debug("adding MODIS imagery")
         add_modis(
             fig,
             hemisphere=hemisphere,
@@ -1153,6 +1176,7 @@ def plot_grd(
         )
     # add simple basemap
     if simple_basemap is True:
+        logger.debug("adding simple basemap")
         add_simple_basemap(
             fig,
             hemisphere=hemisphere,
@@ -1174,6 +1198,7 @@ def plot_grd(
         nan_transparent = True
 
     # display grid
+    logger.debug("plotting grid")
     fig.grdimage(
         grid=grid,
         cmap=cmap,
@@ -1188,6 +1213,7 @@ def plot_grd(
 
     # add datapoints
     if points is not None:
+        logger.debug("adding points")
         if ("x" in points.columns) and ("y" in points.columns):
             x, y = points.x, points.y
         elif ("easting" in points.columns) and ("northing" in points.columns):
@@ -1207,6 +1233,7 @@ def plot_grd(
 
     # add box showing region
     if show_region is not None:
+        logger.debug("adding region box")
         add_box(
             fig,
             show_region,
@@ -1215,6 +1242,7 @@ def plot_grd(
 
     # plot groundingline and coastlines
     if coast is True:
+        logger.debug("adding coastlines")
         add_coast(
             fig,
             hemisphere=hemisphere,
@@ -1228,6 +1256,7 @@ def plot_grd(
 
     # plot faults
     if faults is True:
+        logger.debug("adding faults")
         add_faults(
             fig=fig,
             region=region,
@@ -1242,6 +1271,7 @@ def plot_grd(
 
     # add lat long grid lines
     if gridlines is True:
+        logger.debug("adding gridlines")
         if hemisphere is None:
             logger.warning(
                 "Argument `hemisphere` not specified, will use meters for gridlines."
@@ -1257,6 +1287,7 @@ def plot_grd(
 
     # add inset map to show figure location
     if inset is True:
+        logger.debug("adding inset")
         # removed duplicate kwargs before passing to add_inset
         new_kwargs = {
             key: value
@@ -1274,11 +1305,13 @@ def plot_grd(
 
     # add scalebar
     if scalebar is True:
+        logger.debug("adding scalebar")
         if proj_latlon is None:
             msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
             raise ValueError(msg)
 
         scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
+        scalebar_position = kwargs.get("scalebar_position", "n.5/.05")
         if kwargs.get("scale_length_perc") is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
@@ -1287,18 +1320,25 @@ def plot_grd(
             logger.warning(msg)
             scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
 
+        if kwargs.get("scale_position") is not None:
+            msg = "`scale_position` is deprecated, use `scalebar_position` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            logger.warning(msg)
+            scalebar_position = kwargs.get("scale_position", "n.5/.05")
+
         add_scalebar(
             fig=fig,
             region=region,
             projection=proj_latlon,
             font_color=kwargs.get("scale_font_color", "black"),
             length_perc=scalebar_length_perc,
-            position=kwargs.get("scale_position", "n.5/.05"),
+            position=scalebar_position,
             **kwargs,
         )
 
     # add north arrow
     if north_arrow is True:
+        logger.debug("adding north arrow")
         if proj_latlon is None:
             msg = (
                 "Argument `hemisphere` needs to be specified for plotting a north arrow"
@@ -1314,6 +1354,7 @@ def plot_grd(
 
     # display colorbar
     if colorbar is True:
+        logger.debug("adding colorbar")
         # removed duplicate kwargs before passing to add_colorbar
         cbar_kwargs = {
             key: value
@@ -1327,7 +1368,6 @@ def plot_grd(
             ]
         }
         try:
-            logger.debug("plotting colorbar/histogram")
             add_colorbar(
                 fig,
                 hist_cmap=cmap,
@@ -1341,6 +1381,7 @@ def plot_grd(
             logger.exception(e)
             logger.error("error with plotting colorbar, skipping")
 
+    logger.debug("plotting complete, resetting projection and region")
     # reset region and projection
     if title is None:
         fig.basemap(region=region, projection=proj, frame="wesn")
@@ -1380,6 +1421,8 @@ def add_colorbar(
     **kwargs : typing.Any
         additional keyword arguments to pass
     """
+    logger.debug("kwargs supplied to 'add_colorbar': %s", kwargs)
+
     # get the current figure width
     fig_width = utils.get_fig_width()
 
@@ -1390,7 +1433,7 @@ def add_colorbar(
     if hist is True:
         cbar_yoffset = kwargs.get("cbar_yoffset", 1.5)
     else:
-        cbar_yoffset = kwargs.get("cbar_yoffset", 0.2)
+    logger.debug("offset cbar vertically by %s", cbar_yoffset)
 
     if cbar_frame is None:
         cbar_frame = [
@@ -1406,6 +1449,7 @@ def add_colorbar(
     text_location = kwargs.get("cbar_text_location")
 
     # add colorbar
+    logger.debug("adding colorbar")
     with pygmt.config(
         FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
@@ -1420,11 +1464,12 @@ def add_colorbar(
             log=kwargs.get("cbar_log"),
             verbose=verbose,
         )
-
+        logger.debug("finished standard colorbar plotting")
     # add histogram to colorbar
     # Note, depending on data and hist_type, you may need to manually set kwarg
     # `hist_ymax` to an appropriate value
     if hist is True:
+        logger.debug("adding histogram to colorbar")
         # get values to use
         values = kwargs.get("grid")
 
@@ -1442,8 +1487,7 @@ def add_colorbar(
                 region = tuple(lib.extract_region())
                 assert len(region) == 4
 
-        logger.debug("using region: %s", region)
-
+        logger.debug("using histogram region: %s", region)
         # clip values to plot region
         if isinstance(values, (xr.DataArray | str)):
             if region != utils.get_grid_info(values)[1]:
@@ -1527,7 +1571,9 @@ def add_colorbar(
         else:
             zmin, zmax = cpt_lims
         logger.debug("using %s, %s for histogram limits", zmin, zmax)
+
         # get grid's/point's data for histogram
+        logger.debug("subsetting histogram data")
         if isinstance(values, xr.DataArray):
             df = vd.grid_to_table(values)
         elif isinstance(values, pd.DataFrame):
@@ -1542,17 +1588,18 @@ def add_colorbar(
         bin_width = kwargs.get("hist_bin_width")
         bin_num = kwargs.get("hist_bin_num", 50)
 
-        logger.debug("subset data")
+        logger.debug("calculating bin widths; %s", bin_width)
         if bin_width is not None:
             # if bin width is set, will plot x amount of bins of width=bin_width
             bins = np.arange(zmin, zmax, step=bin_width)
         else:
             # if bin width isn't set, will plot bin_num of bins, by default = 100
             bins, bin_width = np.linspace(zmin, zmax, num=bin_num, retstep=True)
-        logger.debug("calculated bins")
+
         # set hist type
         hist_type = kwargs.get("hist_type", 0)
 
+        logger.debug("generating bin data for histogram")
         if hist_type == 0:
             # if histogram type is counts
             bins = np.histogram(data, bins=bins)[0]
@@ -1581,7 +1628,7 @@ def add_colorbar(
             kwargs.get("hist_ymin", 0),
             kwargs.get("hist_ymax", max_bin_height * 1.1),
         ]
-        logger.debug("defined hist reg")
+        logger.debug("defined hist reg; %s", hist_reg)
         # shift figure to line up with top left of cbar
         xshift = kwargs.get("cbar_xoffset", 0) + ((1 - cbar_width_perc) * fig_width) / 2
         try:
@@ -1616,6 +1663,8 @@ def add_colorbar(
         except pygmt.exceptions.GMTCLibError as e:
             logger.warning(e)
             logger.warning("issue with plotting histogram, skipping...")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.exception("An error occurred: %s", e)
 
         # shift figure back
         try:
@@ -1623,7 +1672,7 @@ def add_colorbar(
         except pygmt.exceptions.GMTCLibError as e:
             logger.warning(e)
             logger.warning("issue with plotting histogram, skipping...")
-        logger.debug("finished")
+        logger.debug("finished plotting histogram")
 
 
 def add_coast(
@@ -2146,6 +2195,8 @@ def add_inset(
         with pygmt.clib.Session() as lib:
             region = tuple(lib.extract_region())
             assert len(region) == 4
+    logger.debug("using region; %s", region)
+
     position = f"{inset_position}+w{inset_width}c"
     logger.debug("using position; %s", position)
 
@@ -2187,26 +2238,29 @@ def add_inset(
                     "Inset region should be square or else projection will be off."
                 )
             gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
+            logger.debug("plotting floating ice")
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
                 data=gdf[gdf.Id_text == "Ice shelf"],
                 fill="skyblue",
             )
+            logger.debug("plotting grounded ice")
             fig.plot(
                 data=gdf[gdf.Id_text == "Grounded ice or land"],
                 fill="grey",
             )
-            fig.plot(data=gdf, pen=kwargs.get("inset_coast_pen", "0.2,black"))
+            logger.debug("plotting coastline ice")
         else:
             msg = "hemisphere must be north or south"
             raise ValueError(msg)
-
+        logger.debug("add inset box")
         add_box(
             fig,
             box=region,
             pen=kwargs.get("inset_box_pen", "1p,red"),
         )
+        logger.debug("inset complete")
 
 
 def add_scalebar(
