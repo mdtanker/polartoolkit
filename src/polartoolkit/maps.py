@@ -300,8 +300,10 @@ def basemap(
         label to add to colorbar.
     colorbar : bool
         choose to add a colorbar for the points to the plot, by default is False.
-    scale_font_color : str
+    scalebar_font_color : str
         color of the scalebar font, by default is 'black'.
+    scale_font_color : str
+        deprecated, use scalebar_font_color.
     scalebar_length_perc : float
         percentage of the min dimension of the figure region to use for the scalebar,
         by default is 0.25.
@@ -555,8 +557,15 @@ def basemap(
             msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
             raise ValueError(msg)
 
+        scalebar_font_color = kwargs.get("scalebar_font_color", "black")
         scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
         scalebar_position = kwargs.get("scalebar_position", "n.5/.05")
+
+        if kwargs.get("scale_font_color", None) is not None:
+            msg = "`scale_font_color` is deprecated, use `scalebar_font_color` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            scalebar_font_color = kwargs.get("scale_font_color", "black")
+
         if kwargs.get("scale_length_perc", None) is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
@@ -573,7 +582,7 @@ def basemap(
             fig=fig,
             region=region,
             projection=proj_latlon,
-            font_color=kwargs.get("scale_font_color", "black"),
+            font_color=scalebar_font_color,
             length_perc=scalebar_length_perc,
             position=scalebar_position,
             **kwargs,
@@ -1049,8 +1058,10 @@ def plot_grd(
         label to add to legend, by default is None
     points_cmap : str
         colormap to use for points, by default is None.
-    scale_font_color : str
+    scalebar_font_color : str
         color of the scalebar font, by default is 'black'.
+    scale_font_color : str
+        deprecated, use scalebar_font_color.
     scalebar_length_perc : float
         percentage of the min dimension of the figure region to use for the scalebar,
         by default is 0.25.
@@ -1315,8 +1326,16 @@ def plot_grd(
             msg = "Argument `hemisphere` needs to be specified for plotting a scalebar"
             raise ValueError(msg)
 
+        scalebar_font_color = kwargs.get("scalebar_font_color", "black")
         scalebar_length_perc = kwargs.get("scalebar_length_perc", 0.25)
         scalebar_position = kwargs.get("scalebar_position", "n.5/.05")
+
+        if kwargs.get("scale_font_color") is not None:
+            msg = "`scale_font_color` is deprecated, use `scalebar_font_color` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            logger.warning(msg)
+            scalebar_font_color = kwargs.get("scale_font_color", "black")
+
         if kwargs.get("scale_length_perc") is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
@@ -1335,7 +1354,7 @@ def plot_grd(
             fig=fig,
             region=region,
             projection=proj_latlon,
-            font_color=kwargs.get("scale_font_color", "black"),
+            font_color=scalebar_font_color,
             length_perc=scalebar_length_perc,
             position=scalebar_position,
             **kwargs,
