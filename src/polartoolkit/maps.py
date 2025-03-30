@@ -378,17 +378,21 @@ def basemap(
         hemisphere = utils.default_hemisphere(hemisphere)
     except KeyError:
         hemisphere = None
-    # if region not set, use antarctic or greenland regions
+    # if region not set, either use region of existing figure or use antarctic or
+    # greenland regions
     if region is None:
-        if hemisphere == "north":
+        if fig is not None:
+            with pygmt.clib.Session() as lib:
+                region = tuple(lib.extract_region())
+                assert len(region) == 4
+        elif hemisphere == "north":
             region = regions.greenland
         elif hemisphere == "south":
             region = regions.antarctica
         else:
             msg = "Region must be specified if hemisphere is not specified."
             raise ValueError(msg)
-    if kwargs.get("hist") is True:
-        yshift_amount = kwargs.get("yshift_amount", -1.1)
+    logger.debug("using %s for the basemap region", region)
     else:
         yshift_amount = kwargs.get("yshift_amount", -1)
 
@@ -1214,26 +1218,28 @@ def plot_grd(
     warnings.filterwarnings("ignore", message="pandas.Int64Index")
     warnings.filterwarnings("ignore", message="pandas.Float64Index")
 
-    # get region from grid or use supplied region
-    if region is not None:
-        if isinstance(grid, xr.DataArray):
-            grid = pygmt.grdcut(
-                grid,
-                region=region,
-                verbose="q",
-            )
-    else:
-        try:
-            region = utils.get_grid_info(grid)[1]
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            msg = "grid's region can't be extracted, please provide with `region`"
-            raise ValueError(msg) from e
+    # clip grid if region supplied
+    if region is not None and isinstance(grid, xr.DataArray):
+        grid = pygmt.grdcut(
+            grid,
+            region=region,
+            verbose="q",
+        )
+    # if region not set, either use region of existing figure or get from grid
+    if region is None:
+        if fig is not None:
+            with pygmt.clib.Session() as lib:
+                region = tuple(lib.extract_region())
+                assert len(region) == 4
+        else:
+            try:
+                region = utils.get_grid_info(grid)[1]
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                msg = "grid's region can't be extracted, please provide with `region`"
+                raise ValueError(msg) from e
 
     region = typing.cast(tuple[float, float, float, float], region)
-    if kwargs.get("hist") is True:
-        yshift_amount = kwargs.get("yshift_amount", -1.1)
-    else:
-        yshift_amount = kwargs.get("yshift_amount", -1)
+    logger.debug("using %s for the basemap region", region)
 
     fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
         region=region,
