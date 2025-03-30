@@ -13,6 +13,7 @@ import pathlib
 import re
 import shutil
 import typing
+import warnings
 from inspect import getmembers, isfunction
 
 import deprecation
@@ -470,7 +471,7 @@ def basal_melt(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        logger.warning(msg)
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
     # This is the path to the processed (magnitude) grid
     url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
@@ -571,7 +572,7 @@ def buttressing(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        logger.warning(msg)
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
     initial_region = regions.antarctica
     initial_spacing = 1e3
@@ -685,13 +686,13 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                logger.warning(msg)
+                warnings.warn(msg, stacklevel=2)
                 msg = (
                     "preprocessing this grid in full resolution is very "
                     "computationally demanding, consider choosing a lower resolution "
                     "using the parameter `spacing`."
                 )
-                logger.warning(msg)
+                warnings.warn(msg, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     processed = (ds.VX**2 + ds.VY**2) ** 0.5
                     # Save to disk
@@ -711,9 +712,7 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                logger.warning(msg)
-                msg = "preprocessing this grid may take a long time."
-                logger.warning(msg)
+                warnings.warn(msg, stacklevel=2)
                 initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
                 initial_spacing = original_spacing
                 initial_registration = "g"
@@ -1048,7 +1047,7 @@ def geomap(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logger.warning(msg)
+        warnings.warn(msg, stacklevel=2)
 
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
@@ -1705,7 +1704,7 @@ def ibcso_coverage(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logger.warning(msg)
+        warnings.warn(msg, stacklevel=2)
 
     # download / retrieve the geopackage file
     fname = pooch.retrieve(
@@ -1816,11 +1815,11 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            logger.warning(
+            msg = (
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
-
+            warnings.warn(msg, stacklevel=2)
             # load grid
             grid = xr.load_dataset(fname1).z
 
@@ -1865,10 +1864,11 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # give warning about time
-            logger.warning(
+            msg = (
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
+            warnings.warn(msg, stacklevel=2)
 
             # load grid
             grid = xr.load_dataset(fname1).z
@@ -2206,7 +2206,7 @@ def bedmap_points(
             "Consider installing pyogrio for faster performance when reading "
             "geodataframes."
         )
-        logger.warning(msg)
+        warnings.warn(msg, stacklevel=2)
 
     # warn that pyarrow is faster
     if not USE_ARROW:
@@ -2214,7 +2214,7 @@ def bedmap_points(
             "Consider installing pyarrow for faster performance when reading "
             "geodataframes."
         )
-        logger.warning(msg)
+        warnings.warn(msg, stacklevel=2)
 
     if version == "bedmap1":
 
@@ -2300,7 +2300,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                logger.warning(msg)
+                warnings.warn(msg, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap2_point_data")(
@@ -2384,8 +2384,7 @@ def bedmap_points(
                 "this file is large, if you only need a subset of data please provide "
                 "a bounding box region via `region` to subset the data."
             )
-            logger.warning(msg)
-
+            warnings.warn(msg, stacklevel=2)
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
@@ -2409,7 +2408,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                logger.warning(msg)
+                warnings.warn(msg, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap3_point_data")(
@@ -2493,7 +2492,7 @@ def bedmap_points(
                 "this file is large, if you only need a subset of data please provide "
                 "a bounding box region via `region` to subset the data."
             )
-            logger.warning(msg)
+            warnings.warn(msg, stacklevel=2)
 
         df = gpd.read_file(
             fname,
