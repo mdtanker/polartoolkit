@@ -1726,8 +1726,8 @@ def ibcso_coverage(
             input_crs="epsg:3031",
             output_crs="epsg:9354",
             reg=True,
-            input_coord_names=("x", "y"),
-            output_coord_names=("x", "y"),
+            input_coord_names=("easting", "northing"),
+            output_coord_names=("easting", "northing"),
         )
         bbox = utils.region_to_bounding_box(region_epsg_9354)  # type: ignore[arg-type]
 

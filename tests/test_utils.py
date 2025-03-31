@@ -128,13 +128,13 @@ def test_region_to_df():
 
     expected = pd.DataFrame(
         {
-            "x": [
+            "easting": [
                 -680000.0,
                 470000.0,
                 -680000.0,
                 470000.0,
             ],
-            "y": [
+            "northing": [
                 -1420000.0,
                 -1420000.0,
                 -310000.0,
@@ -230,13 +230,13 @@ def test_latlon_to_epsg3031():
 
     expected = pd.DataFrame(
         {
-            "x": [
+            "easting": [
                 -680000.0,
                 470000.0,
                 -680000.0,
                 470000.0,
             ],
-            "y": [
+            "northing": [
                 -1420000.0,
                 -1420000.0,
                 -310000.0,
@@ -244,7 +244,7 @@ def test_latlon_to_epsg3031():
             ],
         }
     )
-    pd.testing.assert_frame_equal(df_xy[["x", "y"]], expected)
+    pd.testing.assert_frame_equal(df_xy[["easting", "northing"]], expected)
 
 
 def test_latlon_to_epsg3031_region():
@@ -275,13 +275,13 @@ def test_epsg3031_to_latlon():
 
     expected = pd.DataFrame(
         {
-            "x": [
+            "easting": [
                 -680000.0,
                 470000.0,
                 -680000.0,
                 470000.0,
             ],
-            "y": [
+            "northing": [
                 -1420000.0,
                 -1420000.0,
                 -310000.0,
@@ -291,6 +291,7 @@ def test_epsg3031_to_latlon():
             "lat": [-75.583047, -76.296586, -83.129754, -84.82147],
         }
     )
+
     pd.testing.assert_frame_equal(df_ll, expected)
 
 
@@ -322,13 +323,13 @@ def test_latlon_to_epsg3413():
 
     expected = pd.DataFrame(
         {
-            "x": [
+            "easting": [
                 380000.0,
                 550000.0,
                 380000.0,
                 550000.0,
             ],
-            "y": [
+            "northing": [
                 -2340000.0,
                 -2340000.0,
                 -2140000.0,
@@ -336,7 +337,7 @@ def test_latlon_to_epsg3413():
             ],
         }
     )
-    pd.testing.assert_frame_equal(df_xy[["x", "y"]], expected)
+    pd.testing.assert_frame_equal(df_xy[["easting", "northing"]], expected)
 
 
 def test_latlon_to_epsg3413_region():
@@ -367,13 +368,13 @@ def test_epsg3413_to_latlon():
 
     expected = pd.DataFrame(
         {
-            "x": [
+            "easting": [
                 380000.0,
                 550000.0,
                 380000.0,
                 550000.0,
             ],
-            "y": [
+            "northing": [
                 -2340000.0,
                 -2340000.0,
                 -2140000.0,
@@ -405,8 +406,8 @@ def test_points_inside_region():
     # first point is inside, second is outside
     df = pd.DataFrame(
         {
-            "x": [-50e3, 0],
-            "y": [-1000e3, 0],
+            "easting": [-50e3, 0],
+            "northing": [-1000e3, 0],
         }
     )
 
@@ -417,9 +418,9 @@ def test_points_inside_region():
     df_in = utils.points_inside_region(df, reg)
 
     assert len(df_in) == 1
-    assert df_in.x.iloc[0] == -50e3
+    assert df_in.easting.iloc[0] == -50e3
 
     df_out = utils.points_inside_region(df, reg, reverse=True)
 
     assert len(df_out) == 1
-    assert df_out.x.iloc[0] == 0.0
+    assert df_out.easting.iloc[0] == 0.0

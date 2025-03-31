@@ -227,7 +227,7 @@ def dd2dms(dd: float) -> str:
 
 def region_to_df(
     region: tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame,
-    coord_names: tuple[str, str] = ("x", "y"),
+    coord_names: tuple[str, str] = ("easting", "northing"),
     reverse: bool = False,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame:
     """
@@ -240,7 +240,7 @@ def region_to_df(
         bounding region in format [xmin, xmax, ymin, ymax] or, if `reverse` is True,
         a DataFrame with coordinate columns with names set by `cood_names`
     coord_names : tuple[str, str], optional
-        names of input or output coordinate columns, by default ("x", "y")
+        names of input or output coordinate columns, by default ("easting", "northing")
     reverse : bool, optional
         If True, convert from df to region tuple, else, convert from region tuple to df,
         by default False
@@ -622,7 +622,7 @@ def points_inside_region(
     Parameters
     ----------
     df : pandas.DataFrame
-        dataframe with columns 'x','y' to use for defining if within region
+        dataframe with coordinate columns to use for defining if within region
     region : tuple[float, float, float, float]
         bounding region in format [xmin, xmax, ymin, ymax] for bounds of new subset
         dataframe
@@ -1005,7 +1005,7 @@ def mask_from_shp(
     spacing: float | None = None,
     masked: bool = False,
     pixel_register: bool = True,
-    input_coord_names: tuple[str, str] = ("x", "y"),
+    input_coord_names: tuple[str, str] = ("easting", "northign"),
 ) -> xr.DataArray:
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -1038,7 +1038,7 @@ def mask_from_shp(
         choose whether the grid is pixel registered (True) or grid registered (False),
         by default True
     input_coord_names : tuple[str, str], optional
-        set names for input coordinate columns, by default ("x", "y")
+        set names for input coordinate columns, by default ("easting", "northing")
 
     Returns
     -------
@@ -1876,7 +1876,7 @@ def shapes_to_df(
 ) -> pd.DataFrame:
     """
     convert the output of `regions.draw_region` and `profiles.draw_lines` to a dataframe
-    of x and y points
+    of easting and northing points
 
     Parameters
     ----------
@@ -1888,7 +1888,7 @@ def shapes_to_df(
     Returns
     -------
     pandas.DataFrame
-        Dataframe with x, y, and shape_num.
+        Dataframe with easting, northing, and shape_num.
     """
     hemisphere = default_hemisphere(hemisphere)
 
@@ -1985,7 +1985,7 @@ def mask_from_polygon(
 
     # convert drawn polygon into dataframe
     df = shapes_to_df(polygon, hemisphere=hemisphere)
-    data_coords = (df.x, df.y)
+    data_coords = (df.easting, df.northing)
 
     # remove additional polygons
     if df.shape_num.max() > 0:
