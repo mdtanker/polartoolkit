@@ -328,12 +328,12 @@ def default_layers(
     Parameters
     ----------
     version : str
-        choose between 'bedmap2' and 'bedmachine' layers for Antarctica, and just
-        'bedmachine' Greenland
+        choose between 'bedmap2', 'bedmap3', and 'bedmachine' layers for Antarctica, and
+        just 'bedmachine' Greenland
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres, by default None
     reference : str, optional
-        choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap2),
+        choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap),
         for an elevation reference frame, by default None
     region : tuple[float], optional
         region to subset grids by, in format [xmin, xmax, ymin, ymax], by default None
@@ -380,7 +380,32 @@ def default_layers(
             reference=reference,
             spacing=spacing,
         )
-
+    elif version == "bedmap3":
+        if hemisphere == "north":
+            msg = "Bedmap3 is not available for the northern hemisphere."
+            raise ValueError(msg)
+        if reference is None:
+            reference = "eigen-gl04c"
+        surface = fetch.bedmap3(
+            "surface",
+            fill_nans=True,
+            region=region,
+            reference=reference,
+            spacing=spacing,
+        )
+        icebase = fetch.bedmap3(
+            "icebase",
+            fill_nans=True,
+            region=region,
+            reference=reference,
+            spacing=spacing,
+        )
+        bed = fetch.bedmap3(
+            "bed",
+            region=region,
+            reference=reference,
+            spacing=spacing,
+        )
     elif version == "bedmachine":
         if reference is None:
             reference = "eigen-6c4"
@@ -406,7 +431,7 @@ def default_layers(
             spacing=spacing,
         )
     else:
-        msg = "version must be either 'bedmap2' or 'bedmachine'"
+        msg = "version must be either 'bedmap2', 'bedmap3' or 'bedmachine'"
         raise ValueError(msg)
 
     layer_names = [
@@ -580,7 +605,7 @@ def plot_profile(
         if hemisphere == "north":
             layers_version = "bedmachine"
         elif hemisphere == "south":
-            layers_version = "bedmap2"
+            layers_version = "bedmap3"
         # with redirect_stdout(None), redirect_stderr(None):
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
