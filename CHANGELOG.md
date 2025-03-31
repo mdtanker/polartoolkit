@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v0.9.0 (2025-03-31)
 ### 🐛 Bug Fixes
 * more informative errors raised in fetch ([`a94704c`](https://github.com/mdtanker/polartoolkit/commit/a94704c78d52f8080a6b68ccaf1ffcfa494894de))
 * warn in grd2cpt called for points not grid ([`9b11476`](https://github.com/mdtanker/polartoolkit/commit/9b114766886d1819cda6622293f032f41db63e40))
@@ -47,7 +48,6 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * scalebar and inset length by default relative to shortest dimension ([`d6acd76`](https://github.com/mdtanker/polartoolkit/commit/d6acd7695adc96cdaf1a0f3f76e4a11f31af4396))
 * change kwarg 'scale_length_perc' to 'scalebar_length_perc' ([`4b77be3`](https://github.com/mdtanker/polartoolkit/commit/4b77be38a5709c62eb6f4ccf008128dfc549f76f))
 * change `grd_compare` defaults to automatically plot and no inset ([`9d0041b`](https://github.com/mdtanker/polartoolkit/commit/9d0041b0b6c831d9bbdaad24df21dd84fac5e7bc))
-
 
 ## v0.8.1 (2025-02-19)
 ### 🐛 Bug Fixes
