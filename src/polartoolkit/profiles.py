@@ -950,7 +950,7 @@ def plot_profile(
                     pen = f"{thick[i]}p,{color},{style}"
 
                 if i == 0:
-                    label = f"{v["name"]}+N{kwargs.get("layers_legend_columns",1)}"
+                    label = f"{v['name']}+N{kwargs.get('layers_legend_columns',1)}"
                 else:
                     label = v["name"]
 
