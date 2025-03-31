@@ -299,7 +299,7 @@ def sample_shp(name: str) -> str:
             None  # "f3821b8a4d24dd676f75db4b7f2b532a328de18e0bdcce8cee6a6abb3b3e70f6"
         )
     else:
-        msg = "invalid name string"
+        msg = "name must be either 'Disco_deep_transect' or 'Roosevelt_Island'"
         raise ValueError(msg)
 
     path = pooch.retrieve(
@@ -399,8 +399,8 @@ def mass_change(
         "gris_dmdt_filt",
     ]
     if version not in valid_versions:
-        msg = "invalid version string %s"
-        raise ValueError(msg, version)
+        msg = "version must be one of " + ", ".join(valid_versions)
+        raise ValueError(msg)
 
     path = pooch.retrieve(
         url=url,
@@ -589,7 +589,7 @@ def buttressing(
     elif version == "viscosity":
         var = "visc"
     else:
-        msg = "invalid version string"
+        msg = "version must be one of 'max', 'min', 'flow', or 'viscosity'"
         raise ValueError(msg)
 
     fname = f"{var}_nsidc_sumer_buttressing_v1.0.nc"
@@ -1110,7 +1110,7 @@ def geomap(
     elif version == "quality":
         layer = "ATA_GeoMAP_quality_v2022_08"
     else:
-        msg = "invalid version string"
+        msg = "version must be one of 'faults', 'units', 'sources', or 'quality'"
         raise ValueError(msg)
 
     if region is None:
@@ -1248,7 +1248,10 @@ def groundingline(
         # pick the requested files
         fname = glob.glob(f"{path}/{name}*.shp")[0]  # noqa: PTH207
     else:
-        msg = "invalid version string"
+        msg = (
+            "version must be one of 'depoorter-2013', 'measures-v2', 'BAS', or"
+            "'measures-greenland'"
+        )
         raise ValueError(msg)
 
     return fname
@@ -1374,7 +1377,10 @@ def antarctic_boundaries(
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]  # noqa: PTH207
     else:
-        msg = "invalid version string"
+        msg = (
+            "version must be one of 'Coastline', 'Basins_Antarctica', 'Basins_IMBIE',"
+            "'IceBoundaries','IceShelf','Mask'"
+        )
         raise ValueError(msg)
 
     return fname
@@ -1663,7 +1669,10 @@ def sediment_thickness(
         )
 
     else:
-        msg = "invalid version string"
+        msg = (
+            "version must be one of 'ANTASed', 'tankersley-2022', 'lindeque-2016', or "
+            "'GlobSed'"
+        )
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)
@@ -1942,7 +1951,7 @@ def ibcso(
             processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
     else:
-        msg = "invalid layer string"
+        msg = "layer must be 'surface' or 'bed'"
         raise ValueError(msg)
 
     grid = xr.open_zarr(path)[layer]
@@ -1961,7 +1970,7 @@ def ibcso(
     elif reference == "geoid":
         pass
     else:
-        msg = "invalid reference string"
+        msg = "reference must be 'geoid' or 'ellipsoid'"
         raise ValueError(msg)
 
     resampled = resample_grid(
@@ -2065,7 +2074,7 @@ def bedmachine(
 
         # greenland dataset doesn't have firn layer
         if layer == "firn":
-            msg = "invalid layer string"
+            msg = "firn layer not available for Greenland"
             raise ValueError(msg)
 
     elif hemisphere == "south":
@@ -2081,7 +2090,7 @@ def bedmachine(
         fname = "bedmachine_v3.nc"
         known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
     else:
-        msg = "invalid hemisphere string"
+        msg = "hemisphere must be 'north' or 'south'"
         raise ValueError(msg)
 
     if region is None:
@@ -2123,7 +2132,10 @@ def bedmachine(
             grid = ds[layer]
 
     else:
-        msg = "invalid layer string"
+        msg = (
+            "layer must be one of 'bed', 'dataid', 'errbed', 'firn', 'geoid', "
+            "'mask', 'source', 'surface', 'thickness', or 'icebase'"
+        )
         raise ValueError(msg)
 
     # change layer elevation to be relative to different reference frames.
@@ -2143,7 +2155,7 @@ def bedmachine(
         elif reference == "eigen-6c4":
             pass
         else:
-            msg = "invalid reference string"
+            msg = "reference must be 'eigen-6c4' or 'ellipsoid'"
             raise ValueError(msg)
 
     resampled = resample_grid(
@@ -2513,7 +2525,7 @@ def bedmap_points(
 
         df = pd.concat([bedmap1_points, bedmap2_points, bedmap3_points])
     else:
-        msg = "invalid layer string"
+        msg = "version must be 'bedmap1', 'bedmap2', 'bedmap3' or 'all'"
         raise ValueError(msg)
 
     return df
@@ -2709,7 +2721,11 @@ def bedmap3(
         # grid = xr.load_dataset(fname)[layer]
         grid = xr.open_zarr(fname)[layer]
     else:
-        msg = "invalid layer string"
+        msg = (
+            "layer must be one of 'surface_topography', 'bed_uncertainty', "
+            "'bed_topography', 'mask', 'ice_thickness', "
+            "'thickness_uncertainty', or 'icebase' or 'water_thickness'"
+        )
         raise ValueError(msg)
 
     # replace nans with 0's in surface, thickness or icebase grids
@@ -2759,7 +2775,7 @@ def bedmap3(
         elif reference == "eigen-gl04c":
             pass
         else:
-            msg = "invalid reference string"
+            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
             raise ValueError(msg)
 
     # resampled = grid
@@ -2876,7 +2892,12 @@ def bedmap2(
         initial_registration = "g"
 
     else:
-        msg = "invalid layer string"
+        msg = (
+            "layer must be one of 'bed', 'coverage', 'grounded_bed_uncertainty', "
+            "'icemask_grounded_and_shelves', 'lakemask_vostok', 'rockmask', "
+            "'surface', 'thickness', 'thickness_uncertainty_5km', "
+            "'gl04c_geiod_to_WGS84', 'icebase', or 'water_thickness'"
+        )
         raise ValueError(msg)
 
     if region is None:
@@ -2990,7 +3011,12 @@ def bedmap2(
         grid = xr.open_zarr(fname)[layer]
 
     else:
-        msg = "invalid layer string"
+        msg = (
+            "layer must be one of 'bed', 'coverage', 'grounded_bed_uncertainty', "
+            "'icemask_grounded_and_shelves', 'lakemask_vostok', 'rockmask', "
+            "'surface', 'thickness', 'thickness_uncertainty_5km', "
+            "'gl04c_geiod_to_WGS84', 'icebase', or 'water_thickness'"
+        )
         raise ValueError(msg)
 
     # replace nans with 0's in surface, thickness or icebase grids
@@ -3049,7 +3075,7 @@ def bedmap2(
         elif reference == "eigen-gl04c":
             pass
         else:
-            msg = "invalid reference string"
+            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
             raise ValueError(msg)
 
     resampled = resample_grid(
@@ -3133,7 +3159,7 @@ def rema(
         members = ["rema_mosaic_1km_v2.0_filled_cop30_dem.tif"]
         known_hash = "143ab56b79a0fdcae6769a895202af117fb0dbfe1fa2a0a17db9df2091338d21"
     else:
-        msg = "invalid version"
+        msg = "version must be '1km' or '500m'"
         raise ValueError(msg)
 
     if region is None:
@@ -3425,7 +3451,7 @@ def gravity(
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Standard-deviation_GA-from-LSC.nc"
             fname = "antgg_2021_Err.nc"
         else:
-            msg = "invalid anomaly type"
+            msg = "anomaly_type must be 'FA', 'BA', 'DG' or 'Err'"
             raise ValueError(msg)
 
         path = pooch.retrieve(
@@ -3484,7 +3510,7 @@ def gravity(
         elif hemisphere == "north":
             proj = "EPSG:3413"
         else:
-            msg = "invalid hemisphere"
+            msg = "hemisphere must be 'north' or 'south'"
             raise ValueError(msg)
 
         if region is None:
@@ -3504,7 +3530,7 @@ def gravity(
             elif hemisphere == "north":
                 fname_pre = fname1.with_stem(fname1.stem + "_epsg3413_preprocessed")
             else:
-                msg = "invalid hemisphere"
+                msg = "hemisphere must be 'north' or 'south'"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -3567,7 +3593,7 @@ def gravity(
         resampled = xr.merge(resampled_vars)
 
     else:
-        msg = "invalid version string"
+        msg = "version must be 'antgg', 'antgg-2021' or 'eigen'"
         raise ValueError(msg)
 
     return resampled  # typing.cast(xr.Dataset, resampled)
@@ -4025,7 +4051,7 @@ def magnetics(
         elif hemisphere == "north":
             proj = "EPSG:3413"
         else:
-            msg = "invalid hemisphere"
+            msg = "hemisphere must be 'north' or 'south'"
             raise ValueError(msg)
 
         if region is None:
@@ -4046,7 +4072,7 @@ def magnetics(
             elif hemisphere == "north":
                 fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
             else:
-                msg = "invalid hemisphere"
+                msg = "hemisphere must be 'north' or 'south'"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".nc")
 
@@ -4110,7 +4136,7 @@ def magnetics(
         )
 
     else:
-        msg = "invalid version string"
+        msg = "version must be 'admap1', 'admap2', 'admap2_gdb' or 'LCS-1'"
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)
@@ -4611,7 +4637,11 @@ def ghf(
             **kwargs,
         )
     else:
-        msg = "invalid version string"
+        msg = (
+            "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
+            "'losing-ebbing-2021', 'aq1', or 'shen-2020'"
+        )
+
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
@@ -4689,7 +4719,7 @@ def gia(
         )
 
     else:
-        msg = "invalid version string"
+        msg = "version must be 'stal-2020'"
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)
@@ -4900,7 +4930,7 @@ def crustal_thickness(
         )
 
     else:
-        msg = "invalid version string"
+        msg = "version must be 'an-2015' or 'shen-2018'"
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)
@@ -5110,7 +5140,7 @@ def moho(
         # )
 
     else:
-        msg = "invalid version string"
+        msg = "version must be 'shen-2018', 'an-2015', or 'pappa-2019'"
         raise ValueError(msg)
 
     return typing.cast(xr.DataArray, resampled)
