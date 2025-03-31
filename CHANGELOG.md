@@ -4,7 +4,49 @@ Automatically updated by
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Unreleased
+### 🐛 Bug Fixes
+* more informative errors raised in fetch ([`a94704c`](https://github.com/mdtanker/polartoolkit/commit/a94704c78d52f8080a6b68ccaf1ffcfa494894de))
+* warn in grd2cpt called for points not grid ([`9b11476`](https://github.com/mdtanker/polartoolkit/commit/9b114766886d1819cda6622293f032f41db63e40))
+* if region not specified and subplotting use existing figure region ([`d7a8b83`](https://github.com/mdtanker/polartoolkit/commit/d7a8b838fa3f0bed4e1cde97e41d7a892dd3c754))
+* unnecessary kwargs passed to add_colorbar ([`b4302c4`](https://github.com/mdtanker/polartoolkit/commit/b4302c46c8920835810ccb29980c999a0f2fd20e))
+* pass region to add_inset in 'plot_grd' and 'basemap' ([`958154c`](https://github.com/mdtanker/polartoolkit/commit/958154c428cb9e6badaa45fe4eacc10374e35ca1))
+* subset GHF points by region during fetch ([`92a41ad`](https://github.com/mdtanker/polartoolkit/commit/92a41ad4cdd1d6e96b518a273dfd94f36fd0a24a))
+* add defaults for coordinate conversion output column names ([`66a649b`](https://github.com/mdtanker/polartoolkit/commit/66a649b392c8f762944c5f198c94d75898b6208a))
+* use assumed coordinate names in reprojections ([`423ddc5`](https://github.com/mdtanker/polartoolkit/commit/423ddc56fdd094ebb19a5c837bb52ef30ffece72))
 ### 🧰 Chores / Maintenance
+* update backup env yml ([`510d0c6`](https://github.com/mdtanker/polartoolkit/commit/510d0c6cbb1efb55cf84479949bfbf867bacdd38))
+* update make remove comand ([`d4805b4`](https://github.com/mdtanker/polartoolkit/commit/d4805b4e978de08ba86ef33823948fa8f3c3f1ca))
+* add logging to maps.py ([`13930be`](https://github.com/mdtanker/polartoolkit/commit/13930bee63ba749a70390d6efbe62015af0013af))
+### ✏️ Formatting
+* quotes error ([`d5fe11a`](https://github.com/mdtanker/polartoolkit/commit/d5fe11a7d13ccd08be27717dc5b5fe42ef32310d))
+### 📖 Documentation
+* rerun all docs ([`e24cd70`](https://github.com/mdtanker/polartoolkit/commit/e24cd702aef719acb398d83e32eca0b82125745b))
+* add some missing docstrings ([`95aa34b`](https://github.com/mdtanker/polartoolkit/commit/95aa34b4b0d8979732386a7fffa716e8172099d4))
+### 🚀 Features
+* add bedmap3 grids ([`3bab405`](https://github.com/mdtanker/polartoolkit/commit/3bab40587dda4bf98bce6049006e94ad09a31f95))
+* allow extra x and y shift amounts ([`5bef9ca`](https://github.com/mdtanker/polartoolkit/commit/5bef9ca785a03762be9dafcee35cef25a7e9a39c))
+* allow specifying cbar histogram height with 'cbar_hist_height', independent from 'cbar_yoffset ([`02ae70d`](https://github.com/mdtanker/polartoolkit/commit/02ae70d9d2c32d0f55ee4a747ac8de4940a8c006))
+* allow specifing simple basemap colors and pen ([`c711274`](https://github.com/mdtanker/polartoolkit/commit/c711274a80a86d10d15ccffbc689ab2e7dd79bee))
+* allow setting number of columns in layers legend in profiles with 'layers_legend_columns' ([`149fbf7`](https://github.com/mdtanker/polartoolkit/commit/149fbf7ca49a9eaf7ca1fa8b141560fa09d48729))
+* add verbose kwarg for 'add_box' and 'add_colorbar' ([`92a476d`](https://github.com/mdtanker/polartoolkit/commit/92a476d4e2e1ae636d167e59f161683d55401a6d))
+* allow specifying robust percentiles in various functions ([`f1b62f1`](https://github.com/mdtanker/polartoolkit/commit/f1b62f1896c037cbd0f4b2ea9957985c0d216a25))
+* add padding options and more filter types to 'filter_grid' ([`425aea8`](https://github.com/mdtanker/polartoolkit/commit/425aea84b135a0aacb38e05719af44d26698bceb))
+###  🎨 Refactor
+* use easting and northing throughout profiles module ([`82df4f6`](https://github.com/mdtanker/polartoolkit/commit/82df4f6b8ab69a1026651fa23b59a301342b9549))
+* use 'easting' and 'northing' instead of 'x' and 'y' throughout code ([`856e054`](https://github.com/mdtanker/polartoolkit/commit/856e054b3eb2b964111a96cf56570cbd4ff14de3))
+* bedmap3 as default for profiles ([`b2fc5d6`](https://github.com/mdtanker/polartoolkit/commit/b2fc5d6e1c36763bd51e4de19eb37f0b29b14017))
+* determine y shift amount based on what is being plotted. ([`901be27`](https://github.com/mdtanker/polartoolkit/commit/901be2762f51ade9bc38bff0ff48a7409fdd7a78))
+* set title and frames at beginning of plotting ([`f2131ab`](https://github.com/mdtanker/polartoolkit/commit/f2131abdc1a34c083430a0028503d4633d5c76ea))
+* use seperate transparency kwarg for frame and grid ([`d9ca761`](https://github.com/mdtanker/polartoolkit/commit/d9ca761a1331fe248e7aca0448011d06fdc52663))
+* use easting and northing for bedmap points ([`2ce8510`](https://github.com/mdtanker/polartoolkit/commit/2ce851066d006a6b443128ee7b11c0d1bafeafe9))
+* use warnings instead of logging for some cases ([`2876442`](https://github.com/mdtanker/polartoolkit/commit/287644287b3217fd6575bd6b0383acfa2ddd4c42))
+* specify point fill with column name ([`cd59881`](https://github.com/mdtanker/polartoolkit/commit/cd59881e192e006e62aab29b965e4ffa65876f07))
+* change 'scale_font_color' to 'scalebar_font_color' ([`18e7b84`](https://github.com/mdtanker/polartoolkit/commit/18e7b8462a09c0854d23ad28f67d8f8f7264b690))
+* use measures-v2 groundingline by default instead of depoorter ([`07ad14b`](https://github.com/mdtanker/polartoolkit/commit/07ad14bee052dbcb301021e749b94b1b094e436a))
+*  rename 'inset_pos' to 'inset_position' and remove 'inset_offset' ([`52a537f`](https://github.com/mdtanker/polartoolkit/commit/52a537f86154a06ade079f9e4d80a2492adca822))
+* scalebar and inset length by default relative to shortest dimension ([`d6acd76`](https://github.com/mdtanker/polartoolkit/commit/d6acd7695adc96cdaf1a0f3f76e4a11f31af4396))
+* change kwarg 'scale_length_perc' to 'scalebar_length_perc' ([`4b77be3`](https://github.com/mdtanker/polartoolkit/commit/4b77be38a5709c62eb6f4ccf008128dfc549f76f))
+* change `grd_compare` defaults to automatically plot and no inset ([`9d0041b`](https://github.com/mdtanker/polartoolkit/commit/9d0041b0b6c831d9bbdaad24df21dd84fac5e7bc))
 
 
 ## v0.8.1 (2025-02-19)
