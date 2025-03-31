@@ -6,6 +6,7 @@
 ---
 ---
 bedmap2
+bedmap3
 bedmachine
 deepbedmap
 etopo
