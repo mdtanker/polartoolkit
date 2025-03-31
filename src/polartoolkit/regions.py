@@ -270,7 +270,7 @@ def combine_regions(
     coords2 = utils.region_to_df(region2)
     coords_combined = pd.concat((coords1, coords2))
     reg: tuple[float, float, float, float] = vd.get_region(
-        (coords_combined.x, coords_combined.y)
+        (coords_combined.easting, coords_combined.northing)
     )
     return reg
 
