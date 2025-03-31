@@ -69,8 +69,8 @@ def create_profile(
     Returns
     -------
     pandas.DataFrame
-        Dataframe with 'x', 'y', and 'dist' columns for points along line or shapefile
-        path.
+        Dataframe with 'easting', 'northing', and 'dist' columns for points along line
+        or shapefile path.
     """
     methods = ["points", "shapefile", "polyline"]
     if method not in methods:
@@ -85,12 +85,13 @@ def create_profile(
         start = typing.cast(tuple[float, float], start)
         stop = typing.cast(tuple[float, float], stop)
         coordinates = pd.DataFrame(
-            data=np.linspace(start=start, stop=stop, num=num), columns=["x", "y"]
+            data=np.linspace(start=start, stop=stop, num=num),
+            columns=["easting", "northing"],
         )
         # for points, dist is from first point
         coordinates["dist"] = np.sqrt(
-            (coordinates.x - coordinates.x.iloc[0]) ** 2
-            + (coordinates.y - coordinates.y.iloc[0]) ** 2
+            (coordinates.easting - coordinates.easting.iloc[0]) ** 2
+            + (coordinates.northing - coordinates.northing.iloc[0]) ** 2
         )
 
     elif method == "shapefile":
@@ -100,7 +101,7 @@ def create_profile(
         shp = gpd.read_file(shapefile, engine=ENGINE)
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
-        coordinates_rel = df.coords.apply(pd.Series, index=["x", "y"])
+        coordinates_rel = df.coords.apply(pd.Series, index=["easting", "northing"])
         # for shapefiles, dist is cumulative from previous points
         coordinates = cum_dist(coordinates_rel, **kwargs)
 
@@ -142,7 +143,7 @@ def create_profile(
     else:
         df2 = coords
 
-    return df2[["x", "y", "dist"]].reset_index(drop=True)
+    return df2[["easting", "northing", "dist"]].reset_index(drop=True)
 
 
 def sample_grids(
@@ -157,8 +158,8 @@ def sample_grids(
     Parameters
     ----------
     df : pandas.DataFrame
-        Dataframe containing columns 'x', 'y', or columns with names defined by kwarg
-        "coord_names".
+        Dataframe containing columns 'easting', 'northing', or columns with names
+        defined by kwarg "coord_names".
     grid : str or xarray.DataArray
         Grid to sample, either file name or xarray.DataArray
     sampled_name : str,
@@ -254,7 +255,8 @@ def shorten(
     Parameters
     ----------
     df : pandas.DataFrame
-        Dataframe to shorten and recalculate distance, must contain 'x', 'y', 'dist'
+        Dataframe to shorten and recalculate distance, must contain 'easting',
+        'northing', 'dist'
     max_dist : float, optional
         remove rows with dist>max_dist, by default None
     min_dist : float, optional
@@ -271,8 +273,8 @@ def shorten(
         min_dist = df.dist.min()
     shortened = df[(df.dist < max_dist) & (df.dist > min_dist)].copy()
     shortened["dist"] = np.sqrt(
-        (shortened.x - shortened.x.iloc[0]) ** 2
-        + (shortened.y - shortened.y.iloc[0]) ** 2
+        (shortened.easting - shortened.easting.iloc[0]) ** 2
+        + (shortened.northing - shortened.northing.iloc[0]) ** 2
     )
     return shortened
 
@@ -619,7 +621,7 @@ def plot_profile(
     if data_dict == "default":
         # with redirect_stdout(None), redirect_stderr(None):
         data_dict = default_data(
-            region=vd.get_region((points.x, points.y)),
+            region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
         )
 
@@ -635,7 +637,7 @@ def plot_profile(
     # sample data grids
     df_data = points.copy()
     if data_dict is not None:
-        points = points[["x", "y", "dist"]].copy()
+        points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
 
@@ -1046,7 +1048,7 @@ def plot_profile(
         # Automatic data extent + buffer as % of line length
         buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
         map_reg = regions.alter_region(
-            vd.get_region((df_layers.x, df_layers.y)), zoom=-buffer
+            vd.get_region((df_layers.easting, df_layers.northing)), zoom=-buffer
         )
 
         # Set figure parameters
@@ -1163,13 +1165,13 @@ def plot_profile(
         fig.plot(
             projection=map_proj,
             region=map_reg,
-            x=df_layers.x,
-            y=df_layers.y,
+            x=df_layers.easting,
+            y=df_layers.northing,
             pen=kwargs.get("map_line_pen", "2p,red"),
         )
         fig.text(
-            x=df_layers.loc[df_layers.dist.idxmin()].x,
-            y=df_layers.loc[df_layers.dist.idxmin()].y,
+            x=df_layers.loc[df_layers.dist.idxmin()].easting,
+            y=df_layers.loc[df_layers.dist.idxmin()].northing,
             text=kwargs.get("start_label", "A"),
             fill="white",
             font="12p,Helvetica,black",
@@ -1177,8 +1179,8 @@ def plot_profile(
             clearance="+tO",
         )
         fig.text(
-            x=df_layers.loc[df_layers.dist.idxmax()].x,
-            y=df_layers.loc[df_layers.dist.idxmax()].y,
+            x=df_layers.loc[df_layers.dist.idxmax()].easting,
+            y=df_layers.loc[df_layers.dist.idxmax()].northing,
             text=kwargs.get("end_label", "B"),
             fill="white",
             font="12p,Helvetica,black",
@@ -1189,8 +1191,8 @@ def plot_profile(
         # add x,y points to plot
         if map_points is not None:
             fig.plot(
-                x=map_points.x,
-                y=map_points.y,
+                x=map_points.easting,
+                y=map_points.northing,
                 style=kwargs.get("map_points_style", "x.15c"),
                 pen=kwargs.get("map_points_pen", ".2p,black"),
                 fill=kwargs.get("map_points_color", "black"),
@@ -1295,14 +1297,14 @@ def plot_data(
     if data_dict == "default":
         # with redirect_stdout(None), redirect_stderr(None):
         data_dict = default_data(
-            region=vd.get_region((points.x, points.y)),
+            region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
         )
 
     # sample data grids
     df_data = points.copy()
     if data_dict is not None:
-        points = points[["x", "y", "dist"]].copy()
+        points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
 
@@ -1495,7 +1497,7 @@ def plot_data(
         # Automatic data extent + buffer as % of line length
         buffer = df_data.dist.max() * kwargs.get("map_buffer", 0.3)
         map_reg = regions.alter_region(
-            vd.get_region((df_data.x, df_data.y)), zoom=-buffer
+            vd.get_region((df_data.easting, df_data.northing)), zoom=-buffer
         )
 
         # Set figure parameters
@@ -1585,13 +1587,13 @@ def plot_data(
         fig.plot(
             projection=map_proj,
             region=map_reg,
-            x=df_data.x,
-            y=df_data.y,
+            x=df_data.easting,
+            y=df_data.northing,
             pen=kwargs.get("map_line_pen", "2p,red"),
         )
         fig.text(
-            x=df_data.loc[df_data.dist.idxmin()].x,
-            y=df_data.loc[df_data.dist.idxmin()].y,
+            x=df_data.loc[df_data.dist.idxmin()].easting,
+            y=df_data.loc[df_data.dist.idxmin()].northing,
             text=kwargs.get("start_label", "A"),
             fill="white",
             font="12p,Helvetica,black",
@@ -1599,8 +1601,8 @@ def plot_data(
             clearance="+tO",
         )
         fig.text(
-            x=df_data.loc[df_data.dist.idxmax()].x,
-            y=df_data.loc[df_data.dist.idxmax()].y,
+            x=df_data.loc[df_data.dist.idxmax()].easting,
+            y=df_data.loc[df_data.dist.idxmax()].northing,
             text=kwargs.get("end_label", "B"),
             fill="white",
             font="12p,Helvetica,black",
@@ -1611,8 +1613,8 @@ def plot_data(
         # add x,y points to plot
         if map_points is not None:
             fig.plot(
-                x=map_points.x,
-                y=map_points.y,
+                x=map_points.easting,
+                y=map_points.northing,
                 style=kwargs.get("map_points_style", "x.15c"),
                 pen=kwargs.get("map_points_pen", ".2p,blue"),
                 fill=kwargs.get("map_points_color", "blue"),
@@ -1665,10 +1667,10 @@ def rel_dist(
         df1 = df.copy()
 
     # from https://stackoverflow.com/a/75824992/18686384
-    df1["x_lag"] = df1["x"].shift(1)  # pylint: disable=used-before-assignment
-    df1["y_lag"] = df1["y"].shift(1)
+    df1["x_lag"] = df1.easting.shift(1)  # pylint: disable=used-before-assignment
+    df1["y_lag"] = df1.northing.shift(1)
     df1["rel_dist"] = np.sqrt(
-        (df1["x"] - df1["x_lag"]) ** 2 + (df1["y"] - df1["y_lag"]) ** 2
+        (df1.easting - df1["x_lag"]) ** 2 + (df1.northing - df1["y_lag"]) ** 2
     )
     df1 = df1.drop(["x_lag", "y_lag"], axis=1)
     return df1.dropna(subset=["rel_dist"])

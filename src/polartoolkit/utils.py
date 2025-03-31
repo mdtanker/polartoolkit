@@ -1940,7 +1940,7 @@ def polygon_to_region(
         )
         df = df[df.shape_num == 0]
 
-    reg: tuple[float, float, float, float] = vd.get_region((df.x, df.y))
+    reg: tuple[float, float, float, float] = vd.get_region((df.easting, df.northing))
 
     return reg
 
