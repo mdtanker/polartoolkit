@@ -2519,6 +2519,264 @@ def bedmap_points(
     return df
 
 
+def bedmap3(
+    layer: str,
+    reference: str = "eigen-gl04c",
+    region: tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
+    registration: str | None = None,
+    fill_nans: bool = False,
+    **kwargs: typing.Any,
+) -> xr.DataArray:
+    """
+    Load Bedmap3 data as an xarray.DataArray
+    from :footcite:t:`pritchardbedmap32024`.
+    accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=2d0e4791-8e20-46a3-80e4-f5f6716025d2.
+
+    All grids are by default referenced to the EIGEN-GL04C geoid. Use the
+    reference='ellipsoid' to convert to the WGS-84 ellipsoid or reference='eigen-6c4' to
+    convert to the EIGEN-6c4 geoid.
+
+    Unlike Bedmachine data, Bedmap2 surface and icethickness contain NaN's over the
+    ocean, instead of 0's. To fill these NaN's with 0's, set `fill_nans=True`.
+    Note, this only makes since if the reference is the geoid, therefore, if
+    `reference='ellipsoid` and `fill_nans=True`, the nan's will be filled before
+    converting the results to the geoid (just for surface, since thickness isn't
+    relative to anything).
+
+    Parameters
+    ----------
+    layer : str
+        choose which layer to fetch:
+        "surface", "icebase", "bed", "ice_thickness", "water_thickness",
+        "bed_uncertainty", "ice_thickness_uncertainty", and  "mask".
+    reference : str
+        choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
+        ellipsoid, 'ellipsoid', or by default the 'eigen-gl04c' geoid.
+    region : tuple[float, float, float, float], optional
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
+    spacing : str or int, optional
+        grid spacing to resample the loaded grid to, by default 10e3
+    registration : str, optional,
+        choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
+        the original type of the grid
+    fill_nans : bool, optional,
+        choose whether to fill nans in 'surface' and 'thickness' with 0. If converting
+        to reference to the geoid, will fill nan's before conversion, by default is
+        False
+    **kwargs : optional
+        additional keyword arguments to pass to the resample_grid function
+
+    Returns
+    -------
+    xarray.DataArray
+        Returns a loaded, and optional clip/resampled grid of Bedmap2.
+
+    References
+    ----------
+    .. footbibliography::
+    """
+
+    # download url
+    url = (
+        "https://ramadda.data.bas.ac.uk/repository/entry/get/bedmap3.nc?entryid=synth%"
+        "3A2d0e4791-8e20-46a3-80e4-f5f6716025d2%3AL2JlZG1hcDMubmM%3D"
+    )
+    known_hash = None
+
+    initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
+    # initial_region = (-3333250.0, 3333250.0, -3333250.0, 3333250.0)
+    # initial_region = (-3333500.0, 3333500.0, -3333000.0, 3333000.0)
+    initial_spacing = 500
+    initial_registration = "p"
+
+    if region is None:
+        region = initial_region
+    if spacing is None:
+        spacing = initial_spacing
+    if registration is None:
+        registration = initial_registration
+
+    # convert user-supplied strings to names used by Bedmap3
+    if layer == "surface":
+        layer = "surface_topography"
+    if layer == "bed":
+        layer = "bed_topography"
+    if layer == "ice_thickness_uncertainty":
+        layer = "thickness_uncertainty"
+
+    valid_variables = [
+        "surface_topography",
+        "bed_uncertainty",
+        "bed_topography",
+        "mask",
+        "ice_thickness",
+        "thickness_uncertainty",
+        # "mapping",
+    ]
+
+    # fname = pooch.retrieve(
+    #     url=url,
+    #     fname="bedmap3.nc",
+    #     path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+    #     known_hash=known_hash,
+    #     progressbar=True,
+    # )
+    # return xr.open_dataset(fname)[layer]
+    # original data limits
+    # surface_topography: 1 - 4734
+    # bed_uncertainty: 7 - 306
+    # bed_topography: -7409 4704
+    # mask: 1 - 4
+    # ice_thickness: 0 - 4757
+    # thickness_uncertainty: 0 - 272
+
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Convert the netcdf to a .zarr file"
+        # Rename to the file to ***.zarr
+        fname_processed = pathlib.Path(fname).with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            grid = xr.load_dataset(fname)
+            # resample to gridline registration
+            resampled_vars = []
+            for var in valid_variables:
+                logger.info("resampling variable `%s` before saving to a .zarr", var)
+                resampled_vars.append(
+                    resample_grid(  # type: ignore[union-attr]
+                        grid[var],
+                        # initial_spacing=initial_spacing,
+                        # initial_region=initial_region,
+                        # initial_registration=initial_registration,
+                        spacing=initial_spacing,
+                        region=initial_region,
+                        registration=initial_registration,
+                    ).rename(var)
+                )
+            grid = xr.merge(resampled_vars)
+
+            # Save to disk
+            grid.to_zarr(fname_processed)
+
+        return str(fname_processed)
+
+    # calculate icebase as surface-thickness
+    if layer == "icebase":
+        logger.info("calculating icebase from surface and thickness grids")
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap3.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            known_hash=known_hash,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # surface = xr.load_dataset(fname).surface_topography
+        # thickness = xr.load_dataset(fname).ice_thickness
+        surface = xr.open_zarr(fname).surface_topography
+        thickness = xr.open_zarr(fname).ice_thickness
+        grid = surface - thickness
+    elif layer == "water_thickness":
+        logger.info("calculating water thickness from bed and icebase grids")
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap3.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            known_hash=known_hash,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # surface = xr.load_dataset(fname).surface_topography
+        # thickness = xr.load_dataset(fname).ice_thickness
+        surface = xr.open_zarr(fname).surface_topography
+        thickness = xr.open_zarr(fname).ice_thickness
+        icebase = surface - thickness
+        # bed = xr.load_dataset(fname).bed_topography
+        bed = xr.open_zarr(fname).bed_topography
+        grid = icebase - bed
+    elif layer in valid_variables:
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap3.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            known_hash=known_hash,
+            processor=preprocessing,
+            progressbar=True,
+        )
+        # grid = xr.load_dataset(fname)[layer]
+        grid = xr.open_zarr(fname)[layer]
+    else:
+        msg = "invalid layer string"
+        raise ValueError(msg)
+
+    # replace nans with 0's in surface, thickness or icebase grids
+    if fill_nans is True and layer in [
+        "surface_topography",
+        "icebase",
+        "ice_thickness",
+    ]:
+        grid = grid.fillna(0)
+
+    # change layer elevation to be relative to different reference frames.
+    if layer in ["surface_topography", "icebase", "bed_topography"]:
+        if reference == "ellipsoid":
+            logger.info("converting to be referenced to the WGS84 ellipsoid")
+            # load bedmap2 grid for converting to wgs84
+            geoid_2_ellipsoid = bedmap2(
+                layer="gl04c_geiod_to_WGS84",
+                region=initial_region,
+                spacing=initial_spacing,
+                registration=initial_registration,
+            )
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+        elif reference == "eigen-6c4":
+            logger.info("converting to be referenced to the EIGEN-6C4")
+            # set layer variable so pooch retrieves the geoid conversion file
+            # load bedmap2 grid for converting to wgs84
+            geoid_2_ellipsoid = bedmap2(
+                layer="gl04c_geiod_to_WGS84",
+                region=initial_region,
+                spacing=initial_spacing,
+                registration=initial_registration,
+            )
+            # convert to the ellipsoid
+            grid = grid + geoid_2_ellipsoid
+
+            # get a grid of EIGEN geoid values matching the user's input
+            eigen_correction = geoid(
+                spacing=initial_spacing,
+                region=initial_region,
+                registration=initial_registration,
+                hemisphere="south",
+                **kwargs,
+            )
+            # convert from ellipsoid back to eigen geoid
+            grid = grid - eigen_correction
+        elif reference == "eigen-gl04c":
+            pass
+        else:
+            msg = "invalid reference string"
+            raise ValueError(msg)
+
+    # resampled = grid
+    resampled = resample_grid(
+        grid,
+        initial_spacing=initial_spacing,
+        initial_region=initial_region,
+        initial_registration=initial_registration,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
+
+    return typing.cast(xr.DataArray, resampled)
+
+
 def bedmap2(
     layer: str,
     reference: str = "eigen-gl04c",
