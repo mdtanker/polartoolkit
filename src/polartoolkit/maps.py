@@ -1693,9 +1693,9 @@ def add_colorbar(
 
     if cbar_frame is None:
         cbar_frame = [
-            f"pxaf+l{kwargs.get('cbar_label',' ')}",
-            f"+u{kwargs.get('cbar_unit_annot',' ')}",
-            f"py+l{kwargs.get('cbar_unit',' ')}",
+            f"pxaf+l{kwargs.get('cbar_label', ' ')}",
+            f"+u{kwargs.get('cbar_unit_annot', ' ')}",
+            f"py+l{kwargs.get('cbar_unit', ' ')}",
         ]
 
     # vertical or horizontal colorbar
@@ -1710,7 +1710,7 @@ def add_colorbar(
         FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
         position = (
-            f"jBC+jTC+w{fig_width*cbar_width_perc}c+{orientation}{text_location}"
+            f"jBC+jTC+w{fig_width * cbar_width_perc}c+{orientation}{text_location}"
             f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
         )
         logger.debug("cbar frame; %s", cbar_frame)
@@ -1903,7 +1903,7 @@ def add_colorbar(
             logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
-                projection=f"X{fig_width*cbar_width_perc}c/{cbar_hist_height}c",
+                projection=f"X{fig_width * cbar_width_perc}c/{cbar_hist_height}c",
                 region=hist_reg,
                 frame=kwargs.get("hist_frame", False),
                 cmap=hist_cmap,
@@ -2059,16 +2059,16 @@ def add_gridlines(
         x_frames = ["xag", "xa"]
     else:
         x_frames = [
-            f"xa{x_spacing*2}g{x_spacing}",
-            f"xa{x_spacing*2}",
+            f"xa{x_spacing * 2}g{x_spacing}",
+            f"xa{x_spacing * 2}",
         ]
 
     if y_spacing is None:
         y_frames = ["yag", "ya"]
     else:
         y_frames = [
-            f"ya{y_spacing*2}g{y_spacing}",
-            f"ya{y_spacing*2}",
+            f"ya{y_spacing * 2}g{y_spacing}",
+            f"ya{y_spacing * 2}",
         ]
 
     with pygmt.config(
@@ -2996,7 +2996,7 @@ def subplots(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
-                offset=f"{(((fig_width*xshift)/2)*(ncols-1))}c/{fig_title_y_offset}",
+                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
@@ -3027,15 +3027,15 @@ def subplots(
             if i < 26:
                 label = string.ascii_lowercase[i]
             elif i < 26 * 2:
-                label = f"a{string.ascii_lowercase[i-26]}"
+                label = f"a{string.ascii_lowercase[i - 26]}"
             elif i < 26 * 3:
-                label = f"b{string.ascii_lowercase[i-(26*2)]}"
+                label = f"b{string.ascii_lowercase[i - (26 * 2)]}"
             elif i < 26 * 4:
-                label = f"b{string.ascii_lowercase[i-(26*3)]}"
+                label = f"b{string.ascii_lowercase[i - (26 * 3)]}"
             elif i < 26 * 5:
-                label = f"b{string.ascii_lowercase[i-(26*4)]}"
+                label = f"b{string.ascii_lowercase[i - (26 * 4)]}"
             elif i < 26 * 6:
-                label = f"b{string.ascii_lowercase[i-(26*5)]}"
+                label = f"b{string.ascii_lowercase[i - (26 * 5)]}"
             else:
                 label = None
 
@@ -3290,7 +3290,7 @@ def plot_3d(
                 cmap=cmap,
                 # position=f"g{np.max(region[0:2])}/{np.mean(region[2:4])}+w{fig_width*.4}c/.5c+v+e+m", #noqa: E501
                 # # vertical, with triangles, text opposite
-                position=f"jMR+w{fig_width*.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite #noqa: E501
+                position=f"jMR+w{fig_width * 0.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite #noqa: E501
                 frame=f"xaf+l{cbar_labels[i]}",
                 perspective=cbar_perspective,
                 box="+gwhite+c3p",
