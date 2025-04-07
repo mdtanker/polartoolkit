@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v0.9.1 (2025-04-07)
 ### 🐛 Bug Fixes
 * update bedmap3 fetch with after registration issue ([`6cf33ed`](https://github.com/mdtanker/polartoolkit/commit/6cf33ed7a3cb1ccd7e159ca53fc915b09d0b2b4a))
 * update some fetch hashes ([`f6e4ab7`](https://github.com/mdtanker/polartoolkit/commit/f6e4ab7a3c93c56263aa886a7b9be7373b2332e8))
@@ -16,7 +17,6 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * add filterwarnings to some tests ([`b0636e7`](https://github.com/mdtanker/polartoolkit/commit/b0636e7dbabdbcd00b2e585585fbe52dd682c47c))
 ###  🎨 Refactor
 * change order of some code for clarity ([`9e315b0`](https://github.com/mdtanker/polartoolkit/commit/9e315b0ba5df47b97e7bd70b2b41213d46a162f7))
-
 
 ## v0.9.0 (2025-03-31)
 ### 🐛 Bug Fixes
