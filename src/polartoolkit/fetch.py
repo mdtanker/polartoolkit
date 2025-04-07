@@ -132,20 +132,26 @@ def resample_grid(
     # if initial values not given, extract from supplied grid
     if (
         (initial_spacing is None)
-        | (initial_region is None)
-        | (initial_registration is None)
+        & (initial_region is None)
+        & (initial_registration is None)
     ):
-        logger.debug("initial values not given for resampling, extracting from grid")
+        logger.debug("no initial values given for resampling, extracting from grid")
         grd_info = utils.get_grid_info(grid)
-    if initial_spacing is None:
-        initial_spacing = grd_info[0]  # pylint: disable=possibly-used-before-assignment
-        initial_spacing = typing.cast(float, initial_spacing)
-    if initial_region is None:
-        initial_region = grd_info[1]
+        initial_spacing, initial_region, _, _, initial_registration = grd_info
+    elif initial_spacing is None:
+        logger.debug("no initial spacing given, extracting from grid")
+        initial_spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
+    elif initial_region is None:
+        logger.debug("no initial region given, extracting from grid")
+        initial_region = tuple(  # type: ignore[assignment]
+            float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
+        )
         initial_region = typing.cast(tuple[float, float, float, float], initial_region)
-    if initial_registration is None:
-        initial_registration = grd_info[4]
-        initial_registration = typing.cast(str, initial_registration)
+    elif initial_registration is None:
+        logger.debug("no initial registration given, extracting from grid")
+        # initial_registration = grd_info[4]
+        reg = grid.gmt.registration  # type: ignore[union-attr]
+        initial_registration = "g" if reg == 0 else "p"
     logger.debug(
         "using initial values: %s, %s, %s",
         initial_spacing,

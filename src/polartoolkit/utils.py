@@ -1460,8 +1460,17 @@ def grd_compare(
     da1_reg = typing.cast(tuple[float, float, float, float], da1_reg)
     da2_reg = da2_info[1]
     da2_reg = typing.cast(tuple[float, float, float, float], da2_reg)
-    # if spacing and region match, no resampling
-    if (da1_spacing == da2_spacing) and (da1_reg == da2_reg):
+
+    # extract registrations of both grids
+    da1_registration = da1_info[-1]
+    da2_registration = da2_info[-1]
+
+    # if spacing, region and registration match, no resampling
+    if (
+        (da1_spacing == da2_spacing)
+        and (da1_reg == da2_reg)
+        and (da1_registration == da2_registration)
+    ):
         grid1 = da1
         grid2 = da2
     else:
@@ -1505,6 +1514,24 @@ def grd_compare(
             registration=registration,
             verbose=verbose,
         )
+
+        reg = grid1.gmt.registration
+        grid_registration: str | None = "g" if reg == 0 else "p"
+        if grid_registration != registration:
+            warnings.warn(
+                "registration hasn't been correctly changed",
+                stacklevel=2,
+            )
+            grid1 = change_reg(grid1)
+
+        reg = grid2.gmt.registration
+        grid_registration = "g" if reg == 0 else "p"
+        if grid_registration != registration:
+            warnings.warn(
+                "registration hasn't been correctly changed",
+                stacklevel=2,
+            )
+            grid2 = change_reg(grid2)
 
     grid1 = typing.cast(xr.DataArray, grid1)
     grid2 = typing.cast(xr.DataArray, grid2)
