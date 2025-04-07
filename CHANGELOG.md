@@ -3,6 +3,20 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## Unreleased
+### 🐛 Bug Fixes
+* update bedmap3 fetch with after registration issue ([`6cf33ed`](https://github.com/mdtanker/polartoolkit/commit/6cf33ed7a3cb1ccd7e159ca53fc915b09d0b2b4a))
+* update some fetch hashes ([`f6e4ab7`](https://github.com/mdtanker/polartoolkit/commit/f6e4ab7a3c93c56263aa886a7b9be7373b2332e8))
+* use updated coord names ([`35feba1`](https://github.com/mdtanker/polartoolkit/commit/35feba1622ad9d174ea7b9665d99440d7db74c98))
+* resample grids if samping and reg are same, but registration is different ([`1c1636a`](https://github.com/mdtanker/polartoolkit/commit/1c1636acb20753d7f9f97c24cdf00f01cda268fb))
+### 🧰 Chores / Maintenance
+* reduce sig figs on test_gravity ([`1005757`](https://github.com/mdtanker/polartoolkit/commit/1005757d335f6fbb4fb8e54003a783021ee83751))
+* update test_bedmap3 ([`6f69a34`](https://github.com/mdtanker/polartoolkit/commit/6f69a34f1e78cd275f556e0c7fe7a23c1b3e7748))
+* update values for test_bedmap_points ([`0eec659`](https://github.com/mdtanker/polartoolkit/commit/0eec6591610d774614d7036e91bb1d2aad537a0a))
+* add filterwarnings to some tests ([`b0636e7`](https://github.com/mdtanker/polartoolkit/commit/b0636e7dbabdbcd00b2e585585fbe52dd682c47c))
+###  🎨 Refactor
+* change order of some code for clarity ([`9e315b0`](https://github.com/mdtanker/polartoolkit/commit/9e315b0ba5df47b97e7bd70b2b41213d46a162f7))
+
 
 ## v0.9.0 (2025-03-31)
 ### 🐛 Bug Fixes
