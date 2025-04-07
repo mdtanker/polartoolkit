@@ -4354,27 +4354,6 @@ def ghf(
         )
 
     elif version == "burton-johnson-2020":
-        # found from utils.get_grid_info(grid)
-        initial_region = (-2543500.0, 2624500.0, -2121500.0, 2213500.0)
-        initial_spacing = 17e3
-        initial_registration = "p"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
-        path = pooch.retrieve(
-            url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
-            fname="burton_johnson_2020.zip",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
-            known_hash="66b1f7acd06eeb6a6362c89b05db07034f510c81e3115cefbd4d11a584f143b2",
-            processor=pooch.Unzip(extract_dir="burton_johnson_2020"),
-            progressbar=True,
-        )
-
         if kwargs.get("points", False) is True:
             url = "https://github.com/RicardaDziadek/Antarctic-GHF-DB/raw/master/ANT_GHF_DB_V004.xlsx"
             file = pooch.retrieve(
@@ -4414,7 +4393,6 @@ def ghf(
                 df["lat"].tolist(),
                 df["lon"].tolist(),
             )
-
             # retain only points in the region
             if region is not None:
                 df = utils.points_inside_region(
@@ -4425,6 +4403,27 @@ def ghf(
             resampled = df
 
         elif kwargs.get("points", False) is False:
+            path = pooch.retrieve(
+                url="https://doi.org/10.5194/tc-14-3843-2020-supplement",
+                fname="burton_johnson_2020.zip",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+                known_hash="66b1f7acd06eeb6a6362c89b05db07034f510c81e3115cefbd4d11a584f143b2",
+                processor=pooch.Unzip(extract_dir="burton_johnson_2020"),
+                progressbar=True,
+            )
+
+            # found from utils.get_grid_info(grid)
+            initial_region = (-2543500.0, 2624500.0, -2121500.0, 2213500.0)
+            initial_spacing = 17e3
+            initial_registration = "p"
+
+            if region is None:
+                region = initial_region
+            if spacing is None:
+                spacing = initial_spacing
+            if registration is None:
+                registration = initial_registration
+
             file = next(p for p in path if p.endswith("Mean.tif"))
             # pygmt gives issues when original filepath has spaces in it. To get around
             # this, we will copy the file into the parent directory.
