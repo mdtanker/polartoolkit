@@ -720,8 +720,8 @@ def plot_profile(
                 if frames[0] is None:
                     frame = [
                         "neSW",
-                        f"xag+l{kwargs.get('data_x_label',' ')}",
-                        f"yag+l{kwargs.get('data_y0_label',' ')}",
+                        f"xag+l{kwargs.get('data_x_label', ' ')}",
+                        f"yag+l{kwargs.get('data_y0_label', ' ')}",
                     ]
                 else:
                     frame = frames[0]
@@ -735,14 +735,14 @@ def plot_profile(
                     if frames[1] is None:
                         frame = [
                             "nEsw",
-                            f"ya+l{kwargs.get('data_y1_label',' ')}",
+                            f"ya+l{kwargs.get('data_y1_label', ' ')}",
                         ]
                     else:
                         frame = frames[1]
                 except IndexError:
                     frame = [
                         "nEsw",
-                        f"ya+l{kwargs.get('data_y1_label',' ')}",
+                        f"ya+l{kwargs.get('data_y1_label', ' ')}",
                     ]
 
             if kwargs.get("data_ylims") is not None:
@@ -824,7 +824,7 @@ def plot_profile(
                     frame=frame,
                     x=df_data.dist,
                     y=df_data[k],
-                    pen=f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,+z",
+                    pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",
                     label=v["name"],
                     cmap=True,
                     zvalue=v["color"],
@@ -843,11 +843,11 @@ def plot_profile(
             fig.colorbar(
                 cmap=True,
                 frame=f"a+l{kwargs.get('data_line_cmap_label', ' ')}",
-                position=f"JMR+o0.5c/0c+w{data_height*.8}c/{data_height*.16}c",
+                position=f"JMR+o0.5c/0c+w{data_height * 0.8}c/{data_height * 0.16}c",
             )
 
         # shift origin up by height of the data profile plus 1/2 cm buffer
-        fig.shift_origin(yshift=f"{data_height+0.5}c")
+        fig.shift_origin(yshift=f"{data_height + 0.5}c")
         # setup cross-section plot
         fig.basemap(
             region=layers_reg,
@@ -950,7 +950,7 @@ def plot_profile(
                     pen = f"{thick[i]}p,{color},{style}"
 
                 if i == 0:
-                    label = f"{v['name']}+N{kwargs.get('layers_legend_columns',1)}"
+                    label = f"{v['name']}+N{kwargs.get('layers_legend_columns', 1)}"
                 else:
                     label = v["name"]
 
@@ -973,7 +973,7 @@ def plot_profile(
                 fig.plot(
                     x=df_layers.dist,
                     y=df_layers[k],
-                    pen=f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,+z",  # noqa: E501
+                    pen=f"{kwargs.get('layer_pen', [1] * len(layers_dict.items()))[i]}p,+z",  # noqa: E501
                     frame=kwargs.get("layers_frame", ["nSew", "a"]),
                     # label=v["name"],
                     cmap=True,
@@ -984,7 +984,7 @@ def plot_profile(
         fig.colorbar(
             cmap=True,
             frame=f"a+l{kwargs.get('layers_line_cmap_label', ' ')}",
-            position=f"JMR+o0.5c/0c+w{layers_height*.8}c/{layers_height*.16}c",
+            position=f"JMR+o0.5c/0c+w{layers_height * 0.8}c/{layers_height * 0.16}c",
         )
 
     # add legend of layer names
@@ -1062,10 +1062,10 @@ def plot_profile(
             # shift map to the left with 1 cm margin
             if data_dict is not None:
                 fig.shift_origin(
-                    xshift=f"-{map_width+1}c", yshift=f"-{data_height+.5}c"
+                    xshift=f"-{map_width + 1}c", yshift=f"-{data_height + 0.5}c"
                 )
             else:
-                fig.shift_origin(xshift=f"-{map_width+1}c")
+                fig.shift_origin(xshift=f"-{map_width + 1}c")
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
@@ -1075,9 +1075,9 @@ def plot_profile(
             )
             # shift map up with a 1/2 cm margin
             if data_dict is not None:
-                fig.shift_origin(yshift=f"{layers_height+.5}c")
+                fig.shift_origin(yshift=f"{layers_height + 0.5}c")
             else:
-                fig.shift_origin(yshift=f"{fig_height+.5}c")
+                fig.shift_origin(yshift=f"{fig_height + 0.5}c")
         else:
             msg = "invalid subplot_orientation string"
             raise ValueError(msg)
@@ -1355,8 +1355,8 @@ def plot_data(
             if frames[0] is None:
                 frame = [
                     "neSW",
-                    f"xag+l{kwargs.get('data_x_label',' ')}",
-                    f"yag+l{kwargs.get('data_y0_label',' ')}",
+                    f"xag+l{kwargs.get('data_x_label', ' ')}",
+                    f"yag+l{kwargs.get('data_y0_label', ' ')}",
                 ]
             else:
                 frame = frames[0]
@@ -1370,14 +1370,14 @@ def plot_data(
                 if frames[1] is None:
                     frame = [
                         "nEsw",
-                        f"ya+l{kwargs.get('data_y1_label',' ')}",
+                        f"ya+l{kwargs.get('data_y1_label', ' ')}",
                     ]
                 else:
                     frame = frames[1]
             except IndexError:
                 frame = [
                     "nEsw",
-                    f"ya+l{kwargs.get('data_y1_label',' ')}",
+                    f"ya+l{kwargs.get('data_y1_label', ' ')}",
                 ]
 
         if kwargs.get("data_ylims") is not None:
@@ -1450,7 +1450,7 @@ def plot_data(
                 frame=frame,
                 x=df_data.dist,
                 y=df_data[k],
-                pen=f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,+z",  # type: ignore[union-attr]
+                pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",  # type: ignore[union-attr]
                 label=v["name"],
                 cmap=True,
                 zvalue=v["color"],
@@ -1468,7 +1468,7 @@ def plot_data(
         fig.colorbar(
             cmap=True,
             frame=f"a+l{kwargs.get('data_line_cmap_label', ' ')}",
-            position=f"JMR+o0.5c/0c+w{data_height*.8}c/{data_height*.16}c",
+            position=f"JMR+o0.5c/0c+w{data_height * 0.8}c/{data_height * 0.16}c",
         )
 
     # plot A, A'  locations
@@ -1511,10 +1511,10 @@ def plot_data(
             # shift map to the left with 1 cm margin
             if data_dict is not None:
                 fig.shift_origin(
-                    xshift=f"-{map_width+1}c", yshift=f"-{data_height+.5}c"
+                    xshift=f"-{map_width + 1}c", yshift=f"-{data_height + 0.5}c"
                 )
             else:
-                fig.shift_origin(xshift=f"-{map_width+1}c")
+                fig.shift_origin(xshift=f"-{map_width + 1}c")
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
             map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
@@ -1524,9 +1524,9 @@ def plot_data(
             )
             # shift map up with a 1/2 cm margin
             if data_dict is not None:
-                fig.shift_origin(yshift=f"{data_height+.5}c")
+                fig.shift_origin(yshift=f"{data_height + 0.5}c")
             else:
-                fig.shift_origin(yshift=f"{fig_height+.5}c")
+                fig.shift_origin(yshift=f"{fig_height + 0.5}c")
         else:
             msg = "invalid subplot_orientation string"
             raise ValueError(msg)

@@ -132,7 +132,7 @@ def get_grid_info(
     # pass
     # grid = xr.open_rasterio(grid)
     # grid = rioxarray.open_rasterio(grid)
-    if isinstance(grid, xr.DataArray) and int(len(grid.dims)) > 2:
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
         grid = grid.squeeze()
 
     try:
@@ -1576,7 +1576,7 @@ def grd_compare(
     if plot is True:
         title = kwargs.get("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
-            title += f", RMSE: {round(rmse(dif),kwargs.get('RMSE_decimals', 2))}"
+            title += f", RMSE: {round(rmse(dif), kwargs.get('RMSE_decimals', 2))}"
 
         fig_height = kwargs.get("fig_height", 12)
         coast = kwargs.get("coast", False)
