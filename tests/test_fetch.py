@@ -261,6 +261,8 @@ def test_ice_vel_lowres():
 @pytest.mark.fetch
 @pytest.mark.earthdata
 @skip_earthdata
+@pytest.mark.filterwarnings("ignore:this file is large")
+@pytest.mark.filterwarnings("ignore:preprocessing this grid")
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_highres():
     grid = fetch.ice_vel(spacing=450, hemisphere="south")
@@ -447,6 +449,7 @@ geomap_test = [
 ]
 
 
+@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
 @pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), geomap_test)
 def test_geomap(test_input, expected):
@@ -462,6 +465,7 @@ def test_geomap(test_input, expected):
 # %% IBCSO coverage data
 
 
+@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
 @pytest.mark.fetch
 def test_ibcso_coverage():
     # collect a few points
@@ -558,7 +562,9 @@ ibcso_test = [
 
 
 @pytest.mark.fetch
+@pytest.mark.filterwarnings("ignore: preprocessing for this grid")
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:Consolidated metadata")
 @pytest.mark.parametrize(("test_input", "expected"), ibcso_test)
 def test_ibcso(test_input, expected):
     grid = fetch.ibcso(**test_input)
@@ -891,6 +897,8 @@ bedmap3_test = [
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.filterwarnings("ignore: The codec `vlen-utf8`")
+@pytest.mark.filterwarnings("ignore: registration hasn't")
 @pytest.mark.parametrize(("test_input", "expected"), bedmap3_test)
 def test_bedmap3(test_input, expected):
     grid = fetch.bedmap3(**test_input)
@@ -903,6 +911,7 @@ def test_bedmap3(test_input, expected):
     )
 
 
+@pytest.mark.filterwarnings("ignore: The codec `vlen-utf8`")
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_bedmap3_reference():
@@ -962,6 +971,7 @@ bedmap3_fill_nans_test = [
 ]
 
 
+@pytest.mark.filterwarnings("ignore: The codec `vlen-utf8`")
 @pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), bedmap3_fill_nans_test)
 def test_bedmap3_fill_nans(test_input, expected):
@@ -1108,6 +1118,8 @@ def test_bedmap2_fill_nans(test_input, expected):
 # %% Bedmap points
 
 
+@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
+@pytest.mark.filterwarnings("ignore:this file is large")
 @pytest.mark.fetch
 def test_bedmap_points():
     df = fetch.bedmap_points(
@@ -1383,6 +1395,7 @@ basal_melt_test = [
 @pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
 @pytest.mark.fetch
 @pytest.mark.slow
+@pytest.mark.filterwarnings("ignore:Consolidated metadata")
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_basal_melt(test_input, expected):
     grid = fetch.basal_melt(variable=test_input)
@@ -1720,6 +1733,7 @@ rema_test = [
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:Consolidated metadata")
 @pytest.mark.parametrize(("test_input", "expected"), rema_test)
 def test_rema(test_input, expected):
     grid = fetch.rema(**test_input)
