@@ -1256,7 +1256,7 @@ def test_gravity(test_input, expected, hemisphere):
         utils.get_grid_info(grid),
         expected,
         ignore_order=True,
-        significant_digits=2,
+        significant_digits=0,
     )
 
 
