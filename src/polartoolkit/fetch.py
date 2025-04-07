@@ -3150,7 +3150,7 @@ def rema(
         )
         fname = "rema_mosaic_500m_v2.0_filled_cop30.tar.gz"
         members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
-        known_hash = "dd59df24d1ee570654d79afc099c260aeb4128f67232f8c7258a8a7803ef3e0c"
+        known_hash = "50ab9424f787aa76b5d55e694094f0c6c945144d8f6c8a26b5c5474ff8e29ddc"
     elif version == "1km":
         # found with utils.get_grid_info(grid)
         initial_region = (-2700500.0, 2750500.0, -2500500.0, 3342500.0)
@@ -3163,7 +3163,7 @@ def rema(
         )
         fname = "rema_mosaic_1km_v2.0_filled_cop30.tar.gz"
         members = ["rema_mosaic_1km_v2.0_filled_cop30_dem.tif"]
-        known_hash = "143ab56b79a0fdcae6769a895202af117fb0dbfe1fa2a0a17db9df2091338d21"
+        known_hash = "6e39923c7beabe5a7b1942a06aba9fc632e6e6672fee9823ac3ba108086559b7"
     else:
         msg = "version must be '1km' or '500m'"
         raise ValueError(msg)
