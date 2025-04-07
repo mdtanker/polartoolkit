@@ -2265,7 +2265,7 @@ def bedmap_points(
                 # convert to a geodataframe
                 gdf = gpd.GeoDataFrame(
                     df,
-                    geometry=gpd.points_from_xy(df["x"], df["y"]),
+                    geometry=gpd.points_from_xy(df["easting"], df["northing"]),
                     crs="EPSG:3031",
                 )
 
@@ -2467,7 +2467,7 @@ def bedmap_points(
                     # convert to a geodataframe
                     df = gpd.GeoDataFrame(
                         df,
-                        geometry=gpd.points_from_xy(df["x"], df["y"]),
+                        geometry=gpd.points_from_xy(df["easting"], df["northing"]),
                         crs="EPSG:3031",
                     )
 
