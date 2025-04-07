@@ -178,7 +178,7 @@ def resample_grid(
         resampled = grid
 
     # if spacing is smaller, return resampled
-    elif spacing < initial_spacing:
+    elif spacing < initial_spacing:  # type: ignore[operator]
         logger.warning(
             "Warning, requested spacing (%s) is smaller than the original (%s).",
             spacing,
@@ -198,7 +198,7 @@ def resample_grid(
         )
 
     # if spacing is larger, return filtered / resampled
-    elif spacing > initial_spacing:
+    elif spacing > initial_spacing:  # type: ignore[operator]
         logger.info("spacing larger than original, filtering and resampling")
         filtered = pygmt.grdfilter(
             grid=grid,
@@ -241,6 +241,15 @@ def resample_grid(
             extend="",
             verbose=verbose,
         )
+
+    reg = resampled.gmt.registration  # type: ignore[union-attr]
+    grid_registration: str | None = "g" if reg == 0 else "p"
+    if grid_registration != registration:
+        warnings.warn(
+            "registration hasn't been correctly changed",
+            stacklevel=2,
+        )
+        resampled = utils.change_reg(resampled)
 
     # # reset coordinate names if changed
     # with warnings.catch_warnings():
@@ -2603,9 +2612,8 @@ def bedmap3(
     )
     known_hash = None
 
-    initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
     # initial_region = (-3333250.0, 3333250.0, -3333250.0, 3333250.0)
-    # initial_region = (-3333500.0, 3333500.0, -3333000.0, 3333000.0)
+    initial_region = (-3333500.0, 3333500.0, -3333000.0, 3333000.0)
     initial_spacing = 500
     initial_registration = "p"
 
@@ -2650,82 +2658,73 @@ def bedmap3(
     # ice_thickness: 0 - 4757
     # thickness_uncertainty: 0 - 272
 
-    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Convert the netcdf to a .zarr file"
-        # Rename to the file to ***.zarr
-        fname_processed = pathlib.Path(fname).with_suffix(".zarr")
+    # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+    #     "Convert the netcdf to a .zarr file"
+    #     # Rename to the file to ***.zarr
+    #     fname_processed = pathlib.Path(fname).with_suffix(".zarr")
 
-        # Only recalculate if new download or the processed file doesn't exist yet
-        if action in ("download", "update") or not fname_processed.exists():
-            # load data
-            grid = xr.load_dataset(fname)
-            # resample to gridline registration
-            resampled_vars = []
-            for var in valid_variables:
-                logger.info("resampling variable `%s` before saving to a .zarr", var)
-                resampled_vars.append(
-                    resample_grid(  # type: ignore[union-attr]
-                        grid[var],
-                        # initial_spacing=initial_spacing,
-                        # initial_region=initial_region,
-                        # initial_registration=initial_registration,
-                        spacing=initial_spacing,
-                        region=initial_region,
-                        registration=initial_registration,
-                    ).rename(var)
-                )
-            grid = xr.merge(resampled_vars)
+    #     # Only recalculate if new download or the processed file doesn't exist yet
+    #     if action in ("download", "update") or not fname_processed.exists():
+    #         # load data
+    #         grid = xr.load_dataset(fname)
 
-            # Save to disk
-            grid.to_zarr(fname_processed)
+    #         # resample to gridline registration
+    #         resampled_vars = []
+    #         for var in valid_variables:
+    #             # set registration to pixel
+    #             # resampled_vars.append(
+    #             #     utils.change_reg(grid[var]).rename(var)
+    #             # )
+    #             logger.info("resampling variable `%s` before saving to a .zarr", var)
+    #             resampled_vars.append(
+    #                 resample_grid(  # type: ignore[union-attr]
+    #                     grid[var],
+    #                     # initial_spacing=initial_spacing,
+    #                     # initial_region=initial_region,
+    #                     # initial_registration='p',
+    #                     spacing=500,
+    #                     region=(-3333250.0, 3333250.0, -3333250.0, 3333250.0),
+    #                     registration='g',
+    #                 ).rename(var)
+    #             )
+    #         grid = xr.merge(resampled_vars)
 
-        return str(fname_processed)
+    #         # Save to disk
+    #         grid.to_zarr(fname_processed)
+
+    #     return str(fname_processed)
+
+    fname = pooch.retrieve(
+        url=url,
+        fname="bedmap3.nc",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+        known_hash=known_hash,
+        # processor=preprocessing,
+        progressbar=True,
+    )
+
+    # ds = xr.open_zarr(
+    #     fname,
+    #     consolidated=False,
+    # )
+    ds = xr.load_dataset(fname)
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and thickness grids")
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap3.nc",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=known_hash,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # surface = xr.load_dataset(fname).surface_topography
-        # thickness = xr.load_dataset(fname).ice_thickness
-        surface = xr.open_zarr(fname).surface_topography
-        thickness = xr.open_zarr(fname).ice_thickness
+        surface = ds.surface_topography
+        thickness = ds.ice_thickness
         grid = surface - thickness
     elif layer == "water_thickness":
         logger.info("calculating water thickness from bed and icebase grids")
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap3.nc",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=known_hash,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # surface = xr.load_dataset(fname).surface_topography
-        # thickness = xr.load_dataset(fname).ice_thickness
-        surface = xr.open_zarr(fname).surface_topography
-        thickness = xr.open_zarr(fname).ice_thickness
+        surface = ds.surface_topography
+        thickness = ds.ice_thickness
+        bed = ds.bed_topography
+
         icebase = surface - thickness
-        # bed = xr.load_dataset(fname).bed_topography
-        bed = xr.open_zarr(fname).bed_topography
         grid = icebase - bed
     elif layer in valid_variables:
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap3.nc",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=known_hash,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # grid = xr.load_dataset(fname)[layer]
-        grid = xr.open_zarr(fname)[layer]
+        grid = ds[layer]
     else:
         msg = (
             "layer must be one of 'surface_topography', 'bed_uncertainty', "
@@ -2767,7 +2766,6 @@ def bedmap3(
             )
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
-
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
                 spacing=initial_spacing,
