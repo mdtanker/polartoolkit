@@ -3,6 +3,11 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## Unreleased
+### 🧰 Chores / Maintenance
+### ✏️ Formatting
+* pre-commit fixes ([`e2e3516`](https://github.com/mdtanker/polartoolkit/commit/e2e35166e0421a2b0f4c9708f0ff1551325d5909))
+
 
 ## v0.9.1 (2025-04-07)
 ### 🐛 Bug Fixes
