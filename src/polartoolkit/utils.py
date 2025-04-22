@@ -27,14 +27,6 @@ from pyproj import Transformer
 import polartoolkit
 from polartoolkit import fetch, logger, maps, regions
 
-try:
-    import pyogrio  # pylint: disable=unused-import
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
-
 
 def default_hemisphere(hemisphere: str | None) -> str:
     """
@@ -1048,7 +1040,7 @@ def mask_from_shp(
     hemisphere = default_hemisphere(hemisphere)
 
     shp = (
-        gpd.read_file(shapefile, engine=ENGINE)
+        gpd.read_file(shapefile, engine="pyogrio")
         if isinstance(shapefile, str)
         else shapefile
     )
