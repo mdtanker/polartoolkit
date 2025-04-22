@@ -22,7 +22,7 @@ import pygmt
 import verde as vd
 import xarray as xr
 from numpy.typing import NDArray
-import pyogrio
+
 from polartoolkit import fetch, logger, regions, utils
 
 try:
