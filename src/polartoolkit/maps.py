@@ -22,16 +22,8 @@ import pygmt
 import verde as vd
 import xarray as xr
 from numpy.typing import NDArray
-
+import pyogrio
 from polartoolkit import fetch, logger, regions, utils
-
-try:
-    import pyogrio  # pylint: disable=unused-import
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
 
 try:
     from IPython.display import display
@@ -1991,13 +1983,13 @@ def add_coast(
         if no_coast is False:
             data = fetch.groundingline(version=version)
         elif no_coast is True:
-            gdf = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline(version=version), engine="pyogrio")
             data = gdf[gdf.Id_text == "Grounded ice or land"]
     elif version == "measures-v2":
         if no_coast is False:
-            gl = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            gl = gpd.read_file(fetch.groundingline(version=version), engine="pyogrio")
             coast = gpd.read_file(
-                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+                fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
             )
             data = pd.concat([gl, coast])
         elif no_coast is True:
@@ -2346,7 +2338,7 @@ def add_simple_basemap(
             version = "BAS"
 
         if version == "BAS":
-            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
             fig.plot(
                 data=gdf,
                 fill=grounded_color,
@@ -2366,7 +2358,7 @@ def add_simple_basemap(
             version = "measures-v2"
 
         if version == "depoorter-2013":
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine="pyogrio")
             # plot floating ice as blue
             fig.plot(
                 data=gdf[gdf.Id_text == "Ice shelf"],
@@ -2485,7 +2477,7 @@ def add_inset(
                 logger.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -2518,10 +2510,10 @@ def add_inset(
             logger.debug("plotting coastline")
             gl = gpd.read_file(
                 fetch.groundingline(version="measures-v2"),
-                engine=ENGINE,
+                engine="pyogrio",
             )
             coast = gpd.read_file(
-                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+                fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
             )
             data = pd.concat([gl, coast])
             fig.plot(
@@ -3378,11 +3370,11 @@ def interactive_data(
 
     # initialize figure with coastline
     if hemisphere == "north":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine=ENGINE)
+        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine="pyogrio")
         crsys = crs.NorthPolarStereo()
     elif hemisphere == "south":
         coast_gdf = gpd.read_file(
-            fetch.groundingline(version="measures-v2"), engine=ENGINE
+            fetch.groundingline(version="measures-v2"), engine="pyogrio"
         )
         crsys = crs.SouthPolarStereo()
     else:
