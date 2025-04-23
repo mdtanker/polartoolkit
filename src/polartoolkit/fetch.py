@@ -74,7 +74,7 @@ def get_fetches() -> list[str]:
 
 
 def resample_grid(
-    grid: str | xr.DataArray,
+    grid: xr.DataArray,
     initial_spacing: float | None = None,
     initial_region: tuple[float, float, float, float] | None = None,
     initial_registration: str | None = None,
@@ -82,7 +82,7 @@ def resample_grid(
     region: tuple[float, float, float, float] | None = None,
     registration: str | None = None,
     **kwargs: dict[str, str],
-) -> str | xr.DataArray:
+) -> xr.DataArray:
     """
     Resample a grid to a new spacing, region, and/or registration. Method of resampling
     depends on comparison with initial and supplied values for spacing, region, and
@@ -91,7 +91,7 @@ def resample_grid(
 
     Parameters
     ----------
-    grid : str | xarray.DataArray
+    grid : xarray.DataArray
         grid to resample
     initial_spacing : float | None, optional
         spacing of input grid, if known, by default None
@@ -109,7 +109,7 @@ def resample_grid(
 
     Returns
     -------
-    str | xarray.DataArray
+    xarray.DataArray
         grid, either resampled or same as original depending on inputs. If no
         resampling, and supplied grid is a filepath, returns filepath.
     """
@@ -3203,7 +3203,7 @@ def deepbedmap(
     spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
-) -> str:
+) -> xr.DataArray:
     """
     Load DeepBedMap data,  from :footcite:t:`leongdeepbedmap2020` and
     :footcite:t:`leongdeepbedmap2020a`.
@@ -3222,8 +3222,8 @@ def deepbedmap(
         additional keyword arguments to pass to the resample_grid function
     Returns
     -------
-    str
-        Returns the filepath of DeepBedMap.
+    xr.DataArray:
+        Returns the grid of DeepBedMap.
 
     References
     ----------
