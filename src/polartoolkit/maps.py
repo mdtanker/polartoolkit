@@ -620,6 +620,20 @@ def basemap(
 
         # display colorbar
         if colorbar is True:
+            # decide to use colorbar end triangles or not
+            cbar_end_triangles = kwargs.get("cbar_end_triangles")
+            if cbar_end_triangles is None:
+                if (cpt_lims[0] > points[points_fill].min()) & (  # type: ignore[index]
+                    cpt_lims[1] < points[points_fill].max()  # type: ignore[index]
+                ):
+                    cbar_end_triangles = "+e"
+                elif cpt_lims[0] > points[points_fill].min():  # type: ignore[index]
+                    cbar_end_triangles = "+eb"
+                elif cpt_lims[1] < points[points_fill].max():  # type: ignore[index]
+                    cbar_end_triangles = "+ef"
+                else:
+                    cbar_end_triangles = ""
+
             # removed duplicate kwargs before passing to add_colorbar
             cbar_kwargs = {
                 key: value
@@ -629,6 +643,7 @@ def basemap(
                     "cpt_lims",
                     "fig_width",
                     "fig",
+                    "cbar_end_triangles",
                 ]
             }
             logger.debug("kwargs passed to 'add_colorbar': %s", cbar_kwargs)
@@ -640,6 +655,7 @@ def basemap(
                     grid=points[[x_col, y_col, points_fill]],
                     cpt_lims=cpt_lims,  # pylint: disable=possibly-used-before-assignment
                     region=region,
+                    cbar_end_triangles=cbar_end_triangles,
                     **cbar_kwargs,
                 )
             else:
@@ -648,6 +664,7 @@ def basemap(
                     cmap=cmap,
                     cpt_lims=cpt_lims,
                     region=region,
+                    cbar_end_triangles=cbar_end_triangles,
                     **cbar_kwargs,
                 )
     # add inset map to show figure location
@@ -1605,6 +1622,19 @@ def plot_grd(
     # display colorbar
     if colorbar is True:
         logger.debug("adding colorbar")
+
+        # decide to use colorbar end triangles or not
+        cbar_end_triangles = kwargs.get("cbar_end_triangles")
+        if cbar_end_triangles is None:
+            if (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):  # type: ignore[index]
+                cbar_end_triangles = "+e"
+            elif cpt_lims[0] > grid.min():  # type: ignore[index]
+                cbar_end_triangles = "+eb"
+            elif cpt_lims[1] < grid.max():  # type: ignore[index]
+                cbar_end_triangles = "+ef"
+            else:
+                cbar_end_triangles = ""
+
         # removed duplicate kwargs before passing to add_colorbar
         cbar_kwargs = {
             key: value
@@ -1614,6 +1644,7 @@ def plot_grd(
                 "cpt_lims",
                 "grid",
                 "fig",
+                "cbar_end_triangles",
             ]
         }
         try:
@@ -1623,6 +1654,7 @@ def plot_grd(
                 grid=grid,
                 cpt_lims=cpt_lims,
                 region=region,
+                cbar_end_triangles=cbar_end_triangles,
                 **cbar_kwargs,
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -1701,6 +1733,9 @@ def add_colorbar(
     # text location
     text_location = kwargs.get("cbar_text_location")
 
+    # add triangles to ends of colorbar
+    cbar_end_triangles = kwargs.get("cbar_end_triangles", "+e")
+
     # add colorbar
     logger.debug("adding colorbar")
     with pygmt.config(
@@ -1710,7 +1745,7 @@ def add_colorbar(
         cbar_height = cbar_width * cbar_height_perc
         position = (
             f"jBC+jTC+w{cbar_width}/{cbar_height}c+{orientation}{text_location}"
-            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
+            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c{cbar_end_triangles}"
         )
         logger.debug("cbar frame; %s", cbar_frame)
         logger.debug("cbar position: %s", position)
