@@ -412,7 +412,9 @@ def basemap(
     yshift_extra = kwargs.get("yshift_extra", 0.4)
     if colorbar is True:
         # for thickness of cbar
-        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * kwargs.get(
+            "cbar_height_perc", 0.04
+        )
         if kwargs.get("hist"):
             # for histogram thickness
             yshift_extra += kwargs.get("cbar_hist_height", 1.5)
@@ -1300,7 +1302,9 @@ def plot_grd(
     yshift_extra = kwargs.get("yshift_extra", 0.4)
     if colorbar is True:
         # for thickness of cbar
-        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * kwargs.get(
+            "cbar_height_perc", 0.04
+        )
         if kwargs.get("hist"):
             # for histogram thickness
             yshift_extra += kwargs.get("cbar_hist_height", 1.5)
@@ -1675,6 +1679,9 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
+    # set colorbar height as percentage of cbar width
+    cbar_height_perc = kwargs.get("cbar_height_perc", 0.04)
+
     # offset colorbar vertically from plot by 0.4cm, or 0.2 + histogram height
     if hist is True:
         cbar_hist_height = kwargs.get("cbar_hist_height", 1.5)
@@ -1701,8 +1708,10 @@ def add_colorbar(
     with pygmt.config(
         FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
+        cbar_width = fig_width * cbar_width_perc
+        cbar_height = cbar_width * cbar_height_perc
         position = (
-            f"jBC+jTC+w{fig_width * cbar_width_perc}c+{orientation}{text_location}"
+            f"jBC+jTC+w{cbar_width}/{cbar_height}c+{orientation}{text_location}"
             f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
         )
         logger.debug("cbar frame; %s", cbar_frame)
