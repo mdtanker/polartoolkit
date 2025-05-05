@@ -443,7 +443,6 @@ def basemap(
         yshift_extra=yshift_extra,
     )
 
-    show_region = kwargs.get("show_region")
     frame = kwargs.get("frame", "nesw+gwhite")
     if frame is None:
         frame = False
@@ -566,12 +565,12 @@ def basemap(
         )
 
     # add box showing region
-    if show_region is not None:
+    if kwargs.get("show_region") is not None:
         logger.debug("adding region box")
         add_box(
             fig,
-            show_region,
-            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
+            box=kwargs.get("show_region"),  # type: ignore[arg-type]
+            pen=kwargs.get("region_pen", "2p,black"),
         )
 
     # add datapoints
@@ -1333,7 +1332,6 @@ def plot_grd(
         yshift_extra=yshift_extra,
     )
 
-    show_region = kwargs.get("show_region")
     frame = kwargs.get("frame", "nesw+gwhite")
     if frame is None:
         frame = False
@@ -1478,12 +1476,12 @@ def plot_grd(
             )
 
     # add box showing region
-    if show_region is not None:
-        logger.debug("adding region box")
+    if kwargs.get("show_region") is not None:
+        logger.debug("adding region box, %s", kwargs.get("show_region"))
         add_box(
             fig,
-            show_region,
-            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
+            box=kwargs.get("show_region"),  # type: ignore[arg-type]
+            pen=kwargs.get("region_pen", "2p,black"),
         )
 
     # plot groundingline and coastlines
@@ -1901,10 +1899,14 @@ def add_colorbar(
 
         # plot histograms above colorbar
         try:
+            hist_proj = f"X{fig_width * cbar_width_perc}c/{cbar_hist_height}c"
+            logger.debug("histogram projection; %s", hist_proj)
+            hist_series = f"{zmin}/{zmax}/{bin_width}"
+            logger.debug("histogram series; %s", hist_series)
             logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
-                projection=f"X{fig_width * cbar_width_perc}c/{cbar_hist_height}c",
+                projection=hist_proj,
                 region=hist_reg,
                 frame=kwargs.get("hist_frame", False),
                 cmap=hist_cmap,
@@ -1916,7 +1918,7 @@ def add_colorbar(
                 cumulative=kwargs.get("hist_cumulative", False),
                 extreme=kwargs.get("hist_extreme", "b"),
                 stairs=kwargs.get("hist_stairs", False),
-                series=f"{zmin}/{zmax}/{bin_width}",
+                series=hist_series,
                 histtype=hist_type,
                 verbose=verbose,
             )
@@ -2333,7 +2335,7 @@ def add_simple_basemap(
     transparency : int, optional
         transparency of all the plotted elements, by default 0
     pen : str, optional
-        GMT pen string for the coastline, by default "0.2,black"
+        GMT pen string for the coastline, by default "0.2p,black"
     grounded_color : str, optional
         color for the grounded ice, by default "grey"
     floating_color : str, optional
@@ -2495,7 +2497,7 @@ def add_inset(
             )
             fig.plot(
                 data=gdf,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
         elif hemisphere == "south":
             if inset_reg is None:
@@ -2527,7 +2529,7 @@ def add_inset(
             data = pd.concat([gl, coast])
             fig.plot(
                 data,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
         else:
             msg = "hemisphere must be north or south"
@@ -2663,6 +2665,7 @@ def add_box(
     verbose : str, optional
         verbosity level for pygmt, by default "w" for warnings
     """
+    logger.debug("adding box to figure; %s", box)
     fig.plot(
         x=[box[0], box[0], box[1], box[1], box[0]],
         y=[box[2], box[3], box[3], box[2], box[2]],
