@@ -817,7 +817,7 @@ def plot_profile(
                     frame=frame,
                     x=df_data.dist,
                     y=df_data[k],
-                    pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",
+                    pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",  # noqa: E501
                     label=v["name"],
                     cmap=True,
                     zvalue=v["color"],

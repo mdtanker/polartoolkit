@@ -2574,7 +2574,7 @@ def add_scalebar(
             assert len(region) == 4
 
     def round_to_1(x: float) -> float:
-        return round(x, -int(floor(log10(abs(x)))))
+        return round(x, -floor(log10(abs(x))))
 
     region_converted = (*region, "+ue")  # codespell:ignore ue
 
@@ -2997,7 +2997,7 @@ def subplots(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
-                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",
+                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",  # noqa: E501
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
