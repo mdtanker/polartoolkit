@@ -27,14 +27,6 @@ from pyproj import Transformer
 import polartoolkit
 from polartoolkit import fetch, logger, maps, regions
 
-try:
-    import pyogrio  # pylint: disable=unused-import
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
-
 
 def default_hemisphere(hemisphere: str | None) -> str:
     """
@@ -808,11 +800,11 @@ def filter_grid(
     ----------
     grid : xarray.DataArray
         grid to filter the values of
+    filter_width : float | None, optional
+        width of the filter in meters for high and low pass filtering, by default None
     filt_type : str, optional
         type of filter to use from 'lowpass', 'highpass' 'up_deriv', 'easting_deriv',
         'northing_deriv', or 'total_gradient' by default "lowpass"
-    filt_type : str, optional
-        type of filter to use, by default "lowpass"
     pad_width_factor : int, optional
         factor of grid width to pad the grid by, by default 3, which equates to a pad
         with a width of 1/3 of the grid width.
@@ -1048,7 +1040,7 @@ def mask_from_shp(
     hemisphere = default_hemisphere(hemisphere)
 
     shp = (
-        gpd.read_file(shapefile, engine=ENGINE)
+        gpd.read_file(shapefile, engine="pyogrio")
         if isinstance(shapefile, str)
         else shapefile
     )
@@ -2082,6 +2074,9 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
                 args = f"{f_in} -T -G{tmpfile.name}"
                 ses.call_module("grdedit", args)
                 f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
+    if grid.gmt.registration == f_out.gmt.registration:
+        msg = "issue in changing registration"
+        raise ValueError(msg)
     return f_out
 
 

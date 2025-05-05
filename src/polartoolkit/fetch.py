@@ -38,16 +38,6 @@ from polartoolkit import (  # pylint: disable=import-self
     utils,
 )
 
-# pylint: disable=duplicate-code
-try:
-    import pyogrio  # pylint: disable=unused-import
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
-# pylint: enable=duplicate-code
-
 try:
     import pyarrow as pa  # pylint: disable=unused-import # noqa: F401
 
@@ -84,7 +74,7 @@ def get_fetches() -> list[str]:
 
 
 def resample_grid(
-    grid: str | xr.DataArray,
+    grid: xr.DataArray,
     initial_spacing: float | None = None,
     initial_region: tuple[float, float, float, float] | None = None,
     initial_registration: str | None = None,
@@ -92,7 +82,7 @@ def resample_grid(
     region: tuple[float, float, float, float] | None = None,
     registration: str | None = None,
     **kwargs: dict[str, str],
-) -> str | xr.DataArray:
+) -> xr.DataArray:
     """
     Resample a grid to a new spacing, region, and/or registration. Method of resampling
     depends on comparison with initial and supplied values for spacing, region, and
@@ -101,7 +91,7 @@ def resample_grid(
 
     Parameters
     ----------
-    grid : str | xarray.DataArray
+    grid : xarray.DataArray
         grid to resample
     initial_spacing : float | None, optional
         spacing of input grid, if known, by default None
@@ -119,7 +109,7 @@ def resample_grid(
 
     Returns
     -------
-    str | xarray.DataArray
+    xarray.DataArray
         grid, either resampled or same as original depending on inputs. If no
         resampling, and supplied grid is a filepath, returns filepath.
     """
@@ -1056,14 +1046,6 @@ def geomap(
     .. footbibliography::
     """
 
-    # warn that pyogrio is faster
-    if ENGINE == "fiona":
-        msg = (
-            "Consider installing pyogrio for faster performance when reading "
-            "geodataframes."
-        )
-        warnings.warn(msg, stacklevel=2)
-
     fname = "ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
     url = "https://download.pangaea.de/dataset/951482/files/ATA_SCAR_GeoMAP_v2022_08_QGIS.zip"
 
@@ -1129,13 +1111,13 @@ def geomap(
         raise ValueError(msg)
 
     if region is None:
-        data = gpd.read_file(fname2, layer=layer, engine=ENGINE)
+        data = gpd.read_file(fname2, layer=layer, engine="pyogrio")
     else:
         data = gpd.read_file(
             fname2,
             bbox=utils.region_to_bounding_box(region),
             layer=layer,
-            engine=ENGINE,
+            engine="pyogrio",
         )
 
     if version == "units":
@@ -1722,13 +1704,6 @@ def ibcso_coverage(
     ----------
     .. footbibliography::
     """
-    # warn that pyogrio is faster
-    if ENGINE == "fiona":
-        msg = (
-            "Consider installing pyogrio for faster performance when reading "
-            "geodataframes."
-        )
-        warnings.warn(msg, stacklevel=2)
 
     # download / retrieve the geopackage file
     fname = pooch.retrieve(
@@ -1755,7 +1730,7 @@ def ibcso_coverage(
         )
         bbox = utils.region_to_bounding_box(region_epsg_9354)  # type: ignore[arg-type]
 
-    data = gpd.read_file(fname, bbox=bbox, engine=ENGINE)
+    data = gpd.read_file(fname, bbox=bbox, engine="pyogrio")
 
     # expand from multipoint/mulitpolygon to point/polygon
     # this is slow!
@@ -2227,13 +2202,6 @@ def bedmap_points(
     ----------
     .. footbibliography::
     """
-    # warn that pyogrio is faster
-    if ENGINE == "fiona":
-        msg = (
-            "Consider installing pyogrio for faster performance when reading "
-            "geodataframes."
-        )
-        warnings.warn(msg, stacklevel=2)
 
     # warn that pyarrow is faster
     if not USE_ARROW:
@@ -2283,7 +2251,7 @@ def bedmap_points(
                     fname_processed,
                     driver="GPKG",
                     use_arrow=USE_ARROW,
-                    engine=ENGINE,
+                    engine="pyogrio",
                 )
 
             return str(fname_processed)
@@ -2307,7 +2275,7 @@ def bedmap_points(
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
-            engine=ENGINE,
+            engine="pyogrio",
             bbox=bbox,
         )
 
@@ -2377,7 +2345,7 @@ def bedmap_points(
                         fname_processed,
                         driver="GPKG",
                         # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
-                        engine=ENGINE,
+                        engine="pyogrio",
                         append=True,
                     )
 
@@ -2414,7 +2382,7 @@ def bedmap_points(
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
-            engine=ENGINE,
+            engine="pyogrio",
             bbox=bbox,
         )
 
@@ -2485,7 +2453,7 @@ def bedmap_points(
                         fname_processed,
                         driver="GPKG",
                         # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
-                        engine=ENGINE,
+                        engine="pyogrio",
                         append=True,
                     )
 
@@ -2523,7 +2491,7 @@ def bedmap_points(
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
-            engine=ENGINE,
+            engine="pyogrio",
             bbox=bbox,
         )
 
@@ -3235,7 +3203,7 @@ def deepbedmap(
     spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
-) -> str:
+) -> xr.DataArray:
     """
     Load DeepBedMap data,  from :footcite:t:`leongdeepbedmap2020` and
     :footcite:t:`leongdeepbedmap2020a`.
@@ -3254,8 +3222,8 @@ def deepbedmap(
         additional keyword arguments to pass to the resample_grid function
     Returns
     -------
-    str
-        Returns the filepath of DeepBedMap.
+    xr.DataArray:
+        Returns the grid of DeepBedMap.
 
     References
     ----------
