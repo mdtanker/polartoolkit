@@ -591,6 +591,7 @@ def basemap(
             msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
             raise ValueError(msg)
         # plot points
+        cpt_lims = None
         if points_fill in points.columns:
             cmap, _, cpt_lims = set_cmap(
                 kwargs.get("points_cmap", "viridis"),
@@ -623,13 +624,15 @@ def basemap(
             # decide to use colorbar end triangles or not
             cbar_end_triangles = kwargs.get("cbar_end_triangles")
             if cbar_end_triangles is None:
-                if (cpt_lims[0] > points[points_fill].min()) & (  # type: ignore[index]
-                    cpt_lims[1] < points[points_fill].max()  # type: ignore[index]
+                if cpt_lims is None:
+                    cbar_end_triangles = ""
+                elif (cpt_lims[0] > points[points_fill].min()) & (
+                    cpt_lims[1] < points[points_fill].max()
                 ):
                     cbar_end_triangles = "+e"
-                elif cpt_lims[0] > points[points_fill].min():  # type: ignore[index]
+                elif cpt_lims[0] > points[points_fill].min():
                     cbar_end_triangles = "+eb"
-                elif cpt_lims[1] < points[points_fill].max():  # type: ignore[index]
+                elif cpt_lims[1] < points[points_fill].max():
                     cbar_end_triangles = "+ef"
                 else:
                     cbar_end_triangles = ""
@@ -1626,11 +1629,13 @@ def plot_grd(
         # decide to use colorbar end triangles or not
         cbar_end_triangles = kwargs.get("cbar_end_triangles")
         if cbar_end_triangles is None:
-            if (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):  # type: ignore[index]
+            if cpt_lims is None:
+                cbar_end_triangles = ""
+            elif (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):
                 cbar_end_triangles = "+e"
-            elif cpt_lims[0] > grid.min():  # type: ignore[index]
+            elif cpt_lims[0] > grid.min():
                 cbar_end_triangles = "+eb"
-            elif cpt_lims[1] < grid.max():  # type: ignore[index]
+            elif cpt_lims[1] < grid.max():
                 cbar_end_triangles = "+ef"
             else:
                 cbar_end_triangles = ""
