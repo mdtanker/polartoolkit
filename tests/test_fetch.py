@@ -38,14 +38,6 @@ from pandas.testing import assert_frame_equal
 
 from polartoolkit import fetch, regions, utils
 
-try:
-    import pyogrio
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
-
 load_dotenv()
 
 earthdata_login = [
@@ -449,7 +441,6 @@ geomap_test = [
 ]
 
 
-@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
 @pytest.mark.fetch
 @pytest.mark.parametrize(("test_input", "expected"), geomap_test)
 def test_geomap(test_input, expected):
@@ -465,7 +456,6 @@ def test_geomap(test_input, expected):
 # %% IBCSO coverage data
 
 
-@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
 @pytest.mark.fetch
 def test_ibcso_coverage():
     # collect a few points
@@ -1134,7 +1124,6 @@ def test_bedmap2_fill_nans(test_input, expected):
 # %% Bedmap points
 
 
-@pytest.mark.filterwarnings("ignore:Consider installing pyogrio")
 @pytest.mark.filterwarnings("ignore:this file is large")
 @pytest.mark.fetch
 def test_bedmap_points():
@@ -1857,7 +1846,7 @@ def test_groundingline(test_input, expected):
     df = gpd.read_file(
         fetch.groundingline(version=test_input),
         rows=1,
-        engine=ENGINE,
+        engine="pyogrio",
     ).drop(columns=["geometry"])
 
     # df_expected = pd.DataFrame(expected)
@@ -1899,7 +1888,7 @@ def test_antarctic_boundaries(test_input, expected):
     df = gpd.read_file(
         fetch.antarctic_boundaries(version=test_input),
         rows=1,
-        engine=ENGINE,
+        engine="pyogrio",
     ).drop(columns=["geometry"])
 
     # df_expected = pd.DataFrame(expected)

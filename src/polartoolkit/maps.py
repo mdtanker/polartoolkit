@@ -26,14 +26,6 @@ from numpy.typing import NDArray
 from polartoolkit import fetch, logger, regions, utils
 
 try:
-    import pyogrio  # pylint: disable=unused-import
-
-    ENGINE = "pyogrio"
-except ImportError:
-    pyogrio = None
-    ENGINE = "fiona"
-
-try:
     from IPython.display import display
 except ImportError:
     display = None
@@ -420,7 +412,9 @@ def basemap(
     yshift_extra = kwargs.get("yshift_extra", 0.4)
     if colorbar is True:
         # for thickness of cbar
-        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * kwargs.get(
+            "cbar_height_perc", 0.04
+        )
         if kwargs.get("hist"):
             # for histogram thickness
             yshift_extra += kwargs.get("cbar_hist_height", 1.5)
@@ -449,7 +443,6 @@ def basemap(
         yshift_extra=yshift_extra,
     )
 
-    show_region = kwargs.get("show_region")
     frame = kwargs.get("frame", "nesw+gwhite")
     if frame is None:
         frame = False
@@ -572,12 +565,12 @@ def basemap(
         )
 
     # add box showing region
-    if show_region is not None:
+    if kwargs.get("show_region") is not None:
         logger.debug("adding region box")
         add_box(
             fig,
-            show_region,
-            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
+            box=kwargs.get("show_region"),  # type: ignore[arg-type]
+            pen=kwargs.get("region_pen", "2p,black"),
         )
 
     # add datapoints
@@ -627,6 +620,20 @@ def basemap(
 
         # display colorbar
         if colorbar is True:
+            # decide to use colorbar end triangles or not
+            cbar_end_triangles = kwargs.get("cbar_end_triangles")
+            if cbar_end_triangles is None:
+                if (cpt_lims[0] > points[points_fill].min()) & (  # type: ignore[index]
+                    cpt_lims[1] < points[points_fill].max()  # type: ignore[index]
+                ):
+                    cbar_end_triangles = "+e"
+                elif cpt_lims[0] > points[points_fill].min():  # type: ignore[index]
+                    cbar_end_triangles = "+eb"
+                elif cpt_lims[1] < points[points_fill].max():  # type: ignore[index]
+                    cbar_end_triangles = "+ef"
+                else:
+                    cbar_end_triangles = ""
+
             # removed duplicate kwargs before passing to add_colorbar
             cbar_kwargs = {
                 key: value
@@ -636,6 +643,7 @@ def basemap(
                     "cpt_lims",
                     "fig_width",
                     "fig",
+                    "cbar_end_triangles",
                 ]
             }
             logger.debug("kwargs passed to 'add_colorbar': %s", cbar_kwargs)
@@ -647,6 +655,7 @@ def basemap(
                     grid=points[[x_col, y_col, points_fill]],
                     cpt_lims=cpt_lims,  # pylint: disable=possibly-used-before-assignment
                     region=region,
+                    cbar_end_triangles=cbar_end_triangles,
                     **cbar_kwargs,
                 )
             else:
@@ -655,6 +664,7 @@ def basemap(
                     cmap=cmap,
                     cpt_lims=cpt_lims,
                     region=region,
+                    cbar_end_triangles=cbar_end_triangles,
                     **cbar_kwargs,
                 )
     # add inset map to show figure location
@@ -1308,7 +1318,9 @@ def plot_grd(
     yshift_extra = kwargs.get("yshift_extra", 0.4)
     if colorbar is True:
         # for thickness of cbar
-        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * 0.04
+        yshift_extra += (kwargs.get("cbar_width_perc", 0.8) * fig_width) * kwargs.get(
+            "cbar_height_perc", 0.04
+        )
         if kwargs.get("hist"):
             # for histogram thickness
             yshift_extra += kwargs.get("cbar_hist_height", 1.5)
@@ -1337,7 +1349,6 @@ def plot_grd(
         yshift_extra=yshift_extra,
     )
 
-    show_region = kwargs.get("show_region")
     frame = kwargs.get("frame", "nesw+gwhite")
     if frame is None:
         frame = False
@@ -1482,12 +1493,12 @@ def plot_grd(
             )
 
     # add box showing region
-    if show_region is not None:
-        logger.debug("adding region box")
+    if kwargs.get("show_region") is not None:
+        logger.debug("adding region box, %s", kwargs.get("show_region"))
         add_box(
             fig,
-            show_region,
-            pen=kwargs.get("region_pen"),  # type: ignore[arg-type]
+            box=kwargs.get("show_region"),  # type: ignore[arg-type]
+            pen=kwargs.get("region_pen", "2p,black"),
         )
 
     # plot groundingline and coastlines
@@ -1611,6 +1622,19 @@ def plot_grd(
     # display colorbar
     if colorbar is True:
         logger.debug("adding colorbar")
+
+        # decide to use colorbar end triangles or not
+        cbar_end_triangles = kwargs.get("cbar_end_triangles")
+        if cbar_end_triangles is None:
+            if (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):  # type: ignore[index]
+                cbar_end_triangles = "+e"
+            elif cpt_lims[0] > grid.min():  # type: ignore[index]
+                cbar_end_triangles = "+eb"
+            elif cpt_lims[1] < grid.max():  # type: ignore[index]
+                cbar_end_triangles = "+ef"
+            else:
+                cbar_end_triangles = ""
+
         # removed duplicate kwargs before passing to add_colorbar
         cbar_kwargs = {
             key: value
@@ -1620,6 +1644,7 @@ def plot_grd(
                 "cpt_lims",
                 "grid",
                 "fig",
+                "cbar_end_triangles",
             ]
         }
         try:
@@ -1629,6 +1654,7 @@ def plot_grd(
                 grid=grid,
                 cpt_lims=cpt_lims,
                 region=region,
+                cbar_end_triangles=cbar_end_triangles,
                 **cbar_kwargs,
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -1683,6 +1709,9 @@ def add_colorbar(
     # set colorbar width as percentage of total figure width
     cbar_width_perc = kwargs.get("cbar_width_perc", 0.8)
 
+    # set colorbar height as percentage of cbar width
+    cbar_height_perc = kwargs.get("cbar_height_perc", 0.04)
+
     # offset colorbar vertically from plot by 0.4cm, or 0.2 + histogram height
     if hist is True:
         cbar_hist_height = kwargs.get("cbar_hist_height", 1.5)
@@ -1704,14 +1733,19 @@ def add_colorbar(
     # text location
     text_location = kwargs.get("cbar_text_location")
 
+    # add triangles to ends of colorbar
+    cbar_end_triangles = kwargs.get("cbar_end_triangles", "+e")
+
     # add colorbar
     logger.debug("adding colorbar")
     with pygmt.config(
         FONT=kwargs.get("cbar_font", "12p,Helvetica,black"),
     ):
+        cbar_width = fig_width * cbar_width_perc
+        cbar_height = cbar_width * cbar_height_perc
         position = (
-            f"jBC+jTC+w{fig_width * cbar_width_perc}c+{orientation}{text_location}"
-            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c+e"
+            f"jBC+jTC+w{cbar_width}/{cbar_height}c+{orientation}{text_location}"
+            f"+o{kwargs.get('cbar_xoffset', 0)}c/{cbar_yoffset}c{cbar_end_triangles}"
         )
         logger.debug("cbar frame; %s", cbar_frame)
         logger.debug("cbar position: %s", position)
@@ -1900,10 +1934,14 @@ def add_colorbar(
 
         # plot histograms above colorbar
         try:
+            hist_proj = f"X{fig_width * cbar_width_perc}c/{cbar_hist_height}c"
+            logger.debug("histogram projection; %s", hist_proj)
+            hist_series = f"{zmin}/{zmax}/{bin_width}"
+            logger.debug("histogram series; %s", hist_series)
             logger.debug("plotting histogram")
             fig.histogram(
                 data=data,
-                projection=f"X{fig_width * cbar_width_perc}c/{cbar_hist_height}c",
+                projection=hist_proj,
                 region=hist_reg,
                 frame=kwargs.get("hist_frame", False),
                 cmap=hist_cmap,
@@ -1915,7 +1953,7 @@ def add_colorbar(
                 cumulative=kwargs.get("hist_cumulative", False),
                 extreme=kwargs.get("hist_extreme", "b"),
                 stairs=kwargs.get("hist_stairs", False),
-                series=f"{zmin}/{zmax}/{bin_width}",
+                series=hist_series,
                 histtype=hist_type,
                 verbose=verbose,
             )
@@ -1991,13 +2029,13 @@ def add_coast(
         if no_coast is False:
             data = fetch.groundingline(version=version)
         elif no_coast is True:
-            gdf = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline(version=version), engine="pyogrio")
             data = gdf[gdf.Id_text == "Grounded ice or land"]
     elif version == "measures-v2":
         if no_coast is False:
-            gl = gpd.read_file(fetch.groundingline(version=version), engine=ENGINE)
+            gl = gpd.read_file(fetch.groundingline(version=version), engine="pyogrio")
             coast = gpd.read_file(
-                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+                fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
             )
             data = pd.concat([gl, coast])
         elif no_coast is True:
@@ -2332,7 +2370,7 @@ def add_simple_basemap(
     transparency : int, optional
         transparency of all the plotted elements, by default 0
     pen : str, optional
-        GMT pen string for the coastline, by default "0.2,black"
+        GMT pen string for the coastline, by default "0.2p,black"
     grounded_color : str, optional
         color for the grounded ice, by default "grey"
     floating_color : str, optional
@@ -2346,7 +2384,7 @@ def add_simple_basemap(
             version = "BAS"
 
         if version == "BAS":
-            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
             fig.plot(
                 data=gdf,
                 fill=grounded_color,
@@ -2366,7 +2404,7 @@ def add_simple_basemap(
             version = "measures-v2"
 
         if version == "depoorter-2013":
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine="pyogrio")
             # plot floating ice as blue
             fig.plot(
                 data=gdf[gdf.Id_text == "Ice shelf"],
@@ -2485,7 +2523,7 @@ def add_inset(
                 logger.warning(
                     "Inset region should be square or else projection will be off."
                 )
-            gdf = gpd.read_file(fetch.groundingline("BAS"), engine=ENGINE)
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
             fig.plot(
                 projection=inset_map,
                 region=inset_reg,
@@ -2494,7 +2532,7 @@ def add_inset(
             )
             fig.plot(
                 data=gdf,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
         elif hemisphere == "south":
             if inset_reg is None:
@@ -2518,15 +2556,15 @@ def add_inset(
             logger.debug("plotting coastline")
             gl = gpd.read_file(
                 fetch.groundingline(version="measures-v2"),
-                engine=ENGINE,
+                engine="pyogrio",
             )
             coast = gpd.read_file(
-                fetch.antarctic_boundaries(version="Coastline"), engine=ENGINE
+                fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
             )
             data = pd.concat([gl, coast])
             fig.plot(
                 data,
-                pen=kwargs.get("inset_coast_pen", "0.2,black"),
+                pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
         else:
             msg = "hemisphere must be north or south"
@@ -2573,7 +2611,7 @@ def add_scalebar(
             assert len(region) == 4
 
     def round_to_1(x: float) -> float:
-        return round(x, -int(floor(log10(abs(x)))))
+        return round(x, -floor(log10(abs(x))))
 
     region_converted = (*region, "+ue")  # codespell:ignore ue
 
@@ -2662,6 +2700,7 @@ def add_box(
     verbose : str, optional
         verbosity level for pygmt, by default "w" for warnings
     """
+    logger.debug("adding box to figure; %s", box)
     fig.plot(
         x=[box[0], box[0], box[1], box[1], box[0]],
         y=[box[2], box[3], box[3], box[2], box[2]],
@@ -2996,7 +3035,7 @@ def subplots(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
-                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",
+                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",  # noqa: E501
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
@@ -3378,11 +3417,11 @@ def interactive_data(
 
     # initialize figure with coastline
     if hemisphere == "north":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine=ENGINE)
+        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine="pyogrio")
         crsys = crs.NorthPolarStereo()
     elif hemisphere == "south":
         coast_gdf = gpd.read_file(
-            fetch.groundingline(version="measures-v2"), engine=ENGINE
+            fetch.groundingline(version="measures-v2"), engine="pyogrio"
         )
         crsys = crs.SouthPolarStereo()
     else:

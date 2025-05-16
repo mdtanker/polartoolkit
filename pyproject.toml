@@ -46,7 +46,8 @@ dependencies = [
     "scipy",
     "numpy",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
-    "geopandas<1.0", # issue with pyogrio registering drivers, should be fixed in pygmt v0.14
+    "geopandas",
+    "pyogrio",
     "zarr",
     "python-dotenv",
     "requests",
