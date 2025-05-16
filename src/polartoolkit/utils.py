@@ -1530,42 +1530,42 @@ def grd_compare(
 
     dif = grid1 - grid2
 
-    cpt_lims = kwargs.get("cpt_lims")
-    if cpt_lims is not None:
-        vmin, vmax = cpt_lims
-    else:
-        # get individual min/max values (and masked values if shapefile is provided)
-        grid1_cpt_lims = get_min_max(
-            grid1,
-            shp_mask,
-            robust=robust,
-            hemisphere=kwargs.get("hemisphere"),
-            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-        )
-        grid2_cpt_lims = get_min_max(
-            grid2,
-            shp_mask,
-            robust=robust,
-            hemisphere=kwargs.get("hemisphere"),
-            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-        )
-        # get min and max of both grids together
-        vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-        vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
-
-    if kwargs.get("diff_lims") is not None:
-        diff_lims = kwargs.get("diff_lims")
-    else:
-        diff_lims = get_min_max(
-            dif,
-            shp_mask,
-            robust=robust,
-            robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-            hemisphere=kwargs.get("hemisphere"),
-            absolute=kwargs.get("diff_maxabs", True),
-        )
-
     if plot is True:
+        cpt_lims = kwargs.get("cpt_lims")
+        if cpt_lims is not None:
+            vmin, vmax = cpt_lims
+        else:
+            # get individual min/max values (and masked values if shapefile is provided)
+            grid1_cpt_lims = get_min_max(
+                grid1,
+                shp_mask,
+                robust=robust,
+                hemisphere=kwargs.get("hemisphere"),
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
+            )
+            grid2_cpt_lims = get_min_max(
+                grid2,
+                shp_mask,
+                robust=robust,
+                hemisphere=kwargs.get("hemisphere"),
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
+            )
+            # get min and max of both grids together
+            vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
+            vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
+
+        if kwargs.get("diff_lims") is not None:
+            diff_lims = kwargs.get("diff_lims")
+        else:
+            diff_lims = get_min_max(
+                dif,
+                shp_mask,
+                robust=robust,
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
+                hemisphere=kwargs.get("hemisphere"),
+                absolute=kwargs.get("diff_maxabs", True),
+            )
+
         title = kwargs.get("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
             title += f", RMSE: {round(rmse(dif), kwargs.get('RMSE_decimals', 2))}"
