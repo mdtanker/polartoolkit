@@ -600,7 +600,7 @@ def plot_profile(
         if hemisphere == "north":
             layers_version = "bedmachine"
         elif hemisphere == "south":
-            layers_version = "bedmap3"
+            layers_version = "bedmap2"
         # with redirect_stdout(None), redirect_stderr(None):
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
