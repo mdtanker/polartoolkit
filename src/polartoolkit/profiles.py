@@ -861,10 +861,12 @@ def plot_profile(
     for i, (k, v) in enumerate(layers_dict.items()):
         # fill in layers and draw lines between
         if kwargs.get("fill_layers", True) is True:
+            # if above region, use upper limit of region
+            y = np.where(df_layers[k] > layers_reg[-1], layers_reg[-1], df_layers[k])
             fig.plot(
                 x=df_layers.dist,
-                y=df_layers[k],
-                close="+yb",  # close the polygons,
+                y=y,
+                close="+yb",  # close the polygons, filling downwards
                 fill=v["color"],
                 frame=kwargs.get("layers_frame", ["nSew", "a"]),
                 transparency=kwargs.get(
