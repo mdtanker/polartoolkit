@@ -756,6 +756,7 @@ def set_cmap(
     cmap_region: tuple[float, float, float, float] | None = None,
     robust: bool = False,
     robust_percentiles: tuple[float, float] = (0.02, 0.98),
+    absolute: bool = False,
     reverse_cpt: bool = False,
     shp_mask: gpd.GeoDataFrame | str | None = None,
     hemisphere: str | None = None,
@@ -789,6 +790,8 @@ def set_cmap(
         False
     robust_percentiles : tuple[float, float], optional
         percentiles to use for robust colormap limits, by default (0.02, 0.98)
+    absolute : bool, optional
+        use the absolute value of the data from the grid or points, by default False
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
     shp_mask : geopandas.GeoDataFrame | str | None, optional
@@ -880,6 +883,7 @@ def set_cmap(
                     robust=robust,
                     hemisphere=hemisphere,
                     robust_percentiles=robust_percentiles,
+                    absolute=absolute,
                 )
             elif cpt_lims is None and isinstance(grid, (str)):
                 with xr.load_dataarray(grid) as da:
@@ -890,6 +894,7 @@ def set_cmap(
                         robust=robust,
                         hemisphere=hemisphere,
                         robust_percentiles=robust_percentiles,
+                        absolute=absolute,
                     )
             else:
                 if cpt_lims is None:
@@ -1001,6 +1006,7 @@ def set_cmap(
                 robust=robust,
                 hemisphere=hemisphere,
                 robust_percentiles=robust_percentiles,
+                absolute=absolute,
             )
             pygmt.makecpt(
                 cmap=cmap,
@@ -1866,6 +1872,7 @@ def add_colorbar(
                 robust=kwargs.get("robust", False),
                 hemisphere=kwargs.get("hemisphere"),
                 robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
+                absolute=kwargs.get("absolute", False),
             )
         else:
             zmin, zmax = cpt_lims
@@ -3597,6 +3604,7 @@ def geoviews_points(
                 clim = utils.get_min_max(
                     points[points_z],
                     robust=kwargs.get("robust", True),
+                    absolute=kwargs.get("absolute", False),
                 )
             gv_points.opts(
                 color=points_z,
