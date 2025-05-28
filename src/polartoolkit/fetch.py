@@ -75,9 +75,6 @@ def get_fetches() -> list[str]:
 
 def resample_grid(
     grid: xr.DataArray,
-    initial_spacing: float | None = None,
-    initial_region: tuple[float, float, float, float] | None = None,
-    initial_registration: str | None = None,
     spacing: float | None = None,
     region: tuple[float, float, float, float] | None = None,
     registration: str | None = None,
@@ -93,13 +90,6 @@ def resample_grid(
     ----------
     grid : xarray.DataArray
         grid to resample
-    initial_spacing : float | None, optional
-        spacing of input grid, if known, by default None
-    initial_region : tuple[float, float, float, float] | None, optional
-        region of input grid, if known, in format [xmin, xmax, ymin, ymax] by default
-        None
-    initial_registration : str | None, optional
-        registration of input grid, if known, by default None
     spacing : float | None, optional
         new spacing for grid, by default None
     region : tuple[float, float, float, float] | None, optional
@@ -119,29 +109,13 @@ def resample_grid(
 
     verbose = kwargs.get("verbose", "w")
 
-    # if initial values not given, extract from supplied grid
-    if (
-        (initial_spacing is None)
-        & (initial_region is None)
-        & (initial_registration is None)
-    ):
-        logger.debug("no initial values given for resampling, extracting from grid")
-        grd_info = utils.get_grid_info(grid)
-        initial_spacing, initial_region, _, _, initial_registration = grd_info
-    elif initial_spacing is None:
-        logger.debug("no initial spacing given, extracting from grid")
-        initial_spacing = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
-    elif initial_region is None:
-        logger.debug("no initial region given, extracting from grid")
-        initial_region = tuple(  # type: ignore[assignment]
-            float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
-        )
-        initial_region = typing.cast(tuple[float, float, float, float], initial_region)
-    elif initial_registration is None:
-        logger.debug("no initial registration given, extracting from grid")
-        # initial_registration = grd_info[4]
-        reg = grid.gmt.registration  # type: ignore[union-attr]
-        initial_registration = "g" if reg == 0 else "p"
+    if (spacing is None) & (region is None) & (registration is None):
+        logger.info("returning original grid")
+        return grid
+
+    grd_info = utils.get_grid_info(grid)
+    initial_spacing, initial_region, _, _, initial_registration = grd_info
+
     logger.debug(
         "using initial values: %s, %s, %s",
         initial_spacing,
@@ -163,95 +137,172 @@ def resample_grid(
         region == initial_region,
         registration == initial_registration,
     ]
+    # no changes
     if all(rules):
         logger.info("returning original grid")
-        resampled = grid
-
-    # if spacing is smaller, return resampled
-    elif spacing < initial_spacing:  # type: ignore[operator]
-        logger.warning(
-            "Warning, requested spacing (%s) is smaller than the original (%s).",
-            spacing,
-            initial_spacing,
+        return grid
+    # only spacing changes
+    if not rules[0] and rules[1] and rules[2]:
+        logger.info("changing grid spacing")
+        new_region = tuple(  # pylint: disable=consider-using-generator
+            [
+                float(x)
+                for x in pygmt.grdinfo(grid, spacing=f"{spacing}r")[2:-1].split("/")
+            ]
         )
-        cut = pygmt.grdcut(
-            grid=grid,
-            region=region,
-            verbose=verbose,
-        )
-        resampled = pygmt.grdsample(
-            grid=grid,
-            region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
-            spacing=f"{spacing}+e",
-            registration=registration,
-            verbose=verbose,
-        )
-
-    # if spacing is larger, return filtered / resampled
-    elif spacing > initial_spacing:  # type: ignore[operator]
-        logger.info("spacing larger than original, filtering and resampling")
-        filtered = pygmt.grdfilter(
-            grid=grid,
-            filter=f"g{spacing}",
-            region=region,
-            distance=kwargs.get("distance", "0"),
-            # nans=kwargs.get('nans',"r"),
-            verbose=verbose,
-        )
-        resampled = pygmt.grdsample(
-            grid=filtered,
-            region=pygmt.grdinfo(filtered, spacing=f"{spacing}r")[2:-1],
-            spacing=spacing,
-            registration=registration,
-            verbose=verbose,
-        )
-
-    else:
-        if verbose == "w":
+        if new_region != region:
             logger.info(
-                "returning grid with new region and/or registration, same spacing"
+                "region (%s) updated to %s to match desired spacing",
+                region,
+                new_region,
             )
-
+        if spacing < initial_spacing:  # type: ignore[operator]
+            logger.warning(
+                "requested spacing (%s) is smaller than the original (%s).",
+                spacing,
+                initial_spacing,
+            )
+            resampled = grid
+        elif spacing > initial_spacing:  # type: ignore[operator]
+            logger.info(
+                "requested spacing (%s) larger than original (%s), filtering before "
+                "resampling",
+                spacing,
+                initial_spacing,
+            )
+            resampled = pygmt.grdfilter(
+                grid=grid,
+                filter=f"g{spacing}",
+                # region=new_region,
+                distance=kwargs.get("distance", "0"),
+                verbose=verbose,
+            )
+        resampled = pygmt.grdsample(
+            grid=resampled,
+            region=new_region,
+            spacing=f"{spacing}+e",
+            verbose=verbose,
+        )
+        assert spacing == utils.get_grid_info(resampled)[0], (
+            "spacing not correctly updated"
+        )
+        return resampled
+    # only region changes
+    if rules[0] and not rules[1] and rules[2]:
+        logger.info("changing grid region")
+        # get region to nearest multiple of spacing
+        new_region = tuple([spacing * round(x / spacing) for x in region])  # type: ignore[operator, union-attr] # pylint: disable=consider-using-generator
+        if new_region != region:
+            logger.info(
+                "supplied region (%s) updated to %s to match spacing",
+                region,
+                new_region,
+            )
         cut = pygmt.grdcut(
             grid=grid,
-            region=region,
+            region=new_region,
             extend="",
             verbose=verbose,
         )
-        resampled = pygmt.grdsample(
+
+        # if new region entirely within original, check region has been updated
+        original_region = utils.get_grid_info(grid)[1]
+        if all(
+            [
+                new_region[0] > original_region[0],  # type: ignore[index]
+                new_region[1] < original_region[1],  # type: ignore[index]
+                new_region[2] > original_region[2],  # type: ignore[index]
+                new_region[3] < original_region[3],  # type: ignore[index]
+            ]
+        ):
+            assert new_region == utils.get_grid_info(cut)[1], (
+                "region not correctly updated"
+            )
+        else:
+            pass
+        return cut
+    # only registration changes
+    if rules[0] and rules[1] and not rules[2]:
+        logger.info("changing grid registration")
+        try:
+            return utils.change_reg(grid)
+        except ValueError as e:
+            logger.exception(e)
+            logger.error("changing registration failed")
+            return grid
+        # changed = check_registration_changed(grid, resampled)
+        # if not changed:
+        # resampled = utils.change_reg(resampled)
+    # other combinations
+    else:
+        # if both spacing and region changed
+        # if rules[0] and rules[1]:
+        logger.info("changing grid region, spacing and/or registration")
+        # for speed, first subset then change spacing
+        # get region to nearest multiple of spacing
+        new_region = tuple([spacing * round(x / spacing) for x in region])  # type: ignore[operator, union-attr] # pylint: disable=consider-using-generator
+        if new_region != region:
+            logger.info(
+                "supplied region (%s) updated to %s to match desired spacing",
+                region,
+                new_region,
+            )
+        cut = pygmt.grdcut(
             grid=grid,
-            spacing=f"{spacing}+e",
-            region=pygmt.grdinfo(cut, spacing=f"{spacing}r")[2:-1],
-            registration=registration,
-            verbose=verbose,
-        )
-        resampled = pygmt.grdcut(
-            grid=resampled,
-            region=region,
+            region=new_region,
             extend="",
             verbose=verbose,
         )
-
-    reg = resampled.gmt.registration  # type: ignore[union-attr]
-    grid_registration: str | None = "g" if reg == 0 else "p"
-    if grid_registration != registration:
-        warnings.warn(
-            "registration hasn't been correctly changed",
-            stacklevel=2,
+        # new_reg = [float(x) for x in pygmt.grdinfo(grid, spacing=f"{spacing}r")[2:-1]]
+        if spacing < initial_spacing:  # type: ignore[operator]
+            logger.warning(
+                "requested spacing (%s) is smaller than the original (%s).",
+                spacing,
+                initial_spacing,
+            )
+            resampled = cut
+        elif spacing > initial_spacing:  # type: ignore[operator]
+            logger.info(
+                "requested spacing (%s) larger than original (%s), filtering before "
+                "resampling",
+                spacing,
+                initial_spacing,
+            )
+            resampled = pygmt.grdfilter(
+                grid=cut,
+                filter=f"g{spacing}",
+                # region=new_region,
+                distance=kwargs.get("distance", "0"),
+                verbose=verbose,
+            )
+        else:
+            resampled = cut
+        resampled = pygmt.grdsample(
+            grid=resampled,
+            region=new_region,
+            spacing=f"{spacing}+e",
+            verbose=verbose,
+            registration=registration,
         )
-        resampled = utils.change_reg(resampled)
-
-    # # reset coordinate names if changed
-    # with warnings.catch_warnings():
-    #     warnings.filterwarnings("ignore", message="rename '")
-    #     resampled = resampled.rename(
-    #         {
-    #             list(resampled.dims)[0]: original_dims[0],
-    #             list(resampled.dims)[1]: original_dims[1],
-    #         }
-    #     )
-
-    return resampled
+        # if new region entirely within original, check region has been updated
+        original_region = utils.get_grid_info(grid)[1]
+        if all(
+            [
+                new_region[0] > original_region[0],  # type: ignore[index]
+                new_region[1] < original_region[1],  # type: ignore[index]
+                new_region[2] > original_region[2],  # type: ignore[index]
+                new_region[3] < original_region[3],  # type: ignore[index]
+            ]
+        ):
+            assert new_region == utils.get_grid_info(resampled)[1], (
+                "region not correctly updated"
+            )
+        else:
+            pass
+        assert spacing == utils.get_grid_info(resampled)[0], (
+            "spacing not correctly updated"
+        )
+        return resampled
 
 
 class EarthDataDownloader:
