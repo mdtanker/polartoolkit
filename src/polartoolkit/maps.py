@@ -3256,7 +3256,7 @@ def plot_3d(
         if shp_mask is not None:
             grid = utils.mask_from_shp(  # noqa: PLW2901
                 shp_mask,
-                xr_grid=grid,
+                grid=grid,
                 masked=True,
                 invert=kwargs.get("invert", False),
                 hemisphere=hemisphere,
