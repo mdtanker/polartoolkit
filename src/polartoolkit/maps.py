@@ -505,6 +505,7 @@ def basemap(
             hemisphere=hemisphere,
             version=kwargs.get("modis_version"),
             transparency=kwargs.get("modis_transparency", 0),
+            cmap=kwargs.get("modis_cmap", "grayC"),
         )
 
     # add simple basemap
@@ -858,7 +859,7 @@ def set_cmap(
     elif modis is True:
         # create a cmap to use specifically with MODIS imagery
         pygmt.makecpt(
-            cmap="grayC",
+            cmap=kwargs.get("modis_cmap", "grayC"),
             series=[15000, 17000, 1],
             verbose="e",
         )
@@ -1420,6 +1421,7 @@ def plot_grd(
             hemisphere=hemisphere,
             version=kwargs.get("modis_version"),
             transparency=kwargs.get("modis_transparency", 0),
+            cmap=kwargs.get("modis_cmap", "grayC"),
         )
     # add simple basemap
     if simple_basemap is True:
@@ -2315,6 +2317,7 @@ def add_modis(
     hemisphere: str | None = None,
     version: str | None = None,
     transparency: int = 0,
+    cmap: str = "grayC",
 ) -> None:
     """
     Add MODIS imagery to a figure.
@@ -2330,6 +2333,8 @@ def add_modis(
         southern hemisphere and "500m" for northern hemisphere.
     transparency : int, optional
         transparency of the MODIS imagery, by default 0
+    cmap : str, optional
+        colormap to use for MODIS imagery, by default "grayC"
     """
 
     hemisphere = utils.default_hemisphere(hemisphere)
@@ -2349,6 +2354,7 @@ def add_modis(
     imagery_cmap, _, _ = set_cmap(
         True,
         modis=True,
+        modis_cmap=cmap,
     )
     fig.grdimage(
         grid=image,
