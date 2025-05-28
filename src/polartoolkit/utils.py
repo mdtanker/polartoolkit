@@ -2035,11 +2035,17 @@ def mask_from_polygon(
     if isinstance(grid, str):
         grid = xr.load_dataarray(grid)
         grid = typing.cast(xr.DataArray, grid)
-        ds = grid.to_dataset()
+        ds = grid.to_dataset(name="z")
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
     # if no grid given, make a dummy one with supplied region and spacing
     elif grid is None:
+        if region is None:
+            msg = "region must be supplied if grid is None"
+            raise ValueError(msg)
+        if spacing is None:
+            msg = "spacing must be supplied if grid is None"
+            raise ValueError(msg)
         coords = vd.grid_coordinates(
             region=region,
             spacing=spacing,
