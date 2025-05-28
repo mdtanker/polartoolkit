@@ -991,6 +991,7 @@ def mask_from_shp(
     shapefile: str | gpd.geodataframe.GeoDataFrame,
     hemisphere: str | None = None,
     invert: bool = True,
+    grid: xr.DataArray | str | None = None,
     xr_grid: xr.DataArray | None = None,
     grid_file: str | None = None,
     region: str | tuple[float, float, float, float] | None = None,
@@ -1013,10 +1014,13 @@ def mask_from_shp(
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
+    grid : xarray.DataArray or str, optional
+        _xarray.DataArray or path to a .nc file; to use to define region, or to mask, by
+        default None
     xr_grid : xarray.DataArray, optional
-        _xarray.DataArray; to use to define region, or to mask, by default None
+        deprecated, use `grid` instead, by default None
     grid_file : str, optional
-        path to a .nc or .tif file to use to define region or to mask, by default None
+        deprecated, use `grid` instead, by default None
     region : str or tuple[float, float, float, float], optional
         bounding region in format [xmin, xmax, ymin, ymax] in meters to create a dummy
         grid if none are supplied, by default None
@@ -1053,7 +1057,24 @@ def mask_from_shp(
         msg = "hemisphere must be 'north' or 'south'"
         raise ValueError(msg)
 
-    if xr_grid is None and grid_file is None:
+    if xr_grid is not None:
+        grid = xr_grid
+        msg = "`xr_grid` parameter has changed, use 'grid' instead."
+        warnings.warn(
+            msg,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    if grid_file is not None:
+        grid = grid_file
+        msg = "`grid_file` parameter has changed, use 'grid' instead."
+        warnings.warn(
+            msg,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    if grid is None:
         coords = vd.grid_coordinates(
             region=region,
             spacing=spacing,
@@ -1066,22 +1087,19 @@ def mask_from_shp(
             data_names="z",
         )
         xds = ds.z.rio.write_crs(crs)
-    elif xr_grid is not None:
-        # get coordinate names
-        original_dims = tuple(xr_grid.sizes.keys())
-        xds = xr_grid.rio.write_crs(crs).rio.set_spatial_dims(
-            original_dims[1], original_dims[0]
-        )
-    elif grid_file is not None:
-        grid = xr.load_dataarray(grid_file)
+    elif isinstance(grid, xr.DataArray):
         # get coordinate names
         original_dims = tuple(grid.sizes.keys())
         xds = grid.rio.write_crs(crs).rio.set_spatial_dims(
             original_dims[1], original_dims[0]
         )
-    else:
-        msg = "can't supply both xr_grid and grid_file."
-        raise ValueError(msg)
+    elif isinstance(grid, str):
+        xds = xr.load_dataarray(grid)
+        # get coordinate names
+        original_dims = tuple(xds.sizes.keys())
+        xds = xds.rio.write_crs(crs).rio.set_spatial_dims(
+            original_dims[1], original_dims[0]
+        )
 
     # if single geometry, convert to list
     try:
@@ -1869,7 +1887,7 @@ def get_min_max(
             masked = mask_from_shp(
                 shapefile,
                 hemisphere=hemisphere,
-                xr_grid=values,
+                grid=values,
                 masked=True,
                 invert=False,
             )
