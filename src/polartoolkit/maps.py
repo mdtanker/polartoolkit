@@ -3129,6 +3129,7 @@ def plot_3d(
     grids: list[xr.DataArray] | xr.DataArray,
     cmaps: list[str] | str,
     exaggeration: list[float] | float,
+    drapegrids: list[xr.DataArray] | None = None,
     view: tuple[float, float] = (170, 30),
     vlims: tuple[float, float] | None = None,
     region: tuple[float, float, float, float] | None = None,
@@ -3183,39 +3184,44 @@ def plot_3d(
     reverse_cpt = kwargs.get("reverse_cpt", False)
     cpt_lims_list = kwargs.get("cpt_lims")
 
-    if not isinstance(grids, list):
+    if not isinstance(grids, list | tuple):  # type: ignore[operator]
         grids = [grids]
 
     # number of grids to plot
     num_grids = len(grids)
 
     # if not provided as a list, make it a list the length of num_grids
-    if not isinstance(cbar_labels, list):
+    if not isinstance(cbar_labels, list | tuple):  # type: ignore[operator]
         cbar_labels = [cbar_labels] * num_grids
-    if not isinstance(modis, list):
+    if not isinstance(modis, list | tuple):  # type: ignore[operator]
         modis = [modis] * num_grids
-    if not isinstance(grd2cpt, list):
+    if not isinstance(grd2cpt, list | tuple):  # type: ignore[operator]
         grd2cpt = [grd2cpt] * num_grids
-    if not isinstance(cmap_region, list):
+    if not isinstance(cmap_region, list | tuple):  # type: ignore[operator]
         cmap_region = [cmap_region] * num_grids
-    if not isinstance(robust, list):
+    if not isinstance(robust, list | tuple):  # type: ignore[operator]
         robust = [robust] * num_grids
-    if not isinstance(reverse_cpt, list):
+    if not isinstance(reverse_cpt, list | tuple):  # type: ignore[operator]
         reverse_cpt = [reverse_cpt] * num_grids
-    if not isinstance(cmaps, list):
+    if not isinstance(cmaps, list | tuple):  # type: ignore[operator]
         cmaps = [cmaps] * num_grids
-    if not isinstance(exaggeration, list):
+    if not isinstance(exaggeration, list | tuple):  # type: ignore[operator]
         exaggeration = [exaggeration] * num_grids
+    if not isinstance(drapegrids, list | tuple):  # type: ignore[operator]
+        if drapegrids is None:
+            drapegrids = [None] * num_grids
+        else:
+            drapegrids = [drapegrids] * num_grids  # type: ignore[unreachable]
     if cpt_lims_list is None:
         cpt_lims_list = [None] * num_grids
     elif (
-        (isinstance(cpt_lims_list, list))
+        (isinstance(cpt_lims_list, list | tuple))  # type: ignore[operator]
         & (len(cpt_lims_list) == 2)
         & (all(isinstance(x, float) for x in cpt_lims_list))
     ):
         cpt_lims_list = [cpt_lims_list] * num_grids
     if (
-        isinstance(cmap_region, list)
+        isinstance(cmap_region, list | tuple)  # type: ignore[operator]
         & (len(cmap_region) == 4)
         & (all(isinstance(x, float) for x in cmap_region))
     ):
@@ -3325,6 +3331,7 @@ def plot_3d(
             transparency=transparency,
             # plane='-9000+ggrey',
             shading=kwargs.get("shading", False),
+            drapegrid=drapegrids[i],
         )
 
         # display colorbar
