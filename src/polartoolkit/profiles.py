@@ -543,8 +543,6 @@ def plot_profile(
     ------------
     fillnans: bool
         Choose whether to fill nans in layers, defaults to True.
-    clip: bool
-        Choose whether to clip the profile based on distance.
     num: int
         Number of points to sample at along a line.
     max_dist: int
@@ -628,6 +626,14 @@ def plot_profile(
             hemisphere=hemisphere,
         )
 
+    # shorten profiles
+    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
+        points = shorten(
+            points,
+            max_dist=kwargs.get("max_dist"),
+            min_dist=kwargs.get("min_dist"),
+        )
+
     # sample cross-section layers from grids
     df_layers = points.copy()
     for k, v in layers_dict.items():
@@ -643,24 +649,6 @@ def plot_profile(
         points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
-
-    # shorten profiles
-    if kwargs.get("clip") is True:
-        if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
-            msg = f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
-            raise ValueError(msg)
-        df_layers = shorten(
-            df_layers,
-            max_dist=kwargs.get("max_dist"),
-            min_dist=kwargs.get("min_dist"),
-        )
-
-        if data_dict is not None:
-            df_data = shorten(
-                df_data,
-                max_dist=kwargs.get("max_dist"),
-                min_dist=kwargs.get("min_dist"),
-            )
 
     fig = pygmt.Figure()
 
@@ -1253,8 +1241,6 @@ def plot_data(
         choose between plotting in the "north" or "south" hemispheres, by default None
     Keyword Args
     ------------
-    clip: bool
-        Choose whether to clip the profile based on distance.
     num: int
         Number of points to sample at along a line.
     max_dist: int
@@ -1314,23 +1300,20 @@ def plot_data(
             hemisphere=hemisphere,
         )
 
+    # shorten profiles
+    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
+        points = shorten(
+            points,
+            max_dist=kwargs.get("max_dist"),
+            min_dist=kwargs.get("min_dist"),
+        )
+
     # sample data grids
     df_data = points.copy()
     if data_dict is not None:
         points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
-
-    # shorten profiles
-    if kwargs.get("clip") is True:  # noqa: SIM102
-        if (kwargs.get("max_dist") or kwargs.get("min_dist")) is None:
-            msg = f"If clip = {kwargs.get('clip')}, max_dist and min_dist must be set."
-            raise ValueError(msg)
-    df_data = shorten(
-        df_data,
-        max_dist=kwargs.get("max_dist"),
-        min_dist=kwargs.get("min_dist"),
-    )
 
     fig = pygmt.Figure()
 
