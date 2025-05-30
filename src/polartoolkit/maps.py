@@ -2730,7 +2730,7 @@ def add_box(
 def interactive_map(
     hemisphere: str | None = None,
     center_yx: tuple[float] | None = None,
-    zoom: float = 0,
+    zoom: float | None = None,
     display_xy: bool = True,
     points: pd.DataFrame | None = None,
     basemap_type: str | None = None,
@@ -2747,7 +2747,7 @@ def interactive_map(
     center_yx : tuple, optional
         choose center coordinates in EPSG3031 [y,x], by default [0,0]
     zoom : float, optional
-        choose zoom level, by default 0
+        choose zoom level, by default None
     display_xy : bool, optional
         choose if you want clicks to show the xy location, by default True
     show : bool, optional
@@ -2843,6 +2843,8 @@ def interactive_map(
         elif basemap_type == "Imagery":
             base = ipyleaflet.basemaps.Esri.AntarcticImagery  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3031.ESRIImagery
+            if zoom is None:
+                zoom = 5
         elif basemap_type == "Basemap":
             base = ipyleaflet.basemaps.Esri.AntarcticBasemap  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3031.ESRIBasemap
@@ -2874,6 +2876,10 @@ def interactive_map(
     else:
         msg = "hemisphere must be north or south"
         raise ValueError(msg)
+
+    if zoom is None:
+        zoom = 0
+
     # create the map
     m = ipyleaflet.Map(
         center=center_ll,
