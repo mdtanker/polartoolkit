@@ -96,14 +96,14 @@ def create_profile(
         df["coords"] = shp.geometry[0].coords[:]
         coordinates_rel = df.coords.apply(pd.Series, index=["easting", "northing"])
         # for shapefiles, dist is cumulative from previous points
-        coordinates = cum_dist(coordinates_rel, **kwargs)
+        coordinates = cumulative_dist(coordinates_rel, **kwargs)
 
     elif method == "polyline":
         if polyline is None:
             msg = f"If method = {method}, need to provide a valid dataframe"
             raise ValueError(msg)
-        # for shapefiles, dist is cumulative from previous points
-        coordinates = cum_dist(polyline, **kwargs)
+        # dist is cumulative from previous points
+        coordinates = cumulative_dist(polyline, **kwargs)
 
     coords = coordinates.sort_values(by=["dist"])
 
@@ -580,6 +580,16 @@ def plot_profile(
         Choose to save the image, by default is False.
     path: str
         Filename for saving image, by default is None.
+
+    Returns
+    -------
+    fig : pygmt.Figure
+        a PyGMT figure object with the cross-section and data plotted.
+    df_layers : pd.DataFrame
+        DataFrame with sampled layers along the cross-section.
+    df_data : pd.DataFrame
+        DataFrame with sampled data along the cross-section, if data_dict is None,
+        this will be an empty DataFrame.
     """
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
@@ -1273,6 +1283,14 @@ def plot_data(
         Choose to save the image, by default is False.
     path: str
         Filename for saving image, by default is None.
+
+    Returns
+    -------
+    fig : pygmt.Figure
+        a PyGMT figure object with the profile data plotted.
+    df_data : pd.DataFrame
+        DataFrame with sampled data along the cross-section, if data_dict is None,
+        this will be an empty DataFrame.
     """
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
@@ -1636,7 +1654,7 @@ def plot_data(
     return fig, df_data
 
 
-def rel_dist(
+def relative_dist(
     df: pd.DataFrame,
     reverse: bool = False,
 ) -> pd.DataFrame:
@@ -1667,6 +1685,8 @@ def rel_dist(
     df1["rel_dist"] = np.sqrt(
         (df1.easting - df1["x_lag"]) ** 2 + (df1.northing - df1["y_lag"]) ** 2
     )
+    # set first row distance to 0
+    df1.loc[0, "rel_dist"] = 0
     df1 = df1.drop(["x_lag", "y_lag"], axis=1)
     return df1.dropna(subset=["rel_dist"])
 
@@ -1694,7 +1714,7 @@ def rel_dist(
     #         )
 
 
-def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
+def cumulative_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
     """
     calculate cumulative distance of points along a line.
 
@@ -1710,7 +1730,7 @@ def cum_dist(df: pd.DataFrame, **kwargs: typing.Any) -> pd.DataFrame:
     """
     reverse = kwargs.get("reverse", False)
     df1 = df.copy()
-    df1 = rel_dist(df1, reverse=reverse)
+    df1 = relative_dist(df1, reverse=reverse)
     df1["dist"] = df1.rel_dist.cumsum()
     return df1
 
