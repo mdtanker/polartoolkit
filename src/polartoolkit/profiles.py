@@ -605,14 +605,14 @@ def plot_profile(
 
     # if no layers supplied, use default
     if layers_dict is None:
-        if hemisphere == "north":
-            layers_version = "bedmachine"
-        elif hemisphere == "south":
-            layers_version = "bedmap2"
-        # with redirect_stdout(None), redirect_stderr(None):
+        if layers_version is None:
+            if hemisphere == "north":
+                layers_version = "bedmachine"
+            elif hemisphere == "south":
+                layers_version = "bedmap2"
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
-            # region=vd.get_region((points.x, points.y)),
+            # region=vd.get_region((points.easting, points.northing)),
             reference=kwargs.get("default_layers_reference"),
             spacing=kwargs.get("default_layers_spacing"),
             hemisphere=hemisphere,
@@ -620,7 +620,6 @@ def plot_profile(
 
     # create default data dictionary
     if data_dict == "default":
-        # with redirect_stdout(None), redirect_stderr(None):
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
