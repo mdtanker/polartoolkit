@@ -642,6 +642,22 @@ def plot_profile(
     if kwargs.get("fillnans", True) is True:
         df_layers = fill_nans(df_layers)
 
+    # check layers are in right order
+    # anywhere earth is above water, set equal to water
+    df_layers["earth"] = np.where(
+        df_layers.earth > df_layers.water, df_layers.water, df_layers.earth
+    )
+
+    # anywhere earth is above ice, set equal to ice
+    df_layers["earth"] = np.where(
+        df_layers.earth > df_layers.ice, df_layers.ice, df_layers.earth
+    )
+
+    # anywhere water is above ice, set equal to ice
+    df_layers["water"] = np.where(
+        df_layers.water > df_layers.ice, df_layers.ice, df_layers.water
+    )
+
     # sample data grids
     df_data = points.copy()
     if data_dict is not None:
