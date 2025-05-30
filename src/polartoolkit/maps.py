@@ -2732,7 +2732,6 @@ def interactive_map(
     center_yx: tuple[float] | None = None,
     zoom: float = 0,
     display_xy: bool = True,
-    show: bool = True,
     points: pd.DataFrame | None = None,
     basemap_type: str = "BlueMarble",
     **kwargs: typing.Any,
@@ -2895,9 +2894,6 @@ def interactive_map(
                     label_xy.value = str(utils.latlon_to_epsg3413(latlon))
 
     m.on_interaction(handle_click)
-
-    if show is True:
-        display(m)
 
     return m
 

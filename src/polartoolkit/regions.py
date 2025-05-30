@@ -304,7 +304,7 @@ def draw_region(**kwargs: typing.Any) -> list[typing.Any]:
         msg = "Missing optional dependency 'ipython' required for interactive plotting."
         raise ImportError(msg)
 
-    m = maps.interactive_map(**kwargs, show=False)
+    m = maps.interactive_map(**kwargs)
 
     def clear_m() -> None:
         global poly  # pylint: disable=global-variable-undefined # noqa: PLW0603

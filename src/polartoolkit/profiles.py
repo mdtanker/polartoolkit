@@ -1755,7 +1755,7 @@ def draw_lines(**kwargs: typing.Any) -> list[typing.Any]:
 
         raise ImportError(msg)
 
-    m = maps.interactive_map(**kwargs, show=False)
+    m = maps.interactive_map(**kwargs)
 
     def clear_m() -> None:
         global lines  # noqa: PLW0603 # pylint:disable=global-variable-undefined
