@@ -2733,7 +2733,7 @@ def interactive_map(
     zoom: float = 0,
     display_xy: bool = True,
     points: pd.DataFrame | None = None,
-    basemap_type: str = "BlueMarble",
+    basemap_type: str | None = None,
     **kwargs: typing.Any,
 ) -> ipyleaflet.Map:
     """
@@ -2757,7 +2757,8 @@ def interactive_map(
         EPSG:3031 in a dataframe
     basemap_type : str, optional
         choose what basemap to plot, options are 'BlueMarble', 'Imagery', 'Basemap', and
-        "IceVelocity", by default 'BlueMarble'
+        "IceVelocity", by default 'BlueMarble' for northern hemisphere and 'Imagery' for
+        southern hemisphere.
 
     Returns
     -------
@@ -2828,6 +2829,12 @@ def interactive_map(
         else:
             msg = "hemisphere must be north or south"
             raise ValueError(msg)
+
+    if basemap_type is None:
+        if hemisphere == "south":
+            basemap_type = "Imagery"
+        elif hemisphere == "north":
+            basemap_type = "BlueMarble"
 
     if hemisphere == "south":
         if basemap_type == "BlueMarble":
