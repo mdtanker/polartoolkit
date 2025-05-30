@@ -2900,7 +2900,7 @@ def interactive_map(
 
         def handle_click(**kwargs: typing.Any) -> None:
             if kwargs.get("type") == "click":
-                latlon = kwargs.get("coordinates")
+                latlon = kwargs.get("coordinates")[::-1]  # type: ignore[index]
                 if hemisphere == "south":
                     label_xy.value = str(utils.latlon_to_epsg3031(latlon))
                 elif hemisphere == "north":
