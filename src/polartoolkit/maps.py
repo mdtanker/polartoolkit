@@ -2984,6 +2984,9 @@ def subplots(
 
     kwargs = copy.deepcopy(kwargs)
 
+    if isinstance(grids, xr.DataArray):
+        grids = [grids]
+
     # if no defined region, get from first grid in list
     if region is None:
         try:
@@ -3047,7 +3050,7 @@ def subplots(
         kwargs2 = copy.deepcopy(kwargs)
 
         if i == 0:
-            fig = (None,)
+            fig = None
             origin_shift = "initialize"
         elif i % ncols == 0:
             origin_shift = "both"
@@ -3074,7 +3077,7 @@ def subplots(
         # add overall title
         if (fig_title is not None) & (i == 0):
             fig_width = utils.get_fig_width()
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
@@ -3082,7 +3085,7 @@ def subplots(
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 text=fig_x_axis_title,
                 position="TC",
                 justify="BC",
@@ -3095,7 +3098,7 @@ def subplots(
             & (row_num == int(nrows / 2))
             & (i % ncols == 0)
         ):
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 text=fig_y_axis_title,
                 position="ML",
                 justify="BC",
@@ -3121,7 +3124,7 @@ def subplots(
             else:
                 label = None
 
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 position=subplot_labels_loc,
                 justify="TL",
                 text=f"{label})",
@@ -3133,7 +3136,7 @@ def subplots(
 
         # add vertical title to left of each row
         if (row_titles is not None) & (i % ncols == 0):
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 justify="BC",
                 position="ML",
                 offset="-.5c/0c",
@@ -3145,7 +3148,7 @@ def subplots(
 
         # add horizontal title above each column
         if (column_titles is not None) & (i < ncols):
-            fig.text(  # type: ignore[attr-defined]
+            fig.text(
                 justify="BC",
                 position="TC",
                 text=column_titles[i],  # type: ignore[index]
