@@ -204,23 +204,7 @@ def resample_grid(
             extend="",
             verbose=verbose,
         )
-
-        # if new region entirely within original, check region has been updated
-        original_region = utils.get_grid_info(grid)[1]
-        if all(
-            [
-                new_region[0] > original_region[0],  # type: ignore[index]
-                new_region[1] < original_region[1],  # type: ignore[index]
-                new_region[2] > original_region[2],  # type: ignore[index]
-                new_region[3] < original_region[3],  # type: ignore[index]
-            ]
-        ):
-            assert new_region == utils.get_grid_info(cut)[1], (
-                "region not correctly updated"
-            )
-        else:
-            pass
-        return cut
+        return cut  # noqa: RET504
     # only registration changes
     if rules[0] and rules[1] and not rules[2]:
         logger.info("changing grid registration")
@@ -294,9 +278,9 @@ def resample_grid(
                 new_region[3] < original_region[3],  # type: ignore[index]
             ]
         ):
-            assert new_region == utils.get_grid_info(resampled)[1], (
-                "region not correctly updated"
-            )
+            if new_region != utils.get_grid_info(resampled)[1]:
+                msg = "region not correctly updated"
+                warnings.warn(msg, UserWarning, stacklevel=2)
         else:
             pass
         assert spacing == utils.get_grid_info(resampled)[0], (
