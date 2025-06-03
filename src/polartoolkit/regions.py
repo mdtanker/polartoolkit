@@ -16,6 +16,7 @@ import typing
 
 import pandas as pd
 import verde as vd
+from shapely import Polygon
 
 from polartoolkit import (  # pylint: disable=import-self
     maps,
@@ -245,6 +246,50 @@ def alter_region(
     ymax = starting_s - zoom - n_shift
 
     return (xmin, xmax, ymin, ymax)
+
+
+def regions_overlap(
+    region1: tuple[float, float, float, float],
+    region2: tuple[float, float, float, float],
+) -> tuple[float, float, float, float]:
+    """
+    Get the overlap of 2 regions.
+
+    Parameters
+    ----------
+    region1 : tuple[float, float, float, float]
+        first region, in the format (xmin, xmax, ymin, ymax)
+    region2 : tuple[float, float, float, float]
+        second region in the format (xmin, xmax, ymin, ymax)
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        Overlap  of the 2 supplied regions.
+    """
+
+    # create a polygon from the region
+    polygon1 = Polygon(
+        [
+            (region1[0], region1[2]),
+            (region1[0], region1[3]),
+            (region1[1], region1[3]),
+            (region1[1], region1[2]),
+            (region1[0], region1[2]),
+        ]
+    )
+    polygon2 = Polygon(
+        [
+            (region2[0], region2[2]),
+            (region2[0], region2[3]),
+            (region2[1], region2[3]),
+            (region2[1], region2[2]),
+            (region2[0], region2[2]),
+        ]
+    )
+    # get the intersection of the 2 polygons
+    intersection = polygon1.intersection(polygon2)
+    return utils.region_to_bounding_box(intersection.bounds)
 
 
 def combine_regions(
