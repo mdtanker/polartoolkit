@@ -514,8 +514,7 @@ def basal_melt(
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
     # This is the path to the processed (magnitude) grid
-    url = "http://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
-
+    url = "https://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
     fname = "ANT_iceshelf_melt_rates_CS2_2010-2018_v0.h5"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -527,38 +526,45 @@ def basal_melt(
 
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
-            # load .h5 file
-            grid = xr.load_dataset(
-                fname1,
-                engine="netcdf4",
-                # engine='h5netcdf',
-                # phony_dims='sort',
+            msg = (
+                "Unfortunately, this dataset is not available for download at the "
+                "moment, follow here for details: "
+                "https://github.com/mdtanker/polartoolkit/issues/250"
             )
+            raise ValueError(msg)
 
-            # Remove extra dimension
-            grid = grid.squeeze()
+            # # load .h5 file
+            # grid = xr.load_dataset(
+            #     fname1,
+            #     engine="netcdf4",
+            # )
 
-            # Assign variables as coords
-            grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
+            # # Remove extra dimension
+            # grid = grid.squeeze()
 
-            # Swap dimensions with coordinate names
-            grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
+            # # Assign variables as coords
+            # grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
 
-            # Drop coordinate variables
-            grid = grid.drop_vars(["x", "y"])
+            # # Swap dimensions with coordinate names
+            # grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"}) # noqa: E501
 
-            # Save to .zarr file
-            grid.to_zarr(
-                fname_processed,
-            )
+            # # Drop coordinate variables
+            # grid = grid.drop_vars(["x", "y"])
+
+            # # Save to .zarr file
+            # grid.to_zarr(
+            #     fname_processed,
+            # )
 
         return str(fname_processed)
 
+    # known_hash="c14f7059876e6808e3869853a91a3a17a776c95862627c4a3d674c12e4477d2a"
+    known_hash = None
     path = pooch.retrieve(
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/mass_change/Admusilli_2020",
-        known_hash="c14f7059876e6808e3869853a91a3a17a776c95862627c4a3d674c12e4477d2a",
+        known_hash=known_hash,
         progressbar=True,
         processor=preprocessing,
     )

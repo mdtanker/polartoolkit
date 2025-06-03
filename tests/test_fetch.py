@@ -1382,34 +1382,34 @@ def test_mass_change(test_input, expected):
 
 # %% basal melt
 
-basal_melt_test = [
-    (
-        "w_b",
-        (
-            500.0,
-            (-2736000.0, 2734000.0, -2374000.0, 2740000.0),
-            -19.8239116669,
-            272.470550537,
-            "g",
-        ),
-    ),
-]
+# basal_melt_test = [
+#     (
+#         "w_b",
+#         (
+#             500.0,
+#             (-2736000.0, 2734000.0, -2374000.0, 2740000.0),
+#             -19.8239116669,
+#             272.470550537,
+#             "g",
+#         ),
+#     ),
+# ]
 
 
-@pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
-@pytest.mark.fetch
-@pytest.mark.slow
-@pytest.mark.filterwarnings("ignore:Consolidated metadata")
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_basal_melt(test_input, expected):
-    grid = fetch.basal_melt(variable=test_input)
-    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
-    assert not deepdiff.DeepDiff(
-        utils.get_grid_info(grid),
-        expected,
-        ignore_order=True,
-        significant_digits=2,
-    )
+# @pytest.mark.parametrize(("test_input", "expected"), basal_melt_test)
+# @pytest.mark.fetch
+# @pytest.mark.slow
+# @pytest.mark.filterwarnings("ignore:Consolidated metadata")
+# @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+# def test_basal_melt(test_input, expected):
+# grid = fetch.basal_melt(variable=test_input)
+# # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+# assert not deepdiff.DeepDiff(
+#     utils.get_grid_info(grid),
+#     expected,
+#     ignore_order=True,
+#     significant_digits=2,
+# )
 
 
 # %% ghf
