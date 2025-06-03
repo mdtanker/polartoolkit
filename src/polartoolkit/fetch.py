@@ -27,7 +27,6 @@ import pygmt
 import requests
 import xarray as xr
 from dotenv import load_dotenv
-from pyproj import Transformer
 from tqdm.autonotebook import tqdm
 
 import polartoolkit
@@ -620,10 +619,6 @@ def buttressing(
         msg = "variable parameter is deprecated, please use version parameter instead"
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
-    initial_region = regions.antarctica
-    initial_spacing = 1e3
-    initial_registration = "g"
-
     base_url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0664_antarctic_iceshelf_buttress/"
 
     if version == "max":
@@ -654,9 +649,6 @@ def buttressing(
 
     return resample_grid(
         grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
@@ -721,7 +713,6 @@ def ice_vel(
     if hemisphere == "south":
         if spacing is None:
             spacing = 5e3
-        original_spacing = 450
 
         # preprocessing for full, 450m resolution
         def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -759,29 +750,16 @@ def ice_vel(
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
                 warnings.warn(msg, stacklevel=2)
-                initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
-                initial_spacing = original_spacing
-                initial_registration = "g"
                 with xr.open_dataset(fname1) as ds:
                     vx_5k = resample_grid(
                         ds.VX,
-                        initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
-                        initial_region=initial_region,  # pylint: disable=possibly-used-before-assignment
-                        initial_registration=initial_registration,  # pylint: disable=possibly-used-before-assignment
                         spacing=5e3,
-                        region=initial_region,
-                        registration=initial_registration,
                         **kwargs,
                     )
                     vx_5k = typing.cast(xr.DataArray, vx_5k)
                     vy_5k = resample_grid(
                         ds.VY,
-                        initial_spacing=initial_spacing,
-                        initial_region=initial_region,
-                        initial_registration=initial_registration,
                         spacing=5e3,
-                        region=initial_region,
-                        registration=initial_registration,
                         **kwargs,
                     )
                     vy_5k = typing.cast(xr.DataArray, vy_5k)
@@ -794,20 +772,9 @@ def ice_vel(
         # determine which resolution of preprocessed grid to use
         if spacing < 5000:
             preprocessor = preprocessing_fullres
-            initial_region = (-2800000.0, 2799800.0, -2799800.0, 2800000.0)
-            initial_spacing = original_spacing
-            initial_registration = "g"
         elif spacing >= 5000:
             logger.info("using preprocessed 5km grid since spacing is > 5km")
             preprocessor = preprocessing_5k
-            initial_region = (-2800000.0, 2795000.0, -2795000.0, 2800000.0)
-            initial_spacing = 5000
-            initial_registration = "g"
-
-        if region is None:
-            region = initial_region  # pylint: disable=possibly-used-before-assignment
-        if registration is None:
-            registration = initial_registration  # pylint: disable=possibly-used-before-assignment
 
         # This is the path to the processed (magnitude) grid
         path = pooch.retrieve(
@@ -823,9 +790,6 @@ def ice_vel(
         with xr.open_dataarray(path) as grid:
             resampled = resample_grid(
                 grid,
-                initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
-                initial_region=initial_region,
-                initial_registration=initial_registration,
                 spacing=spacing,
                 region=region,
                 registration=registration,
@@ -835,10 +799,6 @@ def ice_vel(
     elif hemisphere == "north":
         if spacing is None:
             spacing = 250
-
-        initial_region = (-645000.0, 859750.0, -3370000.0, -640250.0)
-        initial_spacing = 250
-        initial_registration = "g"
 
         base_fname = "greenland_vel_mosaic250"
         registry = {
@@ -893,9 +853,6 @@ def ice_vel(
 
         resampled = resample_grid(
             processed,
-            initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
-            initial_region=initial_region,
-            initial_registration=initial_registration,
             spacing=spacing,
             region=region,
             registration=registration,
@@ -1474,17 +1431,6 @@ def sediment_thickness(
     """
 
     if version == "ANTASed":
-        # found with df.describe()
-        initial_region = (-2350000.0, 2490000.0, -1990000.0, 2090000.0)
-        initial_spacing = 10e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
@@ -1515,15 +1461,15 @@ def sediment_thickness(
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "thick"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    region=(-2350000.0, 2490000.0, -1990000.0, 2090000.0),
+                    spacing=10e3,
+                    registration="g",
                 )
                 processed = pygmt.xyz2grd(
                     data=df[["x", "y", "thick"]],
-                    region=initial_region,
-                    spacing=initial_spacing,
-                    registration=initial_registration,
+                    region=(-2350000.0, 2490000.0, -1990000.0, 2090000.0),
+                    spacing=10e3,
+                    registration="g",
                 )
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -1542,9 +1488,6 @@ def sediment_thickness(
 
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
             spacing=spacing,
             region=region,
             registration=registration,
@@ -1552,18 +1495,6 @@ def sediment_thickness(
         )
 
     elif version == "tankersley-2022":
-        # found with utils.get_grid_info()
-        initial_region = (-3330000.0, 1900000.0, -3330000.0, 1850000.0)
-        initial_spacing = 5e3
-        initial_registration = "p"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/941238/files/Ross_Embayment_sediment.nc",
             fname="tankersley_2022_sediment_thickness.nc",
@@ -1576,9 +1507,6 @@ def sediment_thickness(
 
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
             spacing=spacing,
             region=region,
             registration=registration,
@@ -1586,18 +1514,6 @@ def sediment_thickness(
         )
 
     elif version == "lindeque-2016":
-        # found with utils.get_grid_info()
-        initial_region = (-4600000.0, 1900000.0, -3900000.0, 1850000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/WobbeF_et_al_2016/sedthick_total_v2_5km_epsg3031.nc",
             fname="lindeque_2016_total_sediment_thickness.nc",
@@ -1610,9 +1526,6 @@ def sediment_thickness(
 
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
             spacing=spacing,
             region=region,
             registration=registration,
@@ -1620,18 +1533,6 @@ def sediment_thickness(
         )
 
     elif version == "GlobSed":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000, 3330000, -3330000, 3330000)
-        initial_spacing = 1e3  # given as 5 arc min (0.08333 degrees), which is
-        # ~0.8km at -85deg, or 3km at -70deg
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the grid, and save it back as a .nc"
@@ -1673,9 +1574,7 @@ def sediment_thickness(
                 # resample and save to disk
                 pygmt.grdsample(
                     processed,
-                    region=initial_region,
-                    spacing=initial_spacing,
-                    registration=initial_registration,
+                    spacing=1e3,
                     outgrid=fname_processed,
                 )
 
@@ -1697,9 +1596,6 @@ def sediment_thickness(
 
         resampled = resample_grid(
             grid,
-            initial_spacing=initial_spacing,
-            initial_region=initial_region,
-            initial_registration=initial_registration,
             spacing=spacing,
             region=region,
             registration=registration,
@@ -2109,11 +2005,6 @@ def bedmachine(
             raise ValueError(msg)
 
     elif hemisphere == "south":
-        # found with utils.get_grid_info()
-        initial_region = (-3333000.0, 3333000.0, -3333000.0, 3333000.0)
-        initial_spacing = 500
-        initial_registration = "g"
-
         url = (
             "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
             "BedMachineAntarctica-v3.nc"
@@ -2123,13 +2014,6 @@ def bedmachine(
     else:
         msg = "hemisphere must be 'north' or 'south'"
         raise ValueError(msg)
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
 
     path = pooch.retrieve(
         url=url,
@@ -2620,19 +2504,6 @@ def bedmap3(
         "3A2d0e4791-8e20-46a3-80e4-f5f6716025d2%3AL2JlZG1hcDMubmM%3D"
     )
     known_hash = None
-
-    # initial_region = (-3333250.0, 3333250.0, -3333250.0, 3333250.0)
-    initial_region = (-3333500.0, 3333500.0, -3333000.0, 3333000.0)
-    initial_spacing = 500
-    initial_registration = "p"
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
-
     # convert user-supplied strings to names used by Bedmap3
     if layer == "surface":
         layer = "surface_topography"
@@ -2757,9 +2628,9 @@ def bedmap3(
             # load bedmap2 grid for converting to wgs84
             geoid_2_ellipsoid = bedmap2(
                 layer="gl04c_geiod_to_WGS84",
-                region=initial_region,
-                spacing=initial_spacing,
-                registration=initial_registration,
+                region=region,
+                spacing=spacing,
+                registration=registration,
             )
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
@@ -2769,17 +2640,17 @@ def bedmap3(
             # load bedmap2 grid for converting to wgs84
             geoid_2_ellipsoid = bedmap2(
                 layer="gl04c_geiod_to_WGS84",
-                region=initial_region,
-                spacing=initial_spacing,
-                registration=initial_registration,
+                region=region,
+                spacing=spacing,
+                registration=registration,
             )
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
-                spacing=initial_spacing,
-                region=initial_region,
-                registration=initial_registration,
+                spacing=spacing,
+                region=region,
+                registration=registration,
                 hemisphere="south",
                 **kwargs,
             )
@@ -2912,13 +2783,6 @@ def bedmap2(
             "'gl04c_geiod_to_WGS84', 'icebase', or 'water_thickness'"
         )
         raise ValueError(msg)
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Unzip the folder, convert the tiffs to .zarr files"
@@ -3077,9 +2941,9 @@ def bedmap2(
 
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
-                spacing=initial_spacing,
-                region=initial_region,
-                registration=initial_registration,
+                spacing=spacing,
+                region=region,
+                registration=registration,
                 hemisphere="south",
                 **kwargs,
             )
@@ -3146,10 +3010,6 @@ def rema(
     """
 
     if version == "500m":
-        # found with utils.get_grid_info(grid)
-        initial_region = (-2700250.0, 2750250.0, -2500250.0, 3342250.0)
-        initial_spacing = 500
-        initial_registration = "g"
         # url and file name for download
         url = (
             "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/500m/rema_mosaic_"
@@ -3159,10 +3019,6 @@ def rema(
         members = ["rema_mosaic_500m_v2.0_filled_cop30_dem.tif"]
         known_hash = "50ab9424f787aa76b5d55e694094f0c6c945144d8f6c8a26b5c5474ff8e29ddc"
     elif version == "1km":
-        # found with utils.get_grid_info(grid)
-        initial_region = (-2700500.0, 2750500.0, -2500500.0, 3342500.0)
-        initial_spacing = 1000
-        initial_registration = "g"
         # url and file name for download
         url = (
             "https://data.pgc.umn.edu/elev/dem/setsm/REMA/mosaic/v2.0/1km/rema_mosaic_"
@@ -3174,13 +3030,6 @@ def rema(
     else:
         msg = "version must be '1km' or '500m'"
         raise ValueError(msg)
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Untar the folder, convert the tiffs to compressed .zarr files"
@@ -3227,9 +3076,6 @@ def rema(
 
     resampled = resample_grid(
         grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
@@ -3271,18 +3117,6 @@ def deepbedmap(
     .. footbibliography::
     """
 
-    # found with utils.get_grid_info()
-    initial_region = (-2700000.0, 2800000.0, -2199750.0, 2299750.0)
-    initial_spacing = 250
-    initial_registration = "p"
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
-
     path: str = pooch.retrieve(
         url="https://zenodo.org/record/4054246/files/deepbedmap_dem.tif?download=1",
         fname="deepbedmap.tif",
@@ -3296,9 +3130,6 @@ def deepbedmap(
 
     return resample_grid(
         grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
@@ -3375,18 +3206,6 @@ def gravity(
     anomaly_type = kwargs.get("anomaly_type")
 
     if version == "antgg":
-        # found with utils.get_grid_info()
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 10e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         path = pooch.retrieve(
             url="https://hs.pangaea.de/Maps/antgg2015/antgg2015.nc",
             fname="antgg.nc",
@@ -3414,11 +3233,8 @@ def gravity(
         resampled_vars = []
         for var in file_meters.data_vars:
             resampled_vars.append(
-                resample_grid(  # type: ignore[union-attr]
-                    file_meters[var],
-                    initial_spacing,
-                    initial_region,
-                    initial_registration,
+                resample_grid(
+                    file[var],
                     spacing,
                     region,
                     registration,
@@ -3436,18 +3252,6 @@ def gravity(
         )
 
     elif version == "antgg-2021":
-        # found with utils.get_grid_info()
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         # Free-air anomaly at the surface
         if anomaly_type == "FA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity-anomaly.nc"
@@ -3480,11 +3284,8 @@ def gravity(
         resampled_vars = []
         for var in file.data_vars:
             resampled_vars.append(
-                resample_grid(  # type: ignore[union-attr]
+                resample_grid(
                     file[var],
-                    initial_spacing,
-                    initial_region,
-                    initial_registration,
                     spacing,
                     region,
                     registration,
@@ -3514,10 +3315,6 @@ def gravity(
     elif version == "eigen":
         hemisphere = utils.default_hemisphere(hemisphere)
 
-        initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
         if hemisphere == "south":
             proj = "EPSG:3031"
         elif hemisphere == "north":
@@ -3525,13 +3322,6 @@ def gravity(
         else:
             msg = "hemisphere must be 'north' or 'south'"
             raise ValueError(msg)
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .nc file, reproject, and save it as a zarr"
@@ -3556,14 +3346,13 @@ def gravity(
                 grid = pygmt.grdproject(
                     grid,
                     projection=proj,
-                    spacing=initial_spacing,
+                    spacing=5e3,
                 )
                 # get just antarctica region
                 grid = pygmt.grdsample(
                     grid,
-                    region=initial_region,
-                    spacing=initial_spacing,
-                    registration=initial_registration,
+                    region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+                    spacing=5e3,
                     verbose=kwargs.get("verbose", "w"),
                 ).rename("gravity")
 
@@ -3592,11 +3381,8 @@ def gravity(
         resampled_vars = []
         for var in grid.data_vars:
             resampled_vars.append(
-                resample_grid(  # type: ignore[union-attr]
+                resample_grid(
                     grid[var],
-                    initial_spacing=initial_spacing,
-                    initial_region=initial_region,
-                    initial_registration=initial_registration,
                     spacing=spacing,
                     region=region,
                     registration=registration,
@@ -3655,23 +3441,12 @@ def etopo(
 
     hemisphere = utils.default_hemisphere(hemisphere)
 
-    initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
-    initial_spacing = 5e3
-    initial_registration = "g"
-
     if hemisphere == "south":
         proj = "EPSG:3031"
         fname = "etopo_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
         fname = "etopo_north.nc"
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
@@ -3687,14 +3462,13 @@ def etopo(
             grid2 = pygmt.grdproject(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
-                spacing=initial_spacing,
+                spacing=5e3,
             )
             # get just needed region
             processed = pygmt.grdsample(
                 grid2,
-                region=initial_region,
-                spacing=initial_spacing,
-                registration=initial_registration,
+                region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+                spacing=5e3,
             )
             # Save to disk
             processed.to_netcdf(fname_processed)
@@ -3713,9 +3487,6 @@ def etopo(
 
     resampled = resample_grid(
         grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
@@ -3774,23 +3545,12 @@ def geoid(
 
     hemisphere = utils.default_hemisphere(hemisphere)
 
-    initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
-    initial_spacing = 5e3
-    initial_registration = "g"
-
     if hemisphere == "south":
         proj = "EPSG:3031"
         fname = "eigen_geoid_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
         fname = "eigen_geoid_north.nc"
-
-    if region is None:
-        region = initial_region
-    if spacing is None:
-        spacing = initial_spacing
-    if registration is None:
-        registration = initial_registration
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
@@ -3806,15 +3566,14 @@ def geoid(
             grid2 = pygmt.grdproject(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
-                spacing=initial_spacing,
+                spacing=5e3,
                 verbose=kwargs.get("verbose", "w"),
             )
             # get just needed region
             processed = pygmt.grdsample(
                 grid2,
-                region=initial_region,
-                spacing=initial_spacing,
-                registration=initial_registration,
+                region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+                spacing=5e3,
                 verbose=kwargs.get("verbose", "w"),
             )
             # Save to disk
@@ -3834,9 +3593,6 @@ def geoid(
 
     resampled = resample_grid(
         grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
@@ -3905,17 +3661,6 @@ def magnetics(
     """
 
     if version == "admap1":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
@@ -3949,15 +3694,15 @@ def magnetics(
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "nT"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=5e3,
+                    region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+                    registration="g",
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "nT"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=5e3,
+                    region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+                    registration="g",
                     maxradius="1c",
                 )
                 # Save to disk
@@ -3980,9 +3725,6 @@ def magnetics(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -3990,16 +3732,6 @@ def magnetics(
         )
 
     elif version == "admap2":
-        initial_region = (-3423000.0, 3426000.0, -3424500.0, 3426000.0)
-        initial_spacing = 1500
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "convert geosoft grd to xarray dataarray and save it back as a .nc"
@@ -4032,9 +3764,6 @@ def magnetics(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4054,11 +3783,6 @@ def magnetics(
 
     elif version == "LCS-1":
         hemisphere = utils.default_hemisphere(hemisphere)
-
-        initial_region = (-3500000.0, 3500000.0, -3500000.0, 3500000.0)
-        initial_spacing = 10e3  # .25 degree resolution, ~20 km
-        initial_registration = "g"
-
         if hemisphere == "south":
             proj = "EPSG:3031"
         elif hemisphere == "north":
@@ -4066,13 +3790,6 @@ def magnetics(
         else:
             msg = "hemisphere must be 'north' or 'south'"
             raise ValueError(msg)
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the data, and save it back as a .nc"
@@ -4109,15 +3826,15 @@ def magnetics(
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "nT"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,  # .25 degree resolution, ~20 km,
+                    region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+                    registration="g",
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "nT"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,  # .25 degree resolution, ~20 km,
+                    region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
+                    registration="g",
                     maxradius="1c",
                 )
                 # Save to disk
@@ -4139,9 +3856,6 @@ def magnetics(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4223,17 +3937,6 @@ def ghf(
     """
 
     if version == "an-2015":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the .nc file, and save it back"
@@ -4289,9 +3992,6 @@ def ghf(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4299,17 +3999,6 @@ def ghf(
         )
 
     elif version == "martos-2017":
-        # found from df.describe()
-        initial_region = (-2535e3, 2715e3, -2130e3, 2220e3)
-        initial_spacing = 15e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .xyz file, grid it, and save it back as a .nc"
@@ -4327,12 +4016,12 @@ def ghf(
                 )
 
                 # grid the data
-                processed = pygmt.xyz2grd(
-                    df,
-                    region=initial_region,
-                    registration=initial_registration,
-                    spacing=initial_spacing,
-                )
+                    spacing=15e3,
+                    region=tuple(  # type: ignore[arg-type]
+                        float(pygmt.grdinfo(processed, per_column="n", o=i)[:-1])
+                        for i in range(4)
+                    ),
+                    registration="g",
 
                 # Save to disk
                 processed.to_netcdf(fname_processed)
@@ -4351,9 +4040,6 @@ def ghf(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4419,18 +4105,6 @@ def ghf(
                 progressbar=True,
             )
 
-            # found from utils.get_grid_info(grid)
-            initial_region = (-2543500.0, 2624500.0, -2121500.0, 2213500.0)
-            initial_spacing = 17e3
-            initial_registration = "p"
-
-            if region is None:
-                region = initial_region
-            if spacing is None:
-                spacing = initial_spacing
-            if registration is None:
-                registration = initial_registration
-
             file = next(p for p in path if p.endswith("Mean.tif"))
             # pygmt gives issues when original filepath has spaces in it. To get around
             # this, we will copy the file into the parent directory.
@@ -4448,9 +4122,6 @@ def ghf(
 
             resampled = resample_grid(
                 grid,
-                initial_spacing,
-                initial_region,
-                initial_registration,
                 spacing,
                 region,
                 registration,
@@ -4458,17 +4129,6 @@ def ghf(
             )
 
     elif version == "losing-ebbing-2021":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3  # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
@@ -4506,12 +4166,9 @@ def ghf(
                     # spacing=initial_spacing,
                 )
 
-                pygmt.grdsample(
-                    reprojected,
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
-                    outgrid=fname_processed,
+                    spacing=5e3,
+                    region=regions.antarctica,
+                    registration="g",
                 )
 
             return str(fname_processed)
@@ -4529,9 +4186,6 @@ def ghf(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4539,18 +4193,6 @@ def ghf(
         )
 
     elif version == "aq1":
-        # found from utils.get_grid_info(grid)
-        initial_region = (-2800000.0, 2800000.0, -2800000.0, 2800000.0)
-        initial_spacing = 20e3  # was actually 20071.6845878
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             fname="aq1.nc",
@@ -4564,9 +4206,6 @@ def ghf(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4574,17 +4213,6 @@ def ghf(
         )
 
     elif version == "shen-2020":
-        # was in lat long, so just using standard values here
-        initial_region = regions.antarctica
-        initial_spacing = 10e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .csv file, grid it, and save it back as a .nc"
@@ -4612,15 +4240,15 @@ def ghf(
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "GHF"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,
+                    region=regions.antarctica,
+                    registration="g",
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "GHF"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,
+                    region=regions.antarctica,
+                    registration="g",
                     maxradius="1c",
                 )
                 # Save to disk
@@ -4640,9 +4268,6 @@ def ghf(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4698,18 +4323,6 @@ def gia(
     """
 
     if version == "stal-2020":
-        # found from utils.get_grid_info(grid)
-        initial_region = (-2800000.0, 2800000.0, -2800000.0, 2800000.0)
-        initial_spacing = 10e3
-        initial_registration = "p"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
             fname="stal_2020_gia.tiff",
@@ -4721,9 +4334,6 @@ def gia(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -4791,18 +4401,6 @@ def crustal_thickness(
     if version == "shen-2018":
         msg = "the link to the shen-2018 data appears to be broken"
         raise ValueError(msg)
-        # was in lat long, so just using standard values here
-        # initial_region = regions.antarctica
-        # initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
-        # initial_registration = "g"
-
-        # if region is None:
-        #     region = initial_region
-        # if spacing is None:
-        #     spacing = initial_spacing
-        # if registration is None:
-        #     registration = initial_registration
-
         # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         #     "Load the .dat file, grid it, and save it back as a .nc"
         #     fname1 = pathlib.Path(fname)
@@ -4862,26 +4460,12 @@ def crustal_thickness(
 
         # resampled = resample_grid(
         #     grid,
-        #     initial_spacing,
-        #     initial_region,
-        #     initial_registration,
         #     spacing,
         #     region,
         #     registration,
         # )
 
     if version == "an-2015":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, reproject the .nc file, and save it back"
@@ -4932,9 +4516,6 @@ def crustal_thickness(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -5003,17 +4584,6 @@ def moho(
     """
 
     if version == "shen-2018":
-        # was in lat long, so just using standard values here
-        initial_region = regions.antarctica
-        initial_spacing = 10e3  # given as 0.5degrees, which is ~3.5km at the pole
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .dat file, grid it, and save it back as a .nc"
@@ -5077,9 +4647,6 @@ def moho(
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
@@ -5087,25 +4654,10 @@ def moho(
         )
 
     elif version == "an-2015":
-        # was in lat long, so just using standard values here
-        initial_region = (-3330000.0, 3330000.0, -3330000.0, 3330000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-        if region is None:
-            region = initial_region
-        if spacing is None:
-            spacing = initial_spacing
-        if registration is None:
-            registration = initial_registration
-
         grid = crustal_thickness(version="an-2015") * -1  # type: ignore[operator]
 
         resampled = resample_grid(
             grid,
-            initial_spacing,
-            initial_region,
-            initial_registration,
             spacing,
             region,
             registration,
