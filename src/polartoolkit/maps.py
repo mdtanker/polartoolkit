@@ -937,6 +937,7 @@ def set_cmap(
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
                 verbose="e",
+                log=kwargs.get("cpt_log", False),
             )
             cmap = True
     elif cpt_lims is not None:
@@ -974,6 +975,7 @@ def set_cmap(
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
                 verbose="e",
+                log=kwargs.get("cpt_log", False),
             )
         except pygmt.exceptions.GMTCLibError as e:
             logger.exception(e)
@@ -985,6 +987,7 @@ def set_cmap(
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
                 verbose="e",
+                log=kwargs.get("cpt_log", False),
             )
         cmap = True
     else:
@@ -1016,6 +1019,7 @@ def set_cmap(
                 series=(zmin, zmax),
                 reverse=reverse_cpt,
                 verbose="e",
+                log=kwargs.get("cpt_log", False),
             )
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
@@ -1026,6 +1030,7 @@ def set_cmap(
                     background=True,
                     reverse=reverse_cpt,
                     verbose="e",
+                    log=kwargs.get("cpt_log", False),
                 )
             else:
                 logger.exception(e)
@@ -1035,6 +1040,7 @@ def set_cmap(
                     continuous=kwargs.get("continuous", True),
                     reverse=reverse_cpt,
                     verbose="e",
+                    log=kwargs.get("cpt_log", False),
                 )
         cmap = True
         if zmin is None or zmax is None:  # noqa: SIM108
@@ -1725,6 +1731,15 @@ def add_colorbar(
     # set colorbar height as percentage of cbar width
     cbar_height_perc = kwargs.get("cbar_height_perc", 0.04)
 
+    if hist is True:  # noqa: SIM102
+        if kwargs.get("cbar_log", False) or kwargs.get("cpt_log", False):
+            msg = (
+                "logarithmic colorbar is not supported for histogram, please set "
+                "`cbar_log` and `cpt_log` to False."
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            hist = False
+
     # offset colorbar vertically from plot by 0.4cm, or 0.2 + histogram height
     if hist is True:
         cbar_hist_height = kwargs.get("cbar_hist_height", 1.5)
@@ -1777,6 +1792,7 @@ def add_colorbar(
     # `hist_ymax` to an appropriate value
     if hist is True:
         logger.debug("adding histogram to colorbar")
+
         # get values to use
         values = kwargs.get("grid")
 
