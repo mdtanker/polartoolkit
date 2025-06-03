@@ -194,6 +194,7 @@ def get_regions() -> dict[str, tuple[float, float, float, float]]:
         "maps",
         "ipyleaflet",
         "ipywidgets",
+        "Polygon",
         "combine_regions",
         "draw_region",
         "get_regions",
@@ -201,6 +202,7 @@ def get_regions() -> dict[str, tuple[float, float, float, float]]:
         "typing",
         "display",
         "alter_region",
+        "regions_overlap",
     ]
 
     return {
