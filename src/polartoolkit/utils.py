@@ -1442,18 +1442,33 @@ def grd_compare(
     if isinstance(da2, str):
         da2 = xr.load_dataarray(da2)
 
+    # extract grid info of both grids
+    da1_info = get_grid_info(da1)
+    da2_info = get_grid_info(da2)
+
+    # extract regions of both grids
+    da1_reg = da1_info[1]
+    da1_reg = typing.cast(tuple[float, float, float, float], da1_reg)
+    da2_reg = da2_info[1]
+    da2_reg = typing.cast(tuple[float, float, float, float], da2_reg)
+
     # first cut the grids to save time on the possible resampling below
-    if region is not None:
-        da1 = pygmt.grdcut(
-            da1,
-            region=region,
-            verbose=verbose,
+    if region is None:
+        # to intersection of both regions
+        region = regions.regions_overlap(
+            da1_reg,
+            da2_reg,
         )
-        da2 = pygmt.grdcut(
-            da2,
-            region=region,
-            verbose=verbose,
-        )
+    da1 = pygmt.grdsample(
+        da1,
+        region=region,
+        verbose=verbose,
+    )
+    da2 = pygmt.grdsample(
+        da2,
+        region=region,
+        verbose=verbose,
+    )
 
     # extract grid info of both grids
     da1_info = get_grid_info(da1)
@@ -1500,6 +1515,8 @@ def grd_compare(
             ymin = max(da1_reg[2], da2_reg[2])
             ymax = min(da1_reg[3], da2_reg[3])
             region = (xmin, xmax, ymin, ymax)
+            # get nearest multiple of spacing
+            region = tuple([spacing * round(x / spacing) for x in region])  # pylint: disable=consider-using-generator
             logger.info("grid regions dont match, using inner region %s", region)
         else:
             region = da1_reg
