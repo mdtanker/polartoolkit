@@ -732,6 +732,8 @@ def ice_vel(
                 warnings.warn(msg, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     processed = (ds.VX**2 + ds.VY**2) ** 0.5
+                    # restore registration type
+                    processed.gmt.registration = ds.VX.gmt.registration
                     # Save to disk
                     processed.to_netcdf(fname_processed)
             return str(fname_processed)
@@ -765,6 +767,9 @@ def ice_vel(
                     vy_5k = typing.cast(xr.DataArray, vy_5k)
 
                     processed_lowres = (vx_5k**2 + vy_5k**2) ** 0.5
+                    # restore registration type
+                    processed_lowres.gmt.registration = ds.VX.gmt.registration
+
                     # Save to disk
                     processed_lowres.to_netcdf(fname_processed)
             return str(fname_processed)
@@ -824,12 +829,6 @@ def ice_vel(
         fname_x = glob.glob(f"{path}/*vx_v1.tif")[0]  # noqa: PTH207
         fname_y = glob.glob(f"{path}/*vy_v1.tif")[0]  # noqa: PTH207
 
-        # print(fname_x)
-        # print(fname_y)
-
-        # fname_processed = f"{fname_x[0:-10]}.zarr"
-        # print(fname_processed)
-
         # load and merge data into dataset
         grid_x = (
             xr.load_dataarray(
@@ -850,6 +849,9 @@ def ice_vel(
         grid = xr.merge([grid_x, grid_y])
 
         processed = (grid.VX**2 + grid.VY**2) ** 0.5
+
+        # restore registration type
+        processed.gmt.registration = grid_x.gmt.registration
 
         resampled = resample_grid(
             processed,
@@ -1109,12 +1111,18 @@ def geomap(
         raise ValueError(msg)
 
     if region is None:
-        data = gpd.read_file(fname2, layer=layer, engine="pyogrio")
+        data = gpd.read_file(
+            fname2,
+            layer=layer,
+            use_arrow=USE_ARROW,
+            engine="pyogrio",
+        )
     else:
         data = gpd.read_file(
             fname2,
             bbox=utils.region_to_bounding_box(region),
             layer=layer,
+            use_arrow=USE_ARROW,
             engine="pyogrio",
         )
 
@@ -1135,6 +1143,7 @@ def groundingline(
     version = "depoorter-2013"
     from :footcite:t:`depoorterantarctic2013`.
     Supplement to :footcite:t:`depoortercalving2013`.
+    accessed at https://doi.pangaea.de/10.1594/PANGAEA.819147
 
     version = "measures-v2"
     from :footcite:t:`mouginotmeasures2017`.
@@ -1558,14 +1567,12 @@ def sediment_thickness(
 
                 # clip to antarctica
                 grid = grid.rio.clip_box(
-                    *utils.region_to_bounding_box(initial_region),
+                    *utils.region_to_bounding_box(regions.antarctica),
                     crs="EPSG:3031",
                 )
 
                 # reproject to polar stereographic
-                reprojected = grid.rio.reproject(
-                    "epsg:3031", resolution=initial_spacing
-                )
+                reprojected = grid.rio.reproject("epsg:3031", resolution=1e3)
 
                 # need to save to .nc and reload, issues with pygmt
                 reprojected.to_netcdf("tmp.nc")
@@ -1653,21 +1660,32 @@ def ibcso_coverage(
 
     # extract the geometries which are within the supplied region
     if region is None:
-        bbox = None
-    else:
-        # users supply region in EPSG:3031, but the data is in EPSG:9354
-        reg_df = utils.region_to_df(region)
-        region_epsg_9354 = utils.reproject(
-            reg_df,
-            input_crs="epsg:3031",
-            output_crs="epsg:9354",
-            reg=True,
-            input_coord_names=("easting", "northing"),
-            output_coord_names=("easting", "northing"),
+        region = regions.antarctica
+        msg = (
+            "this file is large, if you only need a subset of data please provide "
+            "a bounding box region via `region` to subset the data, using "
+            "`regions.antarctica` as a default"
         )
-        bbox = utils.region_to_bounding_box(region_epsg_9354)  # type: ignore[arg-type]
+        warnings.warn(msg, stacklevel=2)
 
-    data = gpd.read_file(fname, bbox=bbox, engine="pyogrio")
+    # users supply region in EPSG:3031, but the data is in EPSG:9354
+    reg_df = utils.region_to_df(region)
+    region_epsg_9354 = utils.reproject(
+        reg_df,
+        input_crs="epsg:3031",
+        output_crs="epsg:9354",
+        reg=True,
+        input_coord_names=("easting", "northing"),
+        output_coord_names=("easting", "northing"),
+    )
+    bbox = utils.region_to_bounding_box(region_epsg_9354)  # type: ignore[arg-type]
+
+    data = gpd.read_file(
+        fname,
+        bbox=bbox,
+        use_arrow=USE_ARROW,
+        engine="pyogrio",
+    )
 
     # expand from multipoint/mulitpolygon to point/polygon
     # this is slow!
@@ -1737,15 +1755,12 @@ def ibcso(
     .. footbibliography::
     """
 
-    original_spacing = 500
-
-    # preprocessing for full, 500m resolution
-    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
         fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_preprocessed.zarr
-        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
         fname_processed = fname_pre.with_suffix(".zarr")
 
         # Only recalculate if new download or the processed file doesn't exist yet
@@ -1768,8 +1783,8 @@ def ibcso(
             # resample to correct spacing, region and registration
             resampled = pygmt.grdsample(
                 grid=reprojected,
-                spacing=original_spacing,
-                region=regions.antarctica,
+                spacing=500,
+                region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                 registration="g",
             )
 
@@ -1787,77 +1802,6 @@ def ibcso(
             # pathlib.Path(fname1).unlink()
 
         return str(fname_processed)
-
-    # preprocessing for filtered 5k resolution
-    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, reproject and resample to 5km, and save it back"
-        fname1 = pathlib.Path(fname)
-
-        # Rename to the file to ***_preprocessed.zarr
-        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_5k")
-        fname_processed = fname_pre.with_suffix(".zarr")
-
-        # Only recalculate if new download or the processed file doesn't exist yet
-        if action in ("download", "update") or not fname_processed.exists():
-            # give warning about time
-            msg = (
-                "preprocessing for this grid (reprojecting to EPSG:3031) for"
-                " the first time can take several minutes!"
-            )
-            warnings.warn(msg, stacklevel=2)
-
-            # load grid
-            grid = xr.load_dataset(fname1).z
-
-            # set the projection
-            grid = grid.rio.write_crs("EPSG:9354")
-
-            # reproject to EPSG:3031
-            reprojected = grid.rio.reproject("EPSG:3031")
-
-            # resample to correct spacing, region and registration
-            resampled = pygmt.grdsample(
-                grid=reprojected,
-                spacing=5e3,
-                region=regions.antarctica,
-                registration="g",
-            )
-
-            # convert to dataset for zarr
-            resampled = resampled.to_dataset(name=layer)
-
-            # Save to .zarr file
-            resampled.to_zarr(
-                fname_processed,
-            )
-
-            # remove non-preprocessed file
-            # can't do this because pooch uses the original at each fetch call to check
-            # the hash
-            # pathlib.Path(fname1).unlink()
-
-        return str(fname_processed)
-
-    # determine which resolution of preprocessed grid to use
-    if spacing < 5e3:
-        preprocessor = preprocessing_fullres
-        initial_region = regions.antarctica
-        initial_spacing = original_spacing
-        initial_registration = "g"
-    elif spacing >= 5000:
-        logger.info("using preprocessed 5km grid since spacing is > 5km")
-        preprocessor = preprocessing_5k
-        initial_region = regions.antarctica
-        initial_spacing = 5000
-        initial_registration = "g"
-    else:
-        msg = "invalid value for spacing"
-        raise ValueError(msg)
-
-    if region is None:
-        region = initial_region  # pylint: disable=possibly-used-before-assignment
-    if registration is None:
-        registration = initial_registration  # pylint: disable=possibly-used-before-assignment
 
     if layer == "surface":
         path = pooch.retrieve(
@@ -1866,7 +1810,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="7748a79fffa41024c175cff7142066940b3e88f710eaf4080193c46b2b59e1f0",
             progressbar=True,
-            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
+            processor=preprocessing,  # pylint: disable=possibly-used-before-assignment
         )
     elif layer == "bed":
         path = pooch.retrieve(
@@ -1875,7 +1819,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="74d55acb219deb87dc5be019d6dafeceb7b1ebcf9095866f257671d12670a5e2",
             progressbar=True,
-            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
+            processor=preprocessing,  # pylint: disable=possibly-used-before-assignment
         )
     else:
         msg = "layer must be 'surface' or 'bed'"
@@ -1883,35 +1827,43 @@ def ibcso(
 
     grid = xr.open_zarr(path)[layer]
 
-    if reference == "ellipsoid":
-        logger.info("converting to be reference to the WGS84 ellipsoid")
-        # get a grid of EIGEN geoid values matching the user's input
-        eigen_correction = geoid(
-            spacing=initial_spacing,
-            region=initial_region,
-            registration=initial_registration,
-            hemisphere="south",
-        )
-        # convert from ellipsoid back to eigen geoid
-        grid = grid + eigen_correction
-    elif reference == "geoid":
-        pass
-    else:
-        msg = "reference must be 'geoid' or 'ellipsoid'"
-        raise ValueError(msg)
-
-    resampled = resample_grid(
+    grid = resample_grid(
         grid,
-        initial_spacing=initial_spacing,  # pylint: disable=possibly-used-before-assignment
-        initial_region=initial_region,
-        initial_registration=initial_registration,
         spacing=spacing,
         region=region,
         registration=registration,
         **kwargs,
     )
 
-    return typing.cast(xr.DataArray, resampled)
+    if reference == "ellipsoid":
+        logger.info("converting to be reference to the WGS84 ellipsoid")
+        # get a grid of EIGEN geoid values matching IBCSO grid
+
+        initial_spacing, initial_region, _, _, initial_registration = (
+            utils.get_grid_info(grid)
+        )
+        eigen_correction = geoid(
+            spacing=initial_spacing,
+            region=initial_region,
+            registration=initial_registration,
+            hemisphere="south",
+            **kwargs,
+        )
+
+        initial_registration_num = grid.gmt.registration
+
+        # convert from geoidal heights to ellipsoidal heights
+        grid = grid + eigen_correction
+
+        # restore registration type
+        grid.gmt.registration = initial_registration_num
+    elif reference == "geoid":
+        pass
+    else:
+        msg = "reference must be 'geoid' or 'ellipsoid'"
+        raise ValueError(msg)
+
+    return typing.cast(xr.DataArray, grid)
 
 
 def bedmachine(
@@ -1957,7 +1909,7 @@ def bedmachine(
     layer : str
         choose which layer to fetch:
         'bed', 'dataid', 'errbed', 'firn', 'geoid', 'mask', 'source',
-        'surface', 'thickness'; 'icebase' will give results of surface-thickness
+        'surface', 'ice_thickness'; 'icebase' will give results of surface-thickness
     reference : str
         choose whether heights are referenced to 'eigen-6c4' geoid or the
         'ellipsoid' (WGS84), by default is eigen-6c4'
@@ -1983,15 +1935,20 @@ def bedmachine(
     ----------
     .. footbibliography::
     """
+    logger.debug("Loading Bedmachine data for %s", layer)
 
     hemisphere = utils.default_hemisphere(hemisphere)
 
-    if hemisphere == "north":
-        # found with utils.get_grid_info()
-        initial_region = (-653000.0, 879700.0, -3384350.0, -632750.0)
-        initial_spacing = 150
-        initial_registration = "p"
+    if layer == "thickness":
+        layer = "ice_thickness"
+        msg = "'thickness' is deprecated, use 'ice_thickness' instead"
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
+    # users use 'ice_thickness' but the dataset uses 'thickness'
+    if layer == "ice_thickness":
+        layer = "thickness"
+
+    if hemisphere == "north":
         url = (
             "https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/IDBMG4.005/1993.01.01/"
             "BedMachineGreenland-v5.nc"
@@ -2026,11 +1983,11 @@ def bedmachine(
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
-        with xr.open_dataset(path) as ds:
-            grid = ds["surface"] - ds["thickness"]
-            # utils.get_grid_info(ds["thickness"], print_info=True)
-            # restore registration type
-            grid.gmt.registration = ds["surface"].gmt.registration
+        logger.info("calculating icebase from surface and thickness grids")
+        ds = xr.load_dataset(path)
+        grid = ds.surface - ds.thickness
+        # restore registration type
+        grid.gmt.registration = ds.surface.gmt.registration
 
     elif layer in [
         "bed",
@@ -2043,9 +2000,7 @@ def bedmachine(
         "surface",
         "thickness",
     ]:
-        with xr.open_dataset(path) as ds:
-            grid = ds[layer]
-
+        grid = xr.load_dataset(path)[layer]
     else:
         msg = (
             "layer must be one of 'bed', 'dataid', 'errbed', 'firn', 'geoid', "
@@ -2053,19 +2008,33 @@ def bedmachine(
         )
         raise ValueError(msg)
 
+    grid = resample_grid(
+        grid,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
+
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
             logger.info("converting to be reference to the WGS84 ellipsoid")
-            with xr.open_dataset(path) as ds:
-                geoid_grid = ds["geoid"]
-            # save grid registration type
-            reg = grid.gmt.registration
+            geoid_grid = xr.load_dataset(path).geoid
+            geoid_grid = resample_grid(
+                geoid_grid,
+                spacing=spacing,
+                region=region,
+                registration=registration,
+                **kwargs,
+            )
+            initial_registration_num = grid.gmt.registration
+
             # convert to the ellipsoid
             grid = grid + geoid_grid
+
             # restore registration type
-            if grid.gmt.registration != reg:
-                grid.gmt.registration = reg
+            grid.gmt.registration = initial_registration_num
 
         elif reference == "eigen-6c4":
             pass
@@ -2073,18 +2042,7 @@ def bedmachine(
             msg = "reference must be 'eigen-6c4' or 'ellipsoid'"
             raise ValueError(msg)
 
-    resampled = resample_grid(
-        grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
-        spacing=spacing,
-        region=region,
-        registration=registration,
-        **kwargs,
-    )
-
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast(xr.DataArray, grid)
 
 
 def bedmap_points(
@@ -2133,6 +2091,16 @@ def bedmap_points(
         msg = (
             "Consider installing pyarrow for faster performance when reading "
             "geodataframes."
+        )
+        warnings.warn(msg, stacklevel=2)
+
+    if region is not None:
+        bbox = utils.region_to_bounding_box(region)
+    else:
+        bbox = None
+        msg = (
+            "this file is large, if you only need a subset of data please provide "
+            "a bounding box region via `region` to subset the data."
         )
         warnings.warn(msg, stacklevel=2)
 
@@ -2194,9 +2162,6 @@ def bedmap_points(
             progressbar=True,
             processor=preprocessing,
         )
-
-        bbox = utils.region_to_bounding_box(region) if region is not None else None
-
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
@@ -2242,11 +2207,14 @@ def bedmap_points(
                 )
 
                 # load all csv files into list of pandas dataframes
-                for f in tqdm(fnames, total=len(fnames), desc="csv files"):
+                for _i, f in enumerate(
+                    tqdm(fnames, total=len(fnames), desc="csv files")
+                ):
                     df = pd.read_csv(
                         f,
                         skiprows=18,  # metadata in first 18 rows
                         na_values=[-9999],  # set additional nan value
+                        low_memory=False,
                     )
                     df["project"] = pathlib.Path(f).stem
 
@@ -2265,12 +2233,13 @@ def bedmap_points(
                         crs="EPSG:3031",
                     )
 
+                    df["trajectory_id"] = df.trajectory_id.astype(str)
+
                     # save / append to a geopackage file
                     df.to_file(
                         fname_processed,
                         driver="GPKG",
-                        # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
-                        engine="pyogrio",
+                        use_arrow=USE_ARROW,  # can't use cause of object issues (expects str) # noqa: E501
                         append=True,
                     )
 
@@ -2294,16 +2263,6 @@ def bedmap_points(
             progressbar=True,
             processor=preprocessing,
         )
-
-        if region is not None:
-            bbox = utils.region_to_bounding_box(region)
-        else:
-            bbox = None
-            msg = (
-                "this file is large, if you only need a subset of data please provide "
-                "a bounding box region via `region` to subset the data."
-            )
-            warnings.warn(msg, stacklevel=2)
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
@@ -2324,7 +2283,7 @@ def bedmap_points(
             # exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = (
-                    "this file is large and will take some time to "
+                    "this file is large (14 Gb!) and will take some time to "
                     "download and preprocess!"
                 )
                 warnings.warn(msg, stacklevel=2)
@@ -2337,23 +2296,20 @@ def bedmap_points(
                 # get folder name
                 fold = str(pathlib.Path(path[0]).parent)
 
-                # make new clean folder name
-                new_fold = fold.replace("-", "")
-                new_fold = new_fold.replace(",", "")
-                new_fold = new_fold.replace(" ", "_")
-                shutil.move(fold, new_fold)
-
                 # get all csv files
                 fnames = glob.glob(  # noqa: PTH207
                     f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap3_point_data/*/*.csv"
                 )
 
                 # load all csv files into list of pandas dataframes
-                for f in tqdm(fnames, total=len(fnames), desc="csv files"):
+                for i, f in enumerate(
+                    tqdm(fnames, total=len(fnames), desc="csv files")
+                ):
                     df = pd.read_csv(
                         f,
                         skiprows=18,  # metadata in first 18 rows
                         na_values=[-9999],  # set additional nan value
+                        low_memory=False,
                     )
                     df["project"] = pathlib.Path(f).stem
 
@@ -2373,17 +2329,25 @@ def bedmap_points(
                         crs="EPSG:3031",
                     )
 
+                    df["time_UTC"] = df.time_UTC.astype(str)
+
                     # save / append to a geopackage file
-                    df.to_file(
-                        fname_processed,
-                        driver="GPKG",
-                        # use_arrow=USE_ARROW, # can't use cause of object issues (expects str) # noqa: E501
-                        engine="pyogrio",
-                        append=True,
-                    )
+                    try:
+                        df.to_file(
+                            fname_processed,
+                            driver="GPKG",
+                            use_arrow=USE_ARROW,  # can't use cause of object issues (expects str) # noqa: E501
+                            engine="pyogrio",
+                            append=True,
+                        )
+                    except Exception as e:
+                        logger.error(
+                            "Error writing to geopackage for file number %s", i
+                        )
+                        raise e
 
                 # delete the folder with csv files
-                shutil.rmtree(new_fold)
+                shutil.rmtree(fold)
 
             return str(fname_processed)
 
@@ -2398,27 +2362,18 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap3_point_data.zip",
+            # known_hash="c4661e1a8cee93164bb19d126e8fa1112a59f7579ff5e0d993704b5956621ef5", # noqa: E501
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
         )
-
-        if region is not None:
-            bbox = utils.region_to_bounding_box(region)
-        else:
-            bbox = None
-            msg = (
-                "this file is large, if you only need a subset of data please provide "
-                "a bounding box region via `region` to subset the data."
-            )
-            warnings.warn(msg, stacklevel=2)
-
         df = gpd.read_file(
             fname,
             use_arrow=USE_ARROW,
             engine="pyogrio",
             bbox=bbox,
         )
+        # df["time_UTC"] = pd.to_datetime(df.time_UTC)
 
     elif version == "all":
         # get individual dataframes
@@ -2497,6 +2452,7 @@ def bedmap3(
     ----------
     .. footbibliography::
     """
+    logger.debug("Loading Bedmap3 data for %s", layer)
 
     # download url
     url = (
@@ -2522,89 +2478,109 @@ def bedmap3(
         # "mapping",
     ]
 
-    # fname = pooch.retrieve(
-    #     url=url,
-    #     fname="bedmap3.nc",
-    #     path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-    #     known_hash=known_hash,
-    #     progressbar=True,
-    # )
-    # return xr.open_dataset(fname)[layer]
-    # original data limits
-    # surface_topography: 1 - 4734
-    # bed_uncertainty: 7 - 306
-    # bed_topography: -7409 4704
-    # mask: 1 - 4
-    # ice_thickness: 0 - 4757
-    # thickness_uncertainty: 0 - 272
+    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Save each layer to individual .zarr file"
+        # get the path to the nc file
+        fname2 = pathlib.Path(fname)
 
-    # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-    #     "Convert the netcdf to a .zarr file"
-    #     # Rename to the file to ***.zarr
-    #     fname_processed = pathlib.Path(fname).with_suffix(".zarr")
+        # check if all layers have already been processed in to Zarr files
+        exists = []
+        for lyr in valid_variables:
+            fname_processed = (
+                pathlib.Path(fname2).with_stem(f"bedmap3_{lyr}").with_suffix(".zarr")
+            )
+            if action in ("download", "update"):
+                exists.append(False)
+            elif fname_processed.exists():
+                exists.append(True)
+            else:
+                exists.append(False)
 
-    #     # Only recalculate if new download or the processed file doesn't exist yet
-    #     if action in ("download", "update") or not fname_processed.exists():
-    #         # load data
-    #         grid = xr.load_dataset(fname)
+        if all(exists):
+            return str(
+                pathlib.Path(fname2).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
+            )
 
-    #         # resample to gridline registration
-    #         resampled_vars = []
-    #         for var in valid_variables:
-    #             # set registration to pixel
-    #             # resampled_vars.append(
-    #             #     utils.change_reg(grid[var]).rename(var)
-    #             # )
-    #             logger.info("resampling variable `%s` before saving to a .zarr", var)
-    #             resampled_vars.append(
-    #                 resample_grid(  # type: ignore[union-attr]
-    #                     grid[var],
-    #                     # initial_spacing=initial_spacing,
-    #                     # initial_region=initial_region,
-    #                     # initial_registration='p',
-    #                     spacing=500,
-    #                     region=(-3333250.0, 3333250.0, -3333250.0, 3333250.0),
-    #                     registration='g',
-    #                 ).rename(var)
-    #             )
-    #         grid = xr.merge(resampled_vars)
+        msg = (
+            "Preprocessing Bedmap3 data to gridline registration, this may take a "
+            "while!"
+        )
+        warnings.warn(msg, stacklevel=2)
+        # go through each layer, update to gridline registration and save to a zarr file
+        for lyr in valid_variables:
+            with xr.open_dataset(fname2) as ds:
+                # Rename to the file to ***.zarr
+                fname_processed = (
+                    pathlib.Path(fname2)
+                    .with_stem(f"bedmap3_{lyr}")
+                    .with_suffix(".zarr")
+                )
+                if fname_processed.exists():
+                    continue
+                logger.info("Processing %s to %s", lyr, fname_processed)
 
-    #         # Save to disk
-    #         grid.to_zarr(fname_processed)
+                grid = ds[lyr]
+                # get min max before, and use as limits after resampling
+                min_val, max_val = utils.get_min_max(grid)
 
-    #     return str(fname_processed)
+                # resample to be pixel registered to match most grids in PolarToolkit
+                grid = pygmt.grdsample(
+                    grid=grid,
+                    region=(-3333000.0, 3333000.0, -3333000.0, 3333000.0),
+                    spacing=500,
+                    registration="g",
+                )
 
-    fname = pooch.retrieve(
-        url=url,
-        fname="bedmap3.nc",
-        path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-        known_hash=known_hash,
-        # processor=preprocessing,
-        progressbar=True,
-    )
+                # restore the min max values
+                grid = xr.where(grid < min_val, min_val, grid)
+                grid = xr.where(grid > max_val, max_val, grid)
 
-    # ds = xr.open_zarr(
-    #     fname,
-    #     consolidated=False,
-    # )
-    ds = xr.load_dataset(fname)
+                new_min, new_max = utils.get_min_max(grid)
+                assert new_min >= min_val, (
+                    f"New min value {new_min} is less than the original min value "
+                    f"{min_val}"
+                )
+                assert new_max <= max_val, (
+                    f"New max value {new_max} is greater than the original max value "
+                    f"{max_val}"
+                )
+                # Save to disk
+                grid.rename("z").to_zarr(fname_processed)
+
+        return str(
+            pathlib.Path(fname2).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
+        )
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and thickness grids")
-        surface = ds.surface_topography
-        thickness = ds.ice_thickness
+        surface = bedmap3(layer="surface")
+        thickness = bedmap3(layer="ice_thickness")
+        # calculate icebase
         grid = surface - thickness
+        # restore registration type
+        grid.gmt.registration = surface.gmt.registration
     elif layer == "water_thickness":
         logger.info("calculating water thickness from bed and icebase grids")
-        surface = ds.surface_topography
-        thickness = ds.ice_thickness
-        bed = ds.bed_topography
-
-        icebase = surface - thickness
+        icebase = bedmap3(layer="icebase")
+        bed = bedmap3(layer="bed")
+        # calculate water thickness
         grid = icebase - bed
+        # restore registration type
+        grid.gmt.registration = bed.gmt.registration
     elif layer in valid_variables:
-        grid = ds[layer]
+        fname = pooch.retrieve(
+            url=url,
+            fname="bedmap3.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
+            known_hash=known_hash,
+            processor=preprocessing,
+            progressbar=True,
+        )
+
+        # load zarr as a dataarray
+        grid = xr.open_zarr(fname).z
+
     else:
         msg = (
             "layer must be one of 'surface_topography', 'bed_uncertainty', "
@@ -2613,16 +2589,33 @@ def bedmap3(
         )
         raise ValueError(msg)
 
+    grid = resample_grid(
+        grid,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
+
     # replace nans with 0's in surface, thickness or icebase grids
     if fill_nans is True and layer in [
         "surface_topography",
-        "icebase",
         "ice_thickness",
+        "icebase",
     ]:
+        # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
+        # this changes the registration from pixel to gridline
+        registration_num = grid.gmt.registration
         grid = grid.fillna(0)
+        # restore registration type
+        grid.gmt.registration = registration_num
 
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface_topography", "icebase", "bed_topography"]:
+        if reference not in ["ellipsoid", "eigen-6c4", "eigen-gl04c"]:
+            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
+            raise ValueError(msg)
+        spacing, region, _, _, registration = utils.get_grid_info(grid)
         if reference == "ellipsoid":
             logger.info("converting to be referenced to the WGS84 ellipsoid")
             # load bedmap2 grid for converting to wgs84
@@ -2632,11 +2625,13 @@ def bedmap3(
                 spacing=spacing,
                 registration=registration,
             )
+            registration_num = grid.gmt.registration
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
+            # restore registration type
+            grid.gmt.registration = registration_num
         elif reference == "eigen-6c4":
             logger.info("converting to be referenced to the EIGEN-6C4")
-            # set layer variable so pooch retrieves the geoid conversion file
             # load bedmap2 grid for converting to wgs84
             geoid_2_ellipsoid = bedmap2(
                 layer="gl04c_geiod_to_WGS84",
@@ -2646,6 +2641,8 @@ def bedmap3(
             )
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
+            # restore registration type
+            grid.gmt.registration = registration_num
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
                 spacing=spacing,
@@ -2656,25 +2653,12 @@ def bedmap3(
             )
             # convert from ellipsoid back to eigen geoid
             grid = grid - eigen_correction
+            # restore registration type
+            grid.gmt.registration = registration_num
         elif reference == "eigen-gl04c":
             pass
-        else:
-            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
-            raise ValueError(msg)
 
-    # resampled = grid
-    resampled = resample_grid(
-        grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
-        spacing=spacing,
-        region=region,
-        registration=registration,
-        **kwargs,
-    )
-
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast(xr.DataArray, grid)
 
 
 def bedmap2(
@@ -2707,8 +2691,8 @@ def bedmap2(
     layer : str
         choose which layer to fetch:
         "bed", "coverage", "grounded_bed_uncertainty", "icemask_grounded_and_shelves",
-        "lakemask_vostok", "rockmask", "surface", "thickness",
-        "thickness_uncertainty_5km", "gl04c_geiod_to_WGS84", "icebase",
+        "lakemask_vostok", "rockmask", "surface", "ice_thickness",
+        "ice_thickness_uncertainty", "gl04c_geiod_to_WGS84", "icebase",
         "water_thickness"
     reference : str
         choose whether heights are referenced to the 'eigen-6c4' geoid, the WGS84
@@ -2737,6 +2721,20 @@ def bedmap2(
     ----------
     .. footbibliography::
     """
+    logger.debug("Loading Bedmap2 data for %s", layer)
+
+    if layer == "thickness":
+        layer = "ice_thickness"
+        msg = "'thickness' is deprecated, use 'ice_thickness' instead"
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+    if layer == "thickness_uncertainty_5km":
+        layer = "ice_thickness_uncertainty"
+        msg = (
+            "'thickness_uncertainty_5km' is deprecated, use "
+            "'ice_thickness_uncertainty' instead"
+        )
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
     # download url
     url = (
@@ -2746,40 +2744,24 @@ def bedmap2(
         "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
     )
     known_hash = None
-    # Declare initial grid values, of .nc files not .tiff files
-    # use utils.get_grid_info(xr.load_dataset(file).band_data
-    # several of the layers have different values
-    if layer == "lakemask_vostok":
-        initial_region = (1190000.0, 1470000.0, -402000.0, -291000.0)
-        initial_spacing = 1e3
-        initial_registration = "g"
-
-    elif layer == "thickness_uncertainty_5km":
-        initial_region = (-3399000.0, 3401000.0, -3400000.0, 3400000.0)
-        initial_spacing = 5e3
-        initial_registration = "g"
-
-    elif layer in [
+    if layer not in [
+        "lakemask_vostok",
+        "ice_thickness_uncertainty",
         "bed",
         "coverage",
         "grounded_bed_uncertainty",
         "icemask_grounded_and_shelves",
         "rockmask",
         "surface",
-        "thickness",
+        "ice_thickness",
         "gl04c_geiod_to_WGS84",
         "icebase",
         "water_thickness",
     ]:
-        initial_region = (-3333000, 3333000, -3333000, 3333000)
-        initial_spacing = 1e3
-        initial_registration = "g"
-
-    else:
         msg = (
             "layer must be one of 'bed', 'coverage', 'grounded_bed_uncertainty', "
             "'icemask_grounded_and_shelves', 'lakemask_vostok', 'rockmask', "
-            "'surface', 'thickness', 'thickness_uncertainty_5km', "
+            "'surface', 'ice_thickness', 'ice_thickness_uncertainty', "
             "'gl04c_geiod_to_WGS84', 'icebase', or 'water_thickness'"
         )
         raise ValueError(msg)
@@ -2789,6 +2771,10 @@ def bedmap2(
         # extract each layer to it's own folder
         if layer == "gl04c_geiod_to_WGS84":
             member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
+        elif layer == "ice_thickness":
+            member = ["bedmap2_tiff/bedmap2_thickness.tif"]
+        elif layer == "ice_thickness_uncertainty":
+            member = ["bedmap2_tiff/bedmap2_thickness_uncertainty_5km.tif"]
         else:
             member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
         fname1 = pooch.Unzip(
@@ -2812,7 +2798,7 @@ def bedmap2(
                 .squeeze()
                 .drop_vars(["band", "spatial_ref"])
             )
-            grid = grid.to_dataset(name=layer)
+            grid = grid.to_dataset(name="z")
 
             # Save to disk
             grid.to_zarr(
@@ -2821,47 +2807,23 @@ def bedmap2(
 
         return str(fname_processed)
 
-    # calculate icebase as surface-thickness
+    # calculate icebase as surface-ice_thickness
     if layer == "icebase":
-        # set layer variable so pooch retrieves correct file
-        layer = "surface"
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=known_hash,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # load zarr as a dataarray
-        surface = xr.open_zarr(fname)[layer]
-
-        layer = "thickness"
-        # set layer variable so pooch retrieves correct file
-        fname = pooch.retrieve(
-            url=url,
-            fname="bedmap2_tiff.zip",
-            path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-            known_hash=known_hash,
-            processor=preprocessing,
-            progressbar=True,
-        )
-        # load zarr as a dataarray
-        thickness = xr.open_zarr(fname)[layer]
-
+        logger.info("calculating icebase from surface and ice thickness grids")
+        surface = bedmap2(layer="surface")
+        ice_thickness = bedmap2(layer="ice_thickness")
         # calculate icebase
-        grid = surface - thickness
-
-        # reset layer variable
-        layer = "icebase"
-        logger.info("calculating icebase from surface and thickness grids")
+        grid = surface - ice_thickness
+        # restore registration type
+        grid.gmt.registration = surface.gmt.registration
     elif layer == "water_thickness":
+        logger.info("calculating water thickness from bed and icebase grids")
         icebase = bedmap2(layer="icebase")
         bed = bedmap2(layer="bed")
-
         # calculate water thickness
         grid = icebase - bed
-        logger.info("calculating water thickness from bed and icebase grids")
+        # restore registration type
+        grid.gmt.registration = bed.gmt.registration
     elif layer in [
         "bed",
         "coverage",
@@ -2870,8 +2832,8 @@ def bedmap2(
         "lakemask_vostok",
         "rockmask",
         "surface",
-        "thickness",
-        "thickness_uncertainty_5km",
+        "ice_thickness",
+        "ice_thickness_uncertainty",
         "gl04c_geiod_to_WGS84",
     ]:
         # download/unzip all files, retrieve the specified layer file and convert to
@@ -2885,60 +2847,67 @@ def bedmap2(
             progressbar=True,
         )
         # load zarr as a dataarray
-        grid = xr.open_zarr(fname)[layer]
+        grid = xr.open_zarr(fname).z
 
     else:
         msg = (
             "layer must be one of 'bed', 'coverage', 'grounded_bed_uncertainty', "
             "'icemask_grounded_and_shelves', 'lakemask_vostok', 'rockmask', "
-            "'surface', 'thickness', 'thickness_uncertainty_5km', "
+            "'surface', 'ice_thickness', 'ice_thickness_uncertainty', "
             "'gl04c_geiod_to_WGS84', 'icebase', or 'water_thickness'"
         )
         raise ValueError(msg)
 
-    # replace nans with 0's in surface, thickness or icebase grids
-    if fill_nans is True and layer in ["surface", "thickness", "icebase"]:
+    grid = resample_grid(
+        grid,
+        spacing=spacing,
+        region=region,
+        registration=registration,
+        **kwargs,
+    )
+
+    # replace nans with 0's in surface, ice thickness or icebase grids
+    if fill_nans is True and layer in ["surface", "ice_thickness", "icebase"]:
         # pygmt.grdfill(final_grid, mode='c0') # doesn't work, maybe grid is too big
         # this changes the registration from pixel to gridline
+        registration_num = grid.gmt.registration
         grid = grid.fillna(0)
+        # restore registration type
+        grid.gmt.registration = registration_num
 
     # change layer elevation to be relative to different reference frames.
     if layer in ["surface", "icebase", "bed"]:
+        if reference not in ["ellipsoid", "eigen-6c4", "eigen-gl04c"]:
+            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
+            raise ValueError(msg)
+        spacing, region, _, _, registration = utils.get_grid_info(grid)
         if reference == "ellipsoid":
             logger.info("converting to be referenced to the WGS84 ellipsoid")
-            # set layer variable so pooch retrieves the geoid conversion file
-            layer = "gl04c_geiod_to_WGS84"
-            fname = pooch.retrieve(
-                url=url,
-                fname="bedmap2_tiff.zip",
-                path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-                known_hash=known_hash,
-                processor=preprocessing,
-                progressbar=True,
+            # load bedmap2 grid for converting to wgs84
+            geoid_2_ellipsoid = bedmap2(
+                layer="gl04c_geiod_to_WGS84",
+                region=region,
+                spacing=spacing,
+                registration=registration,
             )
-            # load zarr as a dataarray
-            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
-
+            registration_num = grid.gmt.registration
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
+            # restore registration type
+            grid.gmt.registration = registration_num
         elif reference == "eigen-6c4":
             logger.info("converting to be referenced to the EIGEN-6C4")
-            # set layer variable so pooch retrieves the geoid conversion file
-            layer = "gl04c_geiod_to_WGS84"
-            fname = pooch.retrieve(
-                url=url,
-                fname="bedmap2_tiff.zip",
-                path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
-                known_hash=known_hash,
-                processor=preprocessing,
-                progressbar=True,
+            # load bedmap2 grid for converting to wgs84
+            geoid_2_ellipsoid = bedmap2(
+                layer="gl04c_geiod_to_WGS84",
+                region=region,
+                spacing=spacing,
+                registration=registration,
             )
-            # load zarr as a dataarray
-            geoid_2_ellipsoid = xr.open_zarr(fname)[layer]
-
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
-
+            # restore registration type
+            grid.gmt.registration = registration_num
             # get a grid of EIGEN geoid values matching the user's input
             eigen_correction = geoid(
                 spacing=spacing,
@@ -2949,24 +2918,12 @@ def bedmap2(
             )
             # convert from ellipsoid back to eigen geoid
             grid = grid - eigen_correction
+            # restore registration type
+            grid.gmt.registration = registration_num
         elif reference == "eigen-gl04c":
             pass
-        else:
-            msg = "reference must be 'eigen-gl04c', 'eigen-6c4' or 'ellipsoid'"
-            raise ValueError(msg)
 
-    resampled = resample_grid(
-        grid,
-        initial_spacing=initial_spacing,
-        initial_region=initial_region,
-        initial_registration=initial_registration,
-        spacing=spacing,
-        region=region,
-        registration=registration,
-        **kwargs,
-    )
-
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast(xr.DataArray, grid)
 
 
 def rema(
@@ -3215,14 +3172,12 @@ def gravity(
         )
 
         file = xr.load_dataset(path)
-
         # convert coordinates from km to m
-        file_meters = file.copy()
-        file_meters["x"] = file.x * 1000
-        file_meters["y"] = file.y * 1000
+        file["x"] = file.x * 1000
+        file["y"] = file.y * 1000
 
         # drop some variables
-        file_meters = file_meters.drop(
+        file = file.drop(
             [
                 "longitude",
                 "latitude",
@@ -3231,7 +3186,7 @@ def gravity(
         )
 
         resampled_vars = []
-        for var in file_meters.data_vars:
+        for var in file.data_vars:
             resampled_vars.append(
                 resample_grid(
                     file[var],
@@ -3665,7 +3620,7 @@ def magnetics(
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, grid the .dat file, and save it back as a .nc"
             path = pooch.Unzip(
-                # extract_dir="Baranov_2021_sediment_thickness",
+                extract_dir="admap1",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
             fname2 = pathlib.Path(fname1)
@@ -3676,7 +3631,6 @@ def magnetics(
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                logger.info("unzipping %s", fname)
                 # load data
                 df = pd.read_csv(
                     fname1,
@@ -3686,9 +3640,12 @@ def magnetics(
                 )
 
                 # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
                 )
 
                 # block-median and grid the data
@@ -3818,9 +3775,12 @@ def magnetics(
                 )
 
                 # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", proj)
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs=proj,
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
                 )
 
                 # block-median and grid the data
@@ -3945,7 +3905,7 @@ def ghf(
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -3955,40 +3915,31 @@ def ghf(
                 # write the current projection
                 grid = grid.rio.write_crs("EPSG:4326")
 
-                # set names of coordinates
-                grid = grid.rename({"lon": "x", "lat": "y"})
-
                 # reproject to polar stereographic
+                grid = grid.rename({"lon": "x", "lat": "y"})
                 reprojected = grid.rio.reproject("epsg:3031")
 
-                # need to save to .nc and reload, issues with pygmt
-                reprojected.to_netcdf("tmp.nc")
-                processed = xr.load_dataset("tmp.nc").z
-
-                # remove tmp file
-                pathlib.Path("tmp.nc").unlink()
-
-                # get just antarctica region and save to disk
-                pygmt.grdsample(
-                    processed,
-                    region=initial_region,
-                    spacing=initial_spacing,
-                    registration=initial_registration,
-                    outgrid=fname_processed,
+                resampled = resample_grid(
+                    reprojected,
+                    region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+                    spacing=5e3,
                 )
+                # Save to disk
+                resampled = resampled.to_dataset(name="ghf")  #
+                resampled.to_zarr(fname_processed)
 
             return str(fname_processed)
 
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-            fname="an_2015_.tar.gz",
+            fname="an_2015.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="9834439cdf99d5ee62fb88a008fa34dbc8d1848e9b00a1bd9cbc33194dd7d402",
             progressbar=True,
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4001,12 +3952,12 @@ def ghf(
     elif version == "martos-2017":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .xyz file, grid it, and save it back as a .nc"
+            "Load the .xyz file, grid it, and save it back as a .zarr"
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -4016,15 +3967,26 @@ def ghf(
                 )
 
                 # grid the data
+                processed = df.set_index(["y", "x"]).to_xarray().GHF
+
+                processed = resample_grid(
+                    processed,
                     spacing=15e3,
                     region=tuple(  # type: ignore[arg-type]
                         float(pygmt.grdinfo(processed, per_column="n", o=i)[:-1])
                         for i in range(4)
                     ),
                     registration="g",
+                )
 
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+                # convert to dataset for zarr
+                processed = processed.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                processed.to_zarr(
+                    fname_processed,
+                )
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -4036,7 +3998,7 @@ def ghf(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4080,12 +4042,15 @@ def ghf(
             # drop few rows without coordinates
             df = df.dropna(subset=["lat", "lon"])
 
-            # re-project the coordinates to Polar Stereographic
-            transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-            df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                df["lat"].tolist(),
-                df["lon"].tolist(),
+            # re-project to polar stereographic
+            df = utils.reproject(
+                df,
+                input_crs="epsg:4326",
+                output_crs="epsg:3031",
+                input_coord_names=("lon", "lat"),
+                output_coord_names=("x", "y"),
             )
+
             # retain only points in the region
             if region is not None:
                 df = utils.points_inside_region(
@@ -4126,49 +4091,70 @@ def ghf(
                 region,
                 registration,
                 **kwargs,
-            )
+            ).rio.write_crs("EPSG:3031")
 
     elif version == "losing-ebbing-2021":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .csv file, grid it, and save it back as a .nc"
+            "Load the .csv file, grid it, and save it back as a .zarr"
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
                 df = pd.read_csv(fname1)
 
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("Lon", "Lat"),
+                    output_coord_names=("x", "y"),
+                )
+
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["Lon", "Lat", "HF [mW/m2]"]],
-                    spacing="30m",
-                    coltypes="g",
-                    region="AQ",
-                    registration=initial_registration,
-                )
-                grid = pygmt.surface(
-                    data=df[["Lon", "Lat", "HF [mW/m2]"]],
-                    spacing="30m",
-                    coltypes="g",
-                    region="AQ",
-                    registration=initial_registration,
-                )
-
-                # re-project to polar stereographic
-                reprojected = pygmt.grdproject(
-                    grid,
-                    projection="EPSG:3031",
-                    # spacing=initial_spacing,
-                )
-
+                    df[["x", "y", "HF [mW/m2]"]],
                     spacing=5e3,
                     region=regions.antarctica,
                     registration="g",
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "HF [mW/m2]"]],
+                    spacing=5e3,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+
+                # clip to coastline
+                shp = gpd.read_file(antarctic_boundaries(version="Coastline"))
+                processed = utils.mask_from_shp(
+                    shp,
+                    hemisphere="south",
+                    grid=processed,
+                    masked=True,
+                    invert=False,
+                )
+
+                # resample to ensure correct region and spacing
+                processed = resample_grid(
+                    processed,
+                    spacing=5e3,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                processed = processed.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                processed.to_zarr(
+                    fname_processed,
                 )
 
             return str(fname_processed)
@@ -4182,7 +4168,7 @@ def ghf(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4202,7 +4188,16 @@ def ghf(
         )
         grid = xr.load_dataset(path)["Q"]
 
+        # convert from W/m^2 to mW/m^2
         grid = grid * 1000
+
+        resampled = grid * 1000
+
+        # restore registration type
+        resampled.gmt.registration = grid.gmt.registration
+
+        if spacing is None:
+            spacing = 20e3
 
         resampled = resample_grid(
             grid,
@@ -4215,12 +4210,12 @@ def ghf(
     elif version == "shen-2020":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .csv file, grid it, and save it back as a .nc"
+            "Load the .csv file, grid it, and save it back as a .zarr"
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -4232,9 +4227,12 @@ def ghf(
                     names=["lon", "lat", "GHF"],
                 )
                 # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
                 )
 
                 # block-median and grid the data
@@ -4251,8 +4249,23 @@ def ghf(
                     registration="g",
                     maxradius="1c",
                 )
-                # Save to disk
-                processed.to_netcdf(fname_processed)
+
+                # resample to ensure correct region and spacing
+                processed = resample_grid(
+                    processed,
+                    spacing=10e3,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                processed = processed.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                processed.to_zarr(
+                    fname_processed,
+                )
+
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -4264,7 +4277,7 @@ def ghf(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4422,23 +4435,26 @@ def crustal_thickness(
         #         df.thickness = df.thickness * 1000
 
         #         # re-project to polar stereographic
-        #         transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        #         df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence # noqa: E501
-        #             df.lat.tolist(), df.lon.tolist()
+        #         df = utils.reproject(
+        #             df,
+        #             input_crs="epsg:4326",
+        #             output_crs="epsg:3031",
+        #             input_coord_names=("lon", "lat"),
+        #             output_coord_names=("x", "y"),
         #         )
 
         #         # block-median and grid the data
         #         df = pygmt.blockmedian(
         #             df[["x", "y", "thickness"]],
-        #             spacing=initial_spacing,
-        #             region=initial_region,
-        #             registration=initial_registration,
+        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
+        #             region=regions.antarctica,
+        #             registration="g",
         #         )
         #         processed = pygmt.surface(
         #             data=df[["x", "y", "thickness"]],
-        #             spacing=initial_spacing,
-        #             region=initial_region,
-        #             registration=initial_registration,
+        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
+        #             region=regions.antarctica,
+        #             registration="g",
         #             maxradius="1c",
         #         )
         #         # Save to disk
@@ -4490,16 +4506,11 @@ def crustal_thickness(
                 grid = grid.rename({"lon": "x", "lat": "y"})
 
                 # reproject to polar stereographic
-                reprojected = grid.rio.reproject("EPSG:3031")
-
-                # get just antarctica region and save to disk
-                pygmt.grdsample(
-                    reprojected,
-                    region=initial_region,
-                    spacing=initial_spacing,
-                    registration=initial_registration,
-                    outgrid=fname_processed,
+                reprojected = (
+                    grid.rio.reproject("EPSG:3031").squeeze().drop_vars(["spatial_ref"])
                 )
+                # save to netcdf
+                reprojected.to_netcdf(fname_processed)
 
             return str(fname_processed)
 
@@ -4610,23 +4621,26 @@ def moho(
                 df.depth = df.depth * -1000
 
                 # re-project to polar stereographic
-                transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-                df["x"], df["y"] = transformer.transform(  # pylint: disable=unpacking-non-sequence
-                    df.lat.tolist(), df.lon.tolist()
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
                 )
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
                     df[["x", "y", "depth"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
                 )
                 processed = pygmt.surface(
                     data=df[["x", "y", "depth"]],
-                    spacing=initial_spacing,
-                    region=initial_region,
-                    registration=initial_registration,
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
                     maxradius="1c",
                 )
                 # Save to disk
@@ -4665,42 +4679,46 @@ def moho(
         )
 
     elif version == "pappa-2019":
-        msg = "Pappa et al. 2019 moho model download is not working currently."
+        msg = "This link is broken, and the data is not available anymore."
         raise ValueError(msg)
         # resampled = pooch.retrieve(
-        #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",  # noqa: E501
+        #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
         #     fname="pappa_moho.zip",
         #     path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
         #     known_hash=None,
         #     progressbar=True,
         #     processor=pooch.Unzip(extract_dir="pappa_moho"),
         # )
-        # fname='/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd' # noqa: E501
-        # grid = pygmt.load_dataarray(fname)
-        # Moho_Pappa = grid.to_dataframe().reset_index()
-        # Moho_Pappa.z=Moho_Pappa.z.apply(lambda x:x*-1000)
+        # # fname = "/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd"  # noqa: E501
+        # grid = pygmt.load_dataarray(resampled)
+        # df = grid.to_dataframe().reset_index()
+        # df.z = df.z.apply(lambda x: x * -1000)
 
-        # transformer = Transformer.from_crs("epsg:4326", "epsg:3031")
-        # Moho_Pappa['x'], Moho_Pappa['y'] = transformer.transform(
-        #   Moho_Pappa.lat.tolist(),
-        # Moho_Pappa.lon.tolist())
-
-        # Moho_Pappa = pygmt.blockmedian(
-        #   Moho_Pappa[['x','y','z']],
-        #   spacing=10e3,
-        #   registration='g',
-        #   region='-1560000/1400000/-2400000/560000',
+        # # re-project to polar stereographic
+        # df = utils.reproject(
+        #     df,
+        #     input_crs="epsg:4326",
+        #     output_crs="epsg:3031",
+        #     input_coord_names=("lon", "lat"),
+        #     output_coord_names=("x", "y"),
         # )
 
-        # fname='inversion_layers/Pappa_moho.nc'
+        # df = pygmt.blockmedian(
+        #     df[["x", "y", "z"]],
+        #     spacing=10e3,
+        #     registration="g",
+        #     region="-1560000/1400000/-2400000/560000",
+        # )
+
+        # fname = "inversion_layers/Pappa_moho.nc"
 
         # pygmt.surface(
-        #   Moho_Pappa[['x','y','z']],
-        #   region='-1560000/1400000/-2400000/560000',
-        #   spacing=10e3,
-        #   registration='g',
-        #   maxradius='1c',
-        #   outgrid=fname,
+        #     df[["x", "y", "z"]],
+        #     region="-1560000/1400000/-2400000/560000",
+        #     spacing=10e3,
+        #     registration="g",
+        #     maxradius="1c",
+        #     outgrid=fname,
         # )
 
     else:
