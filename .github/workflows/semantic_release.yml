@@ -52,6 +52,9 @@ jobs:
           fetch-depth: 0
           token: ${{secrets.PAT}}
 
+      - name: Setup | Git pull remove changes to current branch
+        run: git pull origin main --rebase
+
       - name: Setup | Force release branch to be at workflow sha
         run: |
           git reset --hard ${{ github.sha }}
