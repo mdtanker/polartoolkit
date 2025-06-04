@@ -25,19 +25,9 @@ jobs:
 
       # use semantic-release in no operation mode
       - id: semantic-release-check
-        uses: python-semantic-release/python-semantic-release@master
+        uses: python-semantic-release/python-semantic-release@v10.0.2
         with:
-          root_options: --noop
-        # outputs: released, version, tag
-
-      # - id: comment
-      #   uses: actions/github-script@v7
-      #   # with:
-      #   #   script: return "Hello!"
-      #   #   result-encoding: string
-      #   run:
-      #     echo "${{steps.semantic-release.outputs.released}}" echo
-      #     "${{steps.semantic-release.outputs.version}}"
+          no_operation_mode: true
 
       # output to comment in the PR
       - name: comment if released
