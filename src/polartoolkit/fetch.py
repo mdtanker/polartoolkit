@@ -707,7 +707,6 @@ def ice_vel(
     ----------
     .. footbibliography::
     """
-
     hemisphere = utils.default_hemisphere(hemisphere)
 
     if hemisphere == "south":
@@ -716,10 +715,13 @@ def ice_vel(
 
         # preprocessing for full, 450m resolution
         def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .nc file, calculate velocity magnitude, save it back"
+            "Load the .nc file, calculate velocity magnitude, save it to a .zarr"
+
             fname1 = pathlib.Path(fname)
-            # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_fullres")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
@@ -735,19 +737,23 @@ def ice_vel(
                     # restore registration type
                     processed.gmt.registration = ds.VX.gmt.registration
                     # Save to disk
-                    processed.to_netcdf(fname_processed)
+                    processed = processed.to_dataset(name="vel")
+                    processed.to_zarr(fname_processed)
+
             return str(fname_processed)
 
         # preprocessing for filtered 5k resolution
         def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
             """
             Load the .nc file, calculate velocity magnitude, resample to 5k, save it
-            back
+            to a .zarr
             """
 
             fname1 = pathlib.Path(fname)
-            # Rename to the file to ***_preprocessed_5k.nc
-            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+            # Rename to the file to ***_preprocessed_5k.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
@@ -765,13 +771,13 @@ def ice_vel(
                         **kwargs,
                     )
                     vy_5k = typing.cast(xr.DataArray, vy_5k)
-
-                    processed_lowres = (vx_5k**2 + vy_5k**2) ** 0.5
+                    processed = (vx_5k**2 + vy_5k**2) ** 0.5
                     # restore registration type
-                    processed_lowres.gmt.registration = ds.VX.gmt.registration
-
+                    processed.gmt.registration = ds.VX.gmt.registration
                     # Save to disk
-                    processed_lowres.to_netcdf(fname_processed)
+                    processed = processed.to_dataset(name="vel")
+                    processed.to_zarr(fname_processed)
+
             return str(fname_processed)
 
         # determine which resolution of preprocessed grid to use
@@ -780,7 +786,6 @@ def ice_vel(
         elif spacing >= 5000:
             logger.info("using preprocessed 5km grid since spacing is > 5km")
             preprocessor = preprocessing_5k
-
         # This is the path to the processed (magnitude) grid
         path = pooch.retrieve(
             url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",
@@ -791,15 +796,14 @@ def ice_vel(
             progressbar=True,
             processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
-
-        with xr.open_dataarray(path) as grid:
-            resampled = resample_grid(
-                grid,
-                spacing=spacing,
-                region=region,
-                registration=registration,
-                **kwargs,
-            )
+        grid = xr.open_zarr(path)["vel"]
+        resampled = resample_grid(
+            grid,
+            spacing=spacing,
+            region=region,
+            registration=registration,
+            **kwargs,
+        )
 
     elif hemisphere == "north":
         if spacing is None:
@@ -860,7 +864,6 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
-
     return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
@@ -1544,7 +1547,7 @@ def sediment_thickness(
     elif version == "GlobSed":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, reproject the grid, and save it back as a .nc"
+            "Unzip the folder, reproject the grid, and save it back as a .zarr"
             path = pooch.Unzip(
                 extract_dir="GlobSed",
             )(fname, action, _pooch2)
@@ -1552,7 +1555,8 @@ def sediment_thickness(
             fname2 = pathlib.Path(fname1)
 
             # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname2.with_stem(fname2.stem + "_preprocessed")
+            fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -1567,26 +1571,29 @@ def sediment_thickness(
 
                 # clip to antarctica
                 grid = grid.rio.clip_box(
-                    *utils.region_to_bounding_box(regions.antarctica),
+                    *utils.region_to_bounding_box(
+                        regions.alter_region(regions.antarctica, -1000e3)
+                    ),
                     crs="EPSG:3031",
                 )
 
-                # reproject to polar stereographic
-                reprojected = grid.rio.reproject("epsg:3031", resolution=1e3)
+                # reproject to EPSG:3031
+                reprojected = grid.rio.reproject("EPSG:3031", resolution=1000)
 
-                # need to save to .nc and reload, issues with pygmt
-                reprojected.to_netcdf("tmp.nc")
-                processed = xr.load_dataset("tmp.nc").z
-
-                # resample and save to disk
-                pygmt.grdsample(
-                    processed,
+                # resample to correct spacing, region and registration
+                resampled = resample_grid(
+                    reprojected,
                     spacing=1e3,
-                    outgrid=fname_processed,
+                    region=regions.antarctica,
+                    registration="g",
+                    **kwargs,
                 )
 
-                # remove tmp file
-                pathlib.Path("tmp.nc").unlink()
+                # Save to .zarr file
+                resampled = resampled.to_dataset(name="sediment_thickness")
+                resampled.to_zarr(
+                    fname_processed,
+                )
 
             return str(fname_processed)
 
@@ -1599,7 +1606,7 @@ def sediment_thickness(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["sediment_thickness"]
 
         resampled = resample_grid(
             grid,
@@ -3749,7 +3756,7 @@ def magnetics(
             raise ValueError(msg)
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the data, and save it back as a .nc"
+            "Unzip the folder, grid the data, and save it back as a .zarr"
             path = pooch.Unzip()(fname, action, _pooch2)
             fname1 = pathlib.Path(path[0])
 
@@ -3761,7 +3768,7 @@ def magnetics(
             else:
                 msg = "hemisphere must be 'north' or 'south'"
                 raise ValueError(msg)
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -3798,7 +3805,8 @@ def magnetics(
                     maxradius="1c",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed = processed.to_dataset(name="mag")
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         url = "https://www.spacecenter.dk/files/magnetic-models/LCS-1/F_LCS-1_ellipsoid_14-185_ASC.zip"
@@ -3812,7 +3820,7 @@ def magnetics(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path)["mag"]
 
         resampled = resample_grid(
             grid,
