@@ -248,7 +248,7 @@ prerelease = false
 
 [tool.semantic_release.branches.notmain]
 match = "(?!main)"
-prerelease = true
+prerelease = false
 
 [tool.semantic_release.changelog]
 template_dir = "templates"
@@ -272,3 +272,5 @@ allowed_tags = [
 # including BREAKING CHANGE: in the commit message will trigger a major release
 minor_tags = ["feat"] # tags which result in minor releases
 patch_tags = ["fix", "perf"] # tags which result in patch releases
+parse_squash_commits = false
+ignore_merge_commits = false
