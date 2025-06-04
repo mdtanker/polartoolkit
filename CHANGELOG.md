@@ -3,9 +3,10 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-
-## v1.0.1 (2025-06-04)
+## Unreleased
 ### 🐛 Bug Fixes
+* fixing release ([`7de9a24`](https://github.com/mdtanker/polartoolkit/commit/7de9a2427a628bf2dc7e5f4f8bb481c9317535a4))
+* fix release ([`cf57090`](https://github.com/mdtanker/polartoolkit/commit/cf57090a3e7a752b0fbb52e04b1f81da5b182b76))
 * still fixing ([`ecf44c5`](https://github.com/mdtanker/polartoolkit/commit/ecf44c58e9827183484859677849a311ed5eb1fc))
 * still fixing release ([`4bf136f`](https://github.com/mdtanker/polartoolkit/commit/4bf136f5022a95d9a348ade526c7cc055900793e))
 * still fixing release action ([`027d9cf`](https://github.com/mdtanker/polartoolkit/commit/027d9cf1c67910d745451ccdd7e0e404cded8ea0))
@@ -14,6 +15,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * update python semantic release ([`269c7d2`](https://github.com/mdtanker/polartoolkit/commit/269c7d2ea19cdd6332d4ad21070bcfb3b436f394))
 ### 🧰 Chores / Maintenance
 * increase deprecations to v2.0.0 ([`f5ac4b3`](https://github.com/mdtanker/polartoolkit/commit/f5ac4b363ef3e21b70eb279a92c480fd90c8292f))
+
 
 ## v1.0.0 (2025-06-04)
 ### 🐛 Bug Fixes
