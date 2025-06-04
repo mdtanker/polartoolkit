@@ -1803,11 +1803,6 @@ def ibcso(
                 fname_processed,
             )
 
-            # remove non-preprocessed file
-            # can't do this because pooch uses the original at each fetch call to check
-            # the hash
-            # pathlib.Path(fname1).unlink()
-
         return str(fname_processed)
 
     if layer == "surface":
@@ -2573,6 +2568,8 @@ def bedmap3(
         bed = bedmap3(layer="bed")
         # calculate water thickness
         grid = icebase - bed
+        # ensure no negative values
+        grid = xr.where(grid < 0, 0, grid)
         # restore registration type
         grid.gmt.registration = bed.gmt.registration
     elif layer in valid_variables:
@@ -2646,6 +2643,7 @@ def bedmap3(
                 spacing=spacing,
                 registration=registration,
             )
+            registration_num = grid.gmt.registration
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
             # restore registration type
@@ -2911,6 +2909,7 @@ def bedmap2(
                 spacing=spacing,
                 registration=registration,
             )
+            registration_num = grid.gmt.registration
             # convert to the ellipsoid
             grid = grid + geoid_2_ellipsoid
             # restore registration type
@@ -3907,7 +3906,7 @@ def ghf(
     if version == "an-2015":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, reproject the .nc file, and save it back"
+            "Unzip the folder, reproject the .nc file, and save it back to a zarr"
             fname = pooch.Untar()(fname, action, _pooch2)[0]
             fname1 = pathlib.Path(fname)
 
@@ -3933,7 +3932,7 @@ def ghf(
                     spacing=5e3,
                 )
                 # Save to disk
-                resampled = resampled.to_dataset(name="ghf")  #
+                resampled = resampled.to_dataset(name="ghf")
                 resampled.to_zarr(fname_processed)
 
             return str(fname_processed)
@@ -4515,7 +4514,12 @@ def crustal_thickness(
 
                 # reproject to polar stereographic
                 reprojected = (
-                    grid.rio.reproject("EPSG:3031").squeeze().drop_vars(["spatial_ref"])
+                    grid.rio.reproject(
+                        "EPSG:3031",
+                        resolution=5e3,
+                    )
+                    .squeeze()
+                    .drop_vars(["spatial_ref"])
                 )
                 # save to netcdf
                 reprojected.to_netcdf(fname_processed)
