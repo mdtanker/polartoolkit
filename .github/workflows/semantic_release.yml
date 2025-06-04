@@ -22,7 +22,7 @@ jobs:
       - name: update changelog
         run: |
           pip install -U pip
-          pip install python-semantic-release==9.20
+          pip install python-semantic-release==10.0.2
           semantic-release changelog
       # Commits files to repository
       - name: Commit changes
@@ -54,10 +54,6 @@ jobs:
 
       - name: Setup | Git pull remove changes to current branch
         run: git pull origin main --rebase
-
-      - name: Setup | Force release branch to be at workflow sha
-        run: |
-          git reset --hard ${{ github.sha }}
 
       - name: Action | Python Semantic Release
         id: release
