@@ -5,6 +5,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 
 ## Unreleased
 ### 🐛 Bug Fixes
+* get PSR to upload to pypi ([`156b3d2`](https://github.com/mdtanker/polartoolkit/commit/156b3d21b51b1f8c5646549e9767301e529a12a9))
 * update python semantic release ([`269c7d2`](https://github.com/mdtanker/polartoolkit/commit/269c7d2ea19cdd6332d4ad21070bcfb3b436f394))
 ### 🧰 Chores / Maintenance
 * increase deprecations to v2.0.0 ([`f5ac4b3`](https://github.com/mdtanker/polartoolkit/commit/f5ac4b363ef3e21b70eb279a92c480fd90c8292f))
