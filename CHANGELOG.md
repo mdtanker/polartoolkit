@@ -4,9 +4,53 @@ Automatically updated by
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Unreleased
+### 🐛 Bug Fixes
+* update fetch tests ([`3218acf`](https://github.com/mdtanker/polartoolkit/commit/3218acf1d66fd7dac434614239b8b135795d22ea))
+* update region tests ([`68d8ebc`](https://github.com/mdtanker/polartoolkit/commit/68d8ebcce772e8911484d5c2632664d2d1ec8d59))
+* remove basal_melt fetch due to changed data access ([`8a8f64c`](https://github.com/mdtanker/polartoolkit/commit/8a8f64c3952aad92d4c19830f59378f63f2e912b))
+* remove unneeded checks in `resample_grid` ([`3a73b32`](https://github.com/mdtanker/polartoolkit/commit/3a73b323b394cbe00a8e546ecc3352a6d6a95abd))
+* bug in `maps.subplots` ([`b966565`](https://github.com/mdtanker/polartoolkit/commit/b966565d006c1e7c6e3d05ad3b00a7d72454f264))
+* use pygmt.grdsample in `grd_compare` to ensure grids can be subtracted ([`c1f9b92`](https://github.com/mdtanker/polartoolkit/commit/c1f9b92e0bbfa753cfaf7a3135918d11e4e88af5))
+* bug where coordinates displayed on clicking `interactive_map` were incorrect ([`494ecc1`](https://github.com/mdtanker/polartoolkit/commit/494ecc1fb40d1638808e96f663ca48edb8eabe7b))
+* remove bug where `layers_version` wasn't being used in `plot_profiles` ([`2f4f118`](https://github.com/mdtanker/polartoolkit/commit/2f4f11890cf8fd19f3d0a859d7f6e9a55ff49057))
+* bug in distance calculation for profiles, and rename relative and cumulative distance functions ([`788045d`](https://github.com/mdtanker/polartoolkit/commit/788045d6584a7f0a4a96eed7c57e18d508b84587))
+* check region and spacing provide if no grid in `utils.mask_from_polygon` ([`2567780`](https://github.com/mdtanker/polartoolkit/commit/2567780a9284d46dffcfe8fe6bfefe4b477e09a1))
+* still fill layers in profile if entirely above plot ([`e850a05`](https://github.com/mdtanker/polartoolkit/commit/e850a0591af1d467ada6c400c76c9df543e29d90))
+* check cpt_lims for cbar_end_triangles ([`061e939`](https://github.com/mdtanker/polartoolkit/commit/061e93974d08622aa4527a395f59d136cfb09417))
+* plotting code should be under if plot condition for `grd_compare` ([`05daa80`](https://github.com/mdtanker/polartoolkit/commit/05daa8077da0b83c01193f0867ce672883125586))
+### 📦️ Build
+* add pyogrio as dep and remove geopandas upper version limit ([`9ffd5ce`](https://github.com/mdtanker/polartoolkit/commit/9ffd5ce5f5ddc96e16f1ea3f2047f03ee3f8e378))
 ### 🧰 Chores / Maintenance
 ### ✏️ Formatting
+* minor changes to fetch.py ([`52b49c2`](https://github.com/mdtanker/polartoolkit/commit/52b49c2c9f95036a6e541e6d2066c50195791aeb))
+* fixes for new pre-commit hook versions ([`5b534ce`](https://github.com/mdtanker/polartoolkit/commit/5b534ce949f9611f333ed336c01a80c964b07614))
+* pre-commit fixes ([`b49b4a0`](https://github.com/mdtanker/polartoolkit/commit/b49b4a0f4c72f5ab154b66000bfb3d04b9c2149b))
 * pre-commit fixes ([`e2e3516`](https://github.com/mdtanker/polartoolkit/commit/e2e35166e0421a2b0f4c9708f0ff1551325d5909))
+### 📖 Documentation
+* minor fixes to docs ([`217ff31`](https://github.com/mdtanker/polartoolkit/commit/217ff31317382b49ab7e9ec1ca621b577f3998b8))
+* rerun all docs ([`5fe7619`](https://github.com/mdtanker/polartoolkit/commit/5fe7619fe691afc65d59224e56a8056b3ae9ff07))
+* minor docstring fixes ([`28bdeb8`](https://github.com/mdtanker/polartoolkit/commit/28bdeb836b9d051c344d1577faa98d8e191fafb0))
+### 🚀 Features
+* add kwarg `cpt_log` to make colormap on a log scale. ([`e8406b6`](https://github.com/mdtanker/polartoolkit/commit/e8406b628da835701face2b47f26bcc24fbc23bc))
+* add `regions_overlap` function ([`e8ddbeb`](https://github.com/mdtanker/polartoolkit/commit/e8ddbebd78e420c64beff792be2ec8d1d05fb778))
+* ensure ice surface, water surface, and earth surface are in correct order in `plot_profiles` ([`e668a90`](https://github.com/mdtanker/polartoolkit/commit/e668a90857fc9d4cdda07bb1339fc022462c2123))
+* add option to choose modis cmap: `modis_cmap` ([`29ad0ac`](https://github.com/mdtanker/polartoolkit/commit/29ad0ac3484e6e0b582383fc5f34622fe3d142c7))
+* allow drapegrid for `plot_3d` ([`3f095c1`](https://github.com/mdtanker/polartoolkit/commit/3f095c1ee410ad937301d31f879d2ee318096457))
+* enable absolute values option for colormaps ([`159de8b`](https://github.com/mdtanker/polartoolkit/commit/159de8b4c3aecc211374abbc249d15528bd2a7ac))
+* allow automatic and chosen colorbar end triangles ([`77f3547`](https://github.com/mdtanker/polartoolkit/commit/77f35475087d7e7272fde20285843452ccc6a94c))
+* allow specifying colorbar height percentage ([`d327304`](https://github.com/mdtanker/polartoolkit/commit/d327304ae5e2420dd7a0ca3d31442156ff2cc9d6))
+###  🎨 Refactor
+* use zarr instead of nc for some preprocessed fetch calls ([`03c89b0`](https://github.com/mdtanker/polartoolkit/commit/03c89b0df62fdc8f6f19d2aab85c08f10fb5e688))
+* various changes to fetch functions ([`45837a9`](https://github.com/mdtanker/polartoolkit/commit/45837a9474dff2431c79575dd7364970d3181375))
+* remove all initial region, spacing, and registrations from fetch functions ([`b9c4203`](https://github.com/mdtanker/polartoolkit/commit/b9c420365768fe1166682290f50d0e2a166666a4))
+* `interactive_map` zoom level based on basemap type ([`06125f5`](https://github.com/mdtanker/polartoolkit/commit/06125f5d798063248745acaf3099292fd77f5417))
+* for southern hemisphere, change default interactive map basemap to `Imagery` to allow zooming in ([`ac11744`](https://github.com/mdtanker/polartoolkit/commit/ac11744237db3ce8a48f2f30315e09f920893747))
+* remove `show` kwarg of `interactive_map` ([`2507c8f`](https://github.com/mdtanker/polartoolkit/commit/2507c8f414f18422b0e6163eb72eadff26f27082))
+* remove `clip` kwarg from `plot_profiles` and `plot_data` and do distance clipping before grd sampling ([`2f3bed9`](https://github.com/mdtanker/polartoolkit/commit/2f3bed97c074529282a736f1a20259fd9301c072))
+* require extracting grid info in `resample_grid` and reorganize function ([`a38b94b`](https://github.com/mdtanker/polartoolkit/commit/a38b94bd52f6d7c6c54fa22ecc147b5f14e47da2))
+* deprecate `xr_grid` and `grid_file` parameters for `utils.mask_from_shp` and use `grid` instead ([`9a2af43`](https://github.com/mdtanker/polartoolkit/commit/9a2af430200df560343cbae487a682ef5ce5b24e))
+* use bedmap2 as default for profiles for speed ([`41dcb5a`](https://github.com/mdtanker/polartoolkit/commit/41dcb5a2c22f61ddd4c69ed72bc4d2aff82b71ab))
+* clean up some code and add some debug logging ([`9240bc8`](https://github.com/mdtanker/polartoolkit/commit/9240bc822cca855b1730436f8a0530c9ebeba846))
 
 
 ## v0.9.1 (2025-04-07)
