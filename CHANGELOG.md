@@ -5,6 +5,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 
 ## Unreleased
 ### 🐛 Bug Fixes
+* fixing release ([`829dc61`](https://github.com/mdtanker/polartoolkit/commit/829dc6157725d84451e73e43eaa2e9c51bb47d4c))
 * fixing release ([`7de9a24`](https://github.com/mdtanker/polartoolkit/commit/7de9a2427a628bf2dc7e5f4f8bb481c9317535a4))
 * fix release ([`cf57090`](https://github.com/mdtanker/polartoolkit/commit/cf57090a3e7a752b0fbb52e04b1f81da5b182b76))
 * still fixing ([`ecf44c5`](https://github.com/mdtanker/polartoolkit/commit/ecf44c58e9827183484859677849a311ed5eb1fc))
