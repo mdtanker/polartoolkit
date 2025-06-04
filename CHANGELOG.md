@@ -4,6 +4,8 @@ Automatically updated by
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Unreleased
+### 🐛 Bug Fixes
+* update python semantic release ([`269c7d2`](https://github.com/mdtanker/polartoolkit/commit/269c7d2ea19cdd6332d4ad21070bcfb3b436f394))
 ### 🧰 Chores / Maintenance
 * increase deprecations to v2.0.0 ([`f5ac4b3`](https://github.com/mdtanker/polartoolkit/commit/f5ac4b363ef3e21b70eb279a92c480fd90c8292f))
 
