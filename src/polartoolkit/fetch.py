@@ -970,7 +970,7 @@ def modis(
 
 @deprecation.deprecated(
     deprecated_in="0.4.0",
-    removed_in="1.0.0",
+    removed_in="2.0.0",
     current_version=polartoolkit.__version__,
     details="Use the new function modis(hemisphere='south') instead",
 )
@@ -981,7 +981,7 @@ def modis_moa(version: str = "750m") -> str:
 
 @deprecation.deprecated(
     deprecated_in="0.4.0",
-    removed_in="1.0.0",
+    removed_in="2.0.0",
     current_version=polartoolkit.__version__,
     details="Use the new function modis(hemisphere='north') instead",
 )
@@ -1266,7 +1266,7 @@ def groundingline(
 
 @deprecation.deprecated(
     deprecated_in="0.4.0",
-    removed_in="1.0.0",
+    removed_in="2.0.0",
     current_version=polartoolkit.__version__,
     details="Use the new function antarctic_boundaries instead",
 )
