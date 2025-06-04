@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v1.0.1 (2025-06-04)
 ### 🐛 Bug Fixes
 * still fixing ([`ecf44c5`](https://github.com/mdtanker/polartoolkit/commit/ecf44c58e9827183484859677849a311ed5eb1fc))
 * still fixing release ([`4bf136f`](https://github.com/mdtanker/polartoolkit/commit/4bf136f5022a95d9a348ade526c7cc055900793e))
@@ -13,7 +14,6 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * update python semantic release ([`269c7d2`](https://github.com/mdtanker/polartoolkit/commit/269c7d2ea19cdd6332d4ad21070bcfb3b436f394))
 ### 🧰 Chores / Maintenance
 * increase deprecations to v2.0.0 ([`f5ac4b3`](https://github.com/mdtanker/polartoolkit/commit/f5ac4b363ef3e21b70eb279a92c480fd90c8292f))
-
 
 ## v1.0.0 (2025-06-04)
 ### 🐛 Bug Fixes
