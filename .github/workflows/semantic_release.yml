@@ -9,37 +9,34 @@ on:
 
 jobs:
   # update the changelog and create a commit
-  changelog:
-    name: Changelog
-    runs-on: ubuntu-latest
-    steps:
-      # checkout the repo and supply a PAT for the changelog update commit.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{secrets.PAT}}
-          # ref: ${{ github.head_ref || github.ref_name }}
-      - name: update changelog
-        run: |
-          pip install -U pip
-          pip install python-semantic-release==10.0.2
-          semantic-release changelog
-      # Commits files to repository
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: semantic-release
-          message: "chore: automatically updating changelog [skip ci]"
-          add: "./CHANGELOG.md"
+  # changelog:
+  #   name: Changelog
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     # checkout the repo and supply a PAT for the changelog update commit.
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         token: ${{secrets.PAT}}
+  #     - name: update changelog
+  #       run: |
+  #         pip install -U pip
+  #         pip install python-semantic-release==10.0.2
+  #         semantic-release changelog
+  #     # Commits files to repository
+  #     - name: Commit changes
+  #       uses: EndBug/add-and-commit@v9
+  #       with:
+  #         author_name: semantic-release
+  #         message: "chore: automatically updating changelog [skip ci]"
+  #         add: "./CHANGELOG.md"
+
   # determine appropriate version number and create a release commit
   semantic-release:
-    name: release
+    name: Release
     needs: changelog
     runs-on: ubuntu-latest
     concurrency: release
-    environment:
-      name: pypi
-      url: https://pypi.org/p/polartoolkit
     permissions:
       id-token: write
       contents: write
@@ -65,13 +62,48 @@ jobs:
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
 
-      - name: Publish | Upload package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        if: steps.release.outputs.released == 'true'
-
       - name: Publish | Upload to GitHub Release Assets
         uses: python-semantic-release/publish-action@v10.0.2
         if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.release.outputs.tag }}
+
+      - name: Upload | Distribution Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: distribution-artifacts
+          path: dist
+          if-no-files-found: error
+
+  deploy:
+    # 1. Separate out the deploy step from the publish step to run each step at
+    #    the least amount of token privilege
+    # 2. Also, deployments can fail, and its better to have a separate job if you need to retry
+    #    and it won't require reversing the release.
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/polartoolkit
+    needs: release
+    if: ${{ needs.release.outputs.released == 'true' }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Setup | Download Build Artifacts
+        uses: actions/download-artifact@v4
+        id: artifact-download
+        with:
+          name: distribution-artifacts
+          path: dist
+
+      # see https://docs.pypi.org/trusted-publishers/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          print-hash: true
+          verbose: true
