@@ -61,13 +61,16 @@ jobs:
           github_token: ${{ secrets.PAT }}
           changelog: "true"
           push: "true"
+          git_committer_name: "github-actions"
+          git_committer_email: "actions@users.noreply.github.com"
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@v1
         if: steps.release.outputs.released == 'true'
 
       - name: Publish package distributions to GitHub Releases
-        uses: python-semantic-release/upload-to-gh-release@v10.0.2
+        uses: python-semantic-release/publish-action@v10.0.2
         if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.release.outputs.tag }}
