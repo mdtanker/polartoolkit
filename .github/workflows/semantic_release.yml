@@ -33,10 +33,10 @@ jobs:
           add: "./CHANGELOG.md"
   # determine appropriate version number and create a release commit
   semantic-release:
-    name: Semantic Release
+    name: release
     needs: changelog
     runs-on: ubuntu-latest
-    # concurrency: release
+    concurrency: release
     permissions:
       id-token: write
       contents: write
@@ -50,10 +50,23 @@ jobs:
       - name: git pull
         run: git pull origin main --rebase
 
-      # use semantic-release
-      - id: semantic-release
-        uses: python-semantic-release/python-semantic-release@master
+      # This action uses Python Semantic Release
+      - name: Python Semantic Release
+        id: release
+        uses: python-semantic-release/python-semantic-release@v10.0.2
         with:
           github_token: ${{ secrets.PAT }}
           changelog: "true"
           push: "true"
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@v1
+        # NOTE: DO NOT wrap the conditional in ${{ }} as it will always evaluate to true.
+        # See https://github.com/actions/runner/issues/1173
+        if: steps.release.outputs.released == 'true'
+
+      - name: Publish package distributions to GitHub Releases
+        uses: python-semantic-release/upload-to-gh-release@v10.0.2
+        if: steps.release.outputs.released == 'true'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
