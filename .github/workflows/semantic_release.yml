@@ -48,13 +48,15 @@ jobs:
       - id: checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           token: ${{secrets.PAT}}
-      - name: git pull
-        run: git pull origin main --rebase
 
-      # This action uses Python Semantic Release
-      - name: Python Semantic Release
+      - name: Setup | Force release branch to be at workflow sha
+        run: |
+          git reset --hard ${{ github.sha }}
+
+      - name: Action | Python Semantic Release
         id: release
         uses: python-semantic-release/python-semantic-release@v10.0.2
         with:
@@ -64,11 +66,11 @@ jobs:
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@v1
+      - name: Publish | Upload package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.release.outputs.released == 'true'
 
-      - name: Publish package distributions to GitHub Releases
+      - name: Publish | Upload to GitHub Release Assets
         uses: python-semantic-release/publish-action@v10.0.2
         if: steps.release.outputs.released == 'true'
         with:
