@@ -17,7 +17,7 @@ dependencies:
   - scipy
   - numpy
   - pygmt>=0.10.0
-  - geopandas
+  - geopandas>=1.0 # for issue with pyogrio
   - pyogrio
   - zarr
   - python-dotenv
