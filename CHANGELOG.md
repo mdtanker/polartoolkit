@@ -3,6 +3,12 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## Unreleased
+### 📦️ Build
+* only use geopandas>1 ([`f769d5f`](https://github.com/mdtanker/polartoolkit/commit/f769d5fc3dddccea0f9e92ad6fc75e259363ee5d))
+### ✏️ Formatting
+* pre-commit fixes ([`0378b0b`](https://github.com/mdtanker/polartoolkit/commit/0378b0b4126f4115d3c381b14b4b1fa3fc183a3f))
+
 
 ## v1.0.3 (2025-06-04)
 ### 🐛 Bug Fixes
