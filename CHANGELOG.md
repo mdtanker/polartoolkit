@@ -3,10 +3,11 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v1.0.5 (2025-06-05)
 ### 🐛 Bug Fixes
 * remove issue with checking layer order in profiles ([`a04c614`](https://github.com/mdtanker/polartoolkit/commit/a04c614711796de31d49951a4ecb1022e773aa76))
-
+### 🧰 Chores / Maintenance
 
 ## v1.0.4 (2025-06-05)
 ### 🐛 Bug Fixes
