@@ -25,7 +25,7 @@ jobs:
 
       # use semantic-release in no operation mode
       - id: semantic-release-check
-        uses: python-semantic-release/python-semantic-release@v10.0.2
+        uses: python-semantic-release/python-semantic-release@v10.2.0
         with:
           no_operation_mode: true
 
