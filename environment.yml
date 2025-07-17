@@ -36,25 +36,19 @@ dependencies:
   - pytest-cov>=3
   - deepdiff
   # docs
-  - sphinx>=4.0
+  - sphinx>=7.0
+  - myst-parser>=0.13
+  - sphinx-copybutton
+  - sphinx-autodoc-typehints
   - sphinx-book-theme>=0.3
   - nbsphinx
+  - ipykernel
   - nbconvert
   - sphinxcontrib-bibtex
-  # - ipython # repeat
-  - myst-parser
-  - sphinx-copybutton
   - sphinx-autoapi
-  - sphinx-autodoc-typehints
   - sphinx-design
   # dev
-  - nox
-  - pre-commit
-  - pylint>=3.2
-  - ipykernel
   - jupyterlab
-  - mypy
-  - pathspec
   # below packages need to be installed with pip
   # - pip
   # - pip:

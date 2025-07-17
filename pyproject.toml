@@ -66,31 +66,24 @@ test = [
   "pytest-cov >=3",
   "deepdiff",
 ]
-docs = [
-  "sphinx>=4.0",
-  "sphinx-book-theme>=0.3",
-  "nbsphinx",
-  "nbconvert",
-  "sphinxcontrib-bibtex",
-  "ipython",
-  "myst_parser",
-  "sphinx_copybutton",
-  "sphinx_autoapi",
-  "sphinx_autodoc_typehints",
-  "sphinx_design",
-]
 dev = [
     {include-group = "test"},
-    {include-group = "interactive"},
-    {include-group = "docs"},
-    "nox",
-    "pre-commit",
-    "pylint>=3.2",
-    "ipykernel",
     "jupyterlab",
-    "mypy",
-    "pathspec",
 ]
+docs = [
+  "sphinx>=7.0",
+  "myst_parser>=0.13",
+  "sphinx_copybutton",
+  "sphinx_autodoc_typehints",
+  "sphinx-book-theme>=0.3",
+  "nbsphinx",
+  "ipykernel",
+  "nbconvert",
+  "sphinxcontrib-bibtex",
+  "sphinx_autoapi",
+  "sphinx_design",
+]
+
 all = [
   {include-group = "interactive"},
   {include-group = "test"},
