@@ -291,7 +291,7 @@ Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should 
 
 In each PR, you will see section of the checks for `RTD`. Click on this to preview the docs for the PR.
 
-`RTD` uses the conda environment specified in `env/RTD_env.yml` when it's building.
+`RTD` uses the conda environment specified in `environment.yml` when it's building.
 
 ### Committing changes
 
