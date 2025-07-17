@@ -3664,7 +3664,7 @@ def magnetics(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "nT"]],
+                    df[["x", "y", "nT"]],  # type: ignore[call-overload]
                     spacing=5e3,
                     region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
                     registration="g",
@@ -3799,7 +3799,7 @@ def magnetics(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "nT"]],
+                    df[["x", "y", "nT"]],  # type: ignore[call-overload]
                     spacing=10e3,  # .25 degree resolution, ~20 km,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     registration="g",
@@ -4134,7 +4134,7 @@ def ghf(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "HF [mW/m2]"]],
+                    df[["x", "y", "HF [mW/m2]"]],  # type: ignore[call-overload]
                     spacing=5e3,
                     region=regions.antarctica,
                     registration="g",
@@ -4252,7 +4252,7 @@ def ghf(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "GHF"]],
+                    df[["x", "y", "GHF"]],  # type: ignore[call-overload]
                     spacing=10e3,
                     region=regions.antarctica,
                     registration="g",
@@ -4651,7 +4651,7 @@ def moho(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "depth"]],
+                    df[["x", "y", "depth"]],  # type: ignore[call-overload]
                     spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
                     region=regions.antarctica,
                     registration="g",
