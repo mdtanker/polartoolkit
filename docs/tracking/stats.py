@@ -1,10 +1,3 @@
-# Copyright (c) 2024 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
 # # package = "polartoolkit"
 # # Show overall downloads over time, excluding mirrors
 # data = pypistats.overall(package, total=True, format="pandas")
@@ -19,6 +12,8 @@ Adapted from the package icepyx: https://github.com/icesat2py/icepyx
 
 https://github.com/icesat2py/icepyx/blob/6c187bd35358d88083a5163d3491118aa1aad45c/doc/source/tracking/pypistats/get_pypi_stats.py
 """
+
+from __future__ import annotations
 
 import pathlib
 

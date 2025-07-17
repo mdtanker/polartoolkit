@@ -1,7 +1,4 @@
 # Changelog
-Automatically updated by
-[python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
-with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
 ## v1.0.6 (2025-07-17)
@@ -105,7 +102,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * update bedmap3 fetch with after registration issue ([`6cf33ed`](https://github.com/mdtanker/polartoolkit/commit/6cf33ed7a3cb1ccd7e159ca53fc915b09d0b2b4a))
 * update some fetch hashes ([`f6e4ab7`](https://github.com/mdtanker/polartoolkit/commit/f6e4ab7a3c93c56263aa886a7b9be7373b2332e8))
 * use updated coord names ([`35feba1`](https://github.com/mdtanker/polartoolkit/commit/35feba1622ad9d174ea7b9665d99440d7db74c98))
-* resample grids if samping and reg are same, but registration is different ([`1c1636a`](https://github.com/mdtanker/polartoolkit/commit/1c1636acb20753d7f9f97c24cdf00f01cda268fb))
+* resample grids if sampling and reg are same, but registration is different ([`1c1636a`](https://github.com/mdtanker/polartoolkit/commit/1c1636acb20753d7f9f97c24cdf00f01cda268fb))
 ### 🧰 Chores / Maintenance
 * reduce sig figs on test_gravity ([`1005757`](https://github.com/mdtanker/polartoolkit/commit/1005757d335f6fbb4fb8e54003a783021ee83751))
 * update test_bedmap3 ([`6f69a34`](https://github.com/mdtanker/polartoolkit/commit/6f69a34f1e78cd275f556e0c7fe7a23c1b3e7748))
@@ -126,7 +123,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * use assumed coordinate names in reprojections ([`423ddc5`](https://github.com/mdtanker/polartoolkit/commit/423ddc56fdd094ebb19a5c837bb52ef30ffece72))
 ### 🧰 Chores / Maintenance
 * update backup env yml ([`510d0c6`](https://github.com/mdtanker/polartoolkit/commit/510d0c6cbb1efb55cf84479949bfbf867bacdd38))
-* update make remove comand ([`d4805b4`](https://github.com/mdtanker/polartoolkit/commit/d4805b4e978de08ba86ef33823948fa8f3c3f1ca))
+* update make remove command ([`d4805b4`](https://github.com/mdtanker/polartoolkit/commit/d4805b4e978de08ba86ef33823948fa8f3c3f1ca))
 * add logging to maps.py ([`13930be`](https://github.com/mdtanker/polartoolkit/commit/13930bee63ba749a70390d6efbe62015af0013af))
 ### ✏️ Formatting
 * quotes error ([`d5fe11a`](https://github.com/mdtanker/polartoolkit/commit/d5fe11a7d13ccd08be27717dc5b5fe42ef32310d))
@@ -137,7 +134,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * add bedmap3 grids ([`3bab405`](https://github.com/mdtanker/polartoolkit/commit/3bab40587dda4bf98bce6049006e94ad09a31f95))
 * allow extra x and y shift amounts ([`5bef9ca`](https://github.com/mdtanker/polartoolkit/commit/5bef9ca785a03762be9dafcee35cef25a7e9a39c))
 * allow specifying cbar histogram height with 'cbar_hist_height', independent from 'cbar_yoffset ([`02ae70d`](https://github.com/mdtanker/polartoolkit/commit/02ae70d9d2c32d0f55ee4a747ac8de4940a8c006))
-* allow specifing simple basemap colors and pen ([`c711274`](https://github.com/mdtanker/polartoolkit/commit/c711274a80a86d10d15ccffbc689ab2e7dd79bee))
+* allow specifying simple basemap colors and pen ([`c711274`](https://github.com/mdtanker/polartoolkit/commit/c711274a80a86d10d15ccffbc689ab2e7dd79bee))
 * allow setting number of columns in layers legend in profiles with 'layers_legend_columns' ([`149fbf7`](https://github.com/mdtanker/polartoolkit/commit/149fbf7ca49a9eaf7ca1fa8b141560fa09d48729))
 * add verbose kwarg for 'add_box' and 'add_colorbar' ([`92a476d`](https://github.com/mdtanker/polartoolkit/commit/92a476d4e2e1ae636d167e59f161683d55401a6d))
 * allow specifying robust percentiles in various functions ([`f1b62f1`](https://github.com/mdtanker/polartoolkit/commit/f1b62f1896c037cbd0f4b2ea9957985c0d216a25))
@@ -148,7 +145,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * bedmap3 as default for profiles ([`b2fc5d6`](https://github.com/mdtanker/polartoolkit/commit/b2fc5d6e1c36763bd51e4de19eb37f0b29b14017))
 * determine y shift amount based on what is being plotted. ([`901be27`](https://github.com/mdtanker/polartoolkit/commit/901be2762f51ade9bc38bff0ff48a7409fdd7a78))
 * set title and frames at beginning of plotting ([`f2131ab`](https://github.com/mdtanker/polartoolkit/commit/f2131abdc1a34c083430a0028503d4633d5c76ea))
-* use seperate transparency kwarg for frame and grid ([`d9ca761`](https://github.com/mdtanker/polartoolkit/commit/d9ca761a1331fe248e7aca0448011d06fdc52663))
+* use separate transparency kwarg for frame and grid ([`d9ca761`](https://github.com/mdtanker/polartoolkit/commit/d9ca761a1331fe248e7aca0448011d06fdc52663))
 * use easting and northing for bedmap points ([`2ce8510`](https://github.com/mdtanker/polartoolkit/commit/2ce851066d006a6b443128ee7b11c0d1bafeafe9))
 * use warnings instead of logging for some cases ([`2876442`](https://github.com/mdtanker/polartoolkit/commit/287644287b3217fd6575bd6b0383acfa2ddd4c42))
 * specify point fill with column name ([`cd59881`](https://github.com/mdtanker/polartoolkit/commit/cd59881e192e006e62aab29b965e4ffa65876f07))
@@ -332,7 +329,7 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 ### 🧰 Chores / Maintenance
 * add test deps to conda_install for testing conda releases ([`0cc2da2`](https://github.com/mdtanker/polartoolkit/commit/0cc2da230754d9f23138ca13d123b5798e93fa0c))
 * updates from learn-scientific-python ([`07d79a9`](https://github.com/mdtanker/polartoolkit/commit/07d79a90213f8646bb909c6f5e03af99359b8106))
-* update binder env wih polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
+* update binder env with polartoolkit v0.4.0 ([`47ff400`](https://github.com/mdtanker/polartoolkit/commit/47ff400f81c3c33f4ab626e94c5f526b8a22f832))
 ### ✏️ Formatting
 * pre-commit fixes ([`463a225`](https://github.com/mdtanker/polartoolkit/commit/463a225babe3d84aa2d2589121eba632050aa386))
 * auto style fix ([`65266e9`](https://github.com/mdtanker/polartoolkit/commit/65266e99e46481d88ffdf386899958a28417ed03))
@@ -618,7 +615,7 @@ BREAKING CHANGE: make sure to update your code with the new function name! ([`69
 
 ## v0.2.1 (2024-01-29)
 ### 🐛 Bug Fixes
-* add "+ue" unit to regions in meters for lat long projections ([`fa67b53`](https://github.com/mdtanker/polartoolkit/commit/fa67b5367a94f362e040c210c547202d05976922))
+* add "+ue" unit to regions in meters for lat long projections ([`fa67b53`](https://github.com/mdtanker/polartoolkit/commit/fa67b5367a94f362e040c210c547202d05976922)) # codespell:ignore ue
 * fixes lines between layers in cross-sections ([`7eaaf64`](https://github.com/mdtanker/polartoolkit/commit/7eaaf64629847a168d4249096b18e336e3c5a5a2))
 * fix pandas copy warning ([`48ce7a7`](https://github.com/mdtanker/polartoolkit/commit/48ce7a7bf109868ddf23f04ba55d23898e2246e2))
 ### 📦️ Build
@@ -777,7 +774,7 @@ swaps pytest.approx with DeepDiff, adds ignore RuntimeWarning to many tests. ([`
 * update optional deps import check ([`9926a59`](https://github.com/mdtanker/polartoolkit/commit/9926a59ff5bb1856057241c93588ed96cdc649dc))
 * standardize preprocessing calls
 
-increments filename variabls since they change type, and standardizes the format of the preprocessors. ([`4f5656f`](https://github.com/mdtanker/polartoolkit/commit/4f5656fa58ab155dffb00cdc114ce18fd04686d1))
+increments filename variables since they change type, and standardizes the format of the preprocessors. ([`4f5656f`](https://github.com/mdtanker/polartoolkit/commit/4f5656fa58ab155dffb00cdc114ce18fd04686d1))
 ### Other
 *  ([`90302ba`](https://github.com/mdtanker/polartoolkit/commit/90302ba4e059c6688dad9468c42cb38c62ad6540))
 *  ([`12a5299`](https://github.com/mdtanker/polartoolkit/commit/12a5299d590c3ce16e797fd3efd18ea8e7b2234c))

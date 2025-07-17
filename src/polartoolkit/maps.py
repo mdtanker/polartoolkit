@@ -1,10 +1,3 @@
-# Copyright (c) 2024 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -909,11 +902,10 @@ def set_cmap(
                         robust_percentiles=robust_percentiles,
                         absolute=absolute,
                     )
+            elif cpt_lims is None:
+                zmin, zmax = None, None
             else:
-                if cpt_lims is None:
-                    zmin, zmax = None, None
-                else:
-                    zmin, zmax = cpt_lims
+                zmin, zmax = cpt_lims
             if cpt_lims is not None:
 
                 def warn_msg(x: str) -> str:
@@ -2854,15 +2846,14 @@ def interactive_map(
                 geo_dataframe=gdf,
                 point_style={"radius": 1, "color": "red", "weight": 1},
             )
+    # if no points, center map on 0, 0
+    elif hemisphere == "south":
+        center_ll = (-90, 0)  # type: ignore[assignment]
+    elif hemisphere == "north":
+        center_ll = (90, -45)  # type: ignore[assignment]
     else:
-        # if no points, center map on 0, 0
-        if hemisphere == "south":
-            center_ll = (-90, 0)  # type: ignore[assignment]
-        elif hemisphere == "north":
-            center_ll = (90, -45)  # type: ignore[assignment]
-        else:
-            msg = "hemisphere must be north or south"
-            raise ValueError(msg)
+        msg = "hemisphere must be north or south"
+        raise ValueError(msg)
     if center_yx is not None:
         if hemisphere == "south":
             center_ll = utils.epsg3031_to_latlon(center_yx)  # type: ignore[assignment]
@@ -3107,7 +3098,7 @@ def subplots(
                 text=fig_title,
                 position="TC",
                 font=fig_title_font,
-                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",  # noqa: E501
+                offset=f"{(((fig_width * xshift) / 2) * (ncols - 1))}c/{fig_title_y_offset}",
                 no_clip=True,
             )
         if (fig_x_axis_title is not None) & (i == int(ncols / 2)):
@@ -3406,9 +3397,9 @@ def plot_3d(
             fig.shift_origin(yshift=f"{yshift}c", xshift=f"{xshift}c")
             fig.colorbar(
                 cmap=cmap,
-                # position=f"g{np.max(region[0:2])}/{np.mean(region[2:4])}+w{fig_width*.4}c/.5c+v+e+m", #noqa: E501
+                # position=f"g{np.max(region[0:2])}/{np.mean(region[2:4])}+w{fig_width*.4}c/.5c+v+e+m",
                 # # vertical, with triangles, text opposite
-                position=f"jMR+w{fig_width * 0.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite #noqa: E501
+                position=f"jMR+w{fig_width * 0.4}c/.5c+v+e+m",  # vertical, with triangles, text opposite
                 frame=f"xaf+l{cbar_labels[i]}",
                 perspective=cbar_perspective,
                 box="+gwhite+c3p",
@@ -3654,36 +3645,35 @@ def geoviews_points(
             alpha=kwargs.get("alpha", 1),
             size=kwargs.get("size", 4),
         )
+    elif points_z is None:
+        # change options
+        gv_points.opts(
+            tools=["hover"],
+            marker=kwargs.get("marker", "circle"),
+            alpha=kwargs.get("alpha", 1),
+            size=kwargs.get("size", 4),
+        )
     else:
-        if points_z is None:
-            # change options
-            gv_points.opts(
-                tools=["hover"],
-                marker=kwargs.get("marker", "circle"),
-                alpha=kwargs.get("alpha", 1),
-                size=kwargs.get("size", 4),
+        # if more than 2 columns, color points by third column
+        # turn points into geoviews dataset
+        clim = kwargs.get("cpt_lims")
+        if clim is None:
+            clim = utils.get_min_max(
+                points[points_z],
+                robust=kwargs.get("robust", True),
+                absolute=kwargs.get("absolute", False),
             )
-        else:
-            # if more than 2 columns, color points by third column
-            # turn points into geoviews dataset
-            clim = kwargs.get("cpt_lims")
-            if clim is None:
-                clim = utils.get_min_max(
-                    points[points_z],
-                    robust=kwargs.get("robust", True),
-                    absolute=kwargs.get("absolute", False),
-                )
-            gv_points.opts(
-                color=points_z,
-                cmap=points_cmap,
-                clim=clim,
-                colorbar=True,
-                colorbar_position="top",
-                tools=["hover"],
-                marker=kwargs.get("marker", "circle"),
-                alpha=kwargs.get("alpha", 1),
-                size=kwargs.get("size", 4),
-            )
+        gv_points.opts(
+            color=points_z,
+            cmap=points_cmap,
+            clim=clim,
+            colorbar=True,
+            colorbar_position="top",
+            tools=["hover"],
+            marker=kwargs.get("marker", "circle"),
+            alpha=kwargs.get("alpha", 1),
+            size=kwargs.get("size", 4),
+        )
     gv_points.opts(
         projection=crs.SouthPolarStereo(),
         data_aspect=1,

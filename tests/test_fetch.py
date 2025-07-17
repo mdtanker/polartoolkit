@@ -1,10 +1,3 @@
-# Copyright (c) 2024 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
 # %%
 """
 Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify
@@ -463,7 +456,7 @@ def test_geomap(test_input, expected):
     )[0:2]
 
     # check if the first 2 object id's match the expected
-    assert data.objectid.values.sort() == expected.sort()
+    assert data.objectid.to_numpy().sort() == expected.sort()
 
 
 # %% IBCSO coverage data

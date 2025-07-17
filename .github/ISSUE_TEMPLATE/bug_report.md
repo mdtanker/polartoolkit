@@ -16,12 +16,16 @@ Include any data files or inputs required to run the code. It really helps if
 we can run the code on our own machines.
 -->
 
+<!-- blacken-docs:off -->
 ```python
 PASTE YOUR CODE HERE
 ```
+<!-- blacken-docs:on -->
 
 **Full error message**
 
+<!-- blacken-docs:off -->
 ```
 PASTE ERROR MESSAGE HERE
 ```
+<!-- blacken-docs:on -->

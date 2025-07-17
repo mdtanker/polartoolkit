@@ -19,7 +19,7 @@ example).
 
 
 
-**Are you willing to help implement and maintain this feature?** 
+**Are you willing to help implement and maintain this feature?**
 <!--
 Every feature we add is code that we will have to maintain and keep updated.
 Please let us know if you're willing to help maintain this feature in the future.

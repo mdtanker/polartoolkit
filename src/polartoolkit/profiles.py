@@ -1,11 +1,3 @@
-# Copyright (c) 2024 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
-
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -230,7 +222,7 @@ def fill_nans(df: pd.DataFrame) -> pd.DataFrame:
     pandas.DataFrame
         Dataframe with NaN's of lower layers filled
     """
-    cols = df.columns[3:].values
+    cols = df.columns[3:].to_numpy()
     for i, j in enumerate(cols):
         if i == 0:
             pass
@@ -796,7 +788,7 @@ def plot_profile(
                 #     frame=frame,
                 #     x=df_data.dist,
                 #     y=df_data[k],
-                #     pen = f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,{v['color']}", # noqa: E501
+                #     pen = f"{kwargs.get('data_pen', [1]*len(data_dict.items()))[i]}p,{v['color']}",
                 #     label = v["name"],
                 # )
             else:
@@ -814,7 +806,7 @@ def plot_profile(
                     frame=frame,
                     x=df_data.dist,
                     y=df_data[k],
-                    pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",  # noqa: E501
+                    pen=f"{kwargs.get('data_pen', [1] * len(data_dict.items()))[i]}p,+z",
                     label=v["name"],
                     cmap=True,
                     zvalue=v["color"],
@@ -915,62 +907,61 @@ def plot_profile(
                 transparency=100,
             )
         # dont fill layers, just draw lines
-        else:
-            if kwargs.get("layers_line_cmap") is None:
-                # get pen properties
-                layers_pen = kwargs.get("layers_pen")
-                if isinstance(layers_pen, list):
-                    layers_pen = layers_pen[i]
-                if layers_pen is not None:
-                    pen = layers_pen
-                else:
-                    thick = kwargs.get("layers_pen_thickness", 1)
-                    if isinstance(thick, (float, int)):
-                        thick = [thick] * len(layers_dict.items())
-
-                    color = kwargs.get("layers_pen_color")
-                    if isinstance(color, list):
-                        color = color[i]
-                    if color is None:
-                        color = v["color"]
-
-                    style = kwargs.get("layers_pen_style")
-                    if isinstance(style, list):
-                        style = style[i]
-                    if style is None:
-                        style = ""
-                    pen = f"{thick[i]}p,{color},{style}"
-
-                if i == 0:
-                    label = f"{v['name']}+N{kwargs.get('layers_legend_columns', 1)}"
-                else:
-                    label = v["name"]
-
-                fig.plot(
-                    x=df_layers.dist,
-                    y=df_layers[k],
-                    # pen = f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,{v['color']}", # noqa: E501
-                    pen=pen,
-                    frame=kwargs.get("layers_frame", ["nSew", "a"]),
-                    label=label,
-                )
+        elif kwargs.get("layers_line_cmap") is None:
+            # get pen properties
+            layers_pen = kwargs.get("layers_pen")
+            if isinstance(layers_pen, list):
+                layers_pen = layers_pen[i]
+            if layers_pen is not None:
+                pen = layers_pen
             else:
-                pygmt.makecpt(
-                    cmap=kwargs.get("layers_line_cmap"),
-                    series=[
-                        np.min([v["color"] for k, v in layers_dict.items()]),
-                        np.max([v["color"] for k, v in layers_dict.items()]),
-                    ],
-                )
-                fig.plot(
-                    x=df_layers.dist,
-                    y=df_layers[k],
-                    pen=f"{kwargs.get('layer_pen', [1] * len(layers_dict.items()))[i]}p,+z",  # noqa: E501
-                    frame=kwargs.get("layers_frame", ["nSew", "a"]),
-                    # label=v["name"],
-                    cmap=True,
-                    zvalue=v["color"],
-                )
+                thick = kwargs.get("layers_pen_thickness", 1)
+                if isinstance(thick, (float, int)):
+                    thick = [thick] * len(layers_dict.items())
+
+                color = kwargs.get("layers_pen_color")
+                if isinstance(color, list):
+                    color = color[i]
+                if color is None:
+                    color = v["color"]
+
+                style = kwargs.get("layers_pen_style")
+                if isinstance(style, list):
+                    style = style[i]
+                if style is None:
+                    style = ""
+                pen = f"{thick[i]}p,{color},{style}"
+
+            if i == 0:
+                label = f"{v['name']}+N{kwargs.get('layers_legend_columns', 1)}"
+            else:
+                label = v["name"]
+
+            fig.plot(
+                x=df_layers.dist,
+                y=df_layers[k],
+                # pen = f"{kwargs.get('layer_pen', [1]*len(layers_dict.items()))[i]}p,{v['color']}",
+                pen=pen,
+                frame=kwargs.get("layers_frame", ["nSew", "a"]),
+                label=label,
+            )
+        else:
+            pygmt.makecpt(
+                cmap=kwargs.get("layers_line_cmap"),
+                series=[
+                    np.min([v["color"] for k, v in layers_dict.items()]),
+                    np.max([v["color"] for k, v in layers_dict.items()]),
+                ],
+            )
+            fig.plot(
+                x=df_layers.dist,
+                y=df_layers[k],
+                pen=f"{kwargs.get('layer_pen', [1] * len(layers_dict.items()))[i]}p,+z",
+                frame=kwargs.get("layers_frame", ["nSew", "a"]),
+                # label=v["name"],
+                cmap=True,
+                zvalue=v["color"],
+            )
 
     if kwargs.get("layers_line_cmap") is not None:
         fig.colorbar(

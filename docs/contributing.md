@@ -1,11 +1,17 @@
 # How to contribute
 
 ## TLDR (Too long; didn't read)
-* open a [GitHub Issue](https://github.com/mdtanker/polartoolkit/issues/new/choose) describing what you want to do
-* [fork](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) the main branch and clone it locally
-* [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits
-* make your changes, and commit them using the [Conventional (Angular) Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
-* [make a Pull Request](http://makeapullrequest.com/) for your branch
+## TLDR (Too long; didn't read)
+* [fork](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) the [repository](https://github.com/mdtanker/polartoolkit) using the `Fork` button on GitHub.
+* clone your forked repository on your computer: `git clone https://github.com/mdtanker/polartoolkit`.
+* [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits: `git checkout -b new-branch`
+* make your changes
+* run the style checkers: `nox -s style`
+* add your changed files: `git add .`
+* once the style checks pass, commit your changes using the Conventional Commit: `git commit -m "feat: a short description of your changes"`
+* push your changes: `git push -u origin new-branch`
+* [make a Pull Request](http://makeapullrequest.com/) for your branch from the main GitHub repository [PR page](https://github.com/mdtanker/polartoolkit/pulls).
+
 
 🎉 Thanks for considering contributing to this package! 🎉
 
@@ -186,7 +192,7 @@ This environment now contains your local, editable version of PolarToolkit, mean
 
 ### Code style and linting
 
-We use [pre-commit](https://pre-commit.com/) to check code style. This can be used locally, by installing pre-commit, or can be used as a pre-commit hook, where it is automatically run by git for each commit to the repository. This pre-commit hook wont add or commit any changes, but will just inform your of what should be changed. Pre-commit is setup within the `.pre-commit-config.yaml` file. There are lots of hooks (processes) which run for each pre-commit call, including [Ruff](https://docs.astral.sh/ruff/) to format and lint the code. This allows you to not think about proper indentation, line length, or aligning your code during development. Before committing, or periodically while you code, run the following to automatically format your code:
+We use [pre-commit](https://pre-commit.com/) to check code style. This can be used locally, by installing pre-commit, or can be used as a pre-commit hook, where it is automatically run by git for each commit to the repository. This pre-commit hook won't add or commit any changes, but will just inform your of what should be changed. Pre-commit is setup within the `.pre-commit-config.yaml` file. There are lots of hooks (processes) which run for each pre-commit call, including [Ruff](https://docs.astral.sh/ruff/) to format and lint the code. This allows you to not think about proper indentation, line length, or aligning your code during development. Before committing, or periodically while you code, run the following to automatically format your code:
 ```
 make check
 ```
@@ -285,11 +291,11 @@ Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should 
 
 In each PR, you will see section of the checks for `RTD`. Click on this to preview the docs for the PR.
 
-`RTD` uses the conda environment specified in `env/RTD_env.yml` when it's building.
+`RTD` uses the conda environment specified in `environment.yml` when it's building.
 
 ### Committing changes
 
-Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This allows automatic creation of the Changelogs, and automatic determination of what the next version will be. All commits should follow the below structure:
+Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This helps users and developers understand what types of changes have been implemented in a PR or between versions.
 ```
 <type>: <description>
 
@@ -305,9 +311,9 @@ Where `type` is one of the following:
    * `chore` --> maintenance changes, like GitHub Action workflows
    * `refactor` --> refactoring of the code without user-seen changes
 
-The `optional body` can include any detailed description, and can optionally start with `BREAKING CHANGE: `.
+The `optional body` can include any detailed description.
 
-Based on the commit message, one of four things will happen when;
+Based on the commit types in a PR, one of four things will happen when;
 1) no new version will be released
 2) a `PATCH` version will be released (`v1.1.0 -> v1.1.1`)
 3) a `MINOR` version will be released (`v1.1.0 -> v1.2.0`)
@@ -318,8 +324,8 @@ This follows [Semantic Versioning](https://semver.org/#summary) where given a ve
 2) `MINOR` version when you add functionality in a backward compatible manner
 3) `PATCH` version when you make backward compatible bug fixes
 
-The following will occur based on your commit message:
-* `BREAKING CHANGE: ` will always result in a `MAJOR` release
+While we decide this manually, generally the following will occur based on commit messages in your PR:
+
 * `feat` will always result in a `MINOR` release
 * `fix` will always result in a `PATCH` release
 
@@ -359,6 +365,8 @@ Follow all the above instructions for formatting. Push your changes to a new or 
 ### PyPI (pip)
 PyPI release are made automatically via GitHub actions whenever a pull request is merged.
 
+Open a new issue, selecting the `Release-Checklist` template, and follow the direction there.
+
 ### Conda-Forge
 Once the new version is on PyPI, within a few hours a bot will automatically open a new PR in the [PolarToolkit conda-forge feedstock](https://github.com/conda-forge/polartoolkit-feedstock). Go through the checklist on the PR. Most of the time the only actions needs are updated any changes made to the dependencies since the last release. Merge the PR and the new version will be available on conda-forge shortly.
 
@@ -387,26 +395,3 @@ To run this package online, Read the Docs will automatically create a Binder ins
 Once updated, rebuild the Binder environment, look at which package versions Binder used for each specified dependency, and update the environment file with these versions.
 
 Now, when submitting a PR, RTD will automatically build the docs and update the Binder environment.
-
-## Release Checklist
-* re-run any relevant notebooks
-* check docs are building correctly using the GitHub actions link within the PR
-* merge the  PR
-* wait for `PyPI` to publish the new version [here](https://pypi.python.org/pypi/polartoolkit)
-* wait for a PR to be opened in the [feedstock](https://github.com/conda-forge/polartoolkit-feedstock)
-* update any changed dependencies in the feedstock PR and merge
-* wait for `conda` to publish the new version [here](https://anaconda.org/conda-forge/polartoolkit)
-* manually add dependency changes to `environment.yml`
-* update backup `env/environment.yml`
-* update polartoolkit version in `environment.yml` in [PolarToolkit-Binder repo](https://github.com/mdtanker/polartoolkit-binder/blob/main/environment.yml)
-* test `PyPI` version with:
-    - `make remove`
-    - `make create`
-    - `mamba activate polartoolkit`
-    - `make pip_install`
-    - `make test`
-* test `conda` version with:
-    - `make remove`
-    - `make conda_install`
-    - `mamba activate polartoolkit`
-    - `make test`

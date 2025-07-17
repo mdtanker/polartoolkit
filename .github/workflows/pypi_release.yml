@@ -12,8 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Always build package. Need to re-checkout after semantic-release in case it
-  # made a commit
+  # Always build package.
   build-package:
     name: Build package
     runs-on: ubuntu-latest

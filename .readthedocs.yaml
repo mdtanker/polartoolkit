@@ -9,16 +9,12 @@ build:
   os: ubuntu-22.04
   tools:
     python: "mambaforge-22.9"
-    # python: "3.11"
+  jobs:
+    install:
+      - pip install --no-deps .
 
 sphinx:
   configuration: docs/conf.py
 
 conda:
-  environment: env/RTD_env.yml
-# python:
-#   install:
-#     - method: pip
-#       path: .
-#       extra_requirements:
-#         - docs
+  environment: environment.yml
