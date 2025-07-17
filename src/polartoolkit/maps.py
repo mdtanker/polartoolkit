@@ -62,11 +62,14 @@ def _set_figure_spec(
     xshift_amount: float = 1,
     xshift_extra: float = 0.4,
     yshift_extra: float = 0.4,
-) -> tuple[pygmt.Figure, str, str | None, float, float]:
+) -> tuple[pygmt.Figure, str, str | None, float, float, str | None]:
     """determine what to do with figure"""
+
+    new_figure = False
 
     # initialize figure or shift for new subplot
     if origin_shift == "initialize":
+        new_figure = True
         fig = pygmt.Figure()
         # set figure projection and size from input region and figure dimensions
         # by default use figure height to set projection
@@ -120,6 +123,7 @@ def _set_figure_spec(
             )
         if origin_shift == "no_shift":
             origin_shift = None
+            new_figure = True
             msg = "origin_shift 'no_shift' is deprecated, use None instead."
             warnings.warn(
                 msg,
@@ -162,7 +166,7 @@ def _set_figure_spec(
             msg = "invalid string for origin shift"
             raise ValueError(msg)
 
-    return fig, proj, proj_latlon, fig_width, fig_height
+    return fig, proj, proj_latlon, fig_width, fig_height, new_figure
 
 
 def basemap(
@@ -365,11 +369,11 @@ def basemap(
     >>> fig.show()
     """
     kwargs = copy.deepcopy(kwargs)
-
     try:
         hemisphere = utils.default_hemisphere(hemisphere)
     except KeyError:
         hemisphere = None
+
     # if region not set, either use region of existing figure or use antarctic or
     # greenland regions
     if region is None:
@@ -387,7 +391,7 @@ def basemap(
     logger.debug("using %s for the basemap region", region)
 
     # need fig width to determine real x/y shift amounts
-    _, _, _, fig_width, _ = _set_figure_spec(
+    _, _, _, fig_width, _, _ = _set_figure_spec(
         region=region,
         origin_shift="initialize",
         fig_height=kwargs.get("fig_height"),
@@ -430,7 +434,7 @@ def basemap(
         # for title text
         yshift_extra += 1
 
-    fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
+    fig, proj, proj_latlon, fig_width, _, new_figure = _set_figure_spec(
         region=region,
         fig=fig,
         origin_shift=origin_shift,
@@ -444,6 +448,12 @@ def basemap(
     )
 
     frame = kwargs.get("frame", "nesw+gwhite")
+    if not new_figure and frame is not None:
+        msg = (
+            "Argument `frame` is ignored since you are plotting over an existing figure"
+        )
+        logger.warning(msg)
+        frame = None
     if frame is None:
         frame = False
     if title is None:
@@ -1314,7 +1324,7 @@ def plot_grd(
     logger.debug("using %s for the basemap region", region)
 
     # need fig width to determine real x/y shift amounts
-    _, _, _, fig_width, _ = _set_figure_spec(
+    _, _, _, fig_width, _, _ = _set_figure_spec(
         region=region,
         origin_shift="initialize",
         fig_height=kwargs.get("fig_height"),
@@ -1352,7 +1362,7 @@ def plot_grd(
         # for title text
         yshift_extra += 1
 
-    fig, proj, proj_latlon, fig_width, _ = _set_figure_spec(
+    fig, proj, proj_latlon, fig_width, _, new_figure = _set_figure_spec(
         region=region,
         fig=fig,
         origin_shift=origin_shift,
@@ -1366,6 +1376,12 @@ def plot_grd(
     )
 
     frame = kwargs.get("frame", "nesw+gwhite")
+    if not new_figure and frame is not None:
+        msg = (
+            "Argument `frame` is ignored since you are plotting over an existing figure"
+        )
+        logger.warning(msg)
+        frame = None
     if frame is None:
         frame = False
     if title is None:
