@@ -1,7 +1,6 @@
 # How to contribute
 
 ## TLDR (Too long; didn't read)
-## TLDR (Too long; didn't read)
 * [fork](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) the [repository](https://github.com/mdtanker/polartoolkit) using the `Fork` button on GitHub.
 * clone your forked repository on your computer: `git clone https://github.com/mdtanker/polartoolkit`.
 * [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits: `git checkout -b new-branch`
@@ -47,18 +46,23 @@ contributions.
 * [Reporting a Bug](#reporting-a-bug)
 * [Editing the Documentation](#editing-the-documentation)
 * [Contributing Code](#contributing-code)
-  - [Setting up Make](#setting-up-make)
+  - [General guidelines](#general-guidelines)
+  - [Fork the repository](#fork-the-repository)
+  - [Clone the repository](#clone-the-repository)
+  - [Setting up Nox](#setting-up-nox)
   - [Setting up your environment](#setting-up-your-environment)
-  - [Code style and linting](#code-style-and-linting)
+  - [Make a branch](#make-a-branch)
+  - [Make your changes](#make-your-changes)
   - [Testing your code](#testing-your-code)
   - [Documentation](#documentation)
   - [Committing changes](#committing-changes)
+  - [Push your changes](#push-your-changes)
+  - [Open a PR](#open-a-pr)
   - [Code review](#code-review)
 * [Publish a new release](#publish-a-new-release)
 * [Update the Dependencies](#update-the-dependencies)
 * [Create a conda environment file](#create-a-conda-environment-file)
 * [Set up Binder](#set-up-the-binder-configuration)
-* [Release Checklist](#release-checklist)
 
 ## What Can I Do?
 
@@ -98,7 +102,7 @@ download and install anything:
 * We'll review your changes and then merge them in if everything is OK.
 * Done 🎉🍺
 
-Alternatively, you can make the changes offline to the files in the `doc` folder or the
+Alternatively, you can make the changes offline to the files in the `docs` folder or the
 example scripts. See [Contributing Code](#contributing-code) for instructions.
 
 ## Contributing Code
@@ -149,65 +153,83 @@ General guidelines for pull requests (PRs):
 * Be aware that the pull request review process is not immediate, and is generally
   proportional to the size of the pull request.
 
-### Setting up `make`
+### Fork the repository
 
-Most of the commands used in the development of `PolarToolkit` use the tool `make`.
-The `make` commands are defined in the file [`Makefile`](https://github.com/mdtanker/polartoolkit/blob/main/Makefile), and are run in the terminal / command prompt with the format ```make <<command name>>```.
+On the github page, first fork the repository to get your own version of it. This is with the `fork` button at the top of the GitHub repository page.
 
-If you don't want to use `make`, you can always open the `Makefile` and copy and past the command you need into the terminal.
+### Clone the repository
 
-`make` is typically included in most unix systems, but can be installed explicitly with a package manager such as `Homebrew` for MacOS, or `RPM` or`DNF` for Linux, or `Chocalatey` for Windows.
+Now you need to get the cloned repository files onto your computer. This is referred to as `cloning`. In a terminal, or Git Bash, `cd` to the directory you want your cloned folder to be placed into and enter:
+```bash
+git clone https://github.com/mdtanker/polartoolkit
+```
 
-Run `make -version` to test that `make` is correctly installed.
+Now we need to configure Git to sync this fork to the main repository, not your fork of it.
+
+`cd` into the directory you just cloned and run:
+
+```bash
+git remote add upstream https://github.com/mdtanker/polartoolkit.git
+```
+
+### Setting up `nox`
+
+Most of the commands used in the development of `polartoolkit` use the tool `nox`.
+The `nox` commands are defined in the file [`noxfile.py`](https://github.com/mdtanker/polartoolkit/blob/main/noxfile.py), and are run in the terminal / command prompt with the format ```nox -s <<command name>>```.
+
+You can install nox with `pip install nox`.
 
 ### Setting up your environment
 
-To get the latest version clone the github repo:
-
-```
-git clone https://github.com/mdtanker/polartoolkit.git
-```
-Change into the directory:
-
-```
-cd polartoolkit
-```
-
-Run the following `make` command to create a new environment and install the package dependencies:
+Run the following `make` command to create a new environment and install the package dependencies. If you don't have / want to install make, just copy the commands from the Makefile file and run them in the terminal.
 
 ```
 make create
 ```
 Activate the environment:
 ```
-conda activate polartoolkit
+mamba activate polartoolkit
 ```
 Install your local version:
 ```
 make install
 ```
-This environment now contains your local, editable version of PolarToolkit, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
+This environment now contains your local, editable version of polartoolkit, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 > **Note:** You'll need to activate the environment every time you start a new terminal.
+
+### Make a branch
+
+Instead of editing the main branch, which should remain stable, we create a `branch` and edit that. To create a new branch, called `new-branch` use the following command:
+
+```bash
+git checkout -b new-branch
+```
+
+### Make your changes
+
+Now your ready to make your changes! Make sure to read the below sections to see how to correctly format and style your code contributions.
 
 ### Code style and linting
 
 We use [pre-commit](https://pre-commit.com/) to check code style. This can be used locally, by installing pre-commit, or can be used as a pre-commit hook, where it is automatically run by git for each commit to the repository. This pre-commit hook won't add or commit any changes, but will just inform your of what should be changed. Pre-commit is setup within the `.pre-commit-config.yaml` file. There are lots of hooks (processes) which run for each pre-commit call, including [Ruff](https://docs.astral.sh/ruff/) to format and lint the code. This allows you to not think about proper indentation, line length, or aligning your code during development. Before committing, or periodically while you code, run the following to automatically format your code:
 ```
-make check
+nox -s lint
 ```
+
+To have `pre-commit` run automatically on commits, install it with `pre-commit install`
 
 Go through the output of this and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
 
 We also use [Pylint](https://pylint.readthedocs.io/en/latest/), which performs static-linting on the code. This checks the code and catches many common bugs and errors, without running any of the code. This check is slightly slower the the `Ruff` check. Run it with the following:
 ```
-make pylint
+nox -s pylint
 ```
 Similar to using `Ruff`, go through the output of this, search the error codes on the [Pylint documentation](https://pylint.readthedocs.io/en/latest/) for help, and try and fix all the errors and warnings. If there are false-positives, or your confident you don't agree with the warning, add ` # pylint: disable=` at the end of the lines, with the warning code following the `=`.
 
 To run both pre-commit and pylint together use:
 ```
-make style
+nox -s style
 ```
 
 #### Docstrings
@@ -224,18 +246,22 @@ automatically yet, so please do your best.
 
 #### Type hints
 
-We have also opted to use type hints throughout the codebase. This means each function/class/method should be fulled typed, including the docstrings. We use [mypy](https://mypy.readthedocs.io/en/stable/) as a type checker.
-```
-make mypy
-```
+We have also opted to use type hints throughout the codebase. This means each function/class/method should be fulled typed, including the docstrings. We use [mypy](https://mypy.readthedocs.io/en/stable/) as a type checker, which is called as part of the pre-commit checks.
+
 Try and address all the errors and warnings. If there are complex types, just use `typing.Any`, or if necessary, ignore the line causing the issue by adding `# type: ignore[]` with the error code inside the square brackets.
+
+#### Logging
+
+When writing code; use logging (instead of print) to inform users of info, errors, and warnings. In each module `.py` file, import the project-wide logger instance with `from polartoolkit import logger` and then for example: `logger.info("log this message")`
+
+### Testing your code
 
 ### Testing your code
 
 Automated testing helps ensure that our code is as free of bugs as it can be.
 It also lets us know immediately if a change we make breaks any other part of the code.
 
-All of our test code and data are stored in the `tests` subpackage.
+All of our test code and data are stored in the `tests` folder.
 We use the [pytest](https://pytest.org/) framework to run the test suite, and our continuous integration systems with GitHub Actions use CodeCov to display how much of our code is covered by the tests.
 
 Please write tests for your code so that we can be sure that it won't break any of the
@@ -250,7 +276,7 @@ We will help you create the tests and sort out any kind of problem during code r
 
 Run the tests and calculate test coverage using:
 ```
-make test
+nox -s test
 ```
 To run a specific test by name:
 ```
@@ -263,7 +289,7 @@ Leave a comment in the PR and we'll help you out.
 
 ### Documentation
 
-The Docs are build with `Sphinx` and `Read the Docs`. Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
+The Docs are build with [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://about.readthedocs.com/). Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
 
 > **Note:** The docs are automatically built on PR's by `RTD`, but it's good practice to build them manually before a PR, to check them for errors.
 
@@ -295,7 +321,7 @@ In each PR, you will see section of the checks for `RTD`. Click on this to previ
 
 ### Committing changes
 
-Once your have made your changes locally, you'll need to make a branch, commit the changes, and create a PR. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This helps users and developers understand what types of changes have been implemented in a PR or between versions.
+Once your have made your changes to your branch of your forked repository, you'll need to commit the changes to your remote fork. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This helps users and developers understand what types of changes have been implemented in a PR or between versions.
 ```
 <type>: <description>
 
@@ -329,6 +355,35 @@ While we decide this manually, generally the following will occur based on commi
 * `feat` will always result in a `MINOR` release
 * `fix` will always result in a `PATCH` release
 
+Committing can be done interactively, if you use a editor like `VS Code`, or in the terminal.
+
+Stage your changes for a file:
+```bash
+git add <file>
+```
+or for a whole directory
+
+```bash
+git add <directory>
+```
+
+Then commit those staged changes:
+```bash
+git commit -m "fix: a short description of your fix"
+```
+
+### Push your changes
+
+With 1 or more committed changes, we can push those changes to your remote fork on GitHub.
+
+```bash
+git push -u origin your-branch-name
+```
+
+### Open a PR
+
+Now in the original repository (not your fork), you can open a Pull-Request to incorporate your branch into the main repository. This is done on the main repository's GitHub page, using the Pull Request tab.
+
 ### Code review
 
 After you've submitted a pull request, you should expect to hear at least a comment
@@ -356,16 +411,29 @@ Try to get them all passing (green).
 If you have any trouble, leave a comment in the PR or
 [post on the GH discussions page](https://github.com/mdtanker/polartoolkit/discussions).
 
+### Sync your fork and local
+
+Once the PR is merged, you will need to sync both your forked repository (origin) and your local clones repository with the following git commands:
+
+```bash
+git fetch upstream
+git checkout main
+git branch -d your-branch-name (OPTIONAL)
+git merge upstream/main
+git push origin main
+```
+Now both your forked (upstream) and local repositories are sync with the upstream repository where the PR was merged.
+
 ## Publish a new release
 
 This will almost always be done by the developers, but as a guide for them, here are instructions on how to release a new version of the package.
 
 Follow all the above instructions for formatting. Push your changes to a new or existing Pull Request. Once the automated GitHub Actions run (and pass), merge the PR into the main branch.
 
+Open a new issue, selecting the `Release-Checklist` template, and follow the direction there.
+
 ### PyPI (pip)
 PyPI release are made automatically via GitHub actions whenever a pull request is merged.
-
-Open a new issue, selecting the `Release-Checklist` template, and follow the direction there.
 
 ### Conda-Forge
 Once the new version is on PyPI, within a few hours a bot will automatically open a new PR in the [PolarToolkit conda-forge feedstock](https://github.com/conda-forge/polartoolkit-feedstock). Go through the checklist on the PR. Most of the time the only actions needs are updated any changes made to the dependencies since the last release. Merge the PR and the new version will be available on conda-forge shortly.
