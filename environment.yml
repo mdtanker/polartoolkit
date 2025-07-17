@@ -52,7 +52,6 @@ dependencies:
   - nox
   - pre-commit
   - pylint>=3.2
-  - python-semantic-release>=8
   - ipykernel
   - jupyterlab
   - mypy
