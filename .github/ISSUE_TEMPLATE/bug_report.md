@@ -10,7 +10,7 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Full code that generate the error**
+**Full code that generates the error**
 <!--
 Include any data files or inputs required to run the code. It really helps if
 we can run the code on our own machines.
