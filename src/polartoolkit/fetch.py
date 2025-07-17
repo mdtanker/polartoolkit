@@ -2851,9 +2851,17 @@ def bedmap2(
             processor=preprocessing,
             progressbar=True,
         )
-        # load zarr as a dataarray
-        grid = xr.open_zarr(fname).z
-
+        try:
+            # load zarr as a dataarray
+            grid = xr.open_zarr(fname).z
+        except AttributeError as e:
+            msg = (
+                "The preprocessing steps for Bedmap2 have been changed but the old data"
+                " is still on your disk. Please delete the Bedmap2 grids files from "
+                "your polartoolkit cache directory. This cache folder can be found "
+                "with the python command: import pooch; print(pooch.os_cache('pooch'))."
+            )
+            raise ValueError(msg) from e
     else:
         msg = (
             "layer must be one of 'bed', 'coverage', 'grounded_bed_uncertainty', "
