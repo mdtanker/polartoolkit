@@ -8,27 +8,6 @@ exclude: |
       .github/config.yml
   )$
 
-# (?x)^(
-#     docs/index.md|
-#     docs/install.md|
-#     docs/citing.md|
-#     docs/overview.md|
-#     docs/reference.md|
-#     docs/api/polartoolkit.rst|
-#     docs/api/polartoolkit.fetch.rst|
-#     docs/api/polartoolkit.maps.rst|
-#     docs/api/polartoolkit.profiles.rst|
-#     docs/api/polartoolkit.regions.rst|
-#     docs/api/polartoolkit.utils.rst|
-#     docs/_polartoolkit_refs.bib|
-#     CHANGELOG.md|
-#     .github/ISSUE_TEMPLATE/bug_report.md|
-#     .github/ISSUE_TEMPLATE/feature_request.md|
-#     .github/config.yml|
-#     docs/contributing.md|
-#     README.md|
-# )$
-
 repos:
   - repo: https://github.com/adamchainz/blacken-docs
     rev: "1.19.1"
