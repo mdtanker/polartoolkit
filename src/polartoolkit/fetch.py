@@ -2582,8 +2582,17 @@ def bedmap3(
             progressbar=True,
         )
 
-        # load zarr as a dataarray
-        grid = xr.open_zarr(fname).z
+        try:
+            # load zarr as a dataarray
+            grid = xr.open_zarr(fname).z
+        except AttributeError as e:
+            msg = (
+                "The preprocessing steps for Bedmap3 have been changed but the old data"
+                " is still on your disk. Please delete the Bedmap3 grids files from "
+                "your polartoolkit cache directory. This cache folder can be found "
+                "with the python command: import pooch; print(pooch.os_cache('pooch'))."
+            )
+            raise ValueError(msg) from e
 
     else:
         msg = (
@@ -3345,7 +3354,18 @@ def gravity(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataset(path)
+        try:
+            # load zarr as a dataset
+            grid = xr.load_dataset(path)
+        except AttributeError as e:
+            msg = (
+                "The preprocessing steps for EIGEN gravity have been changed but the "
+                "old data is still on your disk. Please delete the EIGEN grids files "
+                "from your polartoolkit cache directory. This cache folder can be "
+                "found with the python command: import pooch; "
+                "print(pooch.os_cache('pooch'))."
+            )
+            raise ValueError(msg) from e
 
         resampled_vars = []
         for var in grid.data_vars:
