@@ -4,8 +4,18 @@ Automatically updated by
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Unreleased
+### 🐛 Bug Fixes
+* add warnings for other updated preprocessing functions ([`5bfe00c`](https://github.com/mdtanker/polartoolkit/commit/5bfe00ca669835d11438c857c00a6f0828366c53))
+* reset proj and region after plotting colorbar histogram ([`cb764a8`](https://github.com/mdtanker/polartoolkit/commit/cb764a804db0920ac012b15ab301d646a912afdb))
+* bug with non-transparent basemap when plotting over existing figure ([`40a563a`](https://github.com/mdtanker/polartoolkit/commit/40a563a4df70f6b15ab693694ebcf4f8ae10b748))
+* add warning to delete and rerun preprocessing for fetching bedmap2 grids ([`2ae58cb`](https://github.com/mdtanker/polartoolkit/commit/2ae58cbc579051d5f5ff58c9f3e3e18d16bbf66e))
+* mistake in coord names for `reproject()` ([`690bcbc`](https://github.com/mdtanker/polartoolkit/commit/690bcbc29a2735c0bd3fac92e610e5cb5c0b27fa))
 ### 🧰 Chores / Maintenance
 * update backup env file ([`0ad9f0d`](https://github.com/mdtanker/polartoolkit/commit/0ad9f0d51cad1ace1e3e6a6a64929a92fb682086))
+### ✏️ Formatting
+* fixes from linting ([`c90e706`](https://github.com/mdtanker/polartoolkit/commit/c90e70626131ea8599778b943a970ea8d698765f))
+* add ruff ignore ([`f912f94`](https://github.com/mdtanker/polartoolkit/commit/f912f9486c805d0c470a205e215bc8754e861aea))
+* typo in bug report ([`88fbb6c`](https://github.com/mdtanker/polartoolkit/commit/88fbb6ca0089fbbfa0267290e391008252fc4006))
 
 
 ## v1.0.5 (2025-06-05)
