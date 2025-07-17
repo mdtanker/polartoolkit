@@ -26,7 +26,7 @@ def test_old_profile_module():
     Check error raise after import old profile module
     """
     with pytest.raises(ImportError) as exception:
-        from polartoolkit import profile  # noqa: F401
+        from polartoolkit import profile  # noqa: F401 PLC0415
     assert "'profile'" in str(exception.value)
 
 
