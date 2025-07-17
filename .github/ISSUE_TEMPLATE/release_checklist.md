@@ -15,7 +15,7 @@ assignees: ''
 ## Update dependencies
 
 - [ ] Check all the dependency changes since the last release are  reflected in `environment.yml`
-- [ ] Update the backup environement file `env/environment.yml` with `make conda_export`
+- [ ] Update the backup environment file `env/environment.yml` with `make conda_export`
 - [ ] update PolarToolkit version in `environment.yml` in [PolarToolkit-Binder repo] to the latest version number
 
 ## Draft a Zenodo archive (to be done by a manager on Zenodo)
