@@ -501,7 +501,6 @@ def latlon_to_epsg3413(
         Updated dataframe with new easting and northing columns or numpy.ndarray in
         format [xmin, xmax, ymin, ymax]
     """
-
     return reproject(
         df,
         "epsg:4326",
@@ -551,6 +550,10 @@ def reproject(
         format [xmin, xmax, ymin, ymax], or tuple in format [lat, lon]
     """
 
+    # make crs lowercase
+    input_crs = input_crs.lower()
+    output_crs = output_crs.lower()
+
     transformer = Transformer.from_crs(
         input_crs,
         output_crs,
@@ -582,7 +585,7 @@ def reproject(
                 elif ("easting" in df.columns) and ("northing" in df.columns):
                     output_coord_names = ("easting", "northing")
             if output_coord_names is None:
-                output_coord_names = ("lon", "lat")
+                output_coord_names = ("easting", "northing")
         (  # pylint: disable=unpacking-non-sequence
             df[output_coord_names[0]],
             df[output_coord_names[1]],
