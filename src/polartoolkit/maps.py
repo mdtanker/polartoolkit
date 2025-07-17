@@ -670,6 +670,7 @@ def basemap(
                     cpt_lims=cpt_lims,  # pylint: disable=possibly-used-before-assignment
                     region=region,
                     cbar_end_triangles=cbar_end_triangles,
+                    proj=proj,
                     **cbar_kwargs,
                 )
             else:
@@ -679,6 +680,7 @@ def basemap(
                     cpt_lims=cpt_lims,
                     region=region,
                     cbar_end_triangles=cbar_end_triangles,
+                    proj=proj,
                     **cbar_kwargs,
                 )
     # add inset map to show figure location
@@ -1690,6 +1692,7 @@ def plot_grd(
                 cpt_lims=cpt_lims,
                 region=region,
                 cbar_end_triangles=cbar_end_triangles,
+                proj=proj,
                 **cbar_kwargs,
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -2002,6 +2005,13 @@ def add_colorbar(
                 series=hist_series,
                 histtype=hist_type,
                 verbose=verbose,
+            )
+            logger.debug("plotting histogram complete, resetting region and projection")
+            # reset region and projection
+            fig.basemap(
+                region=region,
+                projection=kwargs.get("proj"),
+                frame="+t",
             )
         except pygmt.exceptions.GMTCLibError as e:
             logger.warning(e)
