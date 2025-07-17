@@ -1,10 +1,3 @@
-# Copyright (c) 2024 The Polartoolkit Developers.
-# Distributed under the terms of the MIT License.
-# SPDX-License-Identifier: MIT
-#
-# This code is part of the package:
-# PolarToolkit (https://github.com/mdtanker/polartoolkit)
-#
 """
 Bounding regions for commonly plotted polar regions. In stereographic projections. The
 format is (xmin, xmax, ymin, ymax), in meters.
