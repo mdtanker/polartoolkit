@@ -35,8 +35,17 @@ def pylint(session: nox.Session) -> None:
     """
     # This needs to be installed into the package environment, and is slower
     # than a pre-commit check
-    session.install(".", "pylint>=3.2")
+    session.install("-e.", "pylint>=3.2")
     session.run("pylint", "polartoolkit", *session.posargs)
+
+
+@nox.session
+def style(session: nox.Session) -> None:
+    """
+    Run the linter and Pylint.
+    """
+    session.notify("lint")
+    session.notify("pylint")
 
 
 @nox.session(venv_backend="mamba", python="3.11")
@@ -45,18 +54,18 @@ def tests(session: nox.Session) -> None:
     Run the unit and regular tests.
     """
     session.conda_install("pygmt", "geopandas")
-    session.install(".[test]")
-
-    # run the tests
+    test_deps = nox.project.dependency_groups(PROJECT, "test")
+    session.install("-e.", *test_deps)
     session.run(
         "pytest",
+        "--cov",
         "-m",
         "not earthdata and not issue",
         *session.posargs,
     )
 
 
-@nox.session(reuse_venv=True)
+@nox.session(reuse_venv=True, default=False)
 def docs(session: nox.Session) -> None:
     """
     Build the docs. Pass --non-interactive to avoid serving. First positional

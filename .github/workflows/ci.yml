@@ -1,9 +1,5 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: CI
 
-# define when this workflow is triggered
 on:
   workflow_dispatch:
   pull_request:
@@ -11,41 +7,50 @@ on:
     branches:
       - main
 
-# cancel any currently running workflows in this same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  # Many color libraries just need this to be set to any value, but at least
-  # one distinguishes color depth, where "3" -> "256-bit color".
+  # Many color libraries just need this variable to be set to any value.
+  # Set it to 3 to support 8-bit color graphics (256 colors per channel)
+  # for libraries that care about the value set.
   FORCE_COLOR: 3
 
-# Use bash by default in all jobs
 defaults:
   run:
     shell: bash -el {0}
 
 jobs:
-  # Run tests and upload to codecov
+  lint:
+    name: Pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: astral-sh/setup-uv@v6
+      - name: Run Pylint
+        run: uvx nox -s pylint -- --output-format=github
+
   test:
     name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
-    if: |
-      ${{!startsWith(github.event.head_commit.message, 'docs:') }} ||
-      ${{!startsWith(github.event.head_commit.message, 'style:') }}
     strategy:
       # Otherwise, the workflow would stop if a single job fails. We want to
       # run all of them to catch failures in different combinations.
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        runs-on: [ubuntu-latest, macos-latest, windows-latest]
+        runs-on: [ubuntu-latest, windows-latest, macos-14]
     env:
       NUMBA_DISABLE_JIT: "1"
     timeout-minutes: 30
+
     steps:
-      # Checkout current git repository
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -71,8 +76,7 @@ jobs:
           cache-environment-key:
             micromamba-environment-${{ steps.date.outputs.date }}
 
-      # Install the package that we want to test
-      - name: Install the package
+      - name: Install package
         run: pip install --no-deps -e .
 
       - name: Run the tests
@@ -81,6 +85,6 @@ jobs:
           --cov-report=term --durations=20
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v5.4.3
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

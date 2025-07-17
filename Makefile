@@ -1,4 +1,3 @@
-# Build, package, test, and clean
 PROJECT=polartoolkit
 ####
 ####
@@ -7,45 +6,19 @@ PROJECT=polartoolkit
 ####
 
 create:
-	mamba env create --file environment.yml
+	mamba env create --file environment.yml --name $(PROJECT)
 
 install:
 	pip install --no-deps -e .
+
+update:
+	mamba env update --file environment.yml --name $(PROJECT) --prune
 
 remove:
 	mamba env remove --name $(PROJECT)
 
 conda_export:
 	mamba env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
-####
-####
-# test commands
-####
-####
-
-test:
-	pytest -m "not earthdata and not issue and not fetch"
-
-test_fetch:
-	pytest -m fetch
-
-####
-####
-# style commands
-####
-####
-
-check:
-	pre-commit run --all-files
-
-pylint:
-	pylint $(PROJECT)
-
-style: check pylint
-
-mypy:
-	mypy src/$(PROJECT)
-
 
 ####
 ####
