@@ -62,7 +62,7 @@ def _set_figure_spec(
     xshift_amount: float = 1,
     xshift_extra: float = 0.4,
     yshift_extra: float = 0.4,
-) -> tuple[pygmt.Figure, str, str | None, float, float, str | None]:
+) -> tuple[pygmt.Figure, str, str | None, float, float, bool]:
     """determine what to do with figure"""
 
     new_figure = False
@@ -1661,11 +1661,11 @@ def plot_grd(
         if cbar_end_triangles is None:
             if cpt_lims is None:
                 cbar_end_triangles = ""
-            elif (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):
+            elif (cpt_lims[0] > grid.min()) & (cpt_lims[1] < grid.max()):  # type: ignore[union-attr]
                 cbar_end_triangles = "+e"
-            elif cpt_lims[0] > grid.min():
+            elif cpt_lims[0] > grid.min():  # type: ignore[union-attr]
                 cbar_end_triangles = "+eb"
-            elif cpt_lims[1] < grid.max():
+            elif cpt_lims[1] < grid.max():  # type: ignore[union-attr]
                 cbar_end_triangles = "+ef"
             else:
                 cbar_end_triangles = ""
@@ -3306,7 +3306,7 @@ def plot_3d(
 
     # set vertical limits
     if vlims is None:
-        vlims = utils.get_combined_min_max(grids)
+        vlims = utils.get_combined_min_max(grids)  # type: ignore[arg-type]
 
     new_region = region + vlims
 

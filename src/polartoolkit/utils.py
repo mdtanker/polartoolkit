@@ -2055,7 +2055,7 @@ def mask_from_polygon(
     if isinstance(grid, str):
         grid = xr.load_dataarray(grid)
         grid = typing.cast(xr.DataArray, grid)
-        ds = grid.to_dataset(name="z")
+        ds = grid.to_dataset(name="z")  # type: ignore[union-attr]
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
     # if no grid given, make a dummy one with supplied region and spacing
