@@ -7,9 +7,9 @@ from pathlib import Path
 import nox
 
 DIR = Path(__file__).parent.resolve()
+PROJECT = nox.project.load_toml()
 
-nox.needs_version = ">=2024.3.2"
-nox.options.sessions = ["lint", "pylint", "tests"]
+nox.needs_version = ">=2025.2.9"
 nox.options.default_venv_backend = "uv|virtualenv"
 
 
@@ -63,6 +63,7 @@ def docs(session: nox.Session) -> None:
     argument is the target directory.
     """
 
+    doc_deps = nox.project.dependency_groups(PROJECT, "docs")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-b", dest="builder", default="html", help="Build target (default: html)"
@@ -71,7 +72,7 @@ def docs(session: nox.Session) -> None:
     args, posargs = parser.parse_known_args(session.posargs)
     serve = args.builder == "html" and session.interactive
 
-    session.install("-e.[docs]", "sphinx-autobuild")
+    session.install("-e.", *doc_deps, "sphinx-autobuild")
 
     shared_args = (
         "-n",  # nitpicky mode
