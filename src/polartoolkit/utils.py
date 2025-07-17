@@ -559,13 +559,12 @@ def reproject(
         if input_crs == "epsg:4326":
             if input_coord_names is None:
                 input_coord_names = ("lon", "lat")
-        else:
-            if input_coord_names is None:
-                # check for coord column names
-                if ("x" in df.columns) and ("y" in df.columns):
-                    input_coord_names = ("x", "y")
-                elif ("easting" in df.columns) and ("northing" in df.columns):
-                    input_coord_names = ("easting", "northing")
+        elif input_coord_names is None:
+            # check for coord column names
+            if ("x" in df.columns) and ("y" in df.columns):
+                input_coord_names = ("x", "y")
+            elif ("easting" in df.columns) and ("northing" in df.columns):
+                input_coord_names = ("easting", "northing")
 
         if output_crs == "epsg:4326":
             if output_coord_names is None:
@@ -753,7 +752,7 @@ def nearest_grid_fill(
         )
     elif method == "verde":
         df = vd.grid_to_table(grid)
-        df_dropped = df[df[grid.name].notnull()]
+        df_dropped = df[df[grid.name].notna()]
         coords = (df_dropped[grid.dims[1]], df_dropped[grid.dims[0]])
         region = vd.get_region((df[grid.dims[1]], df[grid.dims[0]]))
         filled = (
@@ -823,7 +822,7 @@ def filter_grid(
     original_name = grid.name
 
     # if there are nan's, fill them with nearest neighbor
-    if grid.isnull().any():
+    if grid.isna().any():
         filled = nearest_grid_fill(grid, method="verde")
     else:
         filled = grid.copy()
@@ -899,8 +898,8 @@ def filter_grid(
         }
     )
 
-    if grid.isnull().any():
-        result: xr.DataArray = xr.where(grid.notnull(), unpadded, grid)
+    if grid.isna().any():
+        result: xr.DataArray = xr.where(grid.notna(), unpadded, grid)
     else:
         result = unpadded.copy()
 
@@ -2078,13 +2077,13 @@ def mask_from_polygon(
 
     # reverse the mask
     if invert is True:
-        inverse = masked.isnull()
+        inverse = masked.isna()
         inverse = inverse.where(inverse != 0)
         masked = inverse * ds.z
 
     # drop nans
     if drop_nans is True:
-        masked = masked.where(masked.notnull() == 1, drop=True)
+        masked = masked.where(masked.notna() == 1, drop=True)
 
     return typing.cast(xr.DataArray, masked)
 

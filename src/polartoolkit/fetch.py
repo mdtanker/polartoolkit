@@ -538,7 +538,7 @@ def basal_melt(
             # grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
 
             # # Swap dimensions with coordinate names
-            # grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"}) # noqa: E501
+            # grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
 
             # # Drop coordinate variables
             # grid = grid.drop_vars(["x", "y"])
@@ -2234,7 +2234,7 @@ def bedmap_points(
                     df.to_file(
                         fname_processed,
                         driver="GPKG",
-                        use_arrow=USE_ARROW,  # can't use cause of object issues (expects str) # noqa: E501
+                        use_arrow=USE_ARROW,  # can't use cause of object issues (expects str)
                         append=True,
                     )
 
@@ -2331,7 +2331,7 @@ def bedmap_points(
                         df.to_file(
                             fname_processed,
                             driver="GPKG",
-                            use_arrow=USE_ARROW,  # can't use cause of object issues (expects str) # noqa: E501
+                            use_arrow=USE_ARROW,  # can't use cause of object issues (expects str)
                             engine="pyogrio",
                             append=True,
                         )
@@ -2357,7 +2357,7 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap3_point_data.zip",
-            # known_hash="c4661e1a8cee93164bb19d126e8fa1112a59f7579ff5e0d993704b5956621ef5", # noqa: E501
+            # known_hash="c4661e1a8cee93164bb19d126e8fa1112a59f7579ff5e0d993704b5956621ef5",
             known_hash=None,
             progressbar=True,
             processor=preprocessing,
@@ -4722,7 +4722,7 @@ def moho(
         #     progressbar=True,
         #     processor=pooch.Unzip(extract_dir="pappa_moho"),
         # )
-        # # fname = "/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd"  # noqa: E501
+        # # fname = "/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd"
         # grid = pygmt.load_dataarray(resampled)
         # df = grid.to_dataframe().reset_index()
         # df.z = df.z.apply(lambda x: x * -1000)

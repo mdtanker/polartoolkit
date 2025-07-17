@@ -7,6 +7,8 @@ Tests for profiles module.
 # We have to make sure that netcdf4 is imported before
 # numpy is imported for the first time, e.g. also via
 # importing xarray
+from __future__ import annotations
+
 import netCDF4  # noqa: F401
 import numpy as np
 import pytest

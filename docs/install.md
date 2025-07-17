@@ -57,6 +57,7 @@ After this, check that everything works by running the following in a Python int
 (e.g., in a Jupyter notebook):
 ```python
 import polartoolkit
+
 polartoolkit.__version__
 ```
 
@@ -166,4 +167,3 @@ If you are still having errors, then you can download the `environment.yml` file
     mamba create --file PATH_TO_FILE
 
 where you replace PATH_TO_FILE with the path to your downloaded `environment.yml` file.
-

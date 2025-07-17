@@ -456,7 +456,7 @@ def test_geomap(test_input, expected):
     )[0:2]
 
     # check if the first 2 object id's match the expected
-    assert data.objectid.values.sort() == expected.sort()
+    assert data.objectid.to_numpy().sort() == expected.sort()
 
 
 # %% IBCSO coverage data

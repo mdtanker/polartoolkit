@@ -13,6 +13,8 @@ Adapted from the package icepyx: https://github.com/icesat2py/icepyx
 https://github.com/icesat2py/icepyx/blob/6c187bd35358d88083a5163d3491118aa1aad45c/doc/source/tracking/pypistats/get_pypi_stats.py
 """
 
+from __future__ import annotations
+
 import pathlib
 
 import matplotlib.pyplot as plt
