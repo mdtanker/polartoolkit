@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-__version__ = "1.0.6"
-
 import logging
+
+from ._version import version as __version__
+
+__all__ = ["__version__"]
+
+
+logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
