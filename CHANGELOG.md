@@ -3,7 +3,8 @@ Automatically updated by
 [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/)
 with commit parsing of [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## Unreleased
+
+## v1.0.6 (2025-07-17)
 ### 🐛 Bug Fixes
 * add warnings for other updated preprocessing functions ([`5bfe00c`](https://github.com/mdtanker/polartoolkit/commit/5bfe00ca669835d11438c857c00a6f0828366c53))
 * reset proj and region after plotting colorbar histogram ([`cb764a8`](https://github.com/mdtanker/polartoolkit/commit/cb764a804db0920ac012b15ab301d646a912afdb))
@@ -16,7 +17,6 @@ with commit parsing of [conventional commits](https://www.conventionalcommits.or
 * fixes from linting ([`c90e706`](https://github.com/mdtanker/polartoolkit/commit/c90e70626131ea8599778b943a970ea8d698765f))
 * add ruff ignore ([`f912f94`](https://github.com/mdtanker/polartoolkit/commit/f912f9486c805d0c470a205e215bc8754e861aea))
 * typo in bug report ([`88fbb6c`](https://github.com/mdtanker/polartoolkit/commit/88fbb6ca0089fbbfa0267290e391008252fc4006))
-
 
 ## v1.0.5 (2025-06-05)
 ### 🐛 Bug Fixes
