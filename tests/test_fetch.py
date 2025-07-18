@@ -9,8 +9,6 @@ def test_():
     assert utils.get_grid_info(grid) == expected
 """
 
-from __future__ import annotations
-
 import os
 
 import deepdiff

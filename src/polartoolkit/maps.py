@@ -1,6 +1,4 @@
 # pylint: disable=too-many-lines
-from __future__ import annotations
-
 import copy
 import pathlib
 import string
@@ -74,6 +72,7 @@ def _set_figure_spec(
                 fig_height=fig_height,
                 hemisphere=hemisphere,
             )
+
         # if fig_width is set, use it to set projection
         else:
             proj, proj_latlon, fig_width, fig_height = utils.set_proj(
@@ -3235,30 +3234,30 @@ def plot_3d(
     reverse_cpt = kwargs.get("reverse_cpt", False)
     cpt_lims_list = kwargs.get("cpt_lims")
 
-    if not isinstance(grids, list | tuple):  # type: ignore[operator]
+    if not isinstance(grids, (list, tuple)):
         grids = [grids]
 
     # number of grids to plot
     num_grids = len(grids)
 
     # if not provided as a list, make it a list the length of num_grids
-    if not isinstance(cbar_labels, list | tuple):  # type: ignore[operator]
+    if not isinstance(cbar_labels, (list, tuple)):
         cbar_labels = [cbar_labels] * num_grids
-    if not isinstance(modis, list | tuple):  # type: ignore[operator]
+    if not isinstance(modis, (list, tuple)):
         modis = [modis] * num_grids
-    if not isinstance(grd2cpt, list | tuple):  # type: ignore[operator]
+    if not isinstance(grd2cpt, (list, tuple)):
         grd2cpt = [grd2cpt] * num_grids
-    if not isinstance(cmap_region, list | tuple):  # type: ignore[operator]
+    if not isinstance(cmap_region, (list, tuple)):
         cmap_region = [cmap_region] * num_grids
-    if not isinstance(robust, list | tuple):  # type: ignore[operator]
+    if not isinstance(robust, (list, tuple)):
         robust = [robust] * num_grids
-    if not isinstance(reverse_cpt, list | tuple):  # type: ignore[operator]
+    if not isinstance(reverse_cpt, (list, tuple)):
         reverse_cpt = [reverse_cpt] * num_grids
-    if not isinstance(cmaps, list | tuple):  # type: ignore[operator]
+    if not isinstance(cmaps, (list, tuple)):
         cmaps = [cmaps] * num_grids
-    if not isinstance(exaggeration, list | tuple):  # type: ignore[operator]
+    if not isinstance(exaggeration, (list, tuple)):
         exaggeration = [exaggeration] * num_grids
-    if not isinstance(drapegrids, list | tuple):  # type: ignore[operator]
+    if not isinstance(drapegrids, (list, tuple)):
         if drapegrids is None:
             drapegrids = [None] * num_grids
         else:
@@ -3266,13 +3265,13 @@ def plot_3d(
     if cpt_lims_list is None:
         cpt_lims_list = [None] * num_grids
     elif (
-        (isinstance(cpt_lims_list, list | tuple))  # type: ignore[operator]
+        (isinstance(cpt_lims_list, (list, tuple)))
         & (len(cpt_lims_list) == 2)
         & (all(isinstance(x, float) for x in cpt_lims_list))
     ):
         cpt_lims_list = [cpt_lims_list] * num_grids
     if (
-        isinstance(cmap_region, list | tuple)  # type: ignore[operator]
+        isinstance(cmap_region, (list, tuple))
         & (len(cmap_region) == 4)
         & (all(isinstance(x, float) for x in cmap_region))
     ):

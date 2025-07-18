@@ -1,6 +1,4 @@
 # pylint: disable=too-many-lines
-from __future__ import annotations
-
 import os
 import typing
 import warnings
@@ -50,6 +48,7 @@ def default_hemisphere(hemisphere: str | None) -> str:
                 "file) or pass it as an argument (hemisphere='north')"
             )
             raise KeyError(msg) from e
+
     return hemisphere
 
 
@@ -701,13 +700,13 @@ def block_reduce(
     )
 
     # add reduced coordinates to a dictionary
-    coord_cols = dict(zip(input_coord_names, coordinates))
+    coord_cols = dict(zip(input_coord_names, coordinates, strict=False))
 
     # add reduced data to a dictionary
     if len(input_data_names) < 2:
         data_cols = {input_data_names[0]: data}
     else:
-        data_cols = dict(zip(input_data_names, data))
+        data_cols = dict(zip(input_data_names, data, strict=False))
 
     # merge dicts and create dataframe
     return pd.DataFrame(data=coord_cols | data_cols)

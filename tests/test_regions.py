@@ -3,8 +3,6 @@ Tests for regions module.
 """
 
 # %%
-from __future__ import annotations
-
 import sys
 from importlib import reload
 from unittest.mock import MagicMock, patch
@@ -38,7 +36,9 @@ def check_region_valid(region: tuple[float, float, float, float]) -> None:
     assert region[2] != region[3]
 
 
-@pytest.mark.parametrize(("testname", "region"), zip(names, region_values))
+@pytest.mark.parametrize(
+    ("testname", "region"), zip(names, region_values, strict=False)
+)
 def test_regions(testname, region):  # noqa: ARG001
     check_region_valid(region)
 

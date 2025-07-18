@@ -1,6 +1,4 @@
 # pylint: disable=too-many-lines
-from __future__ import annotations
-
 import glob
 import pathlib
 import re
@@ -1016,7 +1014,7 @@ def imagery() -> str:
 def geomap(
     version: str = "faults",
     region: tuple[float, float, float, float] | None = None,
-) -> gpd.GeodataFrame:
+) -> gpd.GeoDataFrame:
     """
     Data from GeoMAP accessed from
     https://doi.pangaea.de/10.1594/PANGAEA.951482?format=html#download

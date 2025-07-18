@@ -3,8 +3,6 @@ Bounding regions for commonly plotted polar regions. In stereographic projection
 format is (xmin, xmax, ymin, ymax), in meters.
 """
 
-from __future__ import annotations
-
 import typing
 
 import pandas as pd
