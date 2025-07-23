@@ -1152,7 +1152,7 @@ def alter_region(
 def set_proj(
     region: tuple[float, float, float, float],
     hemisphere: str | None = None,
-    fig_height: float = 15,
+    fig_height: float | None = None,
     fig_width: float | None = None,
 ) -> tuple[str, str | None, float, float]:
     """
@@ -1166,9 +1166,9 @@ def set_proj(
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
-    fig_height : float
-        desired figure height in cm
-    fig_width : float
+    fig_height : float | None
+        desired figure height in cm, by default is None
+    fig_width : float | None
         instead of using figure height, set the projection based on figure width in cm,
         by default is None
 
@@ -1185,10 +1185,15 @@ def set_proj(
 
     xmin, xmax, ymin, ymax = region
 
+    if fig_height is None and fig_width is None:
+        msg = "either fig_height or fig_width must be set"
+        raise ValueError(msg)
+
     if fig_width is not None:
         fig_height = fig_width * (ymax - ymin) / (xmax - xmin)
         ratio = (xmax - xmin) / (fig_width / 100)
     else:
+        fig_height = typing.cast(float, fig_height)
         fig_width = fig_height * (xmax - xmin) / (ymax - ymin)
         ratio = (ymax - ymin) / (fig_height / 100)
 
