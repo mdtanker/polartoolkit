@@ -1941,11 +1941,93 @@ def bedmachine(
     if layer == "ice_thickness":
         layer = "thickness"
 
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Load the .nc file and save it as a zarr"
+        fname1 = pathlib.Path(fname)
+
+        # Rename to the file
+        if hemisphere == "south":
+            fname_pre = fname1.with_stem(fname1.stem + "_antarctica")
+        elif hemisphere == "north":
+            fname_pre = fname1.with_stem(fname1.stem + "_greenland")
+        else:
+            msg = "hemisphere must be 'north' or 'south'"
+            raise ValueError(msg)
+
+        fname_processed = fname_pre.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load grid
+            grid = xr.load_dataset(fname1)
+
+            # Save to .zarr file
+            grid.to_zarr(
+                fname_processed,
+            )
+
+        return str(fname_processed)
+
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Load the .nc file, resample to 5k resolution, and save it as a zarr"
+        fname1 = pathlib.Path(fname)
+
+        # Rename to the file to ***_5k.zarr
+        if hemisphere == "south":
+            fname_pre = fname1.with_stem(fname1.stem + "_antarctica_5k")
+        elif hemisphere == "north":
+            fname_pre = fname1.with_stem(fname1.stem + "_greenland_5k")
+        else:
+            msg = "hemisphere must be 'north' or 'south'"
+            raise ValueError(msg)
+
+        fname_processed = fname_pre.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            msg = "resampling this file to 5 km may take some time!"
+            warnings.warn(msg, stacklevel=2)
+
+            # load grid
+            grid = xr.load_dataset(fname1)
+
+            var_names = [
+                "bed",
+                "dataid",
+                "errbed",
+                "firn",
+                "geoid",
+                "mask",
+                "source",
+                "surface",
+                "thickness",
+            ]
+
+            if hemisphere == "north":
+                var_names.remove("firn")
+
+            # resample each data variable to 5 km
+            for _i, var in enumerate(
+                tqdm(var_names, total=len(var_names), desc="dataset variables")
+            ):
+                da = resample_grid(
+                    grid[var],
+                    spacing=spacing,
+                ).rename(var)
+                # append to .zarr file
+                da.to_zarr(
+                    fname_processed,
+                    mode="a",  # append to existing zarr
+                )
+
+        return str(fname_processed)
+
     if hemisphere == "north":
         url = (
             "https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/IDBMG4.005/1993.01.01/"
             "BedMachineGreenland-v5.nc"
         )
+
         fname = "bedmachine_v5.nc"
         known_hash = "f7116b8e9e3840649075dcceb796ce98aaeeb5d279d15db489e6e7668e0d80db"
 
@@ -1954,6 +2036,9 @@ def bedmachine(
             msg = "firn layer not available for Greenland"
             raise ValueError(msg)
 
+        if spacing is None:
+            spacing = 150
+
     elif hemisphere == "south":
         url = (
             "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
@@ -1961,8 +2046,21 @@ def bedmachine(
         )
         fname = "bedmachine_v3.nc"
         known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
+
+        if spacing is None:
+            spacing = 500
     else:
         msg = "hemisphere must be 'north' or 'south'"
+        raise ValueError(msg)
+
+    # determine which resolution of preprocessed grid to use
+    if spacing < 5000:
+        preprocessor = preprocessing_fullres
+    elif spacing >= 5000:
+        logger.info("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+    else:
+        msg = "spacing must be a float greater than 0"
         raise ValueError(msg)
 
     path = pooch.retrieve(
@@ -1972,12 +2070,13 @@ def bedmachine(
         downloader=EarthDataDownloader(),
         known_hash=known_hash,
         progressbar=True,
+        processor=preprocessor,
     )
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and thickness grids")
-        ds = xr.load_dataset(path)
+        ds = xr.open_zarr(path)
         grid = ds.surface - ds.thickness
         # restore registration type
         grid.gmt.registration = ds.surface.gmt.registration
@@ -1993,7 +2092,7 @@ def bedmachine(
         "surface",
         "thickness",
     ]:
-        grid = xr.load_dataset(path)[layer]
+        grid = xr.open_zarr(path)[layer]
     else:
         msg = (
             "layer must be one of 'bed', 'dataid', 'errbed', 'firn', 'geoid', "
@@ -2013,7 +2112,7 @@ def bedmachine(
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
             logger.info("converting to be reference to the WGS84 ellipsoid")
-            geoid_grid = xr.load_dataset(path).geoid
+            geoid_grid = xr.open_zarr(path)["geoid"]
             geoid_grid = resample_grid(
                 geoid_grid,
                 spacing=spacing,
