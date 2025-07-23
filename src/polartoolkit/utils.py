@@ -437,11 +437,11 @@ def epsg3413_to_latlon(
 
 
 def latlon_to_epsg3031(
-    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
+    df: pd.DataFrame | NDArray[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
     output_coord_names: tuple[str, str] = ("easting", "northing"),
-) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
+) -> pd.DataFrame | NDArray[typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
     Polar Stereographic in meters.
@@ -475,11 +475,11 @@ def latlon_to_epsg3031(
 
 
 def latlon_to_epsg3413(
-    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
+    df: pd.DataFrame | NDArray[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
     output_coord_names: tuple[str, str] = ("easting", "northing"),
-) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
+) -> pd.DataFrame | NDArray[typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3413 North Polar
     Stereographic in meters.

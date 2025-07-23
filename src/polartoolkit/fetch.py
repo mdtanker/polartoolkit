@@ -3290,7 +3290,7 @@ def gravity(
         file["y"] = file.y * 1000
 
         # drop some variables
-        file = file.drop(
+        file = file.drop_vars(
             [
                 "longitude",
                 "latitude",
@@ -3446,7 +3446,7 @@ def gravity(
 
         try:
             # load zarr as a dataset
-            grid = xr.load_dataset(path)
+            grid = xr.open_zarr(path)
         except AttributeError as e:
             msg = (
                 "The preprocessing steps for EIGEN gravity have been changed but the "
