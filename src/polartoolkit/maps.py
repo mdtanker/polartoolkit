@@ -819,7 +819,9 @@ def set_cmap(
         raise ValueError(msg)
 
     # set cmap
-    if isinstance(cmap, str) and cmap.endswith(".cpt"):
+    if cmap is True and modis is False:
+        colorbar = True
+    elif isinstance(cmap, str) and cmap.endswith(".cpt"):
         # skip everything if cpt file is passed
         def warn_msg(x: str) -> str:
             return f"Since a .cpt file was passed to `cmap`, parameter `{x}` is unused."
@@ -859,7 +861,6 @@ def set_cmap(
                 warn_msg("shp_mask"),
                 stacklevel=2,
             )
-
     elif modis is True:
         # create a cmap to use specifically with MODIS imagery
         pygmt.makecpt(
