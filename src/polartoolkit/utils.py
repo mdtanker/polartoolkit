@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+import copy
 import os
 import typing
 import warnings
@@ -1321,7 +1322,7 @@ def grd_trend(
 
 
 def get_combined_min_max(
-    values: tuple[xr.DataArray | pd.Series | NDArray],
+    values: tuple[typing.Any, ...],
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1428,15 +1429,17 @@ def grd_compare(
     tuple[xarray.DataArray, xarray.DataArray, xarray.DataArray]
         three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
+    kwargs = copy.deepcopy(kwargs)
+
     if plot_type is not None:
         warnings.warn(
             "plot_type has been deprecated and will default to 'pygmt'",
             DeprecationWarning,
             stacklevel=2,
         )
-    shp_mask = kwargs.get("shp_mask")
-    region = kwargs.get("region")
-    verbose = kwargs.get("verbose", "e")
+    shp_mask = kwargs.pop("shp_mask", None)
+    region = kwargs.pop("region", None)
+    verbose = kwargs.pop("verbose", "e")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
@@ -1522,10 +1525,10 @@ def grd_compare(
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
-        if kwargs.get("registration") is None:
+        if kwargs.pop("registration", None) is None:
             registration = get_grid_info(da1)[4]
         else:
-            registration = kwargs.get("registration")
+            registration = kwargs.pop("registration", None)
         # resample grids
         grid1 = fetch.resample_grid(
             da1,
@@ -1567,50 +1570,41 @@ def grd_compare(
     dif = grid1 - grid2
 
     if plot is True:
-        cpt_lims = kwargs.get("cpt_lims")
+        cpt_lims = kwargs.pop("cpt_lims", None)
+        # define color limits for the 2 input grids
         if cpt_lims is not None:
             vmin, vmax = cpt_lims
         else:
-            # get individual min/max values (and masked values if shapefile is provided)
-            grid1_cpt_lims = get_min_max(
-                grid1,
-                shp_mask,
+            vmin, vmax = get_combined_min_max(
+                (grid1, grid2),
+                shapefile=shp_mask,
                 robust=robust,
-                hemisphere=kwargs.get("hemisphere"),
+                region=region,
+                absolute=kwargs.get("maxabs", False),
                 robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             )
-            grid2_cpt_lims = get_min_max(
-                grid2,
-                shp_mask,
-                robust=robust,
-                hemisphere=kwargs.get("hemisphere"),
-                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-            )
-            # get min and max of both grids together
-            vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-            vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
-        if kwargs.get("diff_lims") is not None:
-            diff_lims = kwargs.get("diff_lims")
-        else:
+        # define color limits for the difference grid
+        diff_lims = kwargs.pop("diff_lims", None)
+        if diff_lims is None:
             diff_lims = get_min_max(
                 dif,
-                shp_mask,
+                shapefile=shp_mask,
                 robust=robust,
-                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-                hemisphere=kwargs.get("hemisphere"),
+                region=region,
                 absolute=kwargs.get("diff_maxabs", True),
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             )
 
-        title = kwargs.get("title", "Comparing Grids")
+        title = kwargs.pop("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
             title += f", RMSE: {round(rmse(dif), kwargs.get('RMSE_decimals', 2))}"
 
-        fig_height = kwargs.get("fig_height", 12)
-        coast = kwargs.get("coast", False)
+        coast = kwargs.pop("coast", False)
         origin_shift = kwargs.get("origin_shift", "x")
         cmap = kwargs.get("cmap", "viridis")
         subplot_labels = kwargs.get("subplot_labels", False)
+        inset = kwargs.pop("inset", True)
 
         new_kwargs = {
             key: value
@@ -1618,14 +1612,6 @@ def grd_compare(
             if key
             not in [
                 "cmap",
-                "region",
-                "coast",
-                "title",
-                "cpt_lims",
-                "fig_height",
-                "inset",
-                "inset_pos",
-                "inset_position",
                 "shp_mask",
             ]
         }
@@ -1637,11 +1623,9 @@ def grd_compare(
         fig = maps.plot_grd(
             grid1,
             cmap=cmap,
-            region=region,
             coast=coast,
             title=kwargs.get("grid1_name", "grid 1"),
             cpt_lims=(vmin, vmax),
-            fig_height=fig_height,
             **new_kwargs,
         )
 
@@ -1664,10 +1648,9 @@ def grd_compare(
             cpt_lims=diff_lims,
             fig=fig,
             title=title,
-            inset=kwargs.get("inset", False),
+            inset=inset,
             inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
             inset_pos=kwargs.get("inset_pos"),
-            fig_height=fig_height,
             **diff_kwargs,
         )
         if subplot_labels is True:
@@ -1688,7 +1671,6 @@ def grd_compare(
             fig=fig,
             title=kwargs.get("grid2_name", "grid 2"),
             cpt_lims=(vmin, vmax),
-            fig_height=fig_height,
             **new_kwargs,
         )
         if subplot_labels is True:
