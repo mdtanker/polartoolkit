@@ -638,10 +638,10 @@ def plot_profile(
         points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
+        data_height = kwargs.get("data_height", 2.5)
+    else:
+        data_height = 0
 
-    fig = pygmt.Figure()
-
-    # PLOT CROSS SECTION AND DATA
     # get max and min of all the layers
     layers_min = df_layers[df_layers.columns[3:]].min().min()
     layers_max = df_layers[df_layers.columns[3:]].max().max()
@@ -652,6 +652,7 @@ def plot_profile(
     if kwargs.get("layers_ylims") is not None:
         layers_min = kwargs["layers_ylims"][0]
         layers_max = kwargs["layers_ylims"][1]
+
     # add space above and below top and bottom of cross-section
     y_buffer = (layers_max - layers_min) * kwargs.get("layer_buffer", 0.1)
     # set region for x-section
@@ -661,16 +662,147 @@ def plot_profile(
         layers_min - y_buffer,
         layers_max + y_buffer,
     ]
+
+    if add_map is True:
+        # Automatic data extent + buffer as % of line length
+        buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
+        map_reg = regions.alter_region(
+            vd.get_region((df_layers.easting, df_layers.northing)), zoom=-buffer
+        )
+
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            fig = maps.Figure(
+                reg=map_reg,
+                height=fig_height,
+                hemisphere=hemisphere,
+            )
+        elif subplot_orientation == "vertical":
+            # if shifting vertically, set map width to match graph width
+            fig = maps.Figure(
+                reg=map_reg,
+                width=fig_width,
+                hemisphere=hemisphere,
+            )
+        else:
+            msg = "invalid subplot_orientation string"
+            raise ValueError(msg)
+
+        # plot imagery, or supplied grid as background
+        background = kwargs.get("map_background")
+        colorbar = kwargs.pop("colorbar", None)
+        if background is None:
+            fig.add_imagery()
+            colorbar = False
+        else:
+            fig.add_grid(
+                grid=background,
+                colorbar=colorbar,
+                **kwargs,
+            )
+        # plot groundingline and coastlines
+        if coast is True:
+            fig.add_coast(
+                pen=kwargs.get("coast_pen", "1.2p,black"),
+                no_coast=kwargs.get("no_coast", False),
+                version=kwargs.get("coast_version"),
+            )
+
+        # add lat long grid lines
+        if gridlines is True:
+            fig.add_gridlines(
+                x_spacing=kwargs.get("x_spacing"),
+                y_spacing=kwargs.get("y_spacing"),
+            )
+
+        # plot profile location, and endpoints on map
+        fig.plot(
+            projection=fig.proj,
+            region=fig.reg,
+            x=df_layers.easting,
+            y=df_layers.northing,
+            pen=kwargs.get("map_line_pen", "2p,red"),
+        )
+        fig.text(
+            x=df_layers.loc[df_layers.dist.idxmin()].easting,
+            y=df_layers.loc[df_layers.dist.idxmin()].northing,
+            text=kwargs.get("start_label", "A"),
+            fill="white",
+            font="12p,Helvetica,black",
+            justify="CM",
+            clearance="+tO",
+        )
+        fig.text(
+            x=df_layers.loc[df_layers.dist.idxmax()].easting,
+            y=df_layers.loc[df_layers.dist.idxmax()].northing,
+            text=kwargs.get("end_label", "B"),
+            fill="white",
+            font="12p,Helvetica,black",
+            justify="CM",
+            clearance="+tO",
+        )
+
+        # add x,y points to plot
+        if map_points is not None:
+            fig.plot(
+                x=map_points.easting,
+                y=map_points.northing,
+                style=kwargs.get("map_points_style", "x.15c"),
+                pen=kwargs.get("map_points_pen", ".2p,black"),
+                fill=kwargs.get("map_points_color", "black"),
+            )
+
+        # add inset map
+        if inset is True:
+            fig.add_inset(
+                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+                inset_pos=kwargs.get("inset_pos"),
+                inset_width=kwargs.get("inset_width", 0.25),
+                inset_reg=kwargs.get("inset_reg"),
+            )
+
+        yshift_extra = 0.0
+        if colorbar is True:
+            yshift_extra = kwargs.get("yshift_extra", 0.4)
+            # for thickness of cbar
+            yshift_extra += (
+                kwargs.get("cbar_width_perc", 0.8) * fig.width
+            ) * kwargs.get("cbar_height_perc", 0.04)
+            if kwargs.get("hist") is not None:
+                # for histogram thickness
+                yshift_extra += kwargs.get("cbar_hist_height", 1.5)
+                # for gap between cbar and map above and below
+                yshift_extra += kwargs.get("cbar_yoffset", 0.2)
+            else:
+                # for gap between cbar and map above and below
+                yshift_extra += kwargs.get("cbar_yoffset", 0.4)
+            # for cbar label text
+            if kwargs.get("cbar_label") is not None:
+                yshift_extra += 1
+
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            # shift map to the left with 1 cm margin
+            fig.shift_origin(xshift=f"{fig.width + 1}c")
+        elif subplot_orientation == "vertical":
+            # if shifting vertically, set map width to match graph width
+            # shift map up with a 1/2 cm margin
+            fig.shift_origin(yshift=f"-{fig_height + 0.5 + yshift_extra}c")
+        else:
+            msg = "invalid subplot_orientation string"
+            raise ValueError(msg)
+    else:
+        fig = pygmt.Figure()
+
+    # height of data and layers, plus 0.5cm margin equals total figure height
+    layers_height = fig_height - 0.5 - data_height
+
+    data_projection = f"X{fig_width}c/{data_height}c"
+    layers_projection = f"X{fig_width}c/{layers_height}c"
+
     # if there is data to plot as profiles, set region and plot them, if not,
     # make region for x-section fill space
     if data_dict is not None:
-        # height of data and layers, plus 0.5cm margin equals total figure height
-        data_height = kwargs.get("data_height", 2.5)
-        layers_height = fig_height - 0.5 - data_height
-
-        data_projection = f"X{fig_width}c/{data_height}c"
-        layers_projection = f"X{fig_width}c/{layers_height}c"
-
         # get axes from data dict
         axes = pd.Series([v["axis"] for k, v in data_dict.items()])
 
@@ -1025,172 +1157,6 @@ def plot_profile(
         offset=kwargs.get("end_label_offset", "0.1c/0.1c"),
     )
 
-    if add_map is True:
-        # Automatic data extent + buffer as % of line length
-        buffer = df_layers.dist.max() * kwargs.get("map_buffer", 0.3)
-        map_reg = regions.alter_region(
-            vd.get_region((df_layers.easting, df_layers.northing)), zoom=-buffer
-        )
-
-        # Set figure parameters
-        if subplot_orientation == "horizontal":
-            # if shifting horizontally, set map height to match graph height
-            map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
-                map_reg,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            # shift map to the left with 1 cm margin
-            if data_dict is not None:
-                fig.shift_origin(
-                    xshift=f"-{map_width + 1}c", yshift=f"-{data_height + 0.5}c"
-                )
-            else:
-                fig.shift_origin(xshift=f"-{map_width + 1}c")
-        elif subplot_orientation == "vertical":
-            # if shifting vertically, set map width to match graph width
-            map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
-                map_reg,
-                fig_width=fig_width,
-                hemisphere=hemisphere,
-            )
-            # shift map up with a 1/2 cm margin
-            if data_dict is not None:
-                fig.shift_origin(yshift=f"{layers_height + 0.5}c")
-            else:
-                fig.shift_origin(yshift=f"{fig_height + 0.5}c")
-        else:
-            msg = "invalid subplot_orientation string"
-            raise ValueError(msg)
-
-        # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd because it reset projection
-        background = kwargs.get("map_background")
-        if background is None:
-            if hemisphere == "south":
-                background = fetch.imagery()
-                map_cmap = True
-            elif hemisphere == "north":
-                background = fetch.modis(hemisphere=hemisphere)
-                pygmt.makecpt(
-                    cmap="grayC",
-                    series=[15000, 17000, 1],
-                    verbose="e",
-                )
-                map_cmap = True
-            else:
-                msg = (
-                    "if add_map is True and hemisphere is not provided, must provide "
-                    "argument `map_background`"
-                )
-                raise ValueError(msg)
-        else:
-            map_cmap = kwargs.get("map_cmap", "viridis")
-        if kwargs.get("map_grd2cpt", False) is True:
-            pygmt.grd2cpt(
-                cmap=map_cmap,
-                grid=background,
-                region=map_reg,
-                background=True,
-                continuous=True,
-                verbose="q",
-            )
-            cmap = True
-        else:
-            cmap = map_cmap
-        fig.grdimage(
-            region=map_reg,
-            projection=map_proj,
-            grid=background,
-            shading=kwargs.get("map_shading", False),
-            cmap=cmap,
-            verbose="q",
-        )
-
-        # plot groundingline and coastlines
-        if coast is True:
-            coast_version = kwargs.get("coast_version")
-            if coast_version is None:
-                if hemisphere == "north":
-                    coast_version = "BAS"
-                elif hemisphere == "south":
-                    coast_version = "measures-v2"
-                elif hemisphere is None:
-                    msg = (
-                        "if coast is True and hemisphere is not provided, must provide "
-                        "argument `coast_version`"
-                    )
-                    raise ValueError(msg)
-
-            maps.add_coast(
-                fig,
-                hemisphere=hemisphere,
-                region=map_reg,
-                projection=map_proj,
-                pen=kwargs.get("coast_pen", "1.2p,black"),
-                no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version"),
-            )
-
-        # add lat long grid lines
-        if gridlines is True:
-            maps.add_gridlines(
-                fig,
-                map_reg,
-                map_proj_ll,
-                x_spacing=kwargs.get("x_spacing"),
-                y_spacing=kwargs.get("y_spacing"),
-            )
-
-        # plot profile location, and endpoints on map
-        fig.plot(
-            projection=map_proj,
-            region=map_reg,
-            x=df_layers.easting,
-            y=df_layers.northing,
-            pen=kwargs.get("map_line_pen", "2p,red"),
-        )
-        fig.text(
-            x=df_layers.loc[df_layers.dist.idxmin()].easting,
-            y=df_layers.loc[df_layers.dist.idxmin()].northing,
-            text=kwargs.get("start_label", "A"),
-            fill="white",
-            font="12p,Helvetica,black",
-            justify="CM",
-            clearance="+tO",
-        )
-        fig.text(
-            x=df_layers.loc[df_layers.dist.idxmax()].easting,
-            y=df_layers.loc[df_layers.dist.idxmax()].northing,
-            text=kwargs.get("end_label", "B"),
-            fill="white",
-            font="12p,Helvetica,black",
-            justify="CM",
-            clearance="+tO",
-        )
-
-        # add x,y points to plot
-        if map_points is not None:
-            fig.plot(
-                x=map_points.easting,
-                y=map_points.northing,
-                style=kwargs.get("map_points_style", "x.15c"),
-                pen=kwargs.get("map_points_pen", ".2p,black"),
-                fill=kwargs.get("map_points_color", "black"),
-            )
-
-        # add inset map
-        if inset is True:
-            maps.add_inset(
-                fig,
-                hemisphere=hemisphere,
-                region=map_reg,
-                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
-                inset_pos=kwargs.get("inset_pos"),
-                inset_width=kwargs.get("inset_width", 0.25),
-                inset_reg=kwargs.get("inset_reg"),
-            )
-
     if kwargs.get("save") is True:
         if kwargs.get("path") is None:
             msg = f"If save = {kwargs.get('save')}, 'path' must be set."
@@ -1282,7 +1248,6 @@ def plot_data(
 
     # create default data dictionary
     if data_dict == "default":
-        # with redirect_stdout(None), redirect_stderr(None):
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
@@ -1302,12 +1267,144 @@ def plot_data(
         points = points[["easting", "northing", "dist"]].copy()
         for k, v in data_dict.items():
             df_data = sample_grids(df_data, v["grid"], sampled_name=k)
+        data_height = kwargs.get("data_height", 2.5)
+    else:
+        data_height = 0
 
-    fig = pygmt.Figure()
+    if add_map is True:
+        # Automatic data extent + buffer as % of line length
+        buffer = df_data.dist.max() * kwargs.get("map_buffer", 0.3)
+        map_reg = regions.alter_region(
+            vd.get_region((df_data.easting, df_data.northing)), zoom=-buffer
+        )
+
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            fig = maps.Figure(
+                reg=map_reg,
+                height=fig_height,
+                hemisphere=hemisphere,
+            )
+        elif subplot_orientation == "vertical":
+            # if shifting vertically, set map width to match graph width
+            fig = maps.Figure(
+                reg=map_reg,
+                width=fig_width,
+                hemisphere=hemisphere,
+            )
+        else:
+            msg = "invalid subplot_orientation string"
+            raise ValueError(msg)
+
+        # plot imagery, or supplied grid as background
+        background = kwargs.get("map_background")
+        colorbar = kwargs.pop("colorbar", None)
+        if background is None:
+            fig.add_imagery()
+            colorbar = False
+        else:
+            fig.add_grid(
+                grid=background,
+                colorbar=colorbar,
+                **kwargs,
+            )
+
+        # plot groundingline and coastlines
+        if coast is True:
+            fig.add_coast(
+                pen=kwargs.get("coast_pen", "1.2p,black"),
+                no_coast=kwargs.get("no_coast", False),
+                version=kwargs.get("coast_version"),
+            )
+
+        # add lat long grid lines
+        if gridlines is True:
+            fig.add_gridlines(
+                x_spacing=kwargs.get("x_spacing"),
+                y_spacing=kwargs.get("y_spacing"),
+            )
+
+        # plot profile location, and endpoints on map
+        fig.plot(
+            projection=fig.proj,
+            region=fig.reg,
+            x=df_data.easting,
+            y=df_data.northing,
+            pen=kwargs.get("map_line_pen", "2p,red"),
+        )
+        fig.text(
+            x=df_data.loc[df_data.dist.idxmin()].easting,
+            y=df_data.loc[df_data.dist.idxmin()].northing,
+            text=kwargs.get("start_label", "A"),
+            fill="white",
+            font="12p,Helvetica,black",
+            justify="CM",
+            clearance="+tO",
+        )
+        fig.text(
+            x=df_data.loc[df_data.dist.idxmax()].easting,
+            y=df_data.loc[df_data.dist.idxmax()].northing,
+            text=kwargs.get("end_label", "B"),
+            fill="white",
+            font="12p,Helvetica,black",
+            justify="CM",
+            clearance="+tO",
+        )
+
+        # add x,y points to plot
+        if map_points is not None:
+            fig.plot(
+                x=map_points.easting,
+                y=map_points.northing,
+                style=kwargs.get("map_points_style", "x.15c"),
+                pen=kwargs.get("map_points_pen", ".2p,black"),
+                fill=kwargs.get("map_points_color", "black"),
+            )
+
+        # add inset map
+        if inset is True:
+            fig.add_inset(
+                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+                inset_pos=kwargs.get("inset_pos"),
+                inset_width=kwargs.get("inset_width", 0.25),
+                inset_reg=kwargs.get("inset_reg"),
+            )
+
+        yshift_extra = 0.0
+        if colorbar is True:
+            yshift_extra = kwargs.get("yshift_extra", 0.4)
+            # for thickness of cbar
+            yshift_extra += (
+                kwargs.get("cbar_width_perc", 0.8) * fig.width
+            ) * kwargs.get("cbar_height_perc", 0.04)
+            if kwargs.get("hist") is not None:
+                # for histogram thickness
+                yshift_extra += kwargs.get("cbar_hist_height", 1.5)
+                # for gap between cbar and map above and below
+                yshift_extra += kwargs.get("cbar_yoffset", 0.2)
+            else:
+                # for gap between cbar and map above and below
+                yshift_extra += kwargs.get("cbar_yoffset", 0.4)
+            # for cbar label text
+            if kwargs.get("cbar_label") is not None:
+                yshift_extra += 1
+
+        if subplot_orientation == "horizontal":
+            # if shifting horizontally, set map height to match graph height
+            # shift map to the left with 1 cm margin
+            fig.shift_origin(xshift=f"{fig.width + 1}c")
+        elif subplot_orientation == "vertical":
+            # if shifting vertically, set map width to match graph width
+            # shift map up with a 1/2 cm margin
+            fig.shift_origin(yshift=f"-{fig_height + 0.5 + yshift_extra}c")
+        else:
+            msg = "invalid subplot_orientation string"
+            raise ValueError(msg)
+    else:
+        fig = pygmt.Figure()
 
     # height of data, plus 0.5cm margin equals total figure height
     data_height = fig_height - 0.5
-
     data_projection = f"X{fig_width}c/{data_height}c"
 
     # get axes from data dict
@@ -1476,145 +1573,6 @@ def plot_data(
         no_clip=True,
         offset="0.1c/0.1c",
     )
-
-    if add_map is True:
-        # Automatic data extent + buffer as % of line length
-        buffer = df_data.dist.max() * kwargs.get("map_buffer", 0.3)
-        map_reg = regions.alter_region(
-            vd.get_region((df_data.easting, df_data.northing)), zoom=-buffer
-        )
-
-        # Set figure parameters
-        if subplot_orientation == "horizontal":
-            # if shifting horizontally, set map height to match graph height
-            map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
-                map_reg,
-                fig_height=fig_height,
-                hemisphere=hemisphere,
-            )
-            # shift map to the left with 1 cm margin
-            if data_dict is not None:
-                fig.shift_origin(
-                    xshift=f"-{map_width + 1}c", yshift=f"-{data_height + 0.5}c"
-                )
-            else:
-                fig.shift_origin(xshift=f"-{map_width + 1}c")
-        elif subplot_orientation == "vertical":
-            # if shifting vertically, set map width to match graph width
-            map_proj, map_proj_ll, map_width, _map_height = utils.set_proj(
-                map_reg,
-                fig_width=fig_width,
-                hemisphere=hemisphere,
-            )
-            # shift map up with a 1/2 cm margin
-            if data_dict is not None:
-                fig.shift_origin(yshift=f"{data_height + 0.5}c")
-            else:
-                fig.shift_origin(yshift=f"{fig_height + 0.5}c")
-        else:
-            msg = "invalid subplot_orientation string"
-            raise ValueError(msg)
-
-        # plot imagery, or supplied grid as background
-        # can't use maps.plot_grd because it reset projection
-        background = kwargs.get("map_background")
-        if background is None:
-            if hemisphere == "south":
-                background = fetch.imagery()
-            elif hemisphere == "north":
-                background = fetch.modis(hemisphere=hemisphere)
-
-        if kwargs.get("map_grd2cpt", False) is True:
-            pygmt.grd2cpt(
-                cmap=kwargs.get("map_cmap", "viridis"),
-                grid=background,
-                region=map_reg,
-                background=True,
-                continuous=True,
-                verbose="q",
-            )
-            cmap = True
-        else:
-            cmap = kwargs.get("map_cmap", "viridis")
-        fig.grdimage(
-            region=map_reg,
-            projection=map_proj,
-            grid=background,
-            shading=kwargs.get("map_shading", False),
-            cmap=cmap,
-            verbose="q",
-        )
-
-        # plot groundingline and coastlines
-        if coast is True:
-            maps.add_coast(
-                fig,
-                hemisphere=hemisphere,
-                region=map_reg,
-                projection=map_proj,
-                pen=kwargs.get("coast_pen", "1.2p,black"),
-                no_coast=kwargs.get("no_coast", False),
-                version=kwargs.get("coast_version"),
-            )
-
-        # add lat long grid lines
-        if gridlines is True:
-            maps.add_gridlines(
-                fig,
-                map_reg,
-                map_proj_ll,
-                x_spacing=kwargs.get("x_spacing"),
-                y_spacing=kwargs.get("y_spacing"),
-            )
-
-        # plot profile location, and endpoints on map
-        fig.plot(
-            projection=map_proj,
-            region=map_reg,
-            x=df_data.easting,
-            y=df_data.northing,
-            pen=kwargs.get("map_line_pen", "2p,red"),
-        )
-        fig.text(
-            x=df_data.loc[df_data.dist.idxmin()].easting,
-            y=df_data.loc[df_data.dist.idxmin()].northing,
-            text=kwargs.get("start_label", "A"),
-            fill="white",
-            font="12p,Helvetica,black",
-            justify="CM",
-            clearance="+tO",
-        )
-        fig.text(
-            x=df_data.loc[df_data.dist.idxmax()].easting,
-            y=df_data.loc[df_data.dist.idxmax()].northing,
-            text=kwargs.get("end_label", "B"),
-            fill="white",
-            font="12p,Helvetica,black",
-            justify="CM",
-            clearance="+tO",
-        )
-
-        # add x,y points to plot
-        if map_points is not None:
-            fig.plot(
-                x=map_points.easting,
-                y=map_points.northing,
-                style=kwargs.get("map_points_style", "x.15c"),
-                pen=kwargs.get("map_points_pen", ".2p,blue"),
-                fill=kwargs.get("map_points_color", "blue"),
-            )
-
-        # add inset map
-        if inset is True:
-            maps.add_inset(
-                fig,
-                hemisphere=hemisphere,
-                region=map_reg,
-                inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
-                inset_pos=kwargs.get("inset_pos"),
-                inset_width=kwargs.get("inset_width", 0.25),
-                inset_reg=kwargs.get("inset_reg", [-2800e3, 2800e3, -2800e3, 2800e3]),
-            )
 
     if kwargs.get("save") is True:
         if kwargs.get("path") is None:
