@@ -38,7 +38,14 @@ def default_hemisphere(hemisphere: str | None) -> str:
 
     if hemisphere is None:
         try:
-            return os.environ["POLARTOOLKIT_HEMISPHERE"]
+            hemisphere = os.environ["POLARTOOLKIT_HEMISPHERE"]
+
+            if hemisphere not in ["north", "south"]:
+                msg = f"hemisphere must be either 'north' or 'south', not {hemisphere}"
+                raise ValueError(msg)
+
+            return hemisphere
+
         except KeyError as e:
             msg = (
                 "hemisphere not set, either set it as a temp environment variable in "
