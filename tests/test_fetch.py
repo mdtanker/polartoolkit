@@ -1106,6 +1106,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 
 
 @pytest.mark.filterwarnings("ignore:this file is large")
+@pytest.mark.filterwarnings("ignore:Consider installing pyarrow")
 @pytest.mark.fetch
 def test_bedmap_points():
     df = fetch.bedmap_points(
