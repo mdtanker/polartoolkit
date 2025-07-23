@@ -1821,14 +1821,11 @@ def subset_grid(
     xarray.DataArray
         clipped grid
     """
-    ew = [region[0], region[1]]
-    ns = [region[2], region[3]]
 
-    return grid.sel(
-        {
-            list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
-            list(grid.sizes.keys())[0]: slice(min(ns), max(ns)),  # noqa: RUF015
-        }
+    return pygmt.grdcut(
+        grid,
+        region=region,
+        verbose="q",
     )
 
 
