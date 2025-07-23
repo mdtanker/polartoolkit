@@ -2103,12 +2103,15 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
     """
     with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
-        with ses.virtualfile_from_grid(grid) as f_in:
-            # send the output to a file so that we can read it
-            with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-                args = f"{f_in} -T -G{tmpfile.name}"
-                ses.call_module("grdedit", args)
-                f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
+        # and write the output to a virtual file after changing the registration
+        with (
+            ses.virtualfile_in(data=grid) as vingrd,
+            ses.virtualfile_out(kind="grid") as voutgrd,
+        ):
+            args = f"{vingrd} -T -G{voutgrd}"
+            ses.call_module("grdedit", args)
+            f_out: xr.DataArray = ses.virtualfile_to_raster(vfname=voutgrd, kind="grid")
+    # check if the registration has been changed
     if grid.gmt.registration == f_out.gmt.registration:
         msg = "issue in changing registration"
         raise ValueError(msg)
@@ -2135,20 +2138,18 @@ def grd_blend(
     xarray.DataArray
         returns a blended grid.
     """
-    with pygmt.clib.Session() as session:  # noqa: SIM117
-        with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-            # store the input grids in a virtual files so GMT can read it from
-            # dataarrays
-            file_context1 = session.virtualfile_from_grid(grid1)
-            file_context2 = session.virtualfile_from_grid(grid2)
-            with file_context1 as infile1, file_context2 as infile2:
-                # if (outgrid := kwargs.get("G")) is None:
-                #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
-                args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
-                session.call_module(module="grdblend", args=args)
-    return typing.cast(
-        xr.DataArray, pygmt.load_dataarray(infile1)
-    )  # if outgrid == tmpfile.name else None
+    with pygmt.clib.Session() as ses:  # noqa: SIM117
+        # store the input grid in a virtual file so GMT can read it from a dataarray
+        # and write the output to a virtual file after changing the registration
+        with (
+            ses.virtualfile_in(data=grid1) as vingrd1,
+            ses.virtualfile_in(data=grid2) as vingrd2,
+            ses.virtualfile_out(kind="grid") as voutgrd,
+        ):
+            args = f"{vingrd1} {vingrd2} -Cf -G{voutgrd}"
+            ses.call_module("grdblend", args=args)
+            f_out: xr.DataArray = ses.virtualfile_to_raster(vfname=voutgrd, kind="grid")
+    return f_out
 
 
 def get_fig_width() -> float:
