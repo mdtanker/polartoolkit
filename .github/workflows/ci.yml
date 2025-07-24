@@ -69,12 +69,34 @@ jobs:
         with:
           environment-name: test_env
           create-args: >-
-            python=${{ matrix.python-version }} # core deps pandas openpyxl
-            pooch tqdm verde xarray harmonica>=0.6.0 pyproj rioxarray scipy
-            numpy pygmt>=0.10.0 geopandas>=1.0 # for issue with pyogrio pyogrio
-            zarr python-dotenv requests deprecation earthaccess xrft #
-            interactive deps geoviews cartopy ipyleaflet ipython # test deps
-            pytest>=6 pytest-cov>=3 deepdiff
+            python=${{ matrix.python-version }}
+            pandas
+            openpyxl
+            pooch
+            tqdm
+            verde
+            xarray
+            harmonica>=0.6.0
+            pyproj
+            rioxarray
+            scipy
+            numpy
+            pygmt>=0.10.0
+            geopandas>=1.0 # for issue with pyogrio
+            pyogrio
+            zarr
+            python-dotenv
+            requests
+            deprecation
+            earthaccess
+            xrft
+            geoviews
+            cartopy
+            ipyleaflet
+            ipython
+            pytest>=6
+            pytest-cov>=3
+            deepdiff
           post-cleanup: "all"
           cache-downloads: false
           # environment cache is persistent for one week.
