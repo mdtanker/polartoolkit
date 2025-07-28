@@ -186,7 +186,7 @@ ignore = [
   "UP038",    # slows down code
 ]
 # Uncomment if using a _compat.typing backport
-# typing-modules = ["samplepackagename._compat.typing"]
+# typing-modules = ["polartoolkit._compat.typing"]
 
 
 [tool.ruff.lint.per-file-ignores]
