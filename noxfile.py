@@ -57,8 +57,8 @@ def tests(session: nox.Session) -> None:
     session.run(
         "pytest",
         "--cov",
-        "-m",
-        "not earthdata and not issue",
+        # "-m",
+        # "not earthdata and not issue",
         *session.posargs,
     )
 
