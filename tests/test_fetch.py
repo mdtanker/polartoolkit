@@ -9,8 +9,6 @@ def test_():
     assert utils.get_grid_info(grid) == expected
 """
 
-from __future__ import annotations
-
 import os
 
 import deepdiff
@@ -588,10 +586,10 @@ bedmachine_test = [
     (
         "icebase",
         (
-            500.0,
-            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
-            -3827.19604492,
-            4818.15576172,
+            5000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+            -3722.05761719,
+            4477.27294922,
             "g",
         ),
         "south",
@@ -599,10 +597,10 @@ bedmachine_test = [
     (
         "surface",
         (
-            500,
-            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
+            5000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             0.0,
-            4818.15576172,
+            4478.62060547,
             "g",
         ),
         "south",
@@ -610,10 +608,10 @@ bedmachine_test = [
     (
         "ice_thickness",
         (
-            500,
-            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
+            5000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
             0.0,
-            4822.79492188,
+            4583.71435547,
             "g",
         ),
         "south",
@@ -621,71 +619,77 @@ bedmachine_test = [
     (
         "bed",
         (
-            500,
-            (-3333000.0, 3333000.0, -3333000.0, 3333000.0),
-            -8166.31542969,
-            4818.15576172,
+            5000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+            -8055.88720703,
+            4477.27294922,
             "g",
         ),
         "south",
     ),
     (
         "geoid",
-        (500, (-3333000.0, 3333000.0, -3333000.0, 3333000.0), -66.0, 52.0, "g"),
+        (
+            5000.0,
+            (-3330000.0, 3330000.0, -3330000.0, 3330000.0),
+            -66.0,
+            52.0,
+            "g",
+        ),
         "south",
     ),
     (
         "icebase",
         (
-            150,
-            (-653000.0, 879700.0, -3384350.0, -632750.0),
-            -1913.28369141,
-            3673.34838867,
-            "p",
+            5000.0,
+            (-647500.0, 872500.0, -3377500.0, -637500.0),
+            -1055.84020996,
+            3240.06640625,
+            "g",
         ),
         "north",
     ),
     (
         "surface",
         (
-            150,
-            (-653000.0, 879700.0, -3384350.0, -632750.0),
-            0.0,
-            3673.38549805,
-            "p",
+            5000.0,
+            (-647500.0, 872500.0, -3377500.0, -637500.0),
+            -0.00464886287227,
+            3240.26293945,
+            "g",
         ),
         "north",
     ),
     (
         "ice_thickness",
         (
-            150,
-            (-653000.0, 879700.0, -3384350.0, -632750.0),
-            0.0,
-            3409.73779297,
-            "p",
+            5000.0,
+            (-647500.0, 872500.0, -3377500.0, -637500.0),
+            -0.00641952548176,
+            3374.90136719,
+            "g",
         ),
         "north",
     ),
     (
         "bed",
         (
-            150,
-            (-653000.0, 879700.0, -3384350.0, -632750.0),
-            -5571.67285156,
-            3673.34838867,
-            "p",
+            5000.0,
+            (-647500.0, 872500.0, -3377500.0, -637500.0),
+            -5544.27490234,
+            3240.06665039,
+            "g",
         ),
         "north",
     ),
     (
         "geoid",
         (
-            150,
-            (-653000.0, 879700.0, -3384350.0, -632750.0),
-            6.0,
-            64.0,
-            "p",
+            5000.0,
+            (-647500.0, 872500.0, -3377500.0, -637500.0),
+            5.99998569489,
+            64.000038147,
+            "g",
         ),
         "north",
     ),
@@ -699,7 +703,7 @@ bedmachine_test = [
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected", "hemisphere"), bedmachine_test)
 def test_bedmachine(test_input, expected, hemisphere):
-    grid = fetch.bedmachine(test_input, hemisphere=hemisphere)
+    grid = fetch.bedmachine(test_input, spacing=5e3, hemisphere=hemisphere)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
@@ -1108,6 +1112,7 @@ def test_bedmap2_fill_nans(test_input, expected):
 
 
 @pytest.mark.filterwarnings("ignore:this file is large")
+@pytest.mark.filterwarnings("ignore:Consider installing pyarrow")
 @pytest.mark.fetch
 def test_bedmap_points():
     df = fetch.bedmap_points(
@@ -1115,14 +1120,14 @@ def test_bedmap_points():
         region=regions.minna_bluff,
     )
     expected = [
-        166.28053354778407,
-        -78.36070546400853,
-        99.64259832481075,
-        283.0222318108082,
-        -65.19315249580467,
-        828.8807757122285,
-        300205.3047778196,
-        -1231896.6829033894,
+        166.29463213822558,
+        -78.36291431608393,
+        96.64183445584203,
+        285.5206921732992,
+        -75.11360888846426,
+        828.8807757122288,
+        299819.78925710823,
+        -1231728.2444671816,
     ]
     assert df.describe().iloc[1].dropna().tolist() == pytest.approx(
         expected,
@@ -1444,6 +1449,9 @@ ghf_test = [
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.filterwarnings(
+    "ignore::UserWarning: Consolidated metadata is currently not part"
+)
 @pytest.mark.parametrize(("test_input", "expected"), ghf_test)
 def test_ghf(test_input, expected):
     grid = fetch.ghf(test_input)

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 MSG = (
     "The PolarToolkit module 'profile' has been renamed to 'profiles'. "
     "Please change any imports to the new name."

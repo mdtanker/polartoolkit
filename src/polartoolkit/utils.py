@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines
-from __future__ import annotations
-
+import copy
 import os
 import typing
 import warnings
@@ -40,7 +39,14 @@ def default_hemisphere(hemisphere: str | None) -> str:
 
     if hemisphere is None:
         try:
-            return os.environ["POLARTOOLKIT_HEMISPHERE"]
+            hemisphere = os.environ["POLARTOOLKIT_HEMISPHERE"]
+
+            if hemisphere not in ["north", "south"]:
+                msg = f"hemisphere must be either 'north' or 'south', not {hemisphere}"
+                raise ValueError(msg)
+
+            return hemisphere
+
         except KeyError as e:
             msg = (
                 "hemisphere not set, either set it as a temp environment variable in "
@@ -50,6 +56,7 @@ def default_hemisphere(hemisphere: str | None) -> str:
                 "file) or pass it as an argument (hemisphere='north')"
             )
             raise KeyError(msg) from e
+
     return hemisphere
 
 
@@ -430,11 +437,11 @@ def epsg3413_to_latlon(
 
 
 def latlon_to_epsg3031(
-    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
+    df: pd.DataFrame | NDArray[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
     output_coord_names: tuple[str, str] = ("easting", "northing"),
-) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
+) -> pd.DataFrame | NDArray[typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3031 Antarctic
     Polar Stereographic in meters.
@@ -468,11 +475,11 @@ def latlon_to_epsg3031(
 
 
 def latlon_to_epsg3413(
-    df: pd.DataFrame | NDArray[typing.Any, typing.Any],
+    df: pd.DataFrame | NDArray[typing.Any],
     reg: bool = False,
     input_coord_names: tuple[str, str] | None = None,
     output_coord_names: tuple[str, str] = ("easting", "northing"),
-) -> pd.DataFrame | NDArray[typing.Any, typing.Any]:
+) -> pd.DataFrame | NDArray[typing.Any]:
     """
     Convert coordinates from EPSG:4326 WGS84 in decimal degrees to EPSG:3413 North Polar
     Stereographic in meters.
@@ -701,13 +708,13 @@ def block_reduce(
     )
 
     # add reduced coordinates to a dictionary
-    coord_cols = dict(zip(input_coord_names, coordinates))
+    coord_cols = dict(zip(input_coord_names, coordinates, strict=False))
 
     # add reduced data to a dictionary
     if len(input_data_names) < 2:
         data_cols = {input_data_names[0]: data}
     else:
-        data_cols = dict(zip(input_data_names, data))
+        data_cols = dict(zip(input_data_names, data, strict=False))
 
     # merge dicts and create dataframe
     return pd.DataFrame(data=coord_cols | data_cols)
@@ -1145,7 +1152,7 @@ def alter_region(
 def set_proj(
     region: tuple[float, float, float, float],
     hemisphere: str | None = None,
-    fig_height: float = 15,
+    fig_height: float | None = None,
     fig_width: float | None = None,
 ) -> tuple[str, str | None, float, float]:
     """
@@ -1159,9 +1166,9 @@ def set_proj(
     hemisphere : str, optional
         set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
         "south" hemisphere (EPSG:3031)
-    fig_height : float
-        desired figure height in cm
-    fig_width : float
+    fig_height : float | None
+        desired figure height in cm, by default is None
+    fig_width : float | None
         instead of using figure height, set the projection based on figure width in cm,
         by default is None
 
@@ -1178,10 +1185,15 @@ def set_proj(
 
     xmin, xmax, ymin, ymax = region
 
+    if fig_height is None and fig_width is None:
+        msg = "either fig_height or fig_width must be set"
+        raise ValueError(msg)
+
     if fig_width is not None:
         fig_height = fig_width * (ymax - ymin) / (xmax - xmin)
         ratio = (xmax - xmin) / (fig_width / 100)
     else:
+        fig_height = typing.cast(float, fig_height)
         fig_width = fig_height * (xmax - xmin) / (ymax - ymin)
         ratio = (ymax - ymin) / (fig_height / 100)
 
@@ -1315,7 +1327,7 @@ def grd_trend(
 
 
 def get_combined_min_max(
-    values: tuple[xr.DataArray | pd.Series | NDArray],
+    values: tuple[typing.Any, ...],
     shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
@@ -1422,15 +1434,17 @@ def grd_compare(
     tuple[xarray.DataArray, xarray.DataArray, xarray.DataArray]
         three xarray.DataArrays: (diff, resampled grid1, resampled grid2)
     """
+    kwargs = copy.deepcopy(kwargs)
+
     if plot_type is not None:
         warnings.warn(
             "plot_type has been deprecated and will default to 'pygmt'",
             DeprecationWarning,
             stacklevel=2,
         )
-    shp_mask = kwargs.get("shp_mask")
-    region = kwargs.get("region")
-    verbose = kwargs.get("verbose", "e")
+    shp_mask = kwargs.pop("shp_mask", None)
+    region = kwargs.pop("region", None)
+    verbose = kwargs.pop("verbose", "e")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
@@ -1516,10 +1530,10 @@ def grd_compare(
         else:
             region = da1_reg
         # use registration from first grid, or from kwarg
-        if kwargs.get("registration") is None:
+        if kwargs.pop("registration", None) is None:
             registration = get_grid_info(da1)[4]
         else:
-            registration = kwargs.get("registration")
+            registration = kwargs.pop("registration", None)
         # resample grids
         grid1 = fetch.resample_grid(
             da1,
@@ -1561,50 +1575,41 @@ def grd_compare(
     dif = grid1 - grid2
 
     if plot is True:
-        cpt_lims = kwargs.get("cpt_lims")
+        cpt_lims = kwargs.pop("cpt_lims", None)
+        # define color limits for the 2 input grids
         if cpt_lims is not None:
             vmin, vmax = cpt_lims
         else:
-            # get individual min/max values (and masked values if shapefile is provided)
-            grid1_cpt_lims = get_min_max(
-                grid1,
-                shp_mask,
+            vmin, vmax = get_combined_min_max(
+                (grid1, grid2),
+                shapefile=shp_mask,
                 robust=robust,
-                hemisphere=kwargs.get("hemisphere"),
+                region=region,
+                absolute=kwargs.get("maxabs", False),
                 robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             )
-            grid2_cpt_lims = get_min_max(
-                grid2,
-                shp_mask,
-                robust=robust,
-                hemisphere=kwargs.get("hemisphere"),
-                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-            )
-            # get min and max of both grids together
-            vmin = min((grid1_cpt_lims[0], grid2_cpt_lims[0]))
-            vmax = max(grid1_cpt_lims[1], grid2_cpt_lims[1])
 
-        if kwargs.get("diff_lims") is not None:
-            diff_lims = kwargs.get("diff_lims")
-        else:
+        # define color limits for the difference grid
+        diff_lims = kwargs.pop("diff_lims", None)
+        if diff_lims is None:
             diff_lims = get_min_max(
                 dif,
-                shp_mask,
+                shapefile=shp_mask,
                 robust=robust,
-                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
-                hemisphere=kwargs.get("hemisphere"),
+                region=region,
                 absolute=kwargs.get("diff_maxabs", True),
+                robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
             )
 
-        title = kwargs.get("title", "Comparing Grids")
+        title = kwargs.pop("title", "Comparing Grids")
         if kwargs.get("rmse_in_title", True) is True:
             title += f", RMSE: {round(rmse(dif), kwargs.get('RMSE_decimals', 2))}"
 
-        fig_height = kwargs.get("fig_height", 12)
-        coast = kwargs.get("coast", False)
+        coast = kwargs.pop("coast", False)
         origin_shift = kwargs.get("origin_shift", "x")
         cmap = kwargs.get("cmap", "viridis")
         subplot_labels = kwargs.get("subplot_labels", False)
+        inset = kwargs.pop("inset", True)
 
         new_kwargs = {
             key: value
@@ -1612,14 +1617,6 @@ def grd_compare(
             if key
             not in [
                 "cmap",
-                "region",
-                "coast",
-                "title",
-                "cpt_lims",
-                "fig_height",
-                "inset",
-                "inset_pos",
-                "inset_position",
                 "shp_mask",
             ]
         }
@@ -1631,11 +1628,9 @@ def grd_compare(
         fig = maps.plot_grd(
             grid1,
             cmap=cmap,
-            region=region,
             coast=coast,
             title=kwargs.get("grid1_name", "grid 1"),
             cpt_lims=(vmin, vmax),
-            fig_height=fig_height,
             **new_kwargs,
         )
 
@@ -1658,10 +1653,9 @@ def grd_compare(
             cpt_lims=diff_lims,
             fig=fig,
             title=title,
-            inset=kwargs.get("inset", False),
+            inset=inset,
             inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
             inset_pos=kwargs.get("inset_pos"),
-            fig_height=fig_height,
             **diff_kwargs,
         )
         if subplot_labels is True:
@@ -1682,7 +1676,6 @@ def grd_compare(
             fig=fig,
             title=kwargs.get("grid2_name", "grid 2"),
             cpt_lims=(vmin, vmax),
-            fig_height=fig_height,
             **new_kwargs,
         )
         if subplot_labels is True:
@@ -1762,6 +1755,8 @@ def square_subplots(n: int) -> tuple[int, int]:
         8: (2, 4),
         9: (3, 3),
         10: (3, 4),
+        11: (3, 4),
+        12: (3, 4),
     }
     if n in special_cases:
         return special_cases[n]
@@ -1833,14 +1828,11 @@ def subset_grid(
     xarray.DataArray
         clipped grid
     """
-    ew = [region[0], region[1]]
-    ns = [region[2], region[3]]
 
-    return grid.sel(
-        {
-            list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
-            list(grid.sizes.keys())[0]: slice(min(ns), max(ns)),  # noqa: RUF015
-        }
+    return pygmt.grdcut(
+        grid,
+        region=region,
+        verbose="q",
     )
 
 
@@ -2104,12 +2096,15 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
     """
     with pygmt.clib.Session() as ses:  # noqa: SIM117
         # store the input grid in a virtual file so GMT can read it from a dataarray
-        with ses.virtualfile_from_grid(grid) as f_in:
-            # send the output to a file so that we can read it
-            with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-                args = f"{f_in} -T -G{tmpfile.name}"
-                ses.call_module("grdedit", args)
-                f_out: xr.DataArray = pygmt.load_dataarray(tmpfile.name)
+        # and write the output to a virtual file after changing the registration
+        with (
+            ses.virtualfile_in(data=grid) as vingrd,
+            ses.virtualfile_out(kind="grid") as voutgrd,
+        ):
+            args = f"{vingrd} -T -G{voutgrd}"
+            ses.call_module("grdedit", args)
+            f_out: xr.DataArray = ses.virtualfile_to_raster(vfname=voutgrd, kind="grid")
+    # check if the registration has been changed
     if grid.gmt.registration == f_out.gmt.registration:
         msg = "issue in changing registration"
         raise ValueError(msg)
@@ -2136,20 +2131,18 @@ def grd_blend(
     xarray.DataArray
         returns a blended grid.
     """
-    with pygmt.clib.Session() as session:  # noqa: SIM117
-        with pygmt.helpers.GMTTempFile(suffix=".nc") as tmpfile:
-            # store the input grids in a virtual files so GMT can read it from
-            # dataarrays
-            file_context1 = session.virtualfile_from_grid(grid1)
-            file_context2 = session.virtualfile_from_grid(grid2)
-            with file_context1 as infile1, file_context2 as infile2:
-                # if (outgrid := kwargs.get("G")) is None:
-                #     kwargs["G"] = outgrid = tmpfile.name # output to tmpfile
-                args = f"{infile1} {infile2} -Cf -G{tmpfile.name}"
-                session.call_module(module="grdblend", args=args)
-    return typing.cast(
-        xr.DataArray, pygmt.load_dataarray(infile1)
-    )  # if outgrid == tmpfile.name else None
+    with pygmt.clib.Session() as ses:  # noqa: SIM117
+        # store the input grid in a virtual file so GMT can read it from a dataarray
+        # and write the output to a virtual file after changing the registration
+        with (
+            ses.virtualfile_in(data=grid1) as vingrd1,
+            ses.virtualfile_in(data=grid2) as vingrd2,
+            ses.virtualfile_out(kind="grid") as voutgrd,
+        ):
+            args = f"{vingrd1} {vingrd2} -Cf -G{voutgrd}"
+            ses.call_module("grdblend", args=args)
+            f_out: xr.DataArray = ses.virtualfile_to_raster(vfname=voutgrd, kind="grid")
+    return f_out
 
 
 def get_fig_width() -> float:

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import argparse
 import shutil
 from pathlib import Path
@@ -59,8 +57,8 @@ def tests(session: nox.Session) -> None:
     session.run(
         "pytest",
         "--cov",
-        "-m",
-        "not earthdata and not issue",
+        # "-m",
+        # "not earthdata and not issue",
         *session.posargs,
     )
 
