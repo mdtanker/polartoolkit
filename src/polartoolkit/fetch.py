@@ -2311,8 +2311,8 @@ def bedmap_points(
                     f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap2_point_data/*/*.csv"
                 )
 
-                # load all csv files into list of pandas dataframes
-                for _i, f in enumerate(
+                # append all csv files into a gpkg file
+                for i, f in enumerate(
                     tqdm(fnames, total=len(fnames), desc="csv files")
                 ):
                     df = pd.read_csv(
@@ -2338,15 +2338,30 @@ def bedmap_points(
                         crs="EPSG:3031",
                     )
 
-                    df["trajectory_id"] = df.trajectory_id.astype(str)
+                    # need to use "string" instead of str to preserve NaNs
+                    df["time_UTC"] = df.time_UTC.astype("string")
+                    df["date"] = df.date.astype("string")
+                    df["trajectory_id"] = df.trajectory_id.astype("string")
 
                     # save / append to a geopackage file
-                    df.to_file(
-                        fname_processed,
-                        driver="GPKG",
-                        use_arrow=USE_ARROW,  # can't use cause of object issues (expects str)
-                        append=True,
-                    )
+                    try:
+                        df.to_file(
+                            fname_processed,
+                            driver="GPKG",
+                            use_arrow=USE_ARROW,
+                            engine="pyogrio",
+                            append=True,
+                            geometry_type="Point",
+                        )
+                    except Exception as e:
+                        logger.exception(
+                            "Error writing to geopackage for file number %s, deleting "
+                            "geopackage file",
+                            i,
+                        )
+                        # delete the file
+                        pathlib.Path.unlink(fname_processed)
+                        raise e
 
                 # delete the folder with csv files
                 shutil.rmtree(new_fold)
@@ -2406,7 +2421,7 @@ def bedmap_points(
                     f"{pooch.os_cache('pooch')}/polartoolkit/topography/bedmap3_point_data/*/*.csv"
                 )
 
-                # load all csv files into list of pandas dataframes
+                # append all csv files into a gpkg file
                 for i, f in enumerate(
                     tqdm(fnames, total=len(fnames), desc="csv files")
                 ):
@@ -2434,21 +2449,28 @@ def bedmap_points(
                         crs="EPSG:3031",
                     )
 
-                    df["time_UTC"] = df.time_UTC.astype(str)
+                    df["time_UTC"] = df.time_UTC.astype("string")
+                    df["date"] = df.date.astype("string")
+                    df["trajectory_id"] = df.trajectory_id.astype("string")
 
                     # save / append to a geopackage file
                     try:
                         df.to_file(
                             fname_processed,
                             driver="GPKG",
-                            use_arrow=USE_ARROW,  # can't use cause of object issues (expects str)
+                            use_arrow=USE_ARROW,
                             engine="pyogrio",
                             append=True,
+                            geometry_type="Point",
                         )
                     except Exception as e:
-                        logger.error(
-                            "Error writing to geopackage for file number %s", i
+                        logger.exception(
+                            "Error writing to geopackage for file number %s, deleting "
+                            "geopackage file",
+                            i,
                         )
+                        # delete the file
+                        pathlib.Path.unlink(fname_processed)
                         raise e
 
                 # delete the folder with csv files
@@ -2478,7 +2500,6 @@ def bedmap_points(
             engine="pyogrio",
             bbox=bbox,
         )
-        # df["time_UTC"] = pd.to_datetime(df.time_UTC)
 
     elif version == "all":
         # get individual dataframes
