@@ -336,7 +336,8 @@ def default_layers(
         logger.warning(
             "Supplying any spacing, reference, or region to `default_layers` will "
             "result in resampling of the grids, which will likely take longer than "
-            "just using the full-resolution defaults."
+            "just using the full-resolution defaults, unless a spacing >= 5000 is "
+            "supplied, as it will use the low-resolution preprocessed grids."
         )
 
     if version == "bedmap2":
