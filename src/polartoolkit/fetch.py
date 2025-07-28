@@ -560,7 +560,8 @@ def basal_melt(
     )
 
     grid = xr.open_zarr(
-        path,  # consolidated=False,
+        path,
+        consolidated=False,
     )[version]
 
     return resample_grid(
@@ -787,7 +788,10 @@ def ice_vel(
             progressbar=True,
             processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
-        grid = xr.open_zarr(path)["vel"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["vel"]
         resampled = resample_grid(
             grid,
             spacing=spacing,
@@ -1597,7 +1601,10 @@ def sediment_thickness(
             progressbar=True,
         )
 
-        grid = xr.open_zarr(path)["sediment_thickness"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["sediment_thickness"]
 
         resampled = resample_grid(
             grid,
@@ -1818,7 +1825,10 @@ def ibcso(
         msg = "layer must be 'surface' or 'bed'"
         raise ValueError(msg)
 
-    grid = xr.open_zarr(path)[layer]
+    grid = xr.open_zarr(
+        path,
+        consolidated=False,
+    )[layer]
 
     grid = resample_grid(
         grid,
@@ -2072,11 +2082,14 @@ def bedmachine(
         progressbar=True,
         processor=preprocessor,
     )
+    ds = xr.open_zarr(
+        path,
+        consolidated=False,
+    )
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and thickness grids")
-        ds = xr.open_zarr(path)
         grid = ds.surface - ds.thickness
         # restore registration type
         grid.gmt.registration = ds.surface.gmt.registration
@@ -2092,7 +2105,7 @@ def bedmachine(
         "surface",
         "thickness",
     ]:
-        grid = xr.open_zarr(path)[layer]
+        grid = ds[layer]
     else:
         msg = (
             "layer must be one of 'bed', 'dataid', 'errbed', 'firn', 'geoid', "
@@ -2112,7 +2125,7 @@ def bedmachine(
     if layer in ["surface", "icebase", "bed"]:
         if reference == "ellipsoid":
             logger.info("converting to be reference to the WGS84 ellipsoid")
-            geoid_grid = xr.open_zarr(path)["geoid"]
+            geoid_grid = ds["geoid"]
             geoid_grid = resample_grid(
                 geoid_grid,
                 spacing=spacing,
@@ -2674,7 +2687,10 @@ def bedmap3(
 
         try:
             # load zarr as a dataarray
-            grid = xr.open_zarr(fname).z
+            grid = xr.open_zarr(
+                fname,
+                consolidated=False,
+            ).z
         except AttributeError as e:
             msg = (
                 "The preprocessing steps for Bedmap3 have been changed but the old data"
@@ -2952,7 +2968,10 @@ def bedmap2(
         )
         try:
             # load zarr as a dataarray
-            grid = xr.open_zarr(fname).z
+            grid = xr.open_zarr(
+                fname,
+                consolidated=False,
+            ).z
         except AttributeError as e:
             msg = (
                 "The preprocessing steps for Bedmap2 have been changed but the old data"
@@ -3142,7 +3161,10 @@ def rema(
     )
 
     # load zarr as a dataarray
-    grid = xr.open_zarr(zarr_file)["surface"]
+    grid = xr.open_zarr(
+        zarr_file,
+        consolidated=False,
+    )["surface"]
 
     resampled = resample_grid(
         grid,
@@ -3446,7 +3468,10 @@ def gravity(
 
         try:
             # load zarr as a dataset
-            grid = xr.open_zarr(path)
+            grid = xr.open_zarr(
+                path,
+                consolidated=False,
+            )
         except AttributeError as e:
             msg = (
                 "The preprocessing steps for EIGEN gravity have been changed but the "
@@ -3937,7 +3962,10 @@ def magnetics(
             processor=preprocessing,
         )
 
-        grid = xr.open_zarr(path)["mag"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["mag"]
 
         resampled = resample_grid(
             grid,
@@ -4064,7 +4092,10 @@ def ghf(
             processor=preprocessing,
         )
 
-        grid = xr.open_zarr(path)["ghf"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4123,7 +4154,10 @@ def ghf(
             processor=preprocessing,
         )
 
-        grid = xr.open_zarr(path)["ghf"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4293,7 +4327,10 @@ def ghf(
             processor=preprocessing,
         )
 
-        grid = xr.open_zarr(path)["ghf"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4402,7 +4439,10 @@ def ghf(
             progressbar=True,
         )
 
-        grid = xr.open_zarr(path)["ghf"]
+        grid = xr.open_zarr(
+            path,
+            consolidated=False,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
