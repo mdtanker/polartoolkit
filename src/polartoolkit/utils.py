@@ -1455,7 +1455,6 @@ def grd_compare(
     da1_info = get_grid_info(da1)
     da2_info = get_grid_info(da2)
 
-
     # extract spacing of both grids
     assert da1_info[0] is not None
     assert da2_info[0] is not None
