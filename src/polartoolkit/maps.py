@@ -232,6 +232,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             transparency=transparency,
             projection=self.proj,
             region=self.reg,
+            verbose="e",
         )
 
     def add_coast(
@@ -513,6 +514,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             transparency=transparency,
             projection=self.proj,
             region=self.reg,
+            verbose="e",
         )
 
     def add_simple_basemap(
@@ -889,7 +891,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             transparency=kwargs.get("grid_transparency", 0),
             projection=self.proj,
             region=self.reg,
-            dpi=kwargs.get("dpi", 100),
+            verbose="e",
         )
 
         if colorbar is True:
