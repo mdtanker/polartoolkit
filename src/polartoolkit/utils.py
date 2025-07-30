@@ -1828,12 +1828,22 @@ def subset_grid(
     xarray.DataArray
         clipped grid
     """
+    try:
+        return pygmt.grdcut(
+            grid,
+            region=region,
+            verbose="q",
+        )
+    except IndexError:
+        ew = [region[0], region[1]]
+        ns = [region[2], region[3]]
 
-    return pygmt.grdcut(
-        grid,
-        region=region,
-        verbose="q",
-    )
+        return grid.sel(
+            {
+                list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
+                list(grid.sizes.keys())[0]: slice(min(ns), max(ns)),  # noqa: RUF015
+            }
+        )
 
 
 def get_min_max(
