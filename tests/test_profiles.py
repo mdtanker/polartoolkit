@@ -28,6 +28,7 @@ default_layers_test = [
         {
             "version": "bedmap2",
             "hemisphere": "south",
+            "spacing": 5e3,
         },
         [  # mean values of grids
             602.32306,
@@ -37,8 +38,21 @@ default_layers_test = [
     ),
     (
         {
+            "version": "bedmap3",
+            "hemisphere": "south",
+            "spacing": 5e3,
+        },
+        [  # mean values of grids
+            602.32306,
+            5.658511,
+            -2127.135,
+        ],
+    ),
+    (
+        {
             "version": "bedmachine",
             "hemisphere": "south",
+            "spacing": 5e3,
         },
         [  # mean values of grids
             595.5868,
@@ -50,6 +64,7 @@ default_layers_test = [
         {
             "version": "bedmachine",
             "hemisphere": "north",
+            "spacing": 5e3,
         },
         [  # mean values of grids
             934.1983,
