@@ -42,8 +42,7 @@ def create_profile(
     stop : tuple[float, float], optional
         Coordinates for ending point of profile, by default None
     num : int, optional
-        Number of points to sample at, for "points" by default is 100, for other methods
-        num by default is determined by shapefile or dataframe
+        Number of points to sample at along the line, by default is 1000
     shapefile : str, optional
         shapefile file name to create points along, by default None
     polyline : pandas.DataFrame, optional
@@ -55,49 +54,54 @@ def create_profile(
         Dataframe with 'easting', 'northing', and 'dist' columns for points along line
         or shapefile path.
     """
-    methods = ["points", "shapefile", "polyline"]
-    if method not in methods:
-        msg = f"If method = {method}, 'start' and 'stop' must be set."
-        raise ValueError(msg)
-    if method == "points":
-        if num is None:
-            num = 1000
-        if any(a is None for a in [start, stop]):
-            msg = f"If method = {method}, 'start' and 'stop' must be set."
-            raise ValueError(msg)
-        start = typing.cast(tuple[float, float], start)
-        stop = typing.cast(tuple[float, float], stop)
-        coordinates = pd.DataFrame(
-            data=np.linspace(start=start, stop=stop, num=num),
-            columns=["easting", "northing"],
+    if method == "shapefile":
+        assert isinstance(shapefile, str), (
+            f"If method = {method}, need to provide a valid shapefile"
         )
-        # for points, dist is from first point
-        coordinates["dist"] = np.sqrt(
-            (coordinates.easting - coordinates.easting.iloc[0]) ** 2
-            + (coordinates.northing - coordinates.northing.iloc[0]) ** 2
-        )
-
-    elif method == "shapefile":
-        if shapefile is None:
-            msg = f"If method = {method}, need to provide a valid shapefile"
-            raise ValueError(msg)
         shp = gpd.read_file(shapefile, engine="pyogrio")
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates_rel = df.coords.apply(pd.Series, index=["easting", "northing"])
         # for shapefiles, dist is cumulative from previous points
         coordinates = cumulative_dist(coordinates_rel, **kwargs)
-
     elif method == "polyline":
-        if polyline is None:
-            msg = f"If method = {method}, need to provide a valid dataframe"
-            raise ValueError(msg)
-        # dist is cumulative from previous points
-        coordinates = cumulative_dist(polyline, **kwargs)
+        assert isinstance(polyline, pd.DataFrame), (
+            f"If method = {method}, need to provide a valid dataframe"
+        )
+        # if only 3 points, use `points` method
+        if len(polyline) <= 3:
+            logger.info("less than 3 points in polyline, so using only the endpoints")
+            method = "points"
+            start = (polyline.easting.iloc[0], polyline.northing.iloc[0])
+            stop = (polyline.easting.iloc[-1], polyline.northing.iloc[-1])
+        else:
+            # dist is cumulative from previous points
+            coordinates = cumulative_dist(polyline, **kwargs)
+    elif method == "points":
+        assert start is not None, f"If method = {method}, 'start' must be set."
+        assert stop is not None, f"If method = {method}, 'stop' must be set."
+        if num is None:
+            num = 1000
+        # calculate points and distances along profile
+        coords, dists = vd.profile_coordinates(
+            start,
+            stop,
+            num,
+        )
+
+        # turn into dataframe
+        coordinates = pd.DataFrame(
+            data={"easting": coords[0], "northing": coords[1], "dist": dists}
+        )
+    else:
+        msg = "Method must be one of 'points', 'shapefile', 'polyline'."
+        raise ValueError(msg)
 
     coords = coordinates.sort_values(by=["dist"])
 
     if method in ["shapefile", "polyline"]:
+        if num is None and len(coords) < 1000:
+            num = 1000
         try:
             if num is not None:
                 df = coords.set_index("dist")
@@ -117,10 +121,8 @@ def create_profile(
                 df2 = coords
         except ValueError:
             logger.info(
-                (
-                    "Issue with resampling, possibly due to number of points, ",
-                    "you must provide at least 4 points. Returning unsampled points",
-                )
+                "Issue with resampling, possibly due to number of points, "
+                "you must provide at least 4 points. Returning unsampled points"
             )
             df2 = coords
     else:
@@ -332,14 +334,6 @@ def default_layers(
     """
     hemisphere = utils.default_hemisphere(hemisphere)
 
-    if (spacing is not None) or (reference is not None) or (region is not None):
-        logger.warning(
-            "Supplying any spacing, reference, or region to `default_layers` will "
-            "result in resampling of the grids, which will likely take longer than "
-            "just using the full-resolution defaults, unless a spacing >= 5000 is "
-            "supplied, as it will use the low-resolution preprocessed grids."
-        )
-
     if version == "bedmap2":
         if hemisphere == "north":
             msg = "Bedmap2 is not available for the northern hemisphere."
@@ -515,15 +509,16 @@ def plot_profile(
         Choose sampling method, either "points", "shapefile", or "polyline"
     layers_dict : dict, optional
         nested dictionary of layers to include in cross-section, construct with
-        `profiles.make_data_dict`, by default is Bedmap2 layers.
+        `profiles.make_data_dict`, by default is created from Bedmap2, Bedmap3, or
+        Bedmachine data, as chosen from `layers_version`.
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
         `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
-        choose between using 'bedmap2' or 'bedmachine' layers, by default is Bedmap2,
-        unless plotting for Greenland, then it is Bedmachine.
+        choose between using 'bedmap2', 'bedmap3' or 'bedmachine' layers, the default
+        for Antarctica is Bedmap3 and for Greenland is BedMachine.
     fig_height : float, optional
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
@@ -532,6 +527,13 @@ def plot_profile(
         choose between plotting in the "north" or "south" hemispheres, by default None
     Keyword Args
     ------------
+    default_layers_spacing: float
+        Spacing to use for layers grid, by default, if profile is longer than 2000 km,
+        will use 5 km for faster plotting, or else it will default to the grids' native
+        resolution.
+    default_layers_reference: str
+        Vertical reference frame to use for elevation grids, by default uses defaults
+        from fetch functions for `layers_version`.
     fillnans: bool
         Choose whether to fill nans in layers, defaults to True.
     num: int
@@ -594,18 +596,53 @@ def plot_profile(
     # create dataframe of points
     points = create_profile(method, **kwargs)
 
+    # shorten profiles
+    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
+        points = shorten(
+            points,
+            max_dist=kwargs.get("max_dist"),
+            min_dist=kwargs.get("min_dist"),
+        )
+
     # if no layers supplied, use default
     if layers_dict is None:
         if layers_version is None:
             if hemisphere == "north":
                 layers_version = "bedmachine"
             elif hemisphere == "south":
-                layers_version = "bedmap2"
+                layers_version = "bedmap3"
+
+        # get region around profile, padded by 5% total profile distance
+        default_region = vd.pad_region(
+            vd.get_region((points.easting, points.northing)),
+            points.dist.max() * 0.05,
+        )
+
+        # determine grid spacing based on profile distance
+        default_spacing = kwargs.get("default_layers_spacing")
+
+        if default_spacing is None and points.dist.max() >= 2000e3:
+            default_spacing = 5e3
+            logger.info("using 5km spacing since profile is over 2000 km long")
+
+        # If using low-res grids, clip to default region
+        # else dont use default region since clipping full-res grid is slow
+        # if default_spacing is None or default_spacing < 5e3:
+        #     default_region = None
+
+        logger.info(
+            "fetching default layers from %s with a spacing of %s m, and a region of "
+            "%s",
+            layers_version,
+            default_spacing,
+            default_region,
+        )
+
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
-            # region=vd.get_region((points.easting, points.northing)),
+            region=default_region,
             reference=kwargs.get("default_layers_reference"),
-            spacing=kwargs.get("default_layers_spacing"),
+            spacing=default_spacing,
             hemisphere=hemisphere,
         )
 
@@ -614,14 +651,6 @@ def plot_profile(
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
-        )
-
-    # shorten profiles
-    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
-        points = shorten(
-            points,
-            max_dist=kwargs.get("max_dist"),
-            min_dist=kwargs.get("min_dist"),
         )
 
     # sample cross-section layers from grids
