@@ -42,8 +42,7 @@ def create_profile(
     stop : tuple[float, float], optional
         Coordinates for ending point of profile, by default None
     num : int, optional
-        Number of points to sample at, for "points" by default is 100, for other methods
-        num by default is determined by shapefile or dataframe
+        Number of points to sample at along the line, by default is 1000
     shapefile : str, optional
         shapefile file name to create points along, by default None
     polyline : pandas.DataFrame, optional
@@ -55,49 +54,54 @@ def create_profile(
         Dataframe with 'easting', 'northing', and 'dist' columns for points along line
         or shapefile path.
     """
-    methods = ["points", "shapefile", "polyline"]
-    if method not in methods:
-        msg = f"If method = {method}, 'start' and 'stop' must be set."
-        raise ValueError(msg)
-    if method == "points":
-        if num is None:
-            num = 1000
-        if any(a is None for a in [start, stop]):
-            msg = f"If method = {method}, 'start' and 'stop' must be set."
-            raise ValueError(msg)
-        start = typing.cast(tuple[float, float], start)
-        stop = typing.cast(tuple[float, float], stop)
-        coordinates = pd.DataFrame(
-            data=np.linspace(start=start, stop=stop, num=num),
-            columns=["easting", "northing"],
+    if method == "shapefile":
+        assert isinstance(shapefile, str), (
+            f"If method = {method}, need to provide a valid shapefile"
         )
-        # for points, dist is from first point
-        coordinates["dist"] = np.sqrt(
-            (coordinates.easting - coordinates.easting.iloc[0]) ** 2
-            + (coordinates.northing - coordinates.northing.iloc[0]) ** 2
-        )
-
-    elif method == "shapefile":
-        if shapefile is None:
-            msg = f"If method = {method}, need to provide a valid shapefile"
-            raise ValueError(msg)
         shp = gpd.read_file(shapefile, engine="pyogrio")
         df = pd.DataFrame()
         df["coords"] = shp.geometry[0].coords[:]
         coordinates_rel = df.coords.apply(pd.Series, index=["easting", "northing"])
         # for shapefiles, dist is cumulative from previous points
         coordinates = cumulative_dist(coordinates_rel, **kwargs)
-
     elif method == "polyline":
-        if polyline is None:
-            msg = f"If method = {method}, need to provide a valid dataframe"
-            raise ValueError(msg)
-        # dist is cumulative from previous points
-        coordinates = cumulative_dist(polyline, **kwargs)
+        assert isinstance(polyline, pd.DataFrame), (
+            f"If method = {method}, need to provide a valid dataframe"
+        )
+        # if only 3 points, use `points` method
+        if len(polyline) <= 3:
+            logger.info("less than 3 points in polyline, so using only the endpoints")
+            method = "points"
+            start = (polyline.easting.iloc[0], polyline.northing.iloc[0])
+            stop = (polyline.easting.iloc[-1], polyline.northing.iloc[-1])
+        else:
+            # dist is cumulative from previous points
+            coordinates = cumulative_dist(polyline, **kwargs)
+    elif method == "points":
+        assert start is not None, f"If method = {method}, 'start' must be set."
+        assert stop is not None, f"If method = {method}, 'stop' must be set."
+        if num is None:
+            num = 1000
+        # calculate points and distances along profile
+        coords, dists = vd.profile_coordinates(
+            start,
+            stop,
+            num,
+        )
+
+        # turn into dataframe
+        coordinates = pd.DataFrame(
+            data={"easting": coords[0], "northing": coords[1], "dist": dists}
+        )
+    else:
+        msg = "Method must be one of 'points', 'shapefile', 'polyline'."
+        raise ValueError(msg)
 
     coords = coordinates.sort_values(by=["dist"])
 
     if method in ["shapefile", "polyline"]:
+        if num is None and len(coords) < 1000:
+            num = 1000
         try:
             if num is not None:
                 df = coords.set_index("dist")
@@ -117,10 +121,8 @@ def create_profile(
                 df2 = coords
         except ValueError:
             logger.info(
-                (
-                    "Issue with resampling, possibly due to number of points, ",
-                    "you must provide at least 4 points. Returning unsampled points",
-                )
+                "Issue with resampling, possibly due to number of points, "
+                "you must provide at least 4 points. Returning unsampled points"
             )
             df2 = coords
     else:
