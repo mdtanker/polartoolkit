@@ -1719,7 +1719,7 @@ def ibcso(
     layer: str,
     reference: str = "geoid",
     region: tuple[float, float, float, float] | None = None,
-    spacing: float | int = 500,
+    spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
@@ -1743,7 +1743,9 @@ def ibcso(
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 500 m
+        grid spacing to resample the loaded grid to, by default 500m. If spacing >=
+        5000m, will resample the grid to 5km, and save it as a preprocessed grid, so
+        future fetch calls are performed faster.
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
@@ -1760,7 +1762,7 @@ def ibcso(
     .. footbibliography::
     """
 
-    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
         fname1 = pathlib.Path(fname)
 
@@ -1793,15 +1795,48 @@ def ibcso(
                 registration="g",
             )
 
-            # convert to dataset for zarr
-            resampled = resampled.to_dataset(name=layer)
-
             # Save to .zarr file
-            resampled.to_zarr(
-                fname_processed,
-            )
+            resampled = resampled.to_dataset(name=layer)
+            resampled.to_zarr(fname_processed)
 
         return str(fname_processed)
+
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Load preprocessed full-res grid, resample to 5km and save to .zarr file"
+
+        # get the path to the .nc file
+        fname1 = pathlib.Path(fname)
+
+        # add _5k to .zarr file name
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed_5k")
+        fname_processed = fname_pre.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            msg = "Resampling IBCSO data to 5km resolution, this may take a while!"
+            warnings.warn(msg, stacklevel=2)
+
+            # load the full-res preprocessed grid
+            grid = ibcso(layer=layer)
+
+            # resample to 5km
+            grid = resample_grid(grid, spacing=5e3)
+
+            # Save to disk
+            grid = grid.to_dataset(name=layer)
+            grid.to_zarr(fname_processed)
+
+        return str(fname_processed)
+
+    # determine which resolution of preprocessed grid to use
+    if spacing is None or spacing < 5000:
+        preprocessor = preprocessing_fullres
+    elif spacing >= 5000:
+        logger.info("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+    else:
+        msg = "spacing must be either None or a float greater than 0"
+        raise ValueError(msg)
 
     if layer == "surface":
         path = pooch.retrieve(
@@ -1810,7 +1845,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="7748a79fffa41024c175cff7142066940b3e88f710eaf4080193c46b2b59e1f0",
             progressbar=True,
-            processor=preprocessing,  # pylint: disable=possibly-used-before-assignment
+            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
     elif layer == "bed":
         path = pooch.retrieve(
@@ -1819,7 +1854,7 @@ def ibcso(
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash="74d55acb219deb87dc5be019d6dafeceb7b1ebcf9095866f257671d12670a5e2",
             progressbar=True,
-            processor=preprocessing,  # pylint: disable=possibly-used-before-assignment
+            processor=preprocessor,  # pylint: disable=possibly-used-before-assignment
         )
     else:
         msg = "layer must be 'surface' or 'bed'"
@@ -1920,7 +1955,9 @@ def bedmachine(
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 500m
+        grid spacing to resample the loaded grid to, by default 500m. If spacing >=
+        5000m, will resample the grid to 5km, and save it as a preprocessed grid, so
+        future fetch calls are performed faster.
     registration : str, optional
         change registration with either 'p' for pixel or 'g' for gridline registration,
         by default is None.
@@ -1979,7 +2016,7 @@ def bedmachine(
         return str(fname_processed)
 
     def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, resample to 5k resolution, and save it as a zarr"
+        "Load the .nc file, resample to 5km resolution, and save it as a zarr"
         fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_5k.zarr
@@ -2558,7 +2595,9 @@ def bedmap3(
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3
+        grid spacing to resample the loaded grid to, by default 500m. If spacing >=
+        5000m, will resample the grid to 5km, and save it as a preprocessed grid, so
+        future fetch calls are performed faster.
     registration : str, optional,
         choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
         the original type of the grid
@@ -2604,16 +2643,16 @@ def bedmap3(
         # "mapping",
     ]
 
-    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Save each layer to individual .zarr file"
         # get the path to the nc file
-        fname2 = pathlib.Path(fname)
+        fname1 = pathlib.Path(fname)
 
         # check if all layers have already been processed in to Zarr files
         exists = []
         for lyr in valid_variables:
             fname_processed = (
-                pathlib.Path(fname2).with_stem(f"bedmap3_{lyr}").with_suffix(".zarr")
+                pathlib.Path(fname1).with_stem(f"bedmap3_{lyr}").with_suffix(".zarr")
             )
             if action in ("download", "update"):
                 exists.append(False)
@@ -2624,7 +2663,7 @@ def bedmap3(
 
         if all(exists):
             return str(
-                pathlib.Path(fname2).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
+                pathlib.Path(fname1).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
             )
 
         msg = (
@@ -2634,10 +2673,10 @@ def bedmap3(
         warnings.warn(msg, stacklevel=2)
         # go through each layer, update to gridline registration and save to a zarr file
         for lyr in valid_variables:
-            with xr.open_dataset(fname2) as ds:
+            with xr.open_dataset(fname1) as ds:
                 # Rename to the file to ***.zarr
                 fname_processed = (
-                    pathlib.Path(fname2)
+                    pathlib.Path(fname1)
                     .with_stem(f"bedmap3_{lyr}")
                     .with_suffix(".zarr")
                 )
@@ -2674,22 +2713,59 @@ def bedmap3(
                 grid.rename("z").to_zarr(fname_processed)
 
         return str(
-            pathlib.Path(fname2).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
+            pathlib.Path(fname1).with_stem(f"bedmap3_{layer}").with_suffix(".zarr")
         )
+
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
+        "Load preprocessed full-res grid, resample to 5km and save to .zarr file"
+
+        # get the path to the .nc file
+        fname1 = pathlib.Path(fname)
+
+        # add _5k to .zarr file name
+        fname_processed = (
+            pathlib.Path(fname1).with_stem(f"bedmap3_{layer}_5k").with_suffix(".zarr")
+        )
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            msg = "Resampling Bedmap3 data to 5km resolution, this may take a while!"
+            warnings.warn(msg, stacklevel=2)
+
+            # load the full-res preprocessed grid
+            grid = bedmap3(layer=layer)
+
+            # resample to 5km
+            grid = resample_grid(grid, spacing=5e3)
+
+            # Save to disk
+            grid.to_zarr(fname_processed)
+
+        return str(fname_processed)
+
+    # determine which resolution of preprocessed grid to use
+    if spacing is None or spacing < 5000:
+        preprocessor = preprocessing_fullres
+    elif spacing >= 5000:
+        logger.info("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+    else:
+        msg = "spacing must be either None or a float greater than 0"
+        raise ValueError(msg)
 
     # calculate icebase as surface-thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and thickness grids")
-        surface = bedmap3(layer="surface")
-        thickness = bedmap3(layer="ice_thickness")
+        surface = bedmap3(layer="surface", spacing=spacing)
+        thickness = bedmap3(layer="ice_thickness", spacing=spacing)
         # calculate icebase
         grid = surface - thickness
         # restore registration type
         grid.gmt.registration = surface.gmt.registration
     elif layer == "water_thickness":
         logger.info("calculating water thickness from bed and icebase grids")
-        icebase = bedmap3(layer="icebase")
-        bed = bedmap3(layer="bed")
+        icebase = bedmap3(layer="icebase", spacing=spacing)
+        bed = bedmap3(layer="bed", spacing=spacing)
         # calculate water thickness
         grid = icebase - bed
         # ensure no negative values
@@ -2702,7 +2778,7 @@ def bedmap3(
             fname="bedmap3.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=known_hash,
-            processor=preprocessing,
+            processor=preprocessor,
             progressbar=True,
         )
 
@@ -2842,7 +2918,9 @@ def bedmap2(
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
     spacing : str or int, optional
-        grid spacing to resample the loaded grid to, by default 10e3
+        grid spacing to resample the loaded grid to, by default 1000m. If spacing >=
+        5000m, will resample the grid to 5km, and save it as a preprocessed grid, so
+        future fetch calls are performed faster.
     registration : str, optional,
         choose between 'g' (gridline) or 'p' (pixel) registration types, by default is
         the original type of the grid
@@ -2907,7 +2985,7 @@ def bedmap2(
         )
         raise ValueError(msg)
 
-    def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+    def preprocessing_fullres(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Unzip the folder, convert the tiffs to .zarr files"
         # extract each layer to it's own folder
         if layer == "gl04c_geiod_to_WGS84":
@@ -2948,19 +3026,82 @@ def bedmap2(
 
         return str(fname_processed)
 
+    def preprocessing_5k(fname: str, action: str, _pooch2: typing.Any) -> str:
+        """
+        Unzip the folder, load the tiffs, resample to 5km resolution, and save as .zarr
+        files
+        """
+        # extract each layer to it's own folder
+        if layer == "gl04c_geiod_to_WGS84":
+            member = ["bedmap2_tiff/gl04c_geiod_to_WGS84.tif"]
+        elif layer == "ice_thickness":
+            member = ["bedmap2_tiff/bedmap2_thickness.tif"]
+        elif layer == "ice_thickness_uncertainty":
+            member = ["bedmap2_tiff/bedmap2_thickness_uncertainty_5km.tif"]
+        else:
+            member = [f"bedmap2_tiff/bedmap2_{layer}.tif"]
+        fname1 = pooch.Unzip(
+            extract_dir=f"bedmap2_{layer}",
+            members=member,
+        )(fname, action, _pooch2)[0]
+        # get the path to the layer's tif file
+        fname2 = pathlib.Path(fname1)
+
+        # add _5k to filename
+        fname_pre = fname2.with_stem(fname2.stem + "_5k")
+
+        # Rename to the file to ***.zarr
+        fname_processed = fname_pre.with_suffix(".zarr")
+
+        # Only recalculate if new download or the processed file doesn't exist yet
+        if action in ("download", "update") or not fname_processed.exists():
+            # load data
+            grid = (
+                xr.load_dataarray(
+                    fname2,
+                    engine="rasterio",
+                )
+                .squeeze()
+                .drop_vars(["band", "spatial_ref"])
+            )
+            # resampe to 5km
+            grid = resample_grid(
+                grid,
+                spacing=5e3,
+            )
+
+            grid = grid.to_dataset(name="z")
+
+            # Save to disk
+            grid.to_zarr(
+                fname_processed,
+            )
+
+        return str(fname_processed)
+
+    # determine which resolution of preprocessed grid to use
+    if spacing is None or spacing < 5000:
+        preprocessor = preprocessing_fullres
+    elif spacing >= 5000:
+        logger.info("using preprocessed 5km grid since spacing is > 5km")
+        preprocessor = preprocessing_5k
+    else:
+        msg = "spacing must be either None or a float greater than 0"
+        raise ValueError(msg)
+
     # calculate icebase as surface-ice_thickness
     if layer == "icebase":
         logger.info("calculating icebase from surface and ice thickness grids")
-        surface = bedmap2(layer="surface")
-        ice_thickness = bedmap2(layer="ice_thickness")
+        surface = bedmap2(layer="surface", spacing=spacing)
+        ice_thickness = bedmap2(layer="ice_thickness", spacing=spacing)
         # calculate icebase
         grid = surface - ice_thickness
         # restore registration type
         grid.gmt.registration = surface.gmt.registration
     elif layer == "water_thickness":
         logger.info("calculating water thickness from bed and icebase grids")
-        icebase = bedmap2(layer="icebase")
-        bed = bedmap2(layer="bed")
+        icebase = bedmap2(layer="icebase", spacing=spacing)
+        bed = bedmap2(layer="bed", spacing=spacing)
         # calculate water thickness
         grid = icebase - bed
         # restore registration type
@@ -2984,7 +3125,7 @@ def bedmap2(
             fname="bedmap2_tiff.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             known_hash=known_hash,
-            processor=preprocessing,
+            processor=preprocessor,
             progressbar=True,
         )
         try:
