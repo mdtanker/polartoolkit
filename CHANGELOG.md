@@ -1,5 +1,69 @@
 # Changelog
 
+<!--
+Below is an example for a release
+
+## v0.0.1
+Released on 2025-06-04
+DOI: https://doi.org/10.5281/zenodo.7059091
+Contributors:
+    * author1
+    * author2
+
+### 🚀 Added
+
+- function `function2` for calculating something important.
+
+### ✏️ Changed
+
+- Changed the lower bounds on the pandas dependency from v1.5 to v1.2.
+
+### ⚠️ Deprecated
+
+- marked `function1` as deprecated, used the new `function2` instead.
+
+### ❌ Removed
+
+- removed the previously deprecated `function0`.
+
+### 🐛 Fixed
+
+- fixed a bug in `function1` which cause some error.
+
+### 🛡️ Security
+
+- removed a password from the code.
+
+-->
+
+
+## v1.1.0
+Released on 2025-07-30
+DOI: https://doi.org/10.5281/zenodo.7059091
+Contributors:
+    * Matt Tankersley
+
+### 🚀 Added
+- speed up Profiles modules with lower-resolution default layers
+- store low-resolution (5km) versions of Bedmachine, Bedmap2/3, and IBCSO grids for faster use when high-resolution doesn't matter
+- new `Figure` class, with easy-to-call class plotting functions
+
+### 🐛 Fixed
+- removed some bugs in `subset_grid`, `grd_compare`,
+- allow users to configure their own logging
+- updated use of GMT virtual files for correctly reading grid registration type
+- fix bug which removed dates and times from Bedmap point data
+
+### ✏️ Changed
+- replace most Make commands with Nox
+- add minimum version of Zarr as 3.0 to fix issues with consolidated metadata
+- switch to Hatchling for build backend
+
+### ❌ Removed
+- drop Python 3.9 support
+- remove license checks and text in each file
+- remove Python Semantic Release and automated changelogs
+
 
 ## v1.0.6 (2025-07-17)
 ### 🐛 Bug Fixes
