@@ -332,14 +332,6 @@ def default_layers(
     """
     hemisphere = utils.default_hemisphere(hemisphere)
 
-    if (spacing is not None) or (reference is not None) or (region is not None):
-        logger.warning(
-            "Supplying any spacing, reference, or region to `default_layers` will "
-            "result in resampling of the grids, which will likely take longer than "
-            "just using the full-resolution defaults, unless a spacing >= 5000 is "
-            "supplied, as it will use the low-resolution preprocessed grids."
-        )
-
     if version == "bedmap2":
         if hemisphere == "north":
             msg = "Bedmap2 is not available for the northern hemisphere."
@@ -532,6 +524,13 @@ def plot_profile(
         choose between plotting in the "north" or "south" hemispheres, by default None
     Keyword Args
     ------------
+    default_layers_spacing: float
+        Spacing to use for layers grid, by default, if profile is longer than 2000 km,
+        will use 5 km for faster plotting, or else it will default to the grids' native
+        resolution.
+    default_layers_reference: str
+        Vertical reference frame to use for elevation grids, by default uses defaults
+        from fetch functions for `layers_version`.
     fillnans: bool
         Choose whether to fill nans in layers, defaults to True.
     num: int
@@ -594,6 +593,14 @@ def plot_profile(
     # create dataframe of points
     points = create_profile(method, **kwargs)
 
+    # shorten profiles
+    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
+        points = shorten(
+            points,
+            max_dist=kwargs.get("max_dist"),
+            min_dist=kwargs.get("min_dist"),
+        )
+
     # if no layers supplied, use default
     if layers_dict is None:
         if layers_version is None:
@@ -601,11 +608,38 @@ def plot_profile(
                 layers_version = "bedmachine"
             elif hemisphere == "south":
                 layers_version = "bedmap2"
+
+        # get region around profile, padded by 5% total profile distance
+        default_region = vd.pad_region(
+            vd.get_region((points.easting, points.northing)),
+            points.dist.max() * 0.05,
+        )
+
+        # determine grid spacing based on profile distance
+        default_spacing = kwargs.get("default_layers_spacing")
+
+        if default_spacing is None and points.dist.max() >= 2000e3:
+            default_spacing = 5e3
+            logger.info("using 5km spacing since profile is over 2000 km long")
+
+        # If using low-res grids, clip to default region
+        # else dont use default region since clipping full-res grid is slow
+        # if default_spacing is None or default_spacing < 5e3:
+        #     default_region = None
+
+        logger.info(
+            "fetching default layers from %s with a spacing of %s m, and a region of "
+            "%s",
+            layers_version,
+            default_spacing,
+            default_region,
+        )
+
         layers_dict = default_layers(
             layers_version,  # type: ignore[arg-type]
-            # region=vd.get_region((points.easting, points.northing)),
+            region=default_region,
             reference=kwargs.get("default_layers_reference"),
-            spacing=kwargs.get("default_layers_spacing"),
+            spacing=default_spacing,
             hemisphere=hemisphere,
         )
 
@@ -614,14 +648,6 @@ def plot_profile(
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
             hemisphere=hemisphere,
-        )
-
-    # shorten profiles
-    if (kwargs.get("max_dist") or kwargs.get("min_dist")) is not None:
-        points = shorten(
-            points,
-            max_dist=kwargs.get("max_dist"),
-            min_dist=kwargs.get("min_dist"),
         )
 
     # sample cross-section layers from grids
