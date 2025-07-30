@@ -2291,7 +2291,6 @@ def set_cmap(
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
-                logger.exception(e)
                 pygmt.makecpt(
                     cmap=cmap,
                     background=True,
@@ -2585,12 +2584,15 @@ def plot_grd(
     # need to mock show the figure for pygmt to set the temp file
     fig.show(method="none")
 
-    _, colorbar, _ = set_cmap(
-        cmap,
-        grid=grid,
-        hemisphere=hemisphere,
-        **kwargs,
-    )
+    # decide if colorbar should be plotted
+    colorbar = kwargs.get("colorbar")
+    if colorbar is None:
+        if kwargs.get("modis", False) is True:
+            colorbar = False
+        elif cmap is True:
+            colorbar = True
+        else:
+            colorbar = False
 
     # if currently plotting colorbar, or histogram, assume the past plot did as well and
     # account for it in the y shift
