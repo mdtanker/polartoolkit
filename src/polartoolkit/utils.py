@@ -17,7 +17,7 @@ from numpy.typing import NDArray
 from pyproj import Transformer
 
 import polartoolkit
-from polartoolkit import fetch, logger, maps, regions
+from polartoolkit import logger, maps, regions
 
 
 def default_hemisphere(hemisphere: str | None) -> str:
@@ -1455,34 +1455,6 @@ def grd_compare(
     da1_info = get_grid_info(da1)
     da2_info = get_grid_info(da2)
 
-    # extract regions of both grids
-    da1_reg = da1_info[1]
-    da1_reg = typing.cast(tuple[float, float, float, float], da1_reg)
-    da2_reg = da2_info[1]
-    da2_reg = typing.cast(tuple[float, float, float, float], da2_reg)
-
-    # first cut the grids to save time on the possible resampling below
-    if region is None:
-        # to intersection of both regions
-        region = regions.regions_overlap(
-            da1_reg,
-            da2_reg,
-        )
-    da1 = pygmt.grdsample(
-        da1,
-        region=region,
-        verbose=verbose,
-    )
-    da2 = pygmt.grdsample(
-        da2,
-        region=region,
-        verbose=verbose,
-    )
-
-    # extract grid info of both grids
-    da1_info = get_grid_info(da1)
-    da2_info = get_grid_info(da2)
-
     # extract spacing of both grids
     assert da1_info[0] is not None
     assert da2_info[0] is not None
@@ -1524,26 +1496,28 @@ def grd_compare(
             ymin = max(da1_reg[2], da2_reg[2])
             ymax = min(da1_reg[3], da2_reg[3])
             region = (xmin, xmax, ymin, ymax)
-            # get nearest multiple of spacing
-            region = tuple([spacing * round(x / spacing) for x in region])  # pylint: disable=consider-using-generator
             logger.info("grid regions dont match, using inner region %s", region)
         else:
             region = da1_reg
-        # use registration from first grid, or from kwarg
-        if kwargs.pop("registration", None) is None:
-            registration = get_grid_info(da1)[4]
-        else:
-            registration = kwargs.pop("registration", None)
+        # get registration, if different use gridline
+        registration = "g" if da1_registration != da2_registration else da1_registration
+
+        logger.info(
+            "resampling both grids with a spacing of %s, region of %s"
+            "and a registration of %s",
+            spacing,
+            region,
+            registration,
+        )
         # resample grids
-        grid1 = fetch.resample_grid(
+        grid1 = pygmt.grdsample(
             da1,
             spacing=spacing,
             region=region,
             registration=registration,
             verbose=verbose,
         )
-
-        grid2 = fetch.resample_grid(
+        grid2 = pygmt.grdsample(
             da2,
             spacing=spacing,
             region=region,
@@ -1552,7 +1526,7 @@ def grd_compare(
         )
 
         reg = grid1.gmt.registration
-        grid_registration: str | None = "g" if reg == 0 else "p"
+        grid_registration: str = "g" if reg == 0 else "p"
         if grid_registration != registration:
             warnings.warn(
                 "registration hasn't been correctly changed",
@@ -1828,12 +1802,22 @@ def subset_grid(
     xarray.DataArray
         clipped grid
     """
+    try:
+        return pygmt.grdcut(
+            grid,
+            region=region,
+            verbose="q",
+        )
+    except IndexError:
+        ew = [region[0], region[1]]
+        ns = [region[2], region[3]]
 
-    return pygmt.grdcut(
-        grid,
-        region=region,
-        verbose="q",
-    )
+        return grid.sel(
+            {
+                list(grid.sizes.keys())[1]: slice(min(ew), max(ew)),
+                list(grid.sizes.keys())[0]: slice(min(ns), max(ns)),  # noqa: RUF015
+            }
+        )
 
 
 def get_min_max(

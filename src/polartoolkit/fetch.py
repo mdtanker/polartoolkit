@@ -97,7 +97,7 @@ def resample_grid(
     # get coordinate names
     # original_dims = tuple(grid.sizes.keys())
 
-    verbose = kwargs.get("verbose", "w")
+    verbose = kwargs.get("verbose", "e")
 
     if (spacing is None) & (region is None) & (registration is None):
         logger.info("returning original grid")
@@ -516,35 +516,36 @@ def basal_melt(
 
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
-            msg = (
-                "Unfortunately, this dataset is not available for download at the "
-                "moment, follow here for details: "
-                "https://github.com/mdtanker/polartoolkit/issues/250"
+            # load .h5 file
+            try:
+                grid = xr.load_dataset(
+                    fname1,
+                    engine="netcdf4",
+                )
+            except OSError as e:
+                msg = (
+                    "Unfortunately, this dataset is not available for download at the "
+                    "moment, follow here for details: "
+                    "https://github.com/mdtanker/polartoolkit/issues/250"
+                )
+                raise OSError(msg) from e
+
+            # Remove extra dimension
+            grid = grid.squeeze()
+
+            # Assign variables as coords
+            grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
+
+            # Swap dimensions with coordinate names
+            grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
+
+            # Drop coordinate variables
+            grid = grid.drop_vars(["x", "y"])
+
+            # Save to .zarr file
+            grid.to_zarr(
+                fname_processed,
             )
-            raise ValueError(msg)
-
-            # # load .h5 file
-            # grid = xr.load_dataset(
-            #     fname1,
-            #     engine="netcdf4",
-            # )
-
-            # # Remove extra dimension
-            # grid = grid.squeeze()
-
-            # # Assign variables as coords
-            # grid = grid.assign_coords({"easting": grid.x, "northing": grid.y})
-
-            # # Swap dimensions with coordinate names
-            # grid = grid.swap_dims({"phony_dim_1": "easting", "phony_dim_0": "northing"})
-
-            # # Drop coordinate variables
-            # grid = grid.drop_vars(["x", "y"])
-
-            # # Save to .zarr file
-            # grid.to_zarr(
-            #     fname_processed,
-            # )
 
         return str(fname_processed)
 
@@ -3605,7 +3606,7 @@ def gravity(
                     grid,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     spacing=5e3,
-                    verbose=kwargs.get("verbose", "w"),
+                    verbose=kwargs.get("verbose", "e"),
                 ).rename("gravity")
 
                 # add ellipsoidal height of observations
@@ -3833,14 +3834,14 @@ def geoid(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "w"),
+                verbose=kwargs.get("verbose", "e"),
             )
             # get just needed region
             processed = pygmt.grdsample(
                 grid2,
                 region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "w"),
+                verbose=kwargs.get("verbose", "e"),
             )
             # Save to disk
             processed.to_netcdf(fname_processed)
@@ -4412,7 +4413,7 @@ def ghf(
                 region,
                 registration,
                 **kwargs,
-            ).rio.write_crs("EPSG:3031")
+            )
 
     elif version == "losing-ebbing-2021":
 
