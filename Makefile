@@ -18,7 +18,7 @@ remove:
 	mamba env remove --name $(PROJECT)
 
 conda_export:
-	mamba env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
+	conda env export --name $(PROJECT) --channel conda-forge --file env/environment.yml
 
 ####
 ####

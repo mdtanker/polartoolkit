@@ -5,7 +5,9 @@ ci:
 
 exclude: |
   (?x)^(
-      .github/config.yml
+      .github/config.yml |
+      environment.yml |
+      env/environment.yml
   )$
 
 repos:

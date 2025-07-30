@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# git changes
+changes.md
+
 # setuptools_scm
 src/*/_version.py
 
