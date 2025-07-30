@@ -509,15 +509,16 @@ def plot_profile(
         Choose sampling method, either "points", "shapefile", or "polyline"
     layers_dict : dict, optional
         nested dictionary of layers to include in cross-section, construct with
-        `profiles.make_data_dict`, by default is Bedmap2 layers.
+        `profiles.make_data_dict`, by default is created from Bedmap2, Bedmap3, or
+        Bedmachine data, as chosen from `layers_version`.
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
         `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
-        choose between using 'bedmap2' or 'bedmachine' layers, by default is Bedmap2,
-        unless plotting for Greenland, then it is Bedmachine.
+        choose between using 'bedmap2', 'bedmap3' or 'bedmachine' layers, the default
+        for Antarctica is Bedmap3 and for Greenland is BedMachine.
     fig_height : float, optional
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
@@ -609,7 +610,7 @@ def plot_profile(
             if hemisphere == "north":
                 layers_version = "bedmachine"
             elif hemisphere == "south":
-                layers_version = "bedmap2"
+                layers_version = "bedmap3"
 
         # get region around profile, padded by 5% total profile distance
         default_region = vd.pad_region(
