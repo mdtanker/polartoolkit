@@ -37,7 +37,18 @@ Contributors:
 
 -->
 
+## v1.1.2
+Released on 2025-07-31
+Contributors:
+- Matt Tankersley
+
+### 🐛 Fixed
+- error in type checking which cause optional packages to be requires
+
+
 ## v1.1.1
+> ⚠️ **YANKED**: This has been yanked from PyPI since a bug accidentally required the optional dependency ipyleaflet.
+
 Released on 2025-07-31
 Contributors:
 - Matt Tankersley
@@ -47,10 +58,12 @@ Contributors:
 
 ### 🚀 Added
 - a .zenodo.yml file to set metadata for Zenodo releases
-- a githup action to validate the .zenodo.yml file
+- a github action to validate the .zenodo.yml file
 
 
 ## v1.1.0
+> ⚠️ **YANKED**: This has been yanked from PyPI since sdist files weren't uploaded.
+
 Released on 2025-07-30
 Contributors:
 - Matt Tankersley
