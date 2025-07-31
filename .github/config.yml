@@ -28,3 +28,5 @@ firstPRMergeComment: >
    🎉🎉🎉 Congrats on merging your first pull request and welcome to the team! 🎉🎉🎉
 
    We hope that this was a good experience for you. Let us know if there is any way that the contributing process could be improved.
+   
+   Please add yourself as an author to both of the following files in a new PR: AUTHORS.md and .zenodo.json.

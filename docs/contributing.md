@@ -59,6 +59,8 @@ contributions.
   - [Push your changes](#push-your-changes)
   - [Open a PR](#open-a-pr)
   - [Code review](#code-review)
+  - [Sync your fork and local](#sync-your-fork-and-local)
+  - [Add yourself as an author](#add-yourself-as-an-author)
 * [Publish a new release](#publish-a-new-release)
 * [Update the Dependencies](#update-the-dependencies)
 * [Create a conda environment file](#create-a-conda-environment-file)
@@ -423,6 +425,10 @@ git merge upstream/main
 git push origin main
 ```
 Now both your forked (upstream) and local repositories are sync with the upstream repository where the PR was merged.
+
+### Add yourself as an author
+
+Once you have merged your PR, open a new PR with your details added to the files `AUTHORS.md` and `.zenodo.json`. With each new release, Zenodo will add you as an author to package.
 
 ## Publish a new release
 
