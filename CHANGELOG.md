@@ -37,6 +37,18 @@ Contributors:
 
 -->
 
+## v1.1.1
+Released on 2025-07-31
+Contributors:
+- Matt Tankersley
+
+### 🐛 Fixed
+- error in build process which didn't build / upload the correct sdist and wheel files
+
+### 🚀 Added
+- a .zenodo.yml file to set metadata for Zenodo releases
+- a githup action to validate the .zenodo.yml file
+
 
 ## v1.1.0
 Released on 2025-07-30
