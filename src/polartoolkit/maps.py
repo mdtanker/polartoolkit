@@ -2826,7 +2826,7 @@ def interactive_map(
     points: pd.DataFrame | None = None,
     basemap_type: str | None = None,
     **kwargs: typing.Any,
-) -> ipyleaflet.Map:
+) -> typing.Any:
     """
     Plot an interactive map with satellite imagery. Clicking gives the cursor location
     in a Polar Stereographic projection [x,y]. Requires ipyleaflet
@@ -2853,7 +2853,7 @@ def interactive_map(
 
     Returns
     -------
-    ipyleaflet.Map
+    typing.Any
         interactive map
     """
     hemisphere = utils.default_hemisphere(hemisphere)
@@ -3655,7 +3655,7 @@ def geoviews_points(
     points_color: str = "red",
     points_cmap: str = "viridis",
     **kwargs: typing.Any,
-) -> gv.Points:
+) -> typing.Any:
     """
     Add points to a geoviews map instance.
     Parameters
