@@ -108,6 +108,11 @@ build.hooks.vcs.version-file = "src/polartoolkit/_version.py"
 dependencies = []
 scripts.test = "pytest {args}"
 
+[tool.hatch.build.targets.sdist]
+only-include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/polartoolkit", "src/antarctic_plots"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
