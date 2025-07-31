@@ -114,6 +114,9 @@ only-include = ["src"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/polartoolkit", "src/antarctic_plots"]
 
+[tool.check-wheel-contents]
+toplevel = ["polartoolkit", "antarctic_plots"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
