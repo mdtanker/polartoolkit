@@ -61,7 +61,7 @@ Please contact us on the [GitHub discussions page](https://github.com/mdtanker/p
 The **PolarToolkit** python package provides some basic tools to help in conducting polar research.
 You can use it to download common datasets (i.e. BedMachine, Bedmap, MODIS Mosaics), create maps and plots specific to Antarctica, Greenland and the Arctic and visualize data with multiple methods.
 
-Feel free to use, share, modify, and [contribute](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to this project.
+Feel free to use, share, modify, and [contribute](contributing.md) to this project.
 
 ## What _PolarToolkit_ is for:
 
@@ -95,4 +95,4 @@ I welcome all forms of contribution! If you have any questions, comments or sugg
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
-Please, read our [Contributor Guide](https://polartoolkit.readthedocs.io/en/latest/contributing.html) to learn how you can contribute to the project.
+Please, read our [Contributor Guide](contributing.md) to learn how you can contribute to the project.
