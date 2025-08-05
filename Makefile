@@ -33,7 +33,6 @@ clear_datasets:
 run_datasets:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/datasets/**/*.ipynb
 
-
 clear_tutorial:
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/tutorial/*.ipynb
 
@@ -47,5 +46,7 @@ run_how_to:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/how_to/*.ipynb
 
 clear_docs: clear_datasets clear_tutorial clear_how_to
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/*.ipynb
 
 run_docs: run_datasets run_tutorial run_how_to
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
