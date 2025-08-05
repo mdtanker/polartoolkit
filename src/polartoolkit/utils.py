@@ -1451,6 +1451,21 @@ def grd_compare(
     if isinstance(da2, str):
         da2 = xr.load_dataarray(da2)
 
+    # get coordinate names
+    da1_original_dims = tuple(da1.sizes.keys())
+    da2_original_dims = tuple(da2.sizes.keys())
+
+    if region is not None:
+        # cut grids to supplied region
+        da1 = subset_grid(
+            da1,
+            region=region,
+        )
+        da2 = subset_grid(
+            da2,
+            region=region,
+        )
+
     # extract grid info of both grids
     da1_info = get_grid_info(da1)
     da2_info = get_grid_info(da2)
@@ -1470,6 +1485,14 @@ def grd_compare(
     # extract registrations of both grids
     da1_registration = da1_info[-1]
     da2_registration = da2_info[-1]
+
+    logger.debug("grid 1 spacing: %s, grid 2 spacing: %s", da1_spacing, da2_spacing)
+    logger.debug("grid 1 region: %s, grid 2 region: %s", da1_reg, da2_reg)
+    logger.debug(
+        "grid 1 registration: %s, grid 2 registration: %s",
+        da1_registration,
+        da2_registration,
+    )
 
     # if spacing, region and registration match, no resampling
     if (
@@ -1602,6 +1625,7 @@ def grd_compare(
         fig = maps.plot_grd(
             grid1,
             cmap=cmap,
+            region=region,
             coast=coast,
             title=kwargs.get("grid1_name", "grid 1"),
             cpt_lims=(vmin, vmax),
@@ -1663,6 +1687,19 @@ def grd_compare(
             )
 
         fig.show()
+
+    grid1 = grid1.rename(
+        {
+            next(iter(grid1.dims)): da1_original_dims[0],
+            list(grid1.dims)[1]: da1_original_dims[1],
+        }
+    )
+    grid2 = grid2.rename(
+        {
+            next(iter(grid2.dims)): da2_original_dims[0],
+            list(grid2.dims)[1]: da2_original_dims[1],
+        }
+    )
 
     return (dif, grid1, grid2)
 
@@ -1803,11 +1840,21 @@ def subset_grid(
         clipped grid
     """
     try:
-        return pygmt.grdcut(
+        da = pygmt.grdcut(
             grid,
             region=region,
             verbose="q",
         )
+        # get coordinate names
+        original_dims = tuple(grid.sizes.keys())
+
+        return da.rename(
+            {
+                next(iter(da.dims)): original_dims[0],
+                list(da.dims)[1]: original_dims[1],
+            }
+        )
+
     except IndexError:
         ew = [region[0], region[1]]
         ns = [region[2], region[3]]

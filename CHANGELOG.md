@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### 🐛 Fixed
+- preserve original coordinate names in xarray datarrays when cutting or resampling
+
 
 <!--
 Below is an example for a release
