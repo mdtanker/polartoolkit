@@ -73,7 +73,7 @@ Feel free to use, share, modify, and [contribute](contributing.md) to this proje
 - current focus for datasets is related to ice, geophysics, and earth properties since this is where my personal research interests are, but please request or add your own types of data!
 - basic geospatial manipulations (filtering, resampling, reprojecting, masking etc.)
 
-## What _PolarToolkit_ is **NOT** for:
+## What _PolarToolkit_ is not for:
 
 - downloading niche datasets or those that only cover specific regions
 - downloaded datasets outside of Antarctica, Greenland and the Arctic
