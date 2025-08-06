@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Fixed
 - preserve original coordinate names in xarray datarrays when cutting or resampling
-
+- allow x and y shift amounts to be None
 
 <!--
 Below is an example for a release
