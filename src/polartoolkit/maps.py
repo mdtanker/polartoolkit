@@ -170,6 +170,10 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         self.origin_shift = origin_shift
 
+        if xshift_amount is None:
+            xshift_amount = 0  # type: ignore[unreachable]
+        if yshift_amount is None:
+            yshift_amount = 0  # type: ignore[unreachable]
         # determine default values for x and y shift
         # add .4 to account for the space between figures
         xshift = xshift_amount * (self.width + xshift_extra)
