@@ -31,24 +31,24 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "pandas",
-    "openpyxl", # needed for fetch.ghf to read an excel file into pandas
-    "pooch",
-    "tqdm",
+    "numpy>=1.25.0",
+    "pandas>=2.0.0",
+    "xarray[io]>=2023.4.0", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
+    "scipy>=1.11.0",
     "verde",
-    "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
-    "harmonica>=0.6.0", # need load_oasis_montaj_grid function
-    "pyproj",
+    "pooch",
     "rioxarray",
-    "scipy",
-    "numpy",
+    "tqdm",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
+    "harmonica>=0.6.0", # need load_oasis_montaj_grid function
+    "deprecation",
+    "openpyxl", # needed for fetch.ghf to read an excel file into pandas
+    "pyproj",
     "geopandas>=1.0", # for issue with pyogrio
     "pyogrio",
     "zarr>=3.0", # issue with fetch and consolidated metadata
     "python-dotenv",
     "requests",
-    "deprecation",
     "earthaccess",
     "xrft",
 ]
@@ -58,7 +58,7 @@ interactive = [
     "geoviews",
     "cartopy",
     "ipyleaflet",
-    "ipython",
+    "ipython>=8.13.0",
 ]
 test = [
   {include-group = "interactive"},
