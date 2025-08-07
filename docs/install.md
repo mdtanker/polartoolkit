@@ -6,7 +6,7 @@ See below for the full installation instructions. If instead you'd like to use t
 
 ## Install Python
 
-Before installing _PolarToolkit_, ensure you have Python 3.9 or greater installed.
+Before installing _PolarToolkit_, ensure you have Python 3.11 or greater installed.
 If you don't, I recommend setting up Python with Miniforge.
 See the install instructions [here](https://github.com/conda-forge/miniforge).
 

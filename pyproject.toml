@@ -11,7 +11,7 @@ description = "Helpful tools for polar researchers"
 keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting", "pygmt", "cross-section"]
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -24,31 +24,31 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 dynamic = ["version"]
 dependencies = [
-    "pandas",
-    "openpyxl", # needed for fetch.ghf to read an excel file into pandas
-    "pooch",
-    "tqdm",
+    "numpy>=1.25.0",
+    "pandas>=2.0.0",
+    "xarray[io]>=2023.4.0", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
+    "scipy>=1.11.0",
     "verde",
-    "xarray[io]", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
-    "harmonica>=0.6.0", # need load_oasis_montaj_grid function
-    "pyproj",
+    "pooch",
     "rioxarray",
-    "scipy",
-    "numpy",
+    "tqdm",
     "pygmt>=0.10.0", # need parameter "log" for colorbar
+    "harmonica>=0.6.0", # need load_oasis_montaj_grid function
+    "deprecation",
+    "openpyxl", # needed for fetch.ghf to read an excel file into pandas
+    "pyproj",
     "geopandas>=1.0", # for issue with pyogrio
     "pyogrio",
     "zarr>=3.0", # issue with fetch and consolidated metadata
     "python-dotenv",
     "requests",
-    "deprecation",
     "earthaccess",
     "xrft",
 ]
@@ -58,7 +58,7 @@ interactive = [
     "geoviews",
     "cartopy",
     "ipyleaflet",
-    "ipython",
+    "ipython>=8.13.0",
 ]
 test = [
   {include-group = "interactive"},
@@ -123,6 +123,7 @@ addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = [
   "error",
+  "ignore:.*numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject.*:RuntimeWarning",
 ]
 log_cli_level = "INFO"
 testpaths = [
@@ -145,7 +146,7 @@ report.exclude_also = [
 
 [tool.mypy]
 files = ["src", "tests"]
-python_version = "3.10"
+python_version = "3.11"
 warn_unused_configs = true
 strict = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -204,7 +205,7 @@ ignore = [
 
 
 [tool.pylint]
-py-version = "3.10"
+py-version = "3.11"
 ignore-paths = ["CHANGELOG.md", ".*\\_version.py"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"

@@ -36,16 +36,15 @@ jobs:
       - name: Run Pylint
         run: uvx nox -s pylint -- --output-format=github
 
-  test:
+  checks:
     name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     strategy:
-      # Otherwise, the workflow would stop if a single job fails. We want to
-      # run all of them to catch failures in different combinations.
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
         runs-on: [ubuntu-latest, windows-latest, macos-14]
+
     env:
       NUMBA_DISABLE_JIT: "1"
     timeout-minutes: 30
@@ -67,36 +66,7 @@ jobs:
       - name: Setup Micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
-          environment-name: test_env
-          create-args: >-
-            python=${{ matrix.python-version }}
-            pandas
-            openpyxl
-            pooch
-            tqdm
-            verde
-            xarray
-            harmonica>=0.6.0
-            pyproj
-            rioxarray
-            scipy
-            numpy
-            pygmt>=0.10.0
-            geopandas>=1.0
-            pyogrio
-            zarr
-            python-dotenv
-            requests
-            deprecation
-            earthaccess
-            xrft
-            geoviews
-            cartopy
-            ipyleaflet
-            ipython
-            pytest>=6
-            pytest-cov>=3
-            deepdiff
+          environment-file: environment.yml
           post-cleanup: "all"
           cache-downloads: false
           # environment cache is persistent for one week.
