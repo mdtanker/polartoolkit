@@ -123,6 +123,7 @@ addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = [
   "error",
+  "ignore:.*numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject.*:RuntimeWarning",
 ]
 log_cli_level = "INFO"
 testpaths = [
