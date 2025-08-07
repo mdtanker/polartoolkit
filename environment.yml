@@ -30,7 +30,7 @@ dependencies:
   - geoviews
   - cartopy
   - ipyleaflet
-  - ipython
+  - ipython>=8.13.0
   # test
   - pytest>=6
   - pytest-cov>=3
