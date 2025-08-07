@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - preserve original coordinate names in xarray datarrays when cutting or resampling
 - allow x and y shift amounts to be None
 
+### ❌ Removed
+- drop support for Python 3.10 and add 3.13 following SPEC 0
 <!--
 Below is an example for a release
 
