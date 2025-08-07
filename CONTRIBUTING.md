@@ -446,7 +446,7 @@ Once the new version is on conda, update the binder .yml file, as below.
 
 ## Update the dependencies
 
-To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI. Additionally, add any dependency changes to the file `environment.yml`, as well as `ci.yml`.
+To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI. Additionally, add any dependency changes to the file `environment.yml`.
 
 If you add a dependency necessary for using the package, make sure to add it to the Binder config file and update the `environment.yml` file in the repository. See below.
 
