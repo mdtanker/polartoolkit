@@ -9,6 +9,8 @@ dependencies:
   - pandas>=2.0.0
   - xarray>=2023.4.0
   - scipy>=1.11.0
+  - netcdf4
+  - h5netcdf
   - verde
   - pooch
   - rioxarray
