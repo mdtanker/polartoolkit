@@ -33,7 +33,7 @@ dynamic = ["version"]
 dependencies = [
     "numpy>=1.25.0",
     "pandas>=2.0.0",
-    "xarray[io]>=2023.4.0", # includes netCDF4, h5netcdf, scipy, pydap, zarr, fsspec, cftime, rasterio, cfgrib, pooch
+    "xarray[io]>=2023.4.0", # includes netCDF4, h5netcdf, pydap, scipy, zarr, fsspec, cftime, cfgrib, pooch
     "scipy>=1.11.0",
     "verde",
     "pooch",
