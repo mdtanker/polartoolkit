@@ -662,12 +662,12 @@ def ice_vel(
     Antarctica: version 1 from :footcite:t:`mouginotcontinent2019` and
     :footcite:t:`mouginotmeasures2019`.
 
-    accessed from https://nsidc.org/data/nsidc-0754/versions/1#anchor-1
+    accessed from https://cmr.earthdata.nasa.gov/virtual-directory/collections/C3298047930-NSIDC_CPRD
     Data part of https://doi.org/10.1029/2019GL083826
 
     Greenland: version 1 from :footcite:t:`measures2020`
 
-    accessed from https://nsidc.org/data/nsidc-0670/versions/1
+    accessed from https://cmr.earthdata.nasa.gov/virtual-directory/collections/C3291956575-NSIDC_CPRD
 
     Units are in m/yr
 
@@ -781,7 +781,7 @@ def ice_vel(
             preprocessor = preprocessing_5k
         # This is the path to the processed (magnitude) grid
         path = pooch.retrieve(
-            url="https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0754.001/1996.01.01/antarctic_ice_vel_phase_map_v01.nc",
+            url="https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0754/1/1996/01/01/antarctic_ice_vel_phase_map_v01.nc",
             fname="measures_ice_vel_phase_map.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity",
             downloader=EarthDataDownloader(),
@@ -810,7 +810,7 @@ def ice_vel(
             f"{base_fname}_vx_v1.tif": None,
             f"{base_fname}_vy_v1.tif": None,
         }
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0670.001/1995.12.01/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0670/1/1995/12/01/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity"
 
         pup = pooch.create(
