@@ -84,6 +84,113 @@ def rmse(data: typing.Any, as_median: bool = False) -> float:
     return value
 
 
+def get_grid_region(
+    grid: str | xr.DataArray,
+) -> tuple[float, ...]:
+    """
+    Returns the region of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get region from. Filename string or loaded grid.
+
+    Returns
+    -------
+    tuple
+        array with the region boundary in the format (xmin, xmax, ymin, ymax)
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        region: tuple[float, ...] = tuple(
+            float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logger.exception(e)
+        logger.warning("grid region can't be extracted")
+        raise e
+
+    return region
+
+
+def get_grid_spacing(
+    grid: str | xr.DataArray,
+) -> float | None:
+    """
+    Returns the spacing of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get spacing from. Filename string or loaded grid.
+
+    Returns
+    -------
+    float | None
+        Spacing of the grid or None if it can't be extracted.
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logger.exception(e)
+        logger.warning("grid spacing can't be extracted")
+        spacing = None
+
+    return spacing
+
+
+def get_grid_registration(
+    grid: str | xr.DataArray,
+) -> str | None:
+    """
+    Returns the registration of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get registration from. Filename string or loaded grid.
+
+    Returns
+    -------
+    str | None
+        "g" for gridline or "p" for pixel registration.
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        reg = grid.gmt.registration  # type: ignore[union-attr]
+        registration: str | None = "g" if reg == 0 else "p"
+    except AttributeError:
+        logger.warning(
+            "grid registration not extracted, re-trying with file loaded as xarray grid"
+        )
+        # grid = xr.load_dataarray(grid)
+        with xr.open_dataarray(grid) as da:
+            try:
+                reg = da.gmt.registration
+                registration = "g" if reg == 0 else "p"
+            except AttributeError:
+                logger.warning("grid registration can't be extracted, setting to 'g'.")
+                registration = "g"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.exception(e)
+        logger.warning("grid registration can't be extracted")
+        registration = None
+
+    return registration
+
+
 def get_grid_info(
     grid: str | xr.DataArray,
     print_info: bool = False,
