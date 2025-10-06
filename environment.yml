@@ -20,9 +20,9 @@ dependencies:
   - deprecation
   - openpyxl
   - pyproj
-  - geopandas>=1.0 
+  - geopandas>=1.0
   - pyogrio
-  - zarr>=3.0 
+  - zarr>=3.0
   - python-dotenv
   - requests
   - earthaccess
@@ -47,7 +47,6 @@ dependencies:
   - ipykernel
   - nbconvert
   - sphinxcontrib-bibtex
-  - sphinx-autoapi
   - sphinx-design
   # dev
   - jupyterlab
