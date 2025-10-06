@@ -7,7 +7,7 @@
 * make your changes
 * run the style checkers: `nox -s style`
 * add your changed files: `git add .`
-* once the style checks pass, commit your changes using the Conventional Commit: `git commit -m "feat: a short description of your changes"`
+* once the style checks pass, commit your changes: `git commit -m "a short description of your changes"`
 * push your changes: `git push -u origin new-branch`
 * [make a Pull Request](http://makeapullrequest.com/) for your branch from the main GitHub repository [PR page](https://github.com/mdtanker/polartoolkit/pulls).
 
@@ -42,29 +42,41 @@ contributions.
 
 ## Contents
 
-* [What Can I Do?](#what-can-i-do)
-* [Reporting a Bug](#reporting-a-bug)
-* [Editing the Documentation](#editing-the-documentation)
-* [Contributing Code](#contributing-code)
-  - [General guidelines](#general-guidelines)
-  - [Fork the repository](#fork-the-repository)
-  - [Clone the repository](#clone-the-repository)
-  - [Setting up Nox](#setting-up-nox)
-  - [Setting up your environment](#setting-up-your-environment)
-  - [Make a branch](#make-a-branch)
-  - [Make your changes](#make-your-changes)
-  - [Testing your code](#testing-your-code)
-  - [Documentation](#documentation)
-  - [Committing changes](#committing-changes)
-  - [Push your changes](#push-your-changes)
-  - [Open a PR](#open-a-pr)
-  - [Code review](#code-review)
-  - [Sync your fork and local](#sync-your-fork-and-local)
-  - [Add yourself as an author](#add-yourself-as-an-author)
-* [Publish a new release](#publish-a-new-release)
-* [Update the Dependencies](#update-the-dependencies)
-* [Create a conda environment file](#create-a-conda-environment-file)
-* [Set up Binder](#set-up-the-binder-configuration)
+- [How to contribute](#how-to-contribute)
+  - [TLDR (Too long; didn't read)](#tldr-too-long-didnt-read)
+  - [Contents](#contents)
+  - [What Can I Do?](#what-can-i-do)
+  - [Reporting a Bug](#reporting-a-bug)
+  - [Editing the Documentation](#editing-the-documentation)
+  - [Contributing Code](#contributing-code)
+    - [General guidelines](#general-guidelines)
+    - [Fork the repository](#fork-the-repository)
+    - [Clone the repository](#clone-the-repository)
+    - [Setting up `nox`](#setting-up-nox)
+    - [Setting up your environment](#setting-up-your-environment)
+    - [Make a branch](#make-a-branch)
+    - [Make your changes](#make-your-changes)
+    - [Code style and linting](#code-style-and-linting)
+      - [Docstrings](#docstrings)
+      - [Type hints](#type-hints)
+      - [Logging](#logging)
+    - [Testing your code](#testing-your-code)
+    - [Documentation](#documentation)
+      - [Run all .ipynb's to update them](#run-all-ipynbs-to-update-them)
+      - [Check the build manually (optional)](#check-the-build-manually-optional)
+      - [Automatically build the docs](#automatically-build-the-docs)
+    - [Committing changes](#committing-changes)
+    - [Push your changes](#push-your-changes)
+    - [Open a PR](#open-a-pr)
+    - [Code review](#code-review)
+    - [Sync your fork and local](#sync-your-fork-and-local)
+    - [Add yourself as an author](#add-yourself-as-an-author)
+  - [Publish a new release](#publish-a-new-release)
+    - [PyPI (pip)](#pypi-pip)
+    - [Conda-Forge](#conda-forge)
+  - [Update the dependencies](#update-the-dependencies)
+  - [Create a conda environment file](#create-a-conda-environment-file)
+  - [Set up the binder configuration](#set-up-the-binder-configuration)
 
 ## What Can I Do?
 
@@ -219,9 +231,9 @@ We use [pre-commit](https://pre-commit.com/) to check code style. This can be us
 nox -s lint
 ```
 
-To have `pre-commit` run automatically on commits, install it with `pre-commit install`
+To have `pre-commit` locally run automatically on commits, install it with `pre-commit install`. `pre-commit` will also automatically run for any commits to GitHub.
 
-Go through the output of this and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
+Go through the output of the `pre-commit` logs and try to change the code based on the errors. Search the error codes on the [Ruff documentation](https://docs.astral.sh/ruff/), which should give suggestions. Re-run the check to see if you've fixed it. Somethings can't be resolved (unsplittable urls longer than the line length). For these, add `# noqa: []` at the end of the line and the check will ignore it. Inside the square brackets add the specific error code you want to ignore.
 
 We also use [Pylint](https://pylint.readthedocs.io/en/latest/), which performs static-linting on the code. This checks the code and catches many common bugs and errors, without running any of the code. This check is slightly slower the the `Ruff` check. Run it with the following:
 ```
@@ -289,7 +301,7 @@ Leave a comment in the PR and we'll help you out.
 
 ### Documentation
 
-The Docs are build with [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://about.readthedocs.com/). Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `_config.yml`. Here is how to run/update the docs on your local machine.
+The Docs are build with [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://about.readthedocs.com/). Due to the above mentioned issues with the included C programs, `Read the Docs (RTD)` can't run the scripts which are part of the docs (i.e. the gallery examples). Because of this the notebooks don't execute on a build, as specified by `execute_notebooks: 'off'` in `docs/config.py`. Here is how to run/update the docs on your local machine.
 
 > **Note:** The docs are automatically built on PR's by `RTD`, but it's good practice to build them manually before a PR, to check them for errors.
 
@@ -303,13 +315,14 @@ If your edits haven't changed any part of the core package, then there is no nee
 
 You can build the docs using:
 ```bash
+    nox -s build_api_docs
+```
+
+```bash
     nox -s docs
 ```
 
-or if you don't want them to automatically update
-```bash
-    nox -s docs --non-interactive
-```
+Click the link to open your docs in a website which will automatically update as you make edits.
 
 #### Automatically build the docs
 
@@ -321,41 +334,9 @@ In each PR, you will see section of the checks for `RTD`. Click on this to previ
 
 ### Committing changes
 
-Once your have made your changes to your branch of your forked repository, you'll need to commit the changes to your remote fork. We use the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages. This helps users and developers understand what types of changes have been implemented in a PR or between versions.
-```
-<type>: <description>
+Once your have made your changes to your branch of your forked repository, you'll need to commit the changes to your remote fork.
 
-[optional body]
-```
-
-Where `type` is one of the following:
-   * `docs` --> a change to the documents
-   * `style`--> simple fixes to the styling of the code
-   * `feat` --> any new features
-   * `fix` --> bug fixes
-   * `build` --> changes to the package build process, i.e. dependencies, changelogs etc.
-   * `chore` --> maintenance changes, like GitHub Action workflows
-   * `refactor` --> refactoring of the code without user-seen changes
-
-The `optional body` can include any detailed description.
-
-Based on the commit types in a PR, one of four things will happen when;
-1) no new version will be released
-2) a `PATCH` version will be released (`v1.1.0 -> v1.1.1`)
-3) a `MINOR` version will be released (`v1.1.0 -> v1.2.0`)
-4) a `MAJOR` version will be released (`v1.1.0 -> v2.0.0`)
-
-This follows [Semantic Versioning](https://semver.org/#summary) where given a version number `MAJOR.MINOR.PATCH`, the software should increment the:
-1) `MAJOR` version when you make incompatible API changes
-2) `MINOR` version when you add functionality in a backward compatible manner
-3) `PATCH` version when you make backward compatible bug fixes
-
-While we decide this manually, generally the following will occur based on commit messages in your PR:
-
-* `feat` will always result in a `MINOR` release
-* `fix` will always result in a `PATCH` release
-
-Committing can be done interactively, if you use a editor like `VS Code`, or in the terminal.
+This can be done interactively, if you use a editor like `VS Code`, or in the terminal.
 
 Stage your changes for a file:
 ```bash
@@ -369,7 +350,7 @@ git add <directory>
 
 Then commit those staged changes:
 ```bash
-git commit -m "fix: a short description of your fix"
+git commit -m "a short description of your changes"
 ```
 
 ### Push your changes
