@@ -165,3 +165,7 @@ data/*
 tmp*
 
 .vscode*
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+pixi.lock

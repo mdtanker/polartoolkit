@@ -52,8 +52,8 @@ def tests(session: nox.Session) -> None:
     Run the unit and regular tests.
     """
     session.conda_install("pygmt", "geopandas")
-    test_deps = nox.project.dependency_groups(PROJECT, "test")
-    session.install("-e.", *test_deps)
+    deps = nox.project.dependency_groups(PROJECT, "dev")
+    session.install("-e.", *deps)
     session.run(
         "pytest",
         "--cov",
