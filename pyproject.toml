@@ -60,14 +60,10 @@ interactive = [
     "ipyleaflet",
     "ipython>=8.13.0",
 ]
-test = [
-  {include-group = "interactive"},
-  "pytest >=6",
-  "pytest-cov >=3",
-  "deepdiff",
-]
 dev = [
-    {include-group = "test"},
+    "pytest >=6",
+    "pytest-cov >=3",
+    "deepdiff",
     "jupyterlab",
 ]
 docs = [
@@ -86,7 +82,6 @@ docs = [
 
 all = [
   {include-group = "interactive"},
-  {include-group = "test"},
   {include-group = "dev"},
   {include-group = "docs"},
 ]
@@ -221,3 +216,65 @@ messages_control.disable = [
 
 [tool.codespell]
 ignore-words-list = ["word_to_ignore"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+polartoolkit = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+all = { features = ["all"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+interactive = { features = ["interactive"], solve-group = "default" }
+
+# NOTE: pixi will match project.dependencies versions above but get them from conda-forge
+# If a package is listed in project.dependencies but not repeated here, it is installed from pypi
+[tool.pixi.dependencies]
+numpy = ">=1.25"
+pandas = ">=2.0"
+xarray = ">=2023.4"
+scipy = ">=1.11"
+verde = "*"
+pooch = "*"
+rioxarray = "*"
+tqdm = "*"
+pygmt = ">=0.10"
+harmonica = ">=0.6"
+deprecation = "*"
+openpyxl = "*"
+pyproj = "*"
+geopandas = ">=1.0"
+pyogrio = "*"
+zarr = ">=3.0"
+python-dotenv = "*"
+requests = "*"
+earthaccess = "*"
+xrft = "*"
+
+[tool.pixi.feature.interactive.dependencies]
+geoviews = "*"
+cartopy = "*"
+ipyleaflet = "*"
+ipython = ">=8.13"
+
+[tool.pixi.feature.dev.dependencies]
+pytest = ">=6"
+pytest-cov = ">=3"
+deepdiff = "*"
+jupyterlab = "*"
+
+[tool.pixi.feature.docs.dependencies]
+sphinx = ">=7.0"
+myst-parser = ">=0.13"
+sphinx-copybutton = "*"
+sphinx-autodoc-typehints = "*"
+sphinx-book-theme = ">=0.3"
+nbsphinx = "*"
+ipykernel = "*"
+nbconvert = "*"
+sphinxcontrib-bibtex = "*"
+sphinx-design = "*"
