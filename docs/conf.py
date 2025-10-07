@@ -1,22 +1,24 @@
-import polartoolkit
+import importlib.metadata
 
 project = "polartoolkit"
 copyright = "2023, Matt Tankersley"
 author = "Matt Tankersley"
-version = release = polartoolkit.__version__
+version = release = importlib.metadata.version("polartoolkit")
+
 extensions = [
-    "sphinx.ext.autodoc",  # needed for typehints
-    "sphinx.ext.viewcode",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.napoleon",
-    "autoapi.extension",
-    "sphinx.ext.mathjax",
-    "sphinx_copybutton",
     "myst_parser",
-    "sphinx_design",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
+    "sphinx.ext.viewcode",
     "nbsphinx",
     "sphinxcontrib.bibtex",
+    "sphinx_design",
 ]
+
 source_suffix = [".rst", ".md"]
 exclude_patterns = [
     "_build",
@@ -28,8 +30,6 @@ exclude_patterns = [
 ]
 
 bibtex_bibfiles = ["_polartoolkit_refs.bib"]
-
-nbsphinx_execute = "never"
 
 myst_enable_extensions = [
     "colon_fence",
@@ -47,11 +47,11 @@ intersphinx_mapping = {
     "rioxarray": ("https://corteva.github.io/rioxarray/stable/", None),
     "xrft": ("https://xrft.readthedocs.io/en/stable/", None),
     "harmonica": ("https://www.fatiando.org/harmonica/latest/", None),
-    "numba": ("https://numba.pydata.org/numba-doc/latest/", None),
+    "numba": ("https://numba.readthedocs.io/en/stable/index.html", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
     "pooch": ("https://www.fatiando.org/pooch/latest/", None),
-    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cartopy": ("https://cartopy.readthedocs.io/latest/", None),
     # "tqdm": ("https://tqdm.github.io/", None),
     "pygmt": ("https://www.pygmt.org/latest/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
@@ -76,13 +76,15 @@ always_document_param_types = True
 add_module_names = False
 add_function_parentheses = False
 
-# API doc configuration
-# -----------------------------------------------------------------------------
-autoapi_dirs = ["../src/polartoolkit"]
-autoapi_type = "python"
-autoapi_add_toctree_entry = False
-autodoc_typehints = "description"
 
+nbsphinx_execute = "never"
+
+nbsphinx_execute_arguments = [
+    "--InlineBackend.figure_formats={'png2x'}",
+    "--InlineBackend.rc=figure.dpi=96",
+]
+
+nbsphinx_kernel_name = "python3"
 
 # HTML output configuration
 # -----------------------------------------------------------------------------

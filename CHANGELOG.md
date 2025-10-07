@@ -10,8 +10,12 @@ Released on
 Contributors:
 - Matt Tankersley
 
+### 🚀 Added
+- add individual functions for getting grid region, spacing, and registration
+
 ### 🐛 Fixed
-- fix broken links for ice velocity datasets
+- fix broken download links for ice velocity datasets
+- fix some issues with ReadTheDocs
 
 <!--
 Below is an example for a release

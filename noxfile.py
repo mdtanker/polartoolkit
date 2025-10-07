@@ -18,11 +18,7 @@ def lint(session: nox.Session) -> None:
     """
     session.install("pre-commit")
     session.run(
-        "pre-commit",
-        "run",
-        "--all-files",
-        "--show-diff-on-failure",
-        *session.posargs,
+        "pre-commit", "run", "--all-files", "--show-diff-on-failure", *session.posargs
     )
 
 
@@ -63,13 +59,12 @@ def tests(session: nox.Session) -> None:
     )
 
 
-@nox.session(reuse_venv=True, default=False)
+@nox.session(venv_backend="mamba", reuse_venv=True, default=False)
 def docs(session: nox.Session) -> None:
     """
-    Build the docs. Pass --non-interactive to avoid serving. First positional
-    argument is the target directory.
+    Build the docs. Pass --non-interactive to avoid serving. First positional argument is the target directory.
     """
-
+    session.conda_install("pygmt", "geopandas")
     doc_deps = nox.project.dependency_groups(PROJECT, "docs")
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -94,6 +89,24 @@ def docs(session: nox.Session) -> None:
         session.run("sphinx-autobuild", "--open-browser", *shared_args)
     else:
         session.run("sphinx-build", "--keep-going", *shared_args)
+
+
+@nox.session(default=False)
+def build_api_docs(session: nox.Session) -> None:
+    """
+    Build (regenerate) API docs.
+    """
+
+    session.install("sphinx")
+    session.run(
+        "sphinx-apidoc",
+        "-o",
+        "docs/api/",
+        "--module-first",
+        "--no-toc",
+        "--force",
+        "src/polartoolkit",
+    )
 
 
 @nox.session

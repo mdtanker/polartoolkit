@@ -588,9 +588,9 @@ def plot_profile(
     -------
     fig : pygmt.Figure
         a PyGMT figure object with the cross-section and data plotted.
-    df_layers : pd.DataFrame
+    df_layers : pandas.DataFrame
         DataFrame with sampled layers along the cross-section.
-    df_data : pd.DataFrame
+    df_data : pandas.DataFrame
         DataFrame with sampled data along the cross-section, if data_dict is None,
         this will be an empty DataFrame.
     """
@@ -1270,7 +1270,7 @@ def plot_data(
     -------
     fig : pygmt.Figure
         a PyGMT figure object with the profile data plotted.
-    df_data : pd.DataFrame
+    df_data : pandas.DataFrame
         DataFrame with sampled data along the cross-section, if data_dict is None,
         this will be an empty DataFrame.
     """

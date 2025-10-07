@@ -659,7 +659,7 @@ def ice_vel(
     """
     MEaSUREs Phase-Based Ice Velocity Maps for Antarctica and Greenland.
 
-    Antarctica: version 1 from :footcite:t:`mouginotcontinent2019` and
+    Antarctica: version 1 from :footcite:t:`mouginotcontinentwide2019` and
     :footcite:t:`mouginotmeasures2019`.
 
     accessed from https://cmr.earthdata.nasa.gov/virtual-directory/collections/C3298047930-NSIDC_CPRD
@@ -1916,7 +1916,7 @@ def bedmachine(
 ) -> xr.DataArray:
     """
     Load BedMachine topography data from either Greenland (v5) or Antarctica (v3),  from
-    :footcite:t:`morlighemmeasures2022` or  :footcite:t:`icebridge2020a`.
+    :footcite:t:`morlighemmeasures2022` or  :footcite:t:`icebridge2020`.
 
     Antarctica:
     Accessed from NSIDC via https://nsidc.org/data/nsidc-0756/versions/3.
@@ -2569,7 +2569,7 @@ def bedmap3(
 ) -> xr.DataArray:
     """
     Load Bedmap3 data as an xarray.DataArray
-    from :footcite:t:`pritchardbedmap32024`.
+    from :footcite:t:`pritchardbedmap32025`.
     accessed from https://ramadda.data.bas.ac.uk/repository/entry/show?entryid=2d0e4791-8e20-46a3-80e4-f5f6716025d2.
 
     All grids are by default referenced to the EIGEN-GL04C geoid. Use the
@@ -3364,7 +3364,7 @@ def deepbedmap(
         additional keyword arguments to pass to the resample_grid function
     Returns
     -------
-    xr.DataArray:
+    xarray.DataArray:
         Returns the grid of DeepBedMap.
 
     References

@@ -840,7 +840,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         Parameters
         ----------
-        grid : str or xr.DataArray
+        grid : str or xarray.DataArray
             Path to the grid file or an xarray DataArray containing the grid data.
         cmap : str or bool, optional
             Colormap to use for the grid, by default "viridis". If True, last used
@@ -923,7 +923,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         Parameters
         ----------
-        points : pd.DataFrame or gpd.GeoDataFrame
+        points : pandas.DataFrame or geopandas.GeoDataFrame
             DataFrame containing point data with columns 'x' and 'y' or 'easting' and
             'northing'.
         cmap : str or bool, optional

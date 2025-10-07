@@ -76,10 +76,8 @@ datasets/greenland_arctic/index.md
 ```{toctree}
 :maxdepth: 2
 :hidden:
-:caption: 📖 Reference documentation
-autoapi/polartoolkit/index
-changelog.md
-references.rst
+:caption: 📖 API
+api/polartoolkit
 ```
 
 ```{toctree}
@@ -87,6 +85,8 @@ references.rst
 :hidden:
 :caption: ℹ️ Other resources
 contributing.md
+changelog.md
+references.rst
 Source code on GitHub <https://github.com/mdtanker/polartoolkit>
 ```
 
@@ -118,7 +118,7 @@ Start a discussion on GitHub!
 :::{grid-item-card} {octicon}`file-badge` Reference documentation
 :text-align: center
 A list of modules and functions
-```{button-ref} autoapi/polartoolkit/index
+```{button-ref} api/polartoolkit
     :click-parent:
     :color: primary
     :outline:

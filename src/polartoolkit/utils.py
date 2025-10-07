@@ -84,6 +84,113 @@ def rmse(data: typing.Any, as_median: bool = False) -> float:
     return value
 
 
+def get_grid_region(
+    grid: str | xr.DataArray,
+) -> tuple[float, ...]:
+    """
+    Returns the region of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get region from. Filename string or loaded grid.
+
+    Returns
+    -------
+    tuple
+        array with the region boundary in the format (xmin, xmax, ymin, ymax)
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        region: tuple[float, ...] = tuple(
+            float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logger.exception(e)
+        logger.warning("grid region can't be extracted")
+        raise e
+
+    return region
+
+
+def get_grid_spacing(
+    grid: str | xr.DataArray,
+) -> float | None:
+    """
+    Returns the spacing of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get spacing from. Filename string or loaded grid.
+
+    Returns
+    -------
+    float | None
+        Spacing of the grid or None if it can't be extracted.
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # pygmt.exceptions.GMTInvalidInput:
+        logger.exception(e)
+        logger.warning("grid spacing can't be extracted")
+        spacing = None
+
+    return spacing
+
+
+def get_grid_registration(
+    grid: str | xr.DataArray,
+) -> str | None:
+    """
+    Returns the registration of the specified grid.
+
+    Parameters
+    ----------
+    grid : str or xarray.DataArray
+        Input grid to get registration from. Filename string or loaded grid.
+
+    Returns
+    -------
+    str | None
+        "g" for gridline or "p" for pixel registration.
+    """
+
+    if isinstance(grid, xr.DataArray) and len(grid.dims) > 2:
+        grid = grid.squeeze()
+
+    try:
+        reg = grid.gmt.registration  # type: ignore[union-attr]
+        registration: str | None = "g" if reg == 0 else "p"
+    except AttributeError:
+        logger.warning(
+            "grid registration not extracted, re-trying with file loaded as xarray grid"
+        )
+        # grid = xr.load_dataarray(grid)
+        with xr.open_dataarray(grid) as da:
+            try:
+                reg = da.gmt.registration
+                registration = "g" if reg == 0 else "p"
+            except AttributeError:
+                logger.warning("grid registration can't be extracted, setting to 'g'.")
+                registration = "g"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.exception(e)
+        logger.warning("grid registration can't be extracted")
+        registration = None
+
+    return registration
+
+
 def get_grid_info(
     grid: str | xr.DataArray,
     print_info: bool = False,
@@ -925,21 +1032,21 @@ def filter_grid(
 
 
 def points_inside_shp(
-    points: pd.DataFrame | gpd.geodataframe.GeoDataFrame,
-    shapefile: gpd.geodataframe.GeoDataFrame,
+    points: pd.DataFrame | gpd.GeoDataFrame,
+    shapefile: gpd.GeoDataFrame,
     crs: str | None = None,
     coord_names: tuple[str, str] | None = None,
     hemisphere: str | None = None,
-) -> pd.DataFrame | gpd.geodataframe.GeoDataFrame:
+) -> pd.DataFrame | gpd.GeoDataFrame:
     """
     Add a column to a dataframe indicating whether each point is inside a shapefile.
 
     Parameters
     ----------
-    points : pd.DataFrame | gpd.geodataframe.GeoDataFrame
+    points : pandas.DataFrame | geopandas.GeoDataFrame
         dataframe with coordinate columns specified by coord_names to use for defining
         if within shapefile
-    shapefile : gpd.geodataframe.GeoDataFrame
+    shapefile : geopandas.GeoDataFrame
         shapefile to use for defining if point are within it or not
     crs : str | None, optional
         if points is not a geodataframe, crs to use to convert into a geodataframe, by
@@ -951,7 +1058,7 @@ def points_inside_shp(
 
     Returns
     -------
-    pd.DataFrame | gpd.geodataframe.GeoDataFrame
+    pandas.DataFrame | geopandas.GeoDataFrame
         Dataframe with a new column 'inside' which is True if the point is inside the
         shapefile
     """
@@ -990,7 +1097,7 @@ def points_inside_shp(
 
 
 def mask_from_shp(
-    shapefile: str | gpd.geodataframe.GeoDataFrame,
+    shapefile: str | gpd.GeoDataFrame,
     hemisphere: str | None = None,
     invert: bool = True,
     grid: xr.DataArray | str | None = None,
@@ -1328,7 +1435,7 @@ def grd_trend(
 
 def get_combined_min_max(
     values: tuple[typing.Any, ...],
-    shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
+    shapefile: str | gpd.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
@@ -1869,7 +1976,7 @@ def subset_grid(
 
 def get_min_max(
     values: xr.DataArray | pd.Series | NDArray,
-    shapefile: str | gpd.geodataframe.GeoDataFrame | None = None,
+    shapefile: str | gpd.GeoDataFrame | None = None,
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
@@ -2090,7 +2197,7 @@ def mask_from_polygon(
             coords, np.ones_like(coords[0]), dims=("y", "x"), data_names="z"
         )
     else:
-        msg = "grid must be a xr.DataArray, a filename, or None"
+        msg = "grid must be a xarray.DataArray, a filename, or None"
         raise ValueError(msg)
 
     masked = vd.convexhull_mask(
