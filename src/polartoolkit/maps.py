@@ -2589,7 +2589,7 @@ def plot_grd(
     fig.show(method="none")
 
     # decide if colorbar should be plotted
-    colorbar = kwargs.get("colorbar")
+    colorbar = kwargs.pop("colorbar", True)
     if colorbar is None:
         if kwargs.get("modis", False) is True:
             colorbar = False
@@ -2705,6 +2705,7 @@ def plot_grd(
     fig.add_grid(
         grid=grid,
         cmap=cmap,
+        colorbar=colorbar,
         **kwargs,
     )
     # add lat long grid lines
