@@ -113,7 +113,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             hemisphere=self.hemisphere,
         )
 
-        self.reg_latlon = (*self.reg, "+ue")  # codespell:ignore ue
+        self.reg_latlon = "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
         self.origin_shift: str | None = None
 
     def shift_figure(
@@ -2589,7 +2589,7 @@ def plot_grd(
     fig.show(method="none")
 
     # decide if colorbar should be plotted
-    colorbar = kwargs.get("colorbar")
+    colorbar = kwargs.pop("colorbar", True)
     if colorbar is None:
         if kwargs.get("modis", False) is True:
             colorbar = False
@@ -2705,6 +2705,7 @@ def plot_grd(
     fig.add_grid(
         grid=grid,
         cmap=cmap,
+        colorbar=colorbar,
         **kwargs,
     )
     # add lat long grid lines
@@ -3000,7 +3001,7 @@ def interactive_map(
                 elif hemisphere == "north":
                     label_xy.value = str(utils.latlon_to_epsg3413(latlon))
 
-    m.on_interaction(handle_click)
+        m.on_interaction(handle_click)
 
     return m
 
