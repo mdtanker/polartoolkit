@@ -17,6 +17,7 @@ Contributors:
 - fix broken download links for ice velocity datasets
 - fix some issues with ReadTheDocs
 - bug with passing `colorbar` twice to `fig.add_points()`
+- bug with pygmt parsing of region supplied with units
 
 <!--
 Below is an example for a release

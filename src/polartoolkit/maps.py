@@ -113,7 +113,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             hemisphere=self.hemisphere,
         )
 
-        self.reg_latlon = (*self.reg, "+ue")  # codespell:ignore ue
+        self.reg_latlon = "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
         self.origin_shift: str | None = None
 
     def shift_figure(
