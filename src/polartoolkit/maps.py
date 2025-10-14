@@ -3001,7 +3001,7 @@ def interactive_map(
                 elif hemisphere == "north":
                     label_xy.value = str(utils.latlon_to_epsg3413(latlon))
 
-    m.on_interaction(handle_click)
+        m.on_interaction(handle_click)
 
     return m
 
