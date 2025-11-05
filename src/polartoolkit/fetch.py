@@ -1443,16 +1443,16 @@ def sediment_thickness(
     if version == "ANTASed":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            "Unzip the folder, grid the .dat file, and save it back as a .zarr"
             path = pooch.Unzip(
                 extract_dir="Baranov_2021_sediment_thickness",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -1482,7 +1482,7 @@ def sediment_thickness(
                     registration="g",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -1494,7 +1494,7 @@ def sediment_thickness(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -1552,7 +1552,7 @@ def sediment_thickness(
             fname1 = next(p for p in path if p.endswith("GlobSed-v3.nc"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -3729,10 +3729,11 @@ def etopo(
         fname = "earth-topography-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, reproject, and save it back"
+        "Load the .nc file, reproject, and save it to a .zarr file"
         fname1 = pathlib.Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+        # Rename to the file to ***_preprocessed.zarr
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_processed = fname_pre.with_suffix(".zarr")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
@@ -3751,7 +3752,7 @@ def etopo(
                 spacing=5e3,
             )
             # Save to disk
-            processed.to_netcdf(fname_processed)
+            processed.to_zarr(fname_processed)
         return str(fname_processed)
 
     path = pooch.retrieve(
@@ -3763,7 +3764,7 @@ def etopo(
         processor=preprocessing,
     )
 
-    grid = xr.load_dataarray(path)
+    grid = xr.open_zarr(path).z
 
     resampled = resample_grid(
         grid,
@@ -3784,7 +3785,7 @@ def geoid(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 from
+    Loads a grid of geoid heights derived from the EIGEN-6C4 from
     :footcite:t:`forsteeigen6c42014` spherical harmonic model of Earth's gravity field.
     Originally at 10 arc-min resolution.
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
@@ -3833,10 +3834,11 @@ def geoid(
         fname = "earth-geoid-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, reproject, and save it back"
+        "Load the .nc file, reproject, and save it to a .zarr file"
         fname1 = pathlib.Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_processed = fname_pre.with_suffix(".zarr")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
@@ -3857,7 +3859,7 @@ def geoid(
                 verbose=kwargs.get("verbose", "e"),
             )
             # Save to disk
-            processed.to_netcdf(fname_processed)
+            processed.to_zarr(fname_processed)
         return str(fname_processed)
 
     path = pooch.retrieve(
@@ -3869,7 +3871,7 @@ def geoid(
         processor=preprocessing,
     )
 
-    grid = xr.load_dataarray(path)
+    grid = xr.open_zarr(path).z
 
     resampled = resample_grid(
         grid,
@@ -3943,16 +3945,16 @@ def magnetics(
     if version == "admap1":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            "Unzip the folder, grid the .dat file, and save it back as a .zarr"
             path = pooch.Unzip(
                 extract_dir="admap1",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -3988,7 +3990,7 @@ def magnetics(
                     maxradius="1c",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
 
                 logger.info(".dat file gridded and saved as %s", fname_processed)
 
@@ -4003,7 +4005,7 @@ def magnetics(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -4016,19 +4018,19 @@ def magnetics(
     elif version == "admap2":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "convert geosoft grd to xarray dataarray and save it back as a .nc"
+            "convert geosoft grd to xarray dataarray and save it back as a .zarr"
             fname1 = pathlib.Path(fname)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # convert to dataarray
-                processed = hm.load_oasis_montaj_grid(fname1)
+                processed = hm.load_oasis_montaj_grid(fname1).rename("mag")
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         url = "https://hs.pangaea.de/mag/airborne/Antarctica/grid/ADMAP_2B_2017.grd"
@@ -4042,7 +4044,7 @@ def magnetics(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).mag
 
         resampled = resample_grid(
             grid,
@@ -4753,85 +4755,90 @@ def crustal_thickness(
     """
 
     if version == "shen-2018":
-        msg = "the link to the shen-2018 data appears to be broken"
-        raise ValueError(msg)
-        # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        #     "Load the .dat file, grid it, and save it back as a .nc"
-        #     fname1 = pathlib.Path(fname)
 
-        #     # Rename to the file to ***_preprocessed.nc
-        #     fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
-        #     fname_processed = fname_pre.with_suffix(".nc")
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .dat file, grid it, and save it back as a .zarr"
+            fname1 = pathlib.Path(fname)
 
-        #     # Only recalculate if new download or the processed file doesn't exist yet
-        #     if action in ("download", "update") or not fname_processed.exists():
-        #         # load data
-        #         df = pd.read_csv(
-        #             fname1,
-        #             sep='\s+',
-        #             header=None,
-        #             names=["lon", "lat", "thickness"],
-        #         )
-        #         # convert to meters
-        #         df.thickness = df.thickness * 1000
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
-        #         # re-project to polar stereographic
-        #         df = utils.reproject(
-        #             df,
-        #             input_crs="epsg:4326",
-        #             output_crs="epsg:3031",
-        #             input_coord_names=("lon", "lat"),
-        #             output_coord_names=("x", "y"),
-        #         )
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    sep=r"\s+",
+                    header=None,
+                    names=["lon", "lat", "thickness"],
+                )
+                # convert to meters
+                df.thickness = df.thickness * 1000
 
-        #         # block-median and grid the data
-        #         df = pygmt.blockmedian(
-        #             df[["x", "y", "thickness"]],
-        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
-        #             region=regions.antarctica,
-        #             registration="g",
-        #         )
-        #         processed = pygmt.surface(
-        #             data=df[["x", "y", "thickness"]],
-        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
-        #             region=regions.antarctica,
-        #             registration="g",
-        #             maxradius="1c",
-        #         )
-        #         # Save to disk
-        #         processed.to_netcdf(fname_processed)
-        #     return str(fname_processed)
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
+                )
 
-        # url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "thickness"]],  # type: ignore[call-overload]
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "thickness"]],
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
+                    maxradius="1c",
+                )
+                # Save to disk
+                processed.to_zarr(fname_processed)
+            return str(fname_processed)
 
-        # path = pooch.retrieve(
-        #     url=url,
-        #     known_hash=None,
-        #     fname="shen_2018_crustal_thickness.dat",
-        #     path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
-        #     processor=preprocessing,
-        #     progressbar=True,
-        # )
+        url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
 
-        # grid = xr.load_dataarray(path)
+        try:
+            path = pooch.retrieve(
+                url=url,
+                known_hash="b748879927176ed6b69f3c82cb08b0fcf0f7ae35d9058db6cff1fb81ba19350b",
+                fname="shen_2018_crustal_thickness.dat",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
+                processor=preprocessing,
+                progressbar=True,
+            )
+        except pd.errors.ParserError as e:
+            msg = "the link to the shen-2018 data appears to be broken"
+            raise ValueError(msg) from e
 
-        # resampled = resample_grid(
-        #     grid,
-        #     spacing,
-        #     region,
-        #     registration,
-        # )
+        grid = xr.open_zarr(path)
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+        )
 
     if version == "an-2015":
 
-        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, reproject the .nc file, and save it back"
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
+            "Unzip the folder, reproject the file, and save it back as a zarr file"
             path = pooch.Untar(
                 extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
             )(fname, action, _pooch2)
             fname1 = pathlib.Path(path[0])
-            # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
@@ -4855,8 +4862,8 @@ def crustal_thickness(
                     .squeeze()
                     .drop_vars(["spatial_ref"])
                 )
-                # save to netcdf
-                reprojected.to_netcdf(fname_processed)
+                # save to zarr
+                reprojected.to_zarr(fname_processed)
 
             return str(fname_processed)
 
@@ -4869,7 +4876,7 @@ def crustal_thickness(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -4943,16 +4950,16 @@ def moho(
     if version == "shen-2018":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .dat file, grid it, and save it back as a .nc"
-            path = pooch.Untar(
+            "Load the .dat file, grid it, and save it back as a .zarr"
+            path = pooch.Unzip(
                 extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith("moho.final.dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -4990,12 +4997,13 @@ def moho(
                     maxradius="1c",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
-            fname="shen_2018_moho.tar",
+            url="https://drive.usercontent.google.com/download?id=1PGbdCxkbtlOWMFWkcv60dLBEjnevjs6v&export=download&authuser=0&confirm=t&uuid=602c3ecb-e55c-4bfc-8ede-00433d2dada1&at=AKSUxGOws8RXXwtTgMFlBN9hNzwJ:1762164387041",
+            # url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            fname="WCANT_MODEL.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
             known_hash="794b30ca1eab97bdfdd4dca4a67623459c5d19502039a53b33b0e093fc098034",
             # known_hash=None, # changes with each download
@@ -5004,7 +5012,7 @@ def moho(
             downloader=pooch.HTTPDownloader(timeout=60),
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
