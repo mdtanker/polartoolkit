@@ -1012,6 +1012,50 @@ def imagery() -> str:
     return typing.cast(str, next(p for p in path if p.endswith(".tif")))
 
 
+def antarctic_bed_type(
+    region: tuple[float, float, float, float] | None = None,
+) -> xr.DataArray:
+    """
+    Bed classification dataset accessed from https://zenodo.org/records/7955584.
+
+    from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float], optional
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
+
+    Returns
+    -------
+    xarray.DataArray
+        Returns a grid of Antarctic bed type classifications.
+
+    References
+    ----------
+    .. footbibliography::
+    """
+    url = "https://zenodo.org/record/7984586/files/AntarcticBasins_BedTypeCode.tif?download=1"
+    path = pooch.retrieve(
+        url=url,
+        path=f"{pooch.os_cache('pooch')}/aitken_2023/",
+        fname="AntarcticBasins_BedTypeCode.tif",
+        known_hash="bfa621d041619b588a8de4bebaf644108c11a4ac275879b374af3ce87f7008bf",
+        progressbar=True,
+    )
+    grid = (
+        xr.load_dataarray(path).squeeze().drop_vars(["band", "spatial_ref"]).rename("z")
+    )
+
+    if region is not None:
+        grid = grid.sel(
+            x=slice(region[0], region[1]),
+            y=slice(region[3], region[2]),
+        )
+
+    return grid
+
+
 def geomap(
     version: str = "faults",
     region: tuple[float, float, float, float] | None = None,
