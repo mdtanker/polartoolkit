@@ -1,6 +1,8 @@
 # pylint: disable=too-many-lines
+import contextlib
 import copy
 import io
+import os
 import pathlib
 import string
 import typing
@@ -43,6 +45,36 @@ try:
     import ipywidgets
 except ImportError:
     ipywidgets = None
+
+
+@contextlib.contextmanager
+def set_env(**environ):  # type: ignore[no-untyped-def]
+    """
+    Temporarily set the process environment variables.
+
+    Parameters
+    ----------
+    environ : str
+        Environment variables to set temporarily
+
+    Examples
+    --------
+    >>> import os
+    >>> from polartoolkit.maps import set_env
+    >>> with set_env(TEST_VAR='123'):
+    ...     print(os.environ['TEST_VAR'])
+    123
+    >>> 'TEST_VAR' in os.environ
+    False
+    """
+
+    old_environ = dict(os.environ)
+    os.environ.update(environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_environ)
 
 
 class Figure(pygmt.Figure):  # type: ignore[misc]
@@ -677,14 +709,16 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             modis=True,
             modis_cmap=cmap,
         )
-        self.grdimage(
-            grid=image,
-            cmap=imagery_cmap,
-            transparency=transparency,
-            projection=self.proj,
-            region=self.reg,
-            verbose="e",
-        )
+
+        with set_env(GTIFF_SRS_SOURCE="EPSG"):
+            self.grdimage(
+                grid=image,
+                cmap=imagery_cmap,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+                verbose="e",
+            )
 
     def add_simple_basemap(
         self,
