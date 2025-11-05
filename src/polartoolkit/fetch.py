@@ -1606,7 +1606,7 @@ def sediment_thickness(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["sediment_thickness"]
 
         resampled = resample_grid(
@@ -2124,7 +2124,7 @@ def bedmachine(
     )
     ds = xr.open_zarr(
         path,
-        consolidated=False,
+        consolidated=None,
     )
 
     # calculate icebase as surface-thickness
@@ -2788,7 +2788,7 @@ def bedmap3(
             # load zarr as a dataarray
             grid = xr.open_zarr(
                 fname,
-                consolidated=False,
+                consolidated=None,
             ).z
         except AttributeError as e:
             msg = (
@@ -3134,7 +3134,7 @@ def bedmap2(
             # load zarr as a dataarray
             grid = xr.open_zarr(
                 fname,
-                consolidated=False,
+                consolidated=None,
             ).z
         except AttributeError as e:
             msg = (
@@ -3327,7 +3327,7 @@ def rema(
     # load zarr as a dataarray
     grid = xr.open_zarr(
         zarr_file,
-        consolidated=False,
+        consolidated=None,
     )["surface"]
 
     resampled = resample_grid(
@@ -3646,7 +3646,7 @@ def gravity(
             # load zarr as a dataset
             grid = xr.open_zarr(
                 path,
-                consolidated=False,
+                consolidated=None,
             )
         except AttributeError as e:
             msg = (
@@ -4140,7 +4140,7 @@ def magnetics(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["mag"]
 
         resampled = resample_grid(
@@ -4270,7 +4270,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4332,7 +4332,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4505,7 +4505,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4617,7 +4617,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
