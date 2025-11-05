@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 import copy
+import io
 import pathlib
 import string
 import typing
@@ -493,6 +494,70 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 position=legend_loc,
             )
 
+    def add_geologic_units(
+        self,
+        legend: bool = True,
+        legend_loc: str | None = None,
+    ) -> None:
+        """
+        add geologic unit shapefiles from GeoMap to a map, from
+        :footcite:t:`coxcontinentwide2023` and :footcite:t:`coxgeomap2023`
+
+        Parameters
+        ----------
+        legend : bool, optional
+            whether to add a legend for the geologic units, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
+        """
+        if self.hemisphere == "north":
+            msg = "Geologic units are not available for the northern hemisphere."
+            raise NotImplementedError(msg)
+
+        geologic_units = fetch.geomap(version="units", region=self.reg)
+
+        if len(geologic_units) == 0:
+            msg = "No geologic units found in the specified region."
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            return
+
+        df = geologic_units[["SIMPsymbol", "SIMPcolor", "SIMPDESC"]].drop_duplicates(
+            ignore_index=True
+        )
+
+        pygmt.makecpt(
+            cmap=",".join(df.SIMPcolor.values),
+            color_model="+c" + ",".join(list(df.SIMPsymbol.astype(str))),
+            series=",".join(list(df.SIMPsymbol.astype(str))),
+        )
+
+        if legend:
+            # Iterates through the unit names and colors, and adds the symbol+text lines to a string
+            legend_spec = "\n".join(
+                [
+                    f"S 0.1i r 0.1i {color} 0.1p 0.20i {name}"
+                    for color, name in zip(df.SIMPcolor, df.SIMPDESC, strict=False)
+                ]
+            )
+            legend_spec = io.StringIO(legend_spec)  # type: ignore[assignment]
+
+        self.plot(
+            data=geologic_units[["SIMPsymbol", "geometry"]],
+            close=True,
+            projection=self.proj,
+            region=self.reg,
+            cmap=True,
+            pen=None,
+            fill="+z",
+            aspatial="Z=SIMPsymbol",
+        )
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                spec=legend_spec,
+                position=legend_loc,
+            )
     def add_modis(
         self,
         version: str | None = None,
@@ -1570,6 +1635,7 @@ def basemap(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    geologic_units: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
@@ -1612,6 +1678,8 @@ def basemap(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    geologic_units : bool, optional
+        choose to plot geologic units on the map, by default is False
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey, with boarders defined by `simple_basemap_version`.
@@ -1751,6 +1819,10 @@ def basemap(
         choose to add a legend for the faults, by default is False
     fault_legend_loc : str | None
         location of the fault legend, by default is lower left
+    geologic_units_legend : bool
+        choose to add a legend for the geologic units, by default is False
+    geologic_units_legend_loc : str | None
+        location of the geologic units legend, by default is lower right
 
     Returns
     -------
@@ -1956,6 +2028,14 @@ def basemap(
             fault_exposure=kwargs.get("fault_exposure"),
             legend=kwargs.get("fault_legend", True),
             legend_loc=kwargs.get("fault_legend_loc", None),
+        )
+
+    # plot geologic units
+    if geologic_units is True:
+        logger.debug("adding geologic units")
+        fig.add_geologic_units(
+            legend=kwargs.get("geologic_units_legend", True),
+            legend_loc=kwargs.get("geologic_units_legend_loc", None),
         )
 
     # add box showing region
@@ -2349,6 +2429,7 @@ def plot_grd(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    geologic_units: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
@@ -2399,6 +2480,8 @@ def plot_grd(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    geologic_units : bool, optional
+        choose to plot geologic units on the map, by default is False
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey.
@@ -2547,6 +2630,11 @@ def plot_grd(
         choose to add a legend for the faults, by default is False
     fault_legend_loc : str | None
         location of the fault legend, by default is lower left
+    geologic_units_legend : bool
+        choose to add a legend for the geologic units, by default is False
+    geologic_units_legend_loc : str | None
+        location of the geologic units legend, by default is lower right
+
 
     Returns
     -------
@@ -2761,6 +2849,14 @@ def plot_grd(
             fault_exposure=kwargs.get("fault_exposure"),
             legend=kwargs.get("fault_legend", True),
             legend_loc=kwargs.get("fault_legend_loc", None),
+        )
+
+    # plot geologic units
+    if geologic_units is True:
+        logger.debug("adding geologic units")
+        fig.add_geologic_units(
+            legend=kwargs.get("geologic_units_legend", True),
+            legend_loc=kwargs.get("geologic_units_legend_loc", None),
         )
 
     # add box showing region
