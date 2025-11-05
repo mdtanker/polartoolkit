@@ -1032,9 +1032,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 verbose="q",
             )
         except ValueError as e:
-            logger.error(e)
-            msg = "clipping grid to plot region failed!"
-            logger.error(msg)
+            if isinstance(grid, str):
+                pass
+            else:
+                logger.error(e)
+                msg = "clipping grid to plot region failed!"
+                logger.error(msg)
 
         # if using shading, nan_transparent needs to be False
         if shading is False or shading is None:
@@ -1204,9 +1207,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                         values = utils.subset_grid(values, self.reg)
                         logger.debug("clipped grid to region")
                     except ValueError as e:
-                        logger.error(e)
-                        msg = "clipping grid to plot region failed! "
-                        logger.error(msg)
+                        if isinstance(values, str):
+                            pass
+                        else:
+                            logger.error(e)
+                            msg = "clipping grid to plot region failed! "
+                            logger.error(msg)
                         return
                 vals = vd.grid_to_table(values).iloc[:, -1].dropna().to_numpy()
             elif isinstance(values, pd.DataFrame):
