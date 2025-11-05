@@ -558,6 +558,93 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 spec=legend_spec,
                 position=legend_loc,
             )
+
+    def add_bed_type(
+        self,
+        legend: bool = True,
+        legend_loc: str | None = None,
+        transparency: int = 0,
+    ) -> None:
+        """
+        add bed type classifications from from
+        from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+
+        Parameters
+        ----------
+        legend : bool, optional
+            whether to add a legend for the bed types, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
+        transparency : int, optional
+            transparency of the bed type layer, by default 0
+        """
+        if self.hemisphere == "north":
+            msg = "Bed type classifications are not available for the northern hemisphere."
+            raise NotImplementedError(msg)
+
+        bed_type = fetch.antarctic_bed_type(region=self.reg)
+
+        bed_type_cmap = {
+            "Mixed: In-Situ/Ancient Basin": {"value": "-3.0", "color": "darkseagreen"},
+            "Mixed: Crystalline/In-Situ Basin": {
+                "value": "-2.0",
+                "color": "aquamarine3",
+            },
+            "Mixed: Crystalline/Ancient Basin": {
+                "value": "-1.0",
+                "color": "lightsteelblue3",
+            },
+            "Crystalline Basement": {"value": "0.0", "color": "gray"},
+            "Intrabasin Volcanics": {"value": "1.0", "color": "orange"},
+            "Ancient Basin (Type 2)": {"value": "2.0", "color": "darkslategray1"},
+            "In-Situ Basin (Type 1)": {"value": "3.0", "color": "darkseagreen1"},
+        }
+        # drop entries if bed type not present in region
+        bed_type_cmap = {
+            k: v
+            for k, v in bed_type_cmap.items()
+            if float(v["value"]) in np.unique(bed_type.data)
+        }
+
+        values = [v["value"] for k, v in bed_type_cmap.items()]
+        colors = [v["color"] for k, v in bed_type_cmap.items()]
+
+        with pygmt.config(COLOR_NAN="white"):
+            pygmt.makecpt(
+                cmap=",".join(colors),
+                color_model="+c" + ",".join(values),
+                series=",".join(values),
+            )
+
+        types = np.unique(bed_type.values)
+        types = list(types[np.isfinite(types)].astype(str))
+
+        if legend:
+            # Iterates through the unit names and colors, and adds the symbol+text lines to a string
+            legend_spec = "\n".join(
+                [
+                    f"S 0.2c s 0.6c {v['color']} 0.4p 0.6c {k}"
+                    for k, v in bed_type_cmap.items()
+                ]
+            )
+            legend_spec = io.StringIO(legend_spec)  # type: ignore[assignment]
+
+        self.grdimage(
+            grid=bed_type,
+            cmap=True,
+            projection=self.proj,
+            region=self.reg,
+            verbose="e",
+            transparency=transparency,
+        )
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                spec=legend_spec,
+                position=legend_loc,
+            )
+
     def add_modis(
         self,
         version: str | None = None,
@@ -1639,6 +1726,7 @@ def basemap(
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
+    bed_type: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -1698,6 +1786,8 @@ def basemap(
         transparency to use for the MODIS basemap, by default is 0
     modis_version : str, optional
         version of the MODIS basemap to plot, by default is None
+    bed_type : bool, optional
+        choose to plot bed type classification, by default is False
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -1823,6 +1913,12 @@ def basemap(
         choose to add a legend for the geologic units, by default is False
     geologic_units_legend_loc : str | None
         location of the geologic units legend, by default is lower right
+    bed_type_legend : bool
+        choose to add a legend for the bed type, by default is False
+    bed_type_legend_loc : str | None
+        location of the bed type legend, by default is upper right
+    bed_type_transparency : int
+        transparency to use for the bed type, by default is 0
 
     Returns
     -------
@@ -1996,6 +2092,15 @@ def basemap(
             pen=kwargs.get("simple_basemap_pen", "0.2p,black"),
             grounded_color=kwargs.get("simple_basemap_grounded_color", "grey"),
             floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
+        )
+
+    # add bed type
+    if bed_type is True:
+        logger.debug("adding bed type")
+        fig.add_bed_type(
+            transparency=kwargs.get("bed_type_transparency", 0),
+            legend=kwargs.get("bed_type_legend", True),
+            legend_loc=kwargs.get("bed_type_legend_loc", None),
         )
 
     # add lat long grid lines
@@ -2433,6 +2538,7 @@ def plot_grd(
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
+    bed_type: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -2500,6 +2606,8 @@ def plot_grd(
         transparency to use for the MODIS basemap, by default is 0
     modis_version : str, optional
         version of the MODIS basemap to plot, by default is None
+    bed_type : bool, optional
+        choose to plot bed type classifications on the map, by default is False
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -2634,7 +2742,12 @@ def plot_grd(
         choose to add a legend for the geologic units, by default is False
     geologic_units_legend_loc : str | None
         location of the geologic units legend, by default is lower right
-
+    bed_type_legend : bool
+        choose to add a legend for the bed type, by default is False
+    bed_type_legend_loc : str | None
+        location of the bed type legend, by default is upper right
+    bed_type_transparency : int
+        transparency to use for the bed type, by default is 0
 
     Returns
     -------
@@ -2810,6 +2923,15 @@ def plot_grd(
             pen=kwargs.get("simple_basemap_pen", "0.2p,black"),
             grounded_color=kwargs.get("simple_basemap_grounded_color", "grey"),
             floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
+        )
+
+    # add bed type
+    if bed_type is True:
+        logger.debug("adding bed type")
+        fig.add_bed_type(
+            transparency=kwargs.get("bed_type_transparency", 0),
+            legend=kwargs.get("bed_type_legend", True),
+            legend_loc=kwargs.get("bed_type_legend_loc", None),
         )
 
     # add the grid
