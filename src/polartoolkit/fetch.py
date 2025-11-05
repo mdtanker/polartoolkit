@@ -1076,6 +1076,7 @@ def geomap(
             }
         )
 
+        # get list of strings between `<symbol name=` and `</layer>`
         symbol_infos = re.findall(r"<symbol name=(.*?)</layer>", contents)
 
         symbol_names = []
@@ -1096,7 +1097,6 @@ def geomap(
         unit_symbols = simple_geol.merge(colors)
         unit_symbols["SIMPCODE"] = unit_symbols.SIMPCODE.astype(int)
         unit_symbols["SIMPcolor"] = unit_symbols.SIMPcolor.str.replace(",", "/")
-
     elif version == "sources":
         layer = "ATA_GeoMAP_sources_v2022_08"
     elif version == "quality":
@@ -1124,6 +1124,19 @@ def geomap(
     if version == "units":
         data = data.merge(unit_symbols)
         data["SIMPsymbol"] = data.SIMPsymbol.astype(float)
+
+        # some entries seem to have incorrect color and symbol assignments, fix these
+        data.loc[
+            data.SIMPDESC
+            == "Unconsolidated coastal ice-shelf till, beach or lake deposits",
+            "SIMPcolor",
+        ] = "211/255/190"
+        data.loc[
+            data.SIMPDESC
+            == "Unconsolidated coastal ice-shelf till, beach or lake deposits",
+            "SIMPsymbol",
+        ] = 2.0
+
         data = data.sort_values("SIMPsymbol")
 
     return data
