@@ -936,13 +936,13 @@ def modis(
     if hemisphere == "north":
         if version == "100m":
             url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif"
-            fname = "mog100.tif"
+            fname = "mog100_2015_hp1_v02.tif"
             known_hash = (
                 "673745b96b08bf7118c47ad458f7999fb715b8260328d1112c9faf062c4664e9"
             )
         elif version == "500m":
             url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif"
-            fname = "mog500.tif"
+            fname = "mog500_2015_hp1_v02.tif"
             known_hash = (
                 "5a5d3f5771e72750db69eeb1ddc2860101933ca45a5d5e0f43e54e1f86aae14b"
             )
@@ -2078,7 +2078,7 @@ def bedmachine(
             "BedMachineGreenland-v5.nc"
         )
 
-        fname = "bedmachine_v5.nc"
+        fname = "BedMachineGreenland-v5.nc"
         known_hash = "f7116b8e9e3840649075dcceb796ce98aaeeb5d279d15db489e6e7668e0d80db"
 
         # greenland dataset doesn't have firn layer
@@ -2094,7 +2094,7 @@ def bedmachine(
             "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
             "BedMachineAntarctica-v3.nc"
         )
-        fname = "bedmachine_v3.nc"
+        fname = "BedMachineAntarctica-v3.nc"
         known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
 
         if spacing is None:
@@ -3723,10 +3723,10 @@ def etopo(
 
     if hemisphere == "south":
         proj = "EPSG:3031"
-        fname = "etopo_south.nc"
+        fname = "earth-topography-10arcmin_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
-        fname = "etopo_north.nc"
+        fname = "earth-topography-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
@@ -3827,10 +3827,10 @@ def geoid(
 
     if hemisphere == "south":
         proj = "EPSG:3031"
-        fname = "eigen_geoid_south.nc"
+        fname = "earth-geoid-10arcmin_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
-        fname = "eigen_geoid_north.nc"
+        fname = "earth-geoid-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it back"
@@ -4055,7 +4055,7 @@ def magnetics(
     elif version == "admap2_gdb":
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
-            fname="admap2_gdb.zip",
+            fname="ADMAP2A.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
             known_hash="a587555677350257dadbbf615838deac67e7d183a16525996ea0954eb23d83e8",
             processor=pooch.Unzip(),
@@ -4261,7 +4261,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-            fname="an_2015.tar.gz",
+            fname="AN1-HF.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="9834439cdf99d5ee62fb88a008fa34dbc8d1848e9b00a1bd9cbc33194dd7d402",
             progressbar=True,
@@ -4323,7 +4323,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz",
-            fname="martos_2017.xyz",
+            fname="martos_Antarctic_GHF.xyz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="a5814bd0432986e111d0d48bfbd950cce66ba247b26b37f9a7499e66d969eb1f",
             progressbar=True,
@@ -4496,7 +4496,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
-            fname="losing_ebbing_2021_ghf.csv",
+            fname="losing_ebbing_HF_Min_Max_MaxAbs-1.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="ecdae882083d8eb3503fab5be2ef862c96229f89ecbae1f95e56a8f43fb912e2",
             progressbar=True,
@@ -4519,7 +4519,7 @@ def ghf(
     elif version == "aq1":
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
-            fname="aq1.nc",
+            fname="aq1_01_20.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="946ae69e0a3d15a7500d7252fe0ce4f5cb126eaeb6170555ade0acdc38b86d7f",
             progressbar=True,
@@ -4679,7 +4679,7 @@ def gia(
     if version == "stal-2020":
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
-            fname="stal_2020_gia.tiff",
+            fname="ant_gia_dem_0.tiff",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gia",
             known_hash="cb579c9606f98dfd28239183ba28de33e6e288a4256b27da7249c3741a24b7e8",
             progressbar=True,
