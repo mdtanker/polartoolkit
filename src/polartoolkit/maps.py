@@ -254,23 +254,19 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         """
 
         if self.hemisphere == "north":
-            image = fetch.modis(version="500m", hemisphere="north")
-            cmap, _, _ = set_cmap(
-                True,
-                modis=True,
+            self.add_modis(
+                version="500m",
+                transparency=transparency,
             )
         elif self.hemisphere == "south":
-            image = fetch.imagery()
-            cmap = None
-
-        self.grdimage(
-            grid=image,  # pylint: disable=possibly-used-before-assignment
-            cmap=cmap,  # pylint: disable=possibly-used-before-assignment
-            transparency=transparency,
-            projection=self.proj,
-            region=self.reg,
-            verbose="e",
-        )
+            self.grdimage(
+                grid=fetch.imagery(),
+                cmap=None,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+                verbose="e",
+            )
 
     def add_coast(
         self,
