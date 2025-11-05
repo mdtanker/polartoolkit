@@ -2291,7 +2291,7 @@ def set_cmap(
 
     # set cmap
     if cmap is True and modis is False:
-        colorbar = True
+        pass
     elif isinstance(cmap, str) and cmap.endswith(".cpt"):
         # skip everything if cpt file is passed
         def warn_msg(x: str) -> str:
