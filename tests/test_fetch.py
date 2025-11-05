@@ -384,6 +384,26 @@ def test_imagery():
 # utils.get_grid_info(grid)
 
 
+# %% imagery
+
+
+@pytest.mark.fetch
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_antarctic_bed_type():
+    grid = fetch.antarctic_bed_type(region=regions.minna_bluff)
+    expected = (
+        500.0,
+        (210000.0, 390000.0, -1309500.0, -1120500.0),
+        -3.0,
+        3.0,
+        "p",
+    )
+    assert not deepdiff.DeepDiff(
+        utils.get_grid_info(grid),
+        expected,
+    )
+
+
 # %% sediment thickness
 
 
@@ -1121,7 +1141,7 @@ def test_bedmap_points():
         -78.36291431608393,
         96.64183445584203,
         285.5206921732992,
-        -75.11360888846426,
+        -65.19315249580468,
         828.8807757122288,
         299819.78925710823,
         -1231728.2444671816,
