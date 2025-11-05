@@ -382,6 +382,8 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         pen: str | None = None,
         style: str | None = None,
         label: str | None = None,
+        legend: bool = True,
+        legend_loc: str | None = None,
     ) -> None:
         """
         add various types of faults from GeoMap to a map, from
@@ -402,6 +404,10 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             GMT style string, by default None
         label : str, optional
             label to add to the legend, by default None
+        legend : bool, optional
+            whether to add a legend, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
         """
         if self.hemisphere == "north":
             msg = "Faults are not available for the northern hemisphere."
@@ -479,6 +485,13 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             label=label,
             style=style,
         )
+
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                position=legend_loc,
+            )
 
     def add_modis(
         self,
@@ -1734,6 +1747,10 @@ def basemap(
         column name in faults to use for motion, by default is None
     fault_exposure : str
         column name in faults to use for exposure, by default is None
+    fault_legend : bool
+        choose to add a legend for the faults, by default is False
+    fault_legend_loc : str | None
+        location of the fault legend, by default is lower left
 
     Returns
     -------
@@ -1937,6 +1954,8 @@ def basemap(
             fault_activity=kwargs.get("fault_activity"),
             fault_motion=kwargs.get("fault_motion"),
             fault_exposure=kwargs.get("fault_exposure"),
+            legend=kwargs.get("fault_legend", True),
+            legend_loc=kwargs.get("fault_legend_loc", None),
         )
 
     # add box showing region
@@ -2524,6 +2543,10 @@ def plot_grd(
         column name in faults to use for motion, by default is None
     fault_exposure : str
         column name in faults to use for exposure, by default is None
+    fault_legend : bool
+        choose to add a legend for the faults, by default is False
+    fault_legend_loc : str | None
+        location of the fault legend, by default is lower left
 
     Returns
     -------
@@ -2736,6 +2759,8 @@ def plot_grd(
             fault_activity=kwargs.get("fault_activity"),
             fault_motion=kwargs.get("fault_motion"),
             fault_exposure=kwargs.get("fault_exposure"),
+            legend=kwargs.get("fault_legend", True),
+            legend_loc=kwargs.get("fault_legend_loc", None),
         )
 
     # add box showing region
