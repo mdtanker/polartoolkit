@@ -935,13 +935,13 @@ def modis(
 
     if hemisphere == "north":
         if version == "100m":
-            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif"
+            url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog100_2015_hp1_v02.tif"
             fname = "mog100_2015_hp1_v02.tif"
             known_hash = (
                 "673745b96b08bf7118c47ad458f7999fb715b8260328d1112c9faf062c4664e9"
             )
         elif version == "500m":
-            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif"
+            url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog500_2015_hp1_v02.tif"
             fname = "mog500_2015_hp1_v02.tif"
             known_hash = (
                 "5a5d3f5771e72750db69eeb1ddc2860101933ca45a5d5e0f43e54e1f86aae14b"
@@ -1150,6 +1150,7 @@ def groundingline(
 
     version = "measures-greenland"
     from :footcite:t:`haranmeasures2018`.
+    accessed at https://nsidc.org/data/nsidc-0547/versions/2
 
     Some versions require an EarthData login, see Tutorials/Download Polar datasets for
     how to configure this.
@@ -1187,7 +1188,7 @@ def groundingline(
             "GroundingLine_Antarctica_v02.shp": "2d8f84e301c4e33ad1cb480aa260b8208b3fcaa00df0b68593ffe7d5aa6c9d7e",
             "GroundingLine_Antarctica_v02.shx": "01eaff4a35b4cd840a3fb1bdb63f7e51b2792c2ccd92d4621cb5d97cb3e365bc",
         }
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/1992/02/07/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
         pup = pooch.create(
             path=path,
@@ -1230,7 +1231,7 @@ def groundingline(
             f"{name}.shp": "0008813ddbc32ef3a1065256b62ce46e7c7e95fbe74013ec9d796d25d462326c",
             f"{name}.shx": "c2d34fc757a7dfc60bb54117d3653e6d5bd988740480c90832e4f45c8188c693",
         }
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2005.03.12/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2005/03/12/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
         pup = pooch.create(
             path=path,
@@ -1305,7 +1306,7 @@ def antarctic_boundaries(
 
     # coastline shapefile is in a different directory
     if version == "Coastline":
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/2008/01/01/"
         registry = {
             "Coastline_Antarctica_v02.dbf": "f4651b20080ec308795c00dae7f35cdff4255e3fb005f2ff63b2c17570ca3fa2",
             "Coastline_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
@@ -1338,7 +1339,7 @@ def antarctic_boundaries(
         "IceShelf",
         "Mask",
     ]:
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/1992/02/07/"
         registry = {
             "Basins_Antarctica_v02.dbf": "d5a12ac6ca510271b5ba419ebe158e3b32d9d902a16a23f2e3f88b9ea3e54ee1",
             "Basins_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
@@ -2074,8 +2075,8 @@ def bedmachine(
 
     if hemisphere == "north":
         url = (
-            "https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/IDBMG4.005/1993.01.01/"
-            "BedMachineGreenland-v5.nc"
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
+            "ICEBRIDGE/IDBMG4/5/1993/01/01/BedMachineGreenland-v5.nc"
         )
 
         fname = "BedMachineGreenland-v5.nc"
@@ -2091,8 +2092,8 @@ def bedmachine(
 
     elif hemisphere == "south":
         url = (
-            "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
-            "BedMachineAntarctica-v3.nc"
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
+            "MEASURES/NSIDC-0756/3/1970/01/01/BedMachineAntarctica-v3.nc"
         )
         fname = "BedMachineAntarctica-v3.nc"
         known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
