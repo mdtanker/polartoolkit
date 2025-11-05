@@ -321,13 +321,9 @@ def sample_shp(name: str) -> str:
     """
 
     if name == "Disco_deep_transect":
-        known_hash = (
-            None  # "ffffeef15d7556cd60305e6222852e3b4e09da3b6c628a094c1e99ac6d605303"
-        )
+        known_hash = "70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e"
     elif name == "Roosevelt_Island":
-        known_hash = (
-            None  # "f3821b8a4d24dd676f75db4b7f2b532a328de18e0bdcce8cee6a6abb3b3e70f6"
-        )
+        known_hash = "83434284808d067b8b18b649e41287a63f01eb2ce581b2c34ee44ae3a1a5ca2a"
     else:
         msg = "name must be either 'Disco_deep_transect' or 'Roosevelt_Island'"
         raise ValueError(msg)
@@ -436,7 +432,7 @@ def mass_change(
         url=url,
         fname=zip_fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/mass_change",
-        known_hash=None,
+        known_hash="8d09ffcce4e84fba8cabbc85ee79fec4de36419f8b242ca1f95adacaa2f229e3",
         progressbar=True,
         processor=pooch.Unzip(
             extract_dir="Smith_2020",
@@ -633,7 +629,7 @@ def buttressing(
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/buttressing/",
-        known_hash=None,
+        known_hash=None,  # changes with every download
         progressbar=True,
         downloader=EarthDataDownloader(),
     )
@@ -807,8 +803,8 @@ def ice_vel(
 
         base_fname = "greenland_vel_mosaic250"
         registry = {
-            f"{base_fname}_vx_v1.tif": None,
-            f"{base_fname}_vy_v1.tif": None,
+            f"{base_fname}_vx_v1.tif": "e903891d5ed2c5faaccb60705088917bf1595cbd516223e5cea208b55979d68d",
+            f"{base_fname}_vy_v1.tif": "16b2c1cbd7be2ee3a50219eb2e00604cfeca5fca059e48f02c34570e15f1d8c9",
         }
         base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0670/1/1995/12/01/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity"
@@ -1186,11 +1182,10 @@ def groundingline(
 
     elif version == "measures-v2":
         registry = {
-            "GroundingLine_Antarctica_v02.dbf": None,
-            "GroundingLine_Antarctica_v02.prj": None,
-            "GroundingLine_Antarctica_v02.shp": None,
-            "GroundingLine_Antarctica_v02.shx": None,
-            "GroundingLine_Antarctica_v02.xml": None,
+            "GroundingLine_Antarctica_v02.dbf": "1cfbe90b262a7fb81cbe61af4f75b23e03213a078ed866e66c6467ab422e017e",
+            "GroundingLine_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "GroundingLine_Antarctica_v02.shp": "2d8f84e301c4e33ad1cb480aa260b8208b3fcaa00df0b68593ffe7d5aa6c9d7e",
+            "GroundingLine_Antarctica_v02.shx": "01eaff4a35b4cd840a3fb1bdb63f7e51b2792c2ccd92d4621cb5d97cb3e365bc",
         }
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
@@ -1209,6 +1204,8 @@ def groundingline(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/GroundingLine*.shp")[0]  # noqa: PTH207
+        # for f in glob.glob(f"{path}/GroundingLine*"):
+        #     print(f, pooch.file_hash(f))
 
     elif version == "BAS":
         url = "https://ramadda.data.bas.ac.uk/repository/entry/get/Greenland_coast.zip?entryid=synth:8cecde06-8474-4b58-a9cb-b820fa4c9429:L0dyZWVubGFuZF9jb2FzdC56aXA="
@@ -1216,7 +1213,7 @@ def groundingline(
             url=url,
             fname="Greenland_coast.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/greenland",
-            known_hash=None,
+            known_hash="4d11ab54c61474b4f144a618693936091eaaec220a6362a51b9ec251cbbd2f41",
             processor=pooch.Unzip(),
             progressbar=True,
         )
@@ -1228,11 +1225,10 @@ def groundingline(
         # name = "mog500_geus_coastline_v02" # corrupted
         # name = "mog500_gimp_iceedge_v02" # shows islands
         registry = {
-            f"{name}.dbf": None,
-            f"{name}.prj": None,
-            f"{name}.shp": None,
-            f"{name}.shx": None,
-            f"{name}.xml": None,
+            f"{name}.dbf": "d6c46dde04b4c50fcd5a49335d72918d8e12a8068b47385278b723e04dcbd05d",
+            f"{name}.prj": "b6b25696b6f0c431bc77551de0ed4febe92d2b7cd307dec3efb85108c0073737",
+            f"{name}.shp": "0008813ddbc32ef3a1065256b62ce46e7c7e95fbe74013ec9d796d25d462326c",
+            f"{name}.shx": "c2d34fc757a7dfc60bb54117d3653e6d5bd988740480c90832e4f45c8188c693",
         }
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2005.03.12/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
@@ -1250,6 +1246,8 @@ def groundingline(
             )
         # pick the requested files
         fname = glob.glob(f"{path}/{name}*.shp")[0]  # noqa: PTH207
+        # for f in glob.glob(f"{path}/{name}*"):
+        #     print(f, pooch.file_hash(f))
     else:
         msg = (
             "version must be one of 'depoorter-2013', 'measures-v2', 'BAS', or"
@@ -1309,11 +1307,10 @@ def antarctic_boundaries(
     if version == "Coastline":
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
         registry = {
-            "Coastline_Antarctica_v02.dbf": None,
-            "Coastline_Antarctica_v02.prj": None,
-            "Coastline_Antarctica_v02.shp": None,
-            "Coastline_Antarctica_v02.shx": None,
-            "Coastline_Antarctica_v02.xml": None,
+            "Coastline_Antarctica_v02.dbf": "f4651b20080ec308795c00dae7f35cdff4255e3fb005f2ff63b2c17570ca3fa2",
+            "Coastline_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Coastline_Antarctica_v02.shp": "4b97578a54eabe771bf97a7704576207050799ed2201efd55838783781efeb83",
+            "Coastline_Antarctica_v02.shx": "31ee3bb232f0b29c73eb5a69be723697feece76dcab5cbd4ad22f2b8692e6bf2",
         }
         pup = pooch.create(
             path=path,
@@ -1329,6 +1326,11 @@ def antarctic_boundaries(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/{version}*.shp")[0]  # noqa: PTH207
+
+        # get the file hashes
+        # for f in glob.glob(f"{path}/{version}*"):
+        #     print(f, pooch.file_hash(f))
+
     elif version in [
         "Basins_Antarctica",
         "Basins_IMBIE",
@@ -1338,29 +1340,24 @@ def antarctic_boundaries(
     ]:
         base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
         registry = {
-            "Basins_Antarctica_v02.dbf": None,
-            "Basins_Antarctica_v02.prj": None,
-            "Basins_Antarctica_v02.shp": None,
-            "Basins_Antarctica_v02.shx": None,
-            "Basins_Antarctica_v02.xml": None,
-            "Basins_IMBIE_Antarctica_v02.dbf": None,
-            "Basins_IMBIE_Antarctica_v02.prj": None,
-            "Basins_IMBIE_Antarctica_v02.shp": None,
-            "Basins_IMBIE_Antarctica_v02.shx": None,
-            "Basins_IMBIE_Antarctica_v02.xml": None,
-            "IceBoundaries_Antarctica_v02.dbf": None,
-            "IceBoundaries_Antarctica_v02.prj": None,
-            "IceBoundaries_Antarctica_v02.shp": None,
-            "IceBoundaries_Antarctica_v02.shx": None,
-            "IceBoundaries_Antarctica_v02.xml": None,
-            "IceShelf_Antarctica_v02.dbf": None,
-            "IceShelf_Antarctica_v02.prj": None,
-            "IceShelf_Antarctica_v02.shp": None,
-            "IceShelf_Antarctica_v02.shx": None,
-            "IceShelf_Antarctica_v02.xml": None,
-            "Mask_Antarctica_v02.bmp": None,
-            "Mask_Antarctica_v02.tif": None,
-            "Mask_Antarctica_v02.xml": None,
+            "Basins_Antarctica_v02.dbf": "d5a12ac6ca510271b5ba419ebe158e3b32d9d902a16a23f2e3f88b9ea3e54ee1",
+            "Basins_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Basins_Antarctica_v02.shp": "699cae0fc230e48cc8714eeec1a8a4c34380fbef73cdaa3deb415a33d654c234",
+            "Basins_Antarctica_v02.shx": "1e1ea5d586b7f4cafb9d37ffdcf4d37db9dc70f49dcf5e260e9508700be1e05c",
+            "Basins_IMBIE_Antarctica_v02.dbf": "14dc9157fac56b7430ecad58ae617364e28e53d2036d66e49839f60b2a1d2cd1",
+            "Basins_IMBIE_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Basins_IMBIE_Antarctica_v02.shp": "48aa2e48aea1d24d82ea736c61f88bb02c9f4909f853a09047915b32ccf4a4b4",
+            "Basins_IMBIE_Antarctica_v02.shx": "acf98eb64da8804fa99d407ee82468777327e8a17eed53469d4dc2f310be7706",
+            "IceBoundaries_Antarctica_v02.dbf": "f4bc74cac38d75d07c54a2ef481916a25ad5b0f9d792a352a3406874665abfdc",
+            "IceBoundaries_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "IceBoundaries_Antarctica_v02.shp": "64964996d0b7e2b93027766d0e49389b21186d633998b740a545cfd7fe5ecc99",
+            "IceBoundaries_Antarctica_v02.shx": "baeb2e166eccd4959e5c4ca268798816dd53882de8eedc0a06debb47a4be3ae7",
+            "IceShelf_Antarctica_v02.dbf": "23532b4f49b240efb508d8c2fd13bdbf5c6920d51bff1989c867529cf40296e8",
+            "IceShelf_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "IceShelf_Antarctica_v02.shp": "125dc2711cf810f18142623b5fb763dd5d3057c6da1575576d5d01efd45592f7",
+            "IceShelf_Antarctica_v02.shx": "542ab0c8ea1571f0756fcc72bc238298c4f97e54416ce23dfbfefe260be20001",
+            "Mask_Antarctica_v02.bmp": "31dbd7ab61b44c8c700415f16e048550126d7c40b7747f5a094b934bb748e5f1",
+            "Mask_Antarctica_v02.tif": "f45f65e1a702de4601895d8f6df559e32fe097447a6636c49009c03d15d3011e",
         }
         pup = pooch.create(
             path=path,
@@ -1379,6 +1376,11 @@ def antarctic_boundaries(
             fname = glob.glob(f"{path}/{version}*.tif")[0]  # noqa: PTH207
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]  # noqa: PTH207
+
+        # get the file hashes
+        # for f in glob.glob(f"{path}/{version}*"):
+        #     print(f, pooch.file_hash(f))
+
     else:
         msg = (
             "version must be one of 'Coastline', 'Basins_Antarctica', 'Basins_IMBIE',"
@@ -2417,7 +2419,7 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap2_point_data.zip",
-            known_hash=None,
+            known_hash=None,  # seems to change each time!
             progressbar=True,
             processor=preprocessing,
         )
@@ -2527,8 +2529,7 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap3_point_data.zip",
-            # known_hash="c4661e1a8cee93164bb19d126e8fa1112a59f7579ff5e0d993704b5956621ef5",
-            known_hash=None,
+            known_hash=None,  # seems to change every time!
             progressbar=True,
             processor=preprocessing,
         )
@@ -2625,7 +2626,7 @@ def bedmap3(
         "https://ramadda.data.bas.ac.uk/repository/entry/get/bedmap3.nc?entryid=synth%"
         "3A2d0e4791-8e20-46a3-80e4-f5f6716025d2%3AL2JlZG1hcDMubmM%3D"
     )
-    known_hash = None
+    known_hash = None  # changes every time
     # convert user-supplied strings to names used by Bedmap3
     if layer == "surface":
         layer = "surface_topography"
@@ -2963,7 +2964,7 @@ def bedmap2(
         "+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016"
         "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
     )
-    known_hash = None
+    known_hash = None  # changes every time
     if layer not in [
         "lakemask_vostok",
         "ice_thickness_uncertainty",
@@ -3508,18 +3509,30 @@ def gravity(
         # Free-air anomaly at the surface
         if anomaly_type == "FA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity-anomaly.nc"
-            fname = "antgg_2021_FA.nc"
+            fname = "AntGG2021_Gravity-anomaly.nc"
+            known_hash = (
+                "2b876b02a90908b67e1aa11041d4dec8031612de7d80900cbec90d3470ac2c87"
+            )
         # Disturbance at the surface
         elif anomaly_type == "DG":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity_disturbance_at-surface.nc"
-            fname = "antgg_2021_DG.nc"
+            fname = "AntGG2021_Gravity_disturbance_at-surface.nc"
+            known_hash = (
+                "e6949d794696664561ee03e7f631653f47c7e5f4d7c4f074b29920d25bae259e"
+            )
         # Bouguer anomaly
         elif anomaly_type == "BA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Bouguer-anomaly.nc"
-            fname = "antgg_2021_BA.nc"
+            fname = "AntGG2021_Bouguer-anomaly.nc"
+            known_hash = (
+                "93984887609a6507fad9abc8828039a7aec0a6e9d8c0c3f979fe6698ed01bdc8"
+            )
         elif anomaly_type == "Err":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Standard-deviation_GA-from-LSC.nc"
-            fname = "antgg_2021_Err.nc"
+            fname = "AntGG2021_Standard-deviation_GA-from-LSC.nc"
+            known_hash = (
+                "c7850b42b138eee66ae5699266ca2ce67304367f122a3c0d414b479669a9fb1a"
+            )
         else:
             msg = "anomaly_type must be 'FA', 'BA', 'DG' or 'Err'"
             raise ValueError(msg)
@@ -3528,7 +3541,7 @@ def gravity(
             url=url,
             fname=fname,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash=known_hash,
             progressbar=True,
         )
 
@@ -4120,7 +4133,7 @@ def magnetics(
             url=url,
             fname="F_LCS-1_ellipsoid_14-185_ASC.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
-            known_hash=None,
+            known_hash="695495dfeb53361bb04f183806cdf5f049a3ec9adc8eee20dce93d893dd30feb",
             progressbar=True,
             processor=preprocessing,
         )
@@ -4984,7 +4997,8 @@ def moho(
             url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
             fname="shen_2018_moho.tar",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-            known_hash=None,
+            known_hash="794b30ca1eab97bdfdd4dca4a67623459c5d19502039a53b33b0e093fc098034",
+            # known_hash=None, # changes with each download
             progressbar=True,
             processor=preprocessing,
             downloader=pooch.HTTPDownloader(timeout=60),
