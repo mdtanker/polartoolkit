@@ -405,6 +405,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
     def add_faults(
         self,
+        faults_activity: str | None = None,
+        faults_motion: str | None = None,
+        faults_exposure: str | None = None,
         fault_activity: str | None = None,
         fault_motion: str | None = None,
         fault_exposure: str | None = None,
@@ -420,12 +423,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         Parameters
         ----------
-        fault_activity : str, optional
+        faults_activity : str, optional
             type of fault activity, options are active or inactive, by default both
-        fault_motion : str, optional
+        faults_motion : str, optional
             type of fault motion, options are sinistral, dextral, normal, or reverse, by
             default all
-        fault_exposure : str, optional
+        faults_exposure : str, optional
             type of fault exposure, options are exposed or inferred, by default both
         pen : str, optional
             GMT pen string, by default "1p,magenta,-"
@@ -442,24 +445,37 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "Faults are not available for the northern hemisphere."
             raise NotImplementedError(msg)
 
+        if fault_activity is not None:
+            faults_activity = fault_activity
+            msg = "fault_activity is deprecated, use faults_activity instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if fault_motion is not None:
+            faults_motion = fault_motion
+            msg = "fault_motion is deprecated, use faults_motion instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if fault_exposure is not None:
+            faults_exposure = fault_exposure
+            msg = "fault_exposure is deprecated, use faults_exposure instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
         faults = fetch.geomap(version="faults", region=self.reg)
 
         legend_label = "Fault types: "
 
         # subset by activity type (active or inactive)
-        if fault_activity is None:
+        if faults_activity is None:
             legend_label = legend_label + "active and inactive"
-        elif fault_activity == "active":
+        elif faults_activity == "active":
             faults = faults[faults.ACTIVITY.isin(["active", "possibly active"])]
             legend_label = legend_label + "active"
-        elif fault_activity == "inactive":
+        elif faults_activity == "inactive":
             faults = faults[faults.ACTIVITY.isin(["inactive", "probably inactive"])]
             legend_label = legend_label + "inactive"
 
         # subset by motion type
-        if fault_motion is None:
+        if faults_motion is None:
             legend_label = legend_label + " / all motion types"
-        elif fault_motion == "sinistral":  # left lateral
+        elif faults_motion == "sinistral":  # left lateral
             faults = faults[faults.TYPENAME.isin(["sinistral strike slip fault"])]
             legend_label = legend_label + ", sinistral"
             # if style is None:
@@ -469,29 +485,29 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             #     # +r for left side,
             #     # +s45 for arrow angle
             #     style = 'f-1c/.3c+r+s45'
-        elif fault_motion == "dextral":  # right lateral
+        elif faults_motion == "dextral":  # right lateral
             faults = faults[faults.TYPENAME.isin(["dextral strike slip fault"])]
             legend_label = legend_label + " / dextral"
             # if style is None:
             #     style = 'f-1c/.3c+l+s45'
-        elif fault_motion == "normal":
+        elif faults_motion == "normal":
             faults = faults[
                 faults.TYPENAME.isin(["normal fault", "high angle normal fault"])
             ]
             legend_label = legend_label + " / normal"
-        elif fault_motion == "reverse":
+        elif faults_motion == "reverse":
             faults = faults[
                 faults.TYPENAME.isin(["thrust fault", "high angle reverse"])
             ]
             legend_label = legend_label + " / reverse"
 
         # subset by exposure type
-        if fault_exposure is None:
+        if faults_exposure is None:
             legend_label = legend_label + " / exposed and inferred"
-        elif fault_exposure == "exposed":
+        elif faults_exposure == "exposed":
             faults = faults[faults.EXPOSURE.isin(["exposed"])]
             legend_label = legend_label + " / exposed"
-        elif fault_exposure == "inferred":
+        elif faults_exposure == "inferred":
             faults = faults[faults.EXPOSURE.isin(["concealed", "unknown"])]
             legend_label = legend_label + " / inferred"
 
@@ -499,7 +515,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             pen = "1p,magenta,-"
 
         # if no subsetting of faults, shorten the label
-        if all(x is None for x in [fault_activity, fault_motion, fault_exposure]):
+        if all(x is None for x in [faults_activity, faults_motion, faults_exposure]):
             legend_label = "Faults"
 
         # if label supplied, use that
@@ -1929,22 +1945,22 @@ def basemap(
         version of coastlines to plot, by default depends on the hemisphere
     coast_label : str
         label to add to coastlines, by default is None
-    fault_label : str
+    faults_label : str
         label to add to faults, by default is None
-    fault_pen : str
+    faults_pen : str
         GMT pen string to use for the faults, by default is None
-    fault_style : str
+    faults_style : str
         GMT style string to use for the faults, by default is None
-    fault_activity : str
+    faults_activity : str
         column name in faults to use for activity, by default is None
-    fault_motion : str
+    faults_motion : str
         column name in faults to use for motion, by default is None
-    fault_exposure : str
+    faults_exposure : str
         column name in faults to use for exposure, by default is None
-    fault_legend : bool
+    faults_legend : bool
         choose to add a legend for the faults, by default is False
-    fault_legend_loc : str | None
-        location of the fault legend, by default is lower left
+    faults_legend_loc : str | None
+        location of the faults legend, by default is lower left
     geologic_units_legend : bool
         choose to add a legend for the geologic units, by default is False
     geologic_units_legend_loc : str | None
@@ -2160,15 +2176,26 @@ def basemap(
     # plot faults
     if faults is True:
         logger.debug("adding faults")
+
+        if kwargs.get("fault_label", None) is not None:
+            msg = "`fault_label` is deprecated, use `faults_label` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_pen", None) is not None:
+            msg = "`fault_pen` is deprecated, use `faults_pen` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_style", None) is not None:
+            msg = "`fault_style` is deprecated, use `faults_style` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
         fig.add_faults(
-            label=kwargs.get("fault_label"),
-            pen=kwargs.get("fault_pen"),
-            style=kwargs.get("fault_style"),
-            fault_activity=kwargs.get("fault_activity"),
-            fault_motion=kwargs.get("fault_motion"),
-            fault_exposure=kwargs.get("fault_exposure"),
-            legend=kwargs.get("fault_legend", True),
-            legend_loc=kwargs.get("fault_legend_loc", None),
+            label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
+            pen=kwargs.get("faults_pen", kwargs.get("fault_pen", None)),
+            style=kwargs.get("faults_style", kwargs.get("fault_style", None)),
+            faults_activity=kwargs.get("faults_activity"),
+            faults_motion=kwargs.get("faults_motion"),
+            faults_exposure=kwargs.get("faults_exposure"),
+            legend=kwargs.get("faults_legend", True),
+            legend_loc=kwargs.get("faults_legend_loc", None),
         )
 
     # plot geologic units
@@ -2758,22 +2785,22 @@ def plot_grd(
         version of coastlines to plot, by default depends on the hemisphere
     coast_label : str
         label to add to coastlines, by default is None
-    fault_label : str
+    faults_label : str
         label to add to faults, by default is None
-    fault_pen : str
+    faults_pen : str
         GMT pen string to use for the faults, by default is None
-    fault_style : str
+    faults_style : str
         GMT style string to use for the faults, by default is None
-    fault_activity : str
+    faults_activity : str
         column name in faults to use for activity, by default is None
-    fault_motion : str
+    faults_motion : str
         column name in faults to use for motion, by default is None
-    fault_exposure : str
+    faults_exposure : str
         column name in faults to use for exposure, by default is None
-    fault_legend : bool
+    faults_legend : bool
         choose to add a legend for the faults, by default is False
-    fault_legend_loc : str | None
-        location of the fault legend, by default is lower left
+    faults_legend_loc : str | None
+        location of the faults legend, by default is lower left
     geologic_units_legend : bool
         choose to add a legend for the geologic units, by default is False
     geologic_units_legend_loc : str | None
@@ -2998,15 +3025,26 @@ def plot_grd(
     # plot faults
     if faults is True:
         logger.debug("adding faults")
+
+        if kwargs.get("fault_label", None) is not None:
+            msg = "`fault_label` is deprecated, use `faults_label` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_pen", None) is not None:
+            msg = "`fault_pen` is deprecated, use `faults_pen` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_style", None) is not None:
+            msg = "`fault_style` is deprecated, use `faults_style` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
         fig.add_faults(
-            label=kwargs.get("fault_label"),
-            pen=kwargs.get("fault_pen"),
-            style=kwargs.get("fault_style"),
-            fault_activity=kwargs.get("fault_activity"),
-            fault_motion=kwargs.get("fault_motion"),
-            fault_exposure=kwargs.get("fault_exposure"),
-            legend=kwargs.get("fault_legend", True),
-            legend_loc=kwargs.get("fault_legend_loc", None),
+            label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
+            pen=kwargs.get("faults_pen", kwargs.get("fault_pen", None)),
+            style=kwargs.get("faults_style", kwargs.get("fault_style", None)),
+            faults_activity=kwargs.get("faults_activity"),
+            faults_motion=kwargs.get("faults_motion"),
+            faults_exposure=kwargs.get("faults_exposure"),
+            legend=kwargs.get("faults_legend", True),
+            legend_loc=kwargs.get("faults_legend_loc", None),
         )
 
     # plot geologic units
