@@ -59,6 +59,31 @@ def tests(session: nox.Session) -> None:
     )
 
 
+@nox.session(venv_backend="mamba", reuse_venv=True, python="3.12")
+def test_pypi_version(session: nox.Session) -> None:
+    """
+    Install the supplied version (from the first argument) from PyPI and run the tests.
+    """
+    try:
+        version = session.posargs[0]
+    except IndexError as e:
+        msg = "A version must be supplied as the first positional argument with `nox -s test_pypi_version -- <version>`"
+        raise IndexError(msg) from e
+
+    session.conda_install("pygmt", "geopandas")
+
+    print(f"Installing polartoolkit version {version} from PyPI")
+
+    session.install(f"polartoolkit=={version}")
+
+    test_deps = nox.project.dependency_groups(PROJECT, "test")
+    session.install(*test_deps)
+
+    session.run("pip", "list")
+
+    session.run("pytest", "-m", "not fetch")
+
+
 @nox.session(venv_backend="mamba", reuse_venv=True, default=False)
 def docs(session: nox.Session) -> None:
     """

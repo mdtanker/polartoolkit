@@ -31,8 +31,8 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
-      - uses: astral-sh/setup-uv@v6
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v7
       - name: Run Pylint
         run: uvx nox -s pylint -- --output-format=github
 

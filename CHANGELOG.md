@@ -5,19 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.2.0
-Released on 2025-10-14
-Contributors:
-- Matt Tankersley
+## Unreleased
 
 ### 🚀 Added
-- add individual functions for getting grid region, spacing, and registration
+- known hashes used for all fetches (except some which are changed on each download)
+- add fetch for Aitken et al. 2023 Antarctic bed classifications
+- new function `add_geologic_units()` for plotting Geomap geologic units
+- new function `add_bed_type()` for plotting Antarctic bed classification
+- added notebook to be used periodically to re-download all datasets
 
 ### 🐛 Fixed
-- fix broken download links for ice velocity datasets
-- fix some issues with ReadTheDocs
-- bug with passing `colorbar` twice to `fig.add_points()`
-- bug with pygmt parsing of region supplied with units
+- update several broken fetch download links for NSIDC datasets
+- some bugs with colorbars and grids supplied as filenames
+- remove annoying warnings about projections when plotting MODIS data
+
+### ✏️ Changed
+- try to use original file names where applicable
+- for any preprocessed grid file, use the .zarr data format for quicker loading of data
 
 <!--
 Below is an example for a release
@@ -47,6 +51,22 @@ Contributors:
 - removed a password from the code.
 
 -->
+
+
+## v1.2.0
+Released on 2025-10-14
+Contributors:
+- Matt Tankersley
+
+### 🚀 Added
+- add individual functions for getting grid region, spacing, and registration
+
+### 🐛 Fixed
+- fix broken download links for ice velocity datasets
+- fix some issues with ReadTheDocs
+- bug with passing `colorbar` twice to `fig.add_points()`
+- bug with pygmt parsing of region supplied with units
+
 ## v1.1.3
 Released on 2025-08-07
 Contributors:

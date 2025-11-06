@@ -1,5 +1,8 @@
 # pylint: disable=too-many-lines
+import contextlib
 import copy
+import io
+import os
 import pathlib
 import string
 import typing
@@ -42,6 +45,36 @@ try:
     import ipywidgets
 except ImportError:
     ipywidgets = None
+
+
+@contextlib.contextmanager
+def set_env(**environ):  # type: ignore[no-untyped-def]
+    """
+    Temporarily set the process environment variables.
+
+    Parameters
+    ----------
+    environ : str
+        Environment variables to set temporarily
+
+    Examples
+    --------
+    >>> import os
+    >>> from polartoolkit.maps import set_env
+    >>> with set_env(TEST_VAR='123'):
+    ...     print(os.environ['TEST_VAR'])
+    123
+    >>> 'TEST_VAR' in os.environ
+    False
+    """
+
+    old_environ = dict(os.environ)
+    os.environ.update(environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_environ)
 
 
 class Figure(pygmt.Figure):  # type: ignore[misc]
@@ -221,23 +254,19 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         """
 
         if self.hemisphere == "north":
-            image = fetch.modis(version="500m", hemisphere="north")
-            cmap, _, _ = set_cmap(
-                True,
-                modis=True,
+            self.add_modis(
+                version="500m",
+                transparency=transparency,
             )
         elif self.hemisphere == "south":
-            image = fetch.imagery()
-            cmap = None
-
-        self.grdimage(
-            grid=image,  # pylint: disable=possibly-used-before-assignment
-            cmap=cmap,  # pylint: disable=possibly-used-before-assignment
-            transparency=transparency,
-            projection=self.proj,
-            region=self.reg,
-            verbose="e",
-        )
+            self.grdimage(
+                grid=fetch.imagery(),
+                cmap=None,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+                verbose="e",
+            )
 
     def add_coast(
         self,
@@ -376,12 +405,17 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
     def add_faults(
         self,
+        faults_activity: str | None = None,
+        faults_motion: str | None = None,
+        faults_exposure: str | None = None,
         fault_activity: str | None = None,
         fault_motion: str | None = None,
         fault_exposure: str | None = None,
         pen: str | None = None,
         style: str | None = None,
         label: str | None = None,
+        legend: bool = True,
+        legend_loc: str | None = None,
     ) -> None:
         """
         add various types of faults from GeoMap to a map, from
@@ -389,12 +423,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         Parameters
         ----------
-        fault_activity : str, optional
+        faults_activity : str, optional
             type of fault activity, options are active or inactive, by default both
-        fault_motion : str, optional
+        faults_motion : str, optional
             type of fault motion, options are sinistral, dextral, normal, or reverse, by
             default all
-        fault_exposure : str, optional
+        faults_exposure : str, optional
             type of fault exposure, options are exposed or inferred, by default both
         pen : str, optional
             GMT pen string, by default "1p,magenta,-"
@@ -402,29 +436,46 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             GMT style string, by default None
         label : str, optional
             label to add to the legend, by default None
+        legend : bool, optional
+            whether to add a legend, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
         """
         if self.hemisphere == "north":
             msg = "Faults are not available for the northern hemisphere."
             raise NotImplementedError(msg)
+
+        if fault_activity is not None:
+            faults_activity = fault_activity
+            msg = "fault_activity is deprecated, use faults_activity instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if fault_motion is not None:
+            faults_motion = fault_motion
+            msg = "fault_motion is deprecated, use faults_motion instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if fault_exposure is not None:
+            faults_exposure = fault_exposure
+            msg = "fault_exposure is deprecated, use faults_exposure instead"
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
         faults = fetch.geomap(version="faults", region=self.reg)
 
         legend_label = "Fault types: "
 
         # subset by activity type (active or inactive)
-        if fault_activity is None:
+        if faults_activity is None:
             legend_label = legend_label + "active and inactive"
-        elif fault_activity == "active":
+        elif faults_activity == "active":
             faults = faults[faults.ACTIVITY.isin(["active", "possibly active"])]
             legend_label = legend_label + "active"
-        elif fault_activity == "inactive":
+        elif faults_activity == "inactive":
             faults = faults[faults.ACTIVITY.isin(["inactive", "probably inactive"])]
             legend_label = legend_label + "inactive"
 
         # subset by motion type
-        if fault_motion is None:
+        if faults_motion is None:
             legend_label = legend_label + " / all motion types"
-        elif fault_motion == "sinistral":  # left lateral
+        elif faults_motion == "sinistral":  # left lateral
             faults = faults[faults.TYPENAME.isin(["sinistral strike slip fault"])]
             legend_label = legend_label + ", sinistral"
             # if style is None:
@@ -434,29 +485,29 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             #     # +r for left side,
             #     # +s45 for arrow angle
             #     style = 'f-1c/.3c+r+s45'
-        elif fault_motion == "dextral":  # right lateral
+        elif faults_motion == "dextral":  # right lateral
             faults = faults[faults.TYPENAME.isin(["dextral strike slip fault"])]
             legend_label = legend_label + " / dextral"
             # if style is None:
             #     style = 'f-1c/.3c+l+s45'
-        elif fault_motion == "normal":
+        elif faults_motion == "normal":
             faults = faults[
                 faults.TYPENAME.isin(["normal fault", "high angle normal fault"])
             ]
             legend_label = legend_label + " / normal"
-        elif fault_motion == "reverse":
+        elif faults_motion == "reverse":
             faults = faults[
                 faults.TYPENAME.isin(["thrust fault", "high angle reverse"])
             ]
             legend_label = legend_label + " / reverse"
 
         # subset by exposure type
-        if fault_exposure is None:
+        if faults_exposure is None:
             legend_label = legend_label + " / exposed and inferred"
-        elif fault_exposure == "exposed":
+        elif faults_exposure == "exposed":
             faults = faults[faults.EXPOSURE.isin(["exposed"])]
             legend_label = legend_label + " / exposed"
-        elif fault_exposure == "inferred":
+        elif faults_exposure == "inferred":
             faults = faults[faults.EXPOSURE.isin(["concealed", "unknown"])]
             legend_label = legend_label + " / inferred"
 
@@ -464,7 +515,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             pen = "1p,magenta,-"
 
         # if no subsetting of faults, shorten the label
-        if all(x is None for x in [fault_activity, fault_motion, fault_exposure]):
+        if all(x is None for x in [faults_activity, faults_motion, faults_exposure]):
             legend_label = "Faults"
 
         # if label supplied, use that
@@ -479,6 +530,164 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             label=label,
             style=style,
         )
+
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                position=legend_loc,
+            )
+
+    def add_geologic_units(
+        self,
+        legend: bool = True,
+        legend_loc: str | None = None,
+    ) -> None:
+        """
+        add geologic unit shapefiles from GeoMap to a map, from
+        :footcite:t:`coxcontinentwide2023` and :footcite:t:`coxgeomap2023`
+
+        Parameters
+        ----------
+        legend : bool, optional
+            whether to add a legend for the geologic units, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
+        """
+        if self.hemisphere == "north":
+            msg = "Geologic units are not available for the northern hemisphere."
+            raise NotImplementedError(msg)
+
+        geologic_units = fetch.geomap(version="units", region=self.reg)
+
+        if len(geologic_units) == 0:
+            msg = "No geologic units found in the specified region."
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            return
+
+        df = geologic_units[["SIMPsymbol", "SIMPcolor", "SIMPDESC"]].drop_duplicates(
+            ignore_index=True
+        )
+
+        pygmt.makecpt(
+            cmap=",".join(df.SIMPcolor.values),
+            color_model="+c" + ",".join(list(df.SIMPsymbol.astype(str))),
+            series=",".join(list(df.SIMPsymbol.astype(str))),
+        )
+
+        if legend:
+            # Iterates through the unit names and colors, and adds the symbol+text lines to a string
+            legend_spec = "\n".join(
+                [
+                    f"S 0.1i r 0.1i {color} 0.1p 0.20i {name}"
+                    for color, name in zip(df.SIMPcolor, df.SIMPDESC, strict=False)
+                ]
+            )
+            legend_spec = io.StringIO(legend_spec)  # type: ignore[assignment]
+
+        self.plot(
+            data=geologic_units[["SIMPsymbol", "geometry"]],
+            close=True,
+            projection=self.proj,
+            region=self.reg,
+            cmap=True,
+            pen=None,
+            fill="+z",
+            aspatial="Z=SIMPsymbol",
+        )
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                spec=legend_spec,
+                position=legend_loc,
+            )
+
+    def add_bed_type(
+        self,
+        legend: bool = True,
+        legend_loc: str | None = None,
+        transparency: int = 0,
+    ) -> None:
+        """
+        add bed type classifications from from
+        from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+
+        Parameters
+        ----------
+        legend : bool, optional
+            whether to add a legend for the bed types, by default True
+        legend_loc : str | None, optional
+            location of the legend, by default is lower left
+        transparency : int, optional
+            transparency of the bed type layer, by default 0
+        """
+        if self.hemisphere == "north":
+            msg = "Bed type classifications are not available for the northern hemisphere."
+            raise NotImplementedError(msg)
+
+        bed_type = fetch.antarctic_bed_type(region=self.reg)
+
+        bed_type_cmap = {
+            "Mixed: In-Situ/Ancient Basin": {"value": "-3.0", "color": "darkseagreen"},
+            "Mixed: Crystalline/In-Situ Basin": {
+                "value": "-2.0",
+                "color": "aquamarine3",
+            },
+            "Mixed: Crystalline/Ancient Basin": {
+                "value": "-1.0",
+                "color": "lightsteelblue3",
+            },
+            "Crystalline Basement": {"value": "0.0", "color": "gray"},
+            "Intrabasin Volcanics": {"value": "1.0", "color": "orange"},
+            "Ancient Basin (Type 2)": {"value": "2.0", "color": "darkslategray1"},
+            "In-Situ Basin (Type 1)": {"value": "3.0", "color": "darkseagreen1"},
+        }
+        # drop entries if bed type not present in region
+        bed_type_cmap = {
+            k: v
+            for k, v in bed_type_cmap.items()
+            if float(v["value"]) in np.unique(bed_type.data)
+        }
+
+        values = [v["value"] for k, v in bed_type_cmap.items()]
+        colors = [v["color"] for k, v in bed_type_cmap.items()]
+
+        with pygmt.config(COLOR_NAN="white"):
+            pygmt.makecpt(
+                cmap=",".join(colors),
+                color_model="+c" + ",".join(values),
+                series=",".join(values),
+            )
+
+        types = np.unique(bed_type.values)
+        types = list(types[np.isfinite(types)].astype(str))
+
+        if legend:
+            # Iterates through the unit names and colors, and adds the symbol+text lines to a string
+            legend_spec = "\n".join(
+                [
+                    f"S 0.2c s 0.6c {v['color']} 0.4p 0.6c {k}"
+                    for k, v in bed_type_cmap.items()
+                ]
+            )
+            legend_spec = io.StringIO(legend_spec)  # type: ignore[assignment]
+
+        self.grdimage(
+            grid=bed_type,
+            cmap=True,
+            projection=self.proj,
+            region=self.reg,
+            verbose="e",
+            transparency=transparency,
+        )
+        if legend:
+            if legend_loc is None:
+                legend_loc = "jBL+jTL"
+            self.legend(
+                spec=legend_spec,
+                position=legend_loc,
+            )
 
     def add_modis(
         self,
@@ -512,14 +721,16 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             modis=True,
             modis_cmap=cmap,
         )
-        self.grdimage(
-            grid=image,
-            cmap=imagery_cmap,
-            transparency=transparency,
-            projection=self.proj,
-            region=self.reg,
-            verbose="e",
-        )
+
+        with set_env(GTIFF_SRS_SOURCE="EPSG"):
+            self.grdimage(
+                grid=image,
+                cmap=imagery_cmap,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+                verbose="e",
+            )
 
     def add_simple_basemap(
         self,
@@ -867,9 +1078,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 verbose="q",
             )
         except ValueError as e:
-            logger.error(e)
-            msg = "clipping grid to plot region failed!"
-            logger.error(msg)
+            if isinstance(grid, str):
+                pass
+            else:
+                logger.error(e)
+                msg = "clipping grid to plot region failed!"
+                logger.error(msg)
 
         # if using shading, nan_transparent needs to be False
         if shading is False or shading is None:
@@ -1039,9 +1253,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                         values = utils.subset_grid(values, self.reg)
                         logger.debug("clipped grid to region")
                     except ValueError as e:
-                        logger.error(e)
-                        msg = "clipping grid to plot region failed! "
-                        logger.error(msg)
+                        if isinstance(values, str):
+                            pass
+                        else:
+                            logger.error(e)
+                            msg = "clipping grid to plot region failed! "
+                            logger.error(msg)
                         return
                 vals = vd.grid_to_table(values).iloc[:, -1].dropna().to_numpy()
             elif isinstance(values, pd.DataFrame):
@@ -1557,9 +1774,11 @@ def basemap(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    geologic_units: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
+    bed_type: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -1599,6 +1818,8 @@ def basemap(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    geologic_units : bool, optional
+        choose to plot geologic units on the map, by default is False
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey, with boarders defined by `simple_basemap_version`.
@@ -1617,6 +1838,8 @@ def basemap(
         transparency to use for the MODIS basemap, by default is 0
     modis_version : str, optional
         version of the MODIS basemap to plot, by default is None
+    bed_type : bool, optional
+        choose to plot bed type classification, by default is False
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -1722,18 +1945,32 @@ def basemap(
         version of coastlines to plot, by default depends on the hemisphere
     coast_label : str
         label to add to coastlines, by default is None
-    fault_label : str
+    faults_label : str
         label to add to faults, by default is None
-    fault_pen : str
+    faults_pen : str
         GMT pen string to use for the faults, by default is None
-    fault_style : str
+    faults_style : str
         GMT style string to use for the faults, by default is None
-    fault_activity : str
+    faults_activity : str
         column name in faults to use for activity, by default is None
-    fault_motion : str
+    faults_motion : str
         column name in faults to use for motion, by default is None
-    fault_exposure : str
+    faults_exposure : str
         column name in faults to use for exposure, by default is None
+    faults_legend : bool
+        choose to add a legend for the faults, by default is False
+    faults_legend_loc : str | None
+        location of the faults legend, by default is lower left
+    geologic_units_legend : bool
+        choose to add a legend for the geologic units, by default is False
+    geologic_units_legend_loc : str | None
+        location of the geologic units legend, by default is lower right
+    bed_type_legend : bool
+        choose to add a legend for the bed type, by default is False
+    bed_type_legend_loc : str | None
+        location of the bed type legend, by default is upper right
+    bed_type_transparency : int
+        transparency to use for the bed type, by default is 0
 
     Returns
     -------
@@ -1909,6 +2146,15 @@ def basemap(
             floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
         )
 
+    # add bed type
+    if bed_type is True:
+        logger.debug("adding bed type")
+        fig.add_bed_type(
+            transparency=kwargs.get("bed_type_transparency", 0),
+            legend=kwargs.get("bed_type_legend", True),
+            legend_loc=kwargs.get("bed_type_legend_loc", None),
+        )
+
     # add lat long grid lines
     if gridlines is True:
         logger.debug("adding gridlines")
@@ -1930,13 +2176,34 @@ def basemap(
     # plot faults
     if faults is True:
         logger.debug("adding faults")
+
+        if kwargs.get("fault_label", None) is not None:
+            msg = "`fault_label` is deprecated, use `faults_label` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_pen", None) is not None:
+            msg = "`fault_pen` is deprecated, use `faults_pen` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_style", None) is not None:
+            msg = "`fault_style` is deprecated, use `faults_style` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
         fig.add_faults(
-            label=kwargs.get("fault_label"),
-            pen=kwargs.get("fault_pen"),
-            style=kwargs.get("fault_style"),
-            fault_activity=kwargs.get("fault_activity"),
-            fault_motion=kwargs.get("fault_motion"),
-            fault_exposure=kwargs.get("fault_exposure"),
+            label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
+            pen=kwargs.get("faults_pen", kwargs.get("fault_pen", None)),
+            style=kwargs.get("faults_style", kwargs.get("fault_style", None)),
+            faults_activity=kwargs.get("faults_activity"),
+            faults_motion=kwargs.get("faults_motion"),
+            faults_exposure=kwargs.get("faults_exposure"),
+            legend=kwargs.get("faults_legend", True),
+            legend_loc=kwargs.get("faults_legend_loc", None),
+        )
+
+    # plot geologic units
+    if geologic_units is True:
+        logger.debug("adding geologic units")
+        fig.add_geologic_units(
+            legend=kwargs.get("geologic_units_legend", True),
+            legend_loc=kwargs.get("geologic_units_legend_loc", None),
         )
 
     # add box showing region
@@ -2087,7 +2354,7 @@ def set_cmap(
 
     # set cmap
     if cmap is True and modis is False:
-        colorbar = True
+        pass
     elif isinstance(cmap, str) and cmap.endswith(".cpt"):
         # skip everything if cpt file is passed
         def warn_msg(x: str) -> str:
@@ -2330,9 +2597,11 @@ def plot_grd(
     north_arrow: bool = False,
     scalebar: bool = False,
     faults: bool = False,
+    geologic_units: bool = False,
     simple_basemap: bool = False,
     imagery_basemap: bool = False,
     modis_basemap: bool = False,
+    bed_type: bool = False,
     title: str | None = None,
     inset: bool = False,
     points: pd.DataFrame | None = None,
@@ -2380,6 +2649,8 @@ def plot_grd(
         for additional kwargs
     faults : bool, optional
         choose to plot faults on the map, by default is False
+    geologic_units : bool, optional
+        choose to plot geologic units on the map, by default is False
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey.
@@ -2398,6 +2669,8 @@ def plot_grd(
         transparency to use for the MODIS basemap, by default is 0
     modis_version : str, optional
         version of the MODIS basemap to plot, by default is None
+    bed_type : bool, optional
+        choose to plot bed type classifications on the map, by default is False
     title : str | None, optional
         title to add to the figure, by default is None
     inset : bool, optional
@@ -2512,18 +2785,32 @@ def plot_grd(
         version of coastlines to plot, by default depends on the hemisphere
     coast_label : str
         label to add to coastlines, by default is None
-    fault_label : str
+    faults_label : str
         label to add to faults, by default is None
-    fault_pen : str
+    faults_pen : str
         GMT pen string to use for the faults, by default is None
-    fault_style : str
+    faults_style : str
         GMT style string to use for the faults, by default is None
-    fault_activity : str
+    faults_activity : str
         column name in faults to use for activity, by default is None
-    fault_motion : str
+    faults_motion : str
         column name in faults to use for motion, by default is None
-    fault_exposure : str
+    faults_exposure : str
         column name in faults to use for exposure, by default is None
+    faults_legend : bool
+        choose to add a legend for the faults, by default is False
+    faults_legend_loc : str | None
+        location of the faults legend, by default is lower left
+    geologic_units_legend : bool
+        choose to add a legend for the geologic units, by default is False
+    geologic_units_legend_loc : str | None
+        location of the geologic units legend, by default is lower right
+    bed_type_legend : bool
+        choose to add a legend for the bed type, by default is False
+    bed_type_legend_loc : str | None
+        location of the bed type legend, by default is upper right
+    bed_type_transparency : int
+        transparency to use for the bed type, by default is 0
 
     Returns
     -------
@@ -2701,6 +2988,15 @@ def plot_grd(
             floating_color=kwargs.get("simple_basemap_floating_color", "skyblue"),
         )
 
+    # add bed type
+    if bed_type is True:
+        logger.debug("adding bed type")
+        fig.add_bed_type(
+            transparency=kwargs.get("bed_type_transparency", 0),
+            legend=kwargs.get("bed_type_legend", True),
+            legend_loc=kwargs.get("bed_type_legend_loc", None),
+        )
+
     # add the grid
     fig.add_grid(
         grid=grid,
@@ -2729,13 +3025,34 @@ def plot_grd(
     # plot faults
     if faults is True:
         logger.debug("adding faults")
+
+        if kwargs.get("fault_label", None) is not None:
+            msg = "`fault_label` is deprecated, use `faults_label` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_pen", None) is not None:
+            msg = "`fault_pen` is deprecated, use `faults_pen` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        if kwargs.get("fault_style", None) is not None:
+            msg = "`fault_style` is deprecated, use `faults_style` instead."
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
         fig.add_faults(
-            label=kwargs.get("fault_label"),
-            pen=kwargs.get("fault_pen"),
-            style=kwargs.get("fault_style"),
-            fault_activity=kwargs.get("fault_activity"),
-            fault_motion=kwargs.get("fault_motion"),
-            fault_exposure=kwargs.get("fault_exposure"),
+            label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
+            pen=kwargs.get("faults_pen", kwargs.get("fault_pen", None)),
+            style=kwargs.get("faults_style", kwargs.get("fault_style", None)),
+            faults_activity=kwargs.get("faults_activity"),
+            faults_motion=kwargs.get("faults_motion"),
+            faults_exposure=kwargs.get("faults_exposure"),
+            legend=kwargs.get("faults_legend", True),
+            legend_loc=kwargs.get("faults_legend_loc", None),
+        )
+
+    # plot geologic units
+    if geologic_units is True:
+        logger.debug("adding geologic units")
+        fig.add_geologic_units(
+            legend=kwargs.get("geologic_units_legend", True),
+            legend_loc=kwargs.get("geologic_units_legend_loc", None),
         )
 
     # add box showing region

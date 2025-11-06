@@ -321,13 +321,9 @@ def sample_shp(name: str) -> str:
     """
 
     if name == "Disco_deep_transect":
-        known_hash = (
-            None  # "ffffeef15d7556cd60305e6222852e3b4e09da3b6c628a094c1e99ac6d605303"
-        )
+        known_hash = "70e86b3bf9775dd824014afb91da470263edf23159a9fe34107897d1bae9623e"
     elif name == "Roosevelt_Island":
-        known_hash = (
-            None  # "f3821b8a4d24dd676f75db4b7f2b532a328de18e0bdcce8cee6a6abb3b3e70f6"
-        )
+        known_hash = "83434284808d067b8b18b649e41287a63f01eb2ce581b2c34ee44ae3a1a5ca2a"
     else:
         msg = "name must be either 'Disco_deep_transect' or 'Roosevelt_Island'"
         raise ValueError(msg)
@@ -436,7 +432,7 @@ def mass_change(
         url=url,
         fname=zip_fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/mass_change",
-        known_hash=None,
+        known_hash="8d09ffcce4e84fba8cabbc85ee79fec4de36419f8b242ca1f95adacaa2f229e3",
         progressbar=True,
         processor=pooch.Unzip(
             extract_dir="Smith_2020",
@@ -633,7 +629,7 @@ def buttressing(
         url=url,
         fname=fname,
         path=f"{pooch.os_cache('pooch')}/polartoolkit/buttressing/",
-        known_hash=None,
+        known_hash=None,  # changes with every download
         progressbar=True,
         downloader=EarthDataDownloader(),
     )
@@ -807,8 +803,8 @@ def ice_vel(
 
         base_fname = "greenland_vel_mosaic250"
         registry = {
-            f"{base_fname}_vx_v1.tif": None,
-            f"{base_fname}_vy_v1.tif": None,
+            f"{base_fname}_vx_v1.tif": "e903891d5ed2c5faaccb60705088917bf1595cbd516223e5cea208b55979d68d",
+            f"{base_fname}_vy_v1.tif": "16b2c1cbd7be2ee3a50219eb2e00604cfeca5fca059e48f02c34570e15f1d8c9",
         }
         base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0670/1/1995/12/01/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/ice_velocity"
@@ -939,14 +935,14 @@ def modis(
 
     if hemisphere == "north":
         if version == "100m":
-            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog100_2015_hp1_v02.tif"
-            fname = "mog100.tif"
+            url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog100_2015_hp1_v02.tif"
+            fname = "mog100_2015_hp1_v02.tif"
             known_hash = (
                 "673745b96b08bf7118c47ad458f7999fb715b8260328d1112c9faf062c4664e9"
             )
         elif version == "500m":
-            url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2015.03.12/mog500_2015_hp1_v02.tif"
-            fname = "mog500.tif"
+            url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog500_2015_hp1_v02.tif"
+            fname = "mog500_2015_hp1_v02.tif"
             known_hash = (
                 "5a5d3f5771e72750db69eeb1ddc2860101933ca45a5d5e0f43e54e1f86aae14b"
             )
@@ -1016,6 +1012,50 @@ def imagery() -> str:
     return typing.cast(str, next(p for p in path if p.endswith(".tif")))
 
 
+def antarctic_bed_type(
+    region: tuple[float, float, float, float] | None = None,
+) -> xr.DataArray:
+    """
+    Bed classification dataset accessed from https://zenodo.org/records/7955584.
+
+    from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float], optional
+        region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
+        default doesn't clip
+
+    Returns
+    -------
+    xarray.DataArray
+        Returns a grid of Antarctic bed type classifications.
+
+    References
+    ----------
+    .. footbibliography::
+    """
+    url = "https://zenodo.org/record/7984586/files/AntarcticBasins_BedTypeCode.tif?download=1"
+    path = pooch.retrieve(
+        url=url,
+        path=f"{pooch.os_cache('pooch')}/aitken_2023/",
+        fname="AntarcticBasins_BedTypeCode.tif",
+        known_hash="bfa621d041619b588a8de4bebaf644108c11a4ac275879b374af3ce87f7008bf",
+        progressbar=True,
+    )
+    grid = (
+        xr.load_dataarray(path).squeeze().drop_vars(["band", "spatial_ref"]).rename("z")
+    )
+
+    if region is not None:
+        grid = grid.sel(
+            x=slice(region[0], region[1]),
+            y=slice(region[3], region[2]),
+        )
+
+    return grid
+
+
 def geomap(
     version: str = "faults",
     region: tuple[float, float, float, float] | None = None,
@@ -1080,6 +1120,7 @@ def geomap(
             }
         )
 
+        # get list of strings between `<symbol name=` and `</layer>`
         symbol_infos = re.findall(r"<symbol name=(.*?)</layer>", contents)
 
         symbol_names = []
@@ -1100,7 +1141,6 @@ def geomap(
         unit_symbols = simple_geol.merge(colors)
         unit_symbols["SIMPCODE"] = unit_symbols.SIMPCODE.astype(int)
         unit_symbols["SIMPcolor"] = unit_symbols.SIMPcolor.str.replace(",", "/")
-
     elif version == "sources":
         layer = "ATA_GeoMAP_sources_v2022_08"
     elif version == "quality":
@@ -1128,6 +1168,19 @@ def geomap(
     if version == "units":
         data = data.merge(unit_symbols)
         data["SIMPsymbol"] = data.SIMPsymbol.astype(float)
+
+        # some entries seem to have incorrect color and symbol assignments, fix these
+        data.loc[
+            data.SIMPDESC
+            == "Unconsolidated coastal ice-shelf till, beach or lake deposits",
+            "SIMPcolor",
+        ] = "211/255/190"
+        data.loc[
+            data.SIMPDESC
+            == "Unconsolidated coastal ice-shelf till, beach or lake deposits",
+            "SIMPsymbol",
+        ] = 2.0
+
         data = data.sort_values("SIMPsymbol")
 
     return data
@@ -1154,6 +1207,7 @@ def groundingline(
 
     version = "measures-greenland"
     from :footcite:t:`haranmeasures2018`.
+    accessed at https://nsidc.org/data/nsidc-0547/versions/2
 
     Some versions require an EarthData login, see Tutorials/Download Polar datasets for
     how to configure this.
@@ -1186,13 +1240,12 @@ def groundingline(
 
     elif version == "measures-v2":
         registry = {
-            "GroundingLine_Antarctica_v02.dbf": None,
-            "GroundingLine_Antarctica_v02.prj": None,
-            "GroundingLine_Antarctica_v02.shp": None,
-            "GroundingLine_Antarctica_v02.shx": None,
-            "GroundingLine_Antarctica_v02.xml": None,
+            "GroundingLine_Antarctica_v02.dbf": "1cfbe90b262a7fb81cbe61af4f75b23e03213a078ed866e66c6467ab422e017e",
+            "GroundingLine_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "GroundingLine_Antarctica_v02.shp": "2d8f84e301c4e33ad1cb480aa260b8208b3fcaa00df0b68593ffe7d5aa6c9d7e",
+            "GroundingLine_Antarctica_v02.shx": "01eaff4a35b4cd840a3fb1bdb63f7e51b2792c2ccd92d4621cb5d97cb3e365bc",
         }
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/1992/02/07/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
         pup = pooch.create(
             path=path,
@@ -1209,6 +1262,8 @@ def groundingline(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/GroundingLine*.shp")[0]  # noqa: PTH207
+        # for f in glob.glob(f"{path}/GroundingLine*"):
+        #     print(f, pooch.file_hash(f))
 
     elif version == "BAS":
         url = "https://ramadda.data.bas.ac.uk/repository/entry/get/Greenland_coast.zip?entryid=synth:8cecde06-8474-4b58-a9cb-b820fa4c9429:L0dyZWVubGFuZF9jb2FzdC56aXA="
@@ -1216,7 +1271,7 @@ def groundingline(
             url=url,
             fname="Greenland_coast.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/greenland",
-            known_hash=None,
+            known_hash="4d11ab54c61474b4f144a618693936091eaaec220a6362a51b9ec251cbbd2f41",
             processor=pooch.Unzip(),
             progressbar=True,
         )
@@ -1228,13 +1283,12 @@ def groundingline(
         # name = "mog500_geus_coastline_v02" # corrupted
         # name = "mog500_gimp_iceedge_v02" # shows islands
         registry = {
-            f"{name}.dbf": None,
-            f"{name}.prj": None,
-            f"{name}.shp": None,
-            f"{name}.shx": None,
-            f"{name}.xml": None,
+            f"{name}.dbf": "d6c46dde04b4c50fcd5a49335d72918d8e12a8068b47385278b723e04dcbd05d",
+            f"{name}.prj": "b6b25696b6f0c431bc77551de0ed4febe92d2b7cd307dec3efb85108c0073737",
+            f"{name}.shp": "0008813ddbc32ef3a1065256b62ce46e7c7e95fbe74013ec9d796d25d462326c",
+            f"{name}.shx": "c2d34fc757a7dfc60bb54117d3653e6d5bd988740480c90832e4f45c8188c693",
         }
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0547.002/2005.03.12/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2005/03/12/"
         path = f"{pooch.os_cache('pooch')}/polartoolkit/shapefiles/measures"
         pup = pooch.create(
             path=path,
@@ -1250,6 +1304,8 @@ def groundingline(
             )
         # pick the requested files
         fname = glob.glob(f"{path}/{name}*.shp")[0]  # noqa: PTH207
+        # for f in glob.glob(f"{path}/{name}*"):
+        #     print(f, pooch.file_hash(f))
     else:
         msg = (
             "version must be one of 'depoorter-2013', 'measures-v2', 'BAS', or"
@@ -1307,13 +1363,12 @@ def antarctic_boundaries(
 
     # coastline shapefile is in a different directory
     if version == "Coastline":
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/2008.01.01/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/2008/01/01/"
         registry = {
-            "Coastline_Antarctica_v02.dbf": None,
-            "Coastline_Antarctica_v02.prj": None,
-            "Coastline_Antarctica_v02.shp": None,
-            "Coastline_Antarctica_v02.shx": None,
-            "Coastline_Antarctica_v02.xml": None,
+            "Coastline_Antarctica_v02.dbf": "f4651b20080ec308795c00dae7f35cdff4255e3fb005f2ff63b2c17570ca3fa2",
+            "Coastline_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Coastline_Antarctica_v02.shp": "4b97578a54eabe771bf97a7704576207050799ed2201efd55838783781efeb83",
+            "Coastline_Antarctica_v02.shx": "31ee3bb232f0b29c73eb5a69be723697feece76dcab5cbd4ad22f2b8692e6bf2",
         }
         pup = pooch.create(
             path=path,
@@ -1329,6 +1384,11 @@ def antarctic_boundaries(
             )
         # pick the requested file
         fname = glob.glob(f"{path}/{version}*.shp")[0]  # noqa: PTH207
+
+        # get the file hashes
+        # for f in glob.glob(f"{path}/{version}*"):
+        #     print(f, pooch.file_hash(f))
+
     elif version in [
         "Basins_Antarctica",
         "Basins_IMBIE",
@@ -1336,31 +1396,26 @@ def antarctic_boundaries(
         "IceShelf",
         "Mask",
     ]:
-        base_url = "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0709.002/1992.02.07/"
+        base_url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0709/2/1992/02/07/"
         registry = {
-            "Basins_Antarctica_v02.dbf": None,
-            "Basins_Antarctica_v02.prj": None,
-            "Basins_Antarctica_v02.shp": None,
-            "Basins_Antarctica_v02.shx": None,
-            "Basins_Antarctica_v02.xml": None,
-            "Basins_IMBIE_Antarctica_v02.dbf": None,
-            "Basins_IMBIE_Antarctica_v02.prj": None,
-            "Basins_IMBIE_Antarctica_v02.shp": None,
-            "Basins_IMBIE_Antarctica_v02.shx": None,
-            "Basins_IMBIE_Antarctica_v02.xml": None,
-            "IceBoundaries_Antarctica_v02.dbf": None,
-            "IceBoundaries_Antarctica_v02.prj": None,
-            "IceBoundaries_Antarctica_v02.shp": None,
-            "IceBoundaries_Antarctica_v02.shx": None,
-            "IceBoundaries_Antarctica_v02.xml": None,
-            "IceShelf_Antarctica_v02.dbf": None,
-            "IceShelf_Antarctica_v02.prj": None,
-            "IceShelf_Antarctica_v02.shp": None,
-            "IceShelf_Antarctica_v02.shx": None,
-            "IceShelf_Antarctica_v02.xml": None,
-            "Mask_Antarctica_v02.bmp": None,
-            "Mask_Antarctica_v02.tif": None,
-            "Mask_Antarctica_v02.xml": None,
+            "Basins_Antarctica_v02.dbf": "d5a12ac6ca510271b5ba419ebe158e3b32d9d902a16a23f2e3f88b9ea3e54ee1",
+            "Basins_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Basins_Antarctica_v02.shp": "699cae0fc230e48cc8714eeec1a8a4c34380fbef73cdaa3deb415a33d654c234",
+            "Basins_Antarctica_v02.shx": "1e1ea5d586b7f4cafb9d37ffdcf4d37db9dc70f49dcf5e260e9508700be1e05c",
+            "Basins_IMBIE_Antarctica_v02.dbf": "14dc9157fac56b7430ecad58ae617364e28e53d2036d66e49839f60b2a1d2cd1",
+            "Basins_IMBIE_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "Basins_IMBIE_Antarctica_v02.shp": "48aa2e48aea1d24d82ea736c61f88bb02c9f4909f853a09047915b32ccf4a4b4",
+            "Basins_IMBIE_Antarctica_v02.shx": "acf98eb64da8804fa99d407ee82468777327e8a17eed53469d4dc2f310be7706",
+            "IceBoundaries_Antarctica_v02.dbf": "f4bc74cac38d75d07c54a2ef481916a25ad5b0f9d792a352a3406874665abfdc",
+            "IceBoundaries_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "IceBoundaries_Antarctica_v02.shp": "64964996d0b7e2b93027766d0e49389b21186d633998b740a545cfd7fe5ecc99",
+            "IceBoundaries_Antarctica_v02.shx": "baeb2e166eccd4959e5c4ca268798816dd53882de8eedc0a06debb47a4be3ae7",
+            "IceShelf_Antarctica_v02.dbf": "23532b4f49b240efb508d8c2fd13bdbf5c6920d51bff1989c867529cf40296e8",
+            "IceShelf_Antarctica_v02.prj": "ae6ede8af01eea8be412e8565fb6ab71a7beae96eb86b34c19ba0b5bff6dc055",
+            "IceShelf_Antarctica_v02.shp": "125dc2711cf810f18142623b5fb763dd5d3057c6da1575576d5d01efd45592f7",
+            "IceShelf_Antarctica_v02.shx": "542ab0c8ea1571f0756fcc72bc238298c4f97e54416ce23dfbfefe260be20001",
+            "Mask_Antarctica_v02.bmp": "31dbd7ab61b44c8c700415f16e048550126d7c40b7747f5a094b934bb748e5f1",
+            "Mask_Antarctica_v02.tif": "f45f65e1a702de4601895d8f6df559e32fe097447a6636c49009c03d15d3011e",
         }
         pup = pooch.create(
             path=path,
@@ -1379,6 +1434,11 @@ def antarctic_boundaries(
             fname = glob.glob(f"{path}/{version}*.tif")[0]  # noqa: PTH207
         else:
             fname = glob.glob(f"{path}/{version}*.shp")[0]  # noqa: PTH207
+
+        # get the file hashes
+        # for f in glob.glob(f"{path}/{version}*"):
+        #     print(f, pooch.file_hash(f))
+
     else:
         msg = (
             "version must be one of 'Coastline', 'Basins_Antarctica', 'Basins_IMBIE',"
@@ -1441,16 +1501,16 @@ def sediment_thickness(
     if version == "ANTASed":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            "Unzip the folder, grid the .dat file, and save it back as a .zarr"
             path = pooch.Unzip(
                 extract_dir="Baranov_2021_sediment_thickness",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -1480,7 +1540,7 @@ def sediment_thickness(
                     registration="g",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
@@ -1492,7 +1552,7 @@ def sediment_thickness(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -1550,7 +1610,7 @@ def sediment_thickness(
             fname1 = next(p for p in path if p.endswith("GlobSed-v3.nc"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -1604,7 +1664,7 @@ def sediment_thickness(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["sediment_thickness"]
 
         resampled = resample_grid(
@@ -2072,11 +2132,11 @@ def bedmachine(
 
     if hemisphere == "north":
         url = (
-            "https://n5eil01u.ecs.nsidc.org/ICEBRIDGE/IDBMG4.005/1993.01.01/"
-            "BedMachineGreenland-v5.nc"
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
+            "ICEBRIDGE/IDBMG4/5/1993/01/01/BedMachineGreenland-v5.nc"
         )
 
-        fname = "bedmachine_v5.nc"
+        fname = "BedMachineGreenland-v5.nc"
         known_hash = "f7116b8e9e3840649075dcceb796ce98aaeeb5d279d15db489e6e7668e0d80db"
 
         # greenland dataset doesn't have firn layer
@@ -2089,10 +2149,10 @@ def bedmachine(
 
     elif hemisphere == "south":
         url = (
-            "https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0756.003/1970.01.01/"
-            "BedMachineAntarctica-v3.nc"
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
+            "MEASURES/NSIDC-0756/3/1970/01/01/BedMachineAntarctica-v3.nc"
         )
-        fname = "bedmachine_v3.nc"
+        fname = "BedMachineAntarctica-v3.nc"
         known_hash = "d34390f585e61c4dba0cecd9e275afcc9586b377ba5ccc812e9a004566a9e159"
 
         if spacing is None:
@@ -2122,7 +2182,7 @@ def bedmachine(
     )
     ds = xr.open_zarr(
         path,
-        consolidated=False,
+        consolidated=None,
     )
 
     # calculate icebase as surface-thickness
@@ -2417,7 +2477,7 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap2_point_data.zip",
-            known_hash=None,
+            known_hash=None,  # seems to change each time!
             progressbar=True,
             processor=preprocessing,
         )
@@ -2527,8 +2587,7 @@ def bedmap_points(
             url=url,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/topography",
             fname="bedmap3_point_data.zip",
-            # known_hash="c4661e1a8cee93164bb19d126e8fa1112a59f7579ff5e0d993704b5956621ef5",
-            known_hash=None,
+            known_hash=None,  # seems to change every time!
             progressbar=True,
             processor=preprocessing,
         )
@@ -2625,7 +2684,7 @@ def bedmap3(
         "https://ramadda.data.bas.ac.uk/repository/entry/get/bedmap3.nc?entryid=synth%"
         "3A2d0e4791-8e20-46a3-80e4-f5f6716025d2%3AL2JlZG1hcDMubmM%3D"
     )
-    known_hash = None
+    known_hash = None  # changes every time
     # convert user-supplied strings to names used by Bedmap3
     if layer == "surface":
         layer = "surface_topography"
@@ -2787,7 +2846,7 @@ def bedmap3(
             # load zarr as a dataarray
             grid = xr.open_zarr(
                 fname,
-                consolidated=False,
+                consolidated=None,
             ).z
         except AttributeError as e:
             msg = (
@@ -2963,7 +3022,7 @@ def bedmap2(
         "+-+gridding+products/bedmap2_tiff?entryid=synth%3Afa5d606c-dc95-47ee-9016"
         "-7a82e446f2f2%3AL2JlZG1hcDJfdGlmZg%3D%3D&output=zip.zipgroup"
     )
-    known_hash = None
+    known_hash = None  # changes every time
     if layer not in [
         "lakemask_vostok",
         "ice_thickness_uncertainty",
@@ -3133,7 +3192,7 @@ def bedmap2(
             # load zarr as a dataarray
             grid = xr.open_zarr(
                 fname,
-                consolidated=False,
+                consolidated=None,
             ).z
         except AttributeError as e:
             msg = (
@@ -3326,7 +3385,7 @@ def rema(
     # load zarr as a dataarray
     grid = xr.open_zarr(
         zarr_file,
-        consolidated=False,
+        consolidated=None,
     )["surface"]
 
     resampled = resample_grid(
@@ -3508,18 +3567,30 @@ def gravity(
         # Free-air anomaly at the surface
         if anomaly_type == "FA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity-anomaly.nc"
-            fname = "antgg_2021_FA.nc"
+            fname = "AntGG2021_Gravity-anomaly.nc"
+            known_hash = (
+                "2b876b02a90908b67e1aa11041d4dec8031612de7d80900cbec90d3470ac2c87"
+            )
         # Disturbance at the surface
         elif anomaly_type == "DG":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Gravity_disturbance_at-surface.nc"
-            fname = "antgg_2021_DG.nc"
+            fname = "AntGG2021_Gravity_disturbance_at-surface.nc"
+            known_hash = (
+                "e6949d794696664561ee03e7f631653f47c7e5f4d7c4f074b29920d25bae259e"
+            )
         # Bouguer anomaly
         elif anomaly_type == "BA":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Bouguer-anomaly.nc"
-            fname = "antgg_2021_BA.nc"
+            fname = "AntGG2021_Bouguer-anomaly.nc"
+            known_hash = (
+                "93984887609a6507fad9abc8828039a7aec0a6e9d8c0c3f979fe6698ed01bdc8"
+            )
         elif anomaly_type == "Err":
             url = "https://download.pangaea.de/dataset/971238/files/AntGG2021_Standard-deviation_GA-from-LSC.nc"
-            fname = "antgg_2021_Err.nc"
+            fname = "AntGG2021_Standard-deviation_GA-from-LSC.nc"
+            known_hash = (
+                "c7850b42b138eee66ae5699266ca2ce67304367f122a3c0d414b479669a9fb1a"
+            )
         else:
             msg = "anomaly_type must be 'FA', 'BA', 'DG' or 'Err'"
             raise ValueError(msg)
@@ -3528,7 +3599,7 @@ def gravity(
             url=url,
             fname=fname,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gravity",
-            known_hash=None,
+            known_hash=known_hash,
             progressbar=True,
         )
 
@@ -3633,7 +3704,7 @@ def gravity(
             # load zarr as a dataset
             grid = xr.open_zarr(
                 path,
-                consolidated=False,
+                consolidated=None,
             )
         except AttributeError as e:
             msg = (
@@ -3710,16 +3781,17 @@ def etopo(
 
     if hemisphere == "south":
         proj = "EPSG:3031"
-        fname = "etopo_south.nc"
+        fname = "earth-topography-10arcmin_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
-        fname = "etopo_north.nc"
+        fname = "earth-topography-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, reproject, and save it back"
+        "Load the .nc file, reproject, and save it to a .zarr file"
         fname1 = pathlib.Path(fname)
-        # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+        # Rename to the file to ***_preprocessed.zarr
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_processed = fname_pre.with_suffix(".zarr")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
@@ -3738,7 +3810,7 @@ def etopo(
                 spacing=5e3,
             )
             # Save to disk
-            processed.to_netcdf(fname_processed)
+            processed.to_zarr(fname_processed)
         return str(fname_processed)
 
     path = pooch.retrieve(
@@ -3750,7 +3822,7 @@ def etopo(
         processor=preprocessing,
     )
 
-    grid = xr.load_dataarray(path)
+    grid = xr.open_zarr(path).z
 
     resampled = resample_grid(
         grid,
@@ -3771,7 +3843,7 @@ def geoid(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Loads a grid of Antarctic geoid heights derived from the EIGEN-6C4 from
+    Loads a grid of geoid heights derived from the EIGEN-6C4 from
     :footcite:t:`forsteeigen6c42014` spherical harmonic model of Earth's gravity field.
     Originally at 10 arc-min resolution.
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
@@ -3814,16 +3886,17 @@ def geoid(
 
     if hemisphere == "south":
         proj = "EPSG:3031"
-        fname = "eigen_geoid_south.nc"
+        fname = "earth-geoid-10arcmin_south.nc"
     elif hemisphere == "north":
         proj = "EPSG:3413"
-        fname = "eigen_geoid_north.nc"
+        fname = "earth-geoid-10arcmin_north.nc"
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        "Load the .nc file, reproject, and save it back"
+        "Load the .nc file, reproject, and save it to a .zarr file"
         fname1 = pathlib.Path(fname)
         # Rename to the file to ***_preprocessed.nc
-        fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+        fname_processed = fname_pre.with_suffix(".zarr")
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             # load grid
@@ -3844,7 +3917,7 @@ def geoid(
                 verbose=kwargs.get("verbose", "e"),
             )
             # Save to disk
-            processed.to_netcdf(fname_processed)
+            processed.to_zarr(fname_processed)
         return str(fname_processed)
 
     path = pooch.retrieve(
@@ -3856,7 +3929,7 @@ def geoid(
         processor=preprocessing,
     )
 
-    grid = xr.load_dataarray(path)
+    grid = xr.open_zarr(path).z
 
     resampled = resample_grid(
         grid,
@@ -3930,16 +4003,16 @@ def magnetics(
     if version == "admap1":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, grid the .dat file, and save it back as a .nc"
+            "Unzip the folder, grid the .dat file, and save it back as a .zarr"
             path = pooch.Unzip(
                 extract_dir="admap1",
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith(".dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -3975,7 +4048,7 @@ def magnetics(
                     maxradius="1c",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
 
                 logger.info(".dat file gridded and saved as %s", fname_processed)
 
@@ -3990,7 +4063,7 @@ def magnetics(
             progressbar=True,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -4003,19 +4076,19 @@ def magnetics(
     elif version == "admap2":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "convert geosoft grd to xarray dataarray and save it back as a .nc"
+            "convert geosoft grd to xarray dataarray and save it back as a .zarr"
             fname1 = pathlib.Path(fname)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # convert to dataarray
-                processed = hm.load_oasis_montaj_grid(fname1)
+                processed = hm.load_oasis_montaj_grid(fname1).rename("mag")
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         url = "https://hs.pangaea.de/mag/airborne/Antarctica/grid/ADMAP_2B_2017.grd"
@@ -4029,7 +4102,7 @@ def magnetics(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).mag
 
         resampled = resample_grid(
             grid,
@@ -4042,7 +4115,7 @@ def magnetics(
     elif version == "admap2_gdb":
         path = pooch.retrieve(
             url="https://hs.pangaea.de/mag/airborne/Antarctica/ADMAP2A.zip",
-            fname="admap2_gdb.zip",
+            fname="ADMAP2A.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
             known_hash="a587555677350257dadbbf615838deac67e7d183a16525996ea0954eb23d83e8",
             processor=pooch.Unzip(),
@@ -4120,14 +4193,14 @@ def magnetics(
             url=url,
             fname="F_LCS-1_ellipsoid_14-185_ASC.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/magnetics",
-            known_hash=None,
+            known_hash="695495dfeb53361bb04f183806cdf5f049a3ec9adc8eee20dce93d893dd30feb",
             progressbar=True,
             processor=preprocessing,
         )
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["mag"]
 
         resampled = resample_grid(
@@ -4248,7 +4321,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-HF.tar.gz",
-            fname="an_2015.tar.gz",
+            fname="AN1-HF.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="9834439cdf99d5ee62fb88a008fa34dbc8d1848e9b00a1bd9cbc33194dd7d402",
             progressbar=True,
@@ -4257,7 +4330,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4310,7 +4383,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://store.pangaea.de/Publications/Martos-etal_2017/Antarctic_GHF.xyz",
-            fname="martos_2017.xyz",
+            fname="martos_Antarctic_GHF.xyz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="a5814bd0432986e111d0d48bfbd950cce66ba247b26b37f9a7499e66d969eb1f",
             progressbar=True,
@@ -4319,7 +4392,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4483,7 +4556,7 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/930237/files/HF_Min_Max_MaxAbs-1.csv",
-            fname="losing_ebbing_2021_ghf.csv",
+            fname="losing_ebbing_HF_Min_Max_MaxAbs-1.csv",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="ecdae882083d8eb3503fab5be2ef862c96229f89ecbae1f95e56a8f43fb912e2",
             progressbar=True,
@@ -4492,7 +4565,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4506,7 +4579,7 @@ def ghf(
     elif version == "aq1":
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
-            fname="aq1.nc",
+            fname="aq1_01_20.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="946ae69e0a3d15a7500d7252fe0ce4f5cb126eaeb6170555ade0acdc38b86d7f",
             progressbar=True,
@@ -4604,7 +4677,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=False,
+            consolidated=None,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4666,7 +4739,7 @@ def gia(
     if version == "stal-2020":
         path = pooch.retrieve(
             url="https://zenodo.org/record/4003423/files/ant_gia_dem_0.tiff?download=1",
-            fname="stal_2020_gia.tiff",
+            fname="ant_gia_dem_0.tiff",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/gia",
             known_hash="cb579c9606f98dfd28239183ba28de33e6e288a4256b27da7249c3741a24b7e8",
             progressbar=True,
@@ -4740,85 +4813,90 @@ def crustal_thickness(
     """
 
     if version == "shen-2018":
-        msg = "the link to the shen-2018 data appears to be broken"
-        raise ValueError(msg)
-        # def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-        #     "Load the .dat file, grid it, and save it back as a .nc"
-        #     fname1 = pathlib.Path(fname)
 
-        #     # Rename to the file to ***_preprocessed.nc
-        #     fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
-        #     fname_processed = fname_pre.with_suffix(".nc")
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .dat file, grid it, and save it back as a .zarr"
+            fname1 = pathlib.Path(fname)
 
-        #     # Only recalculate if new download or the processed file doesn't exist yet
-        #     if action in ("download", "update") or not fname_processed.exists():
-        #         # load data
-        #         df = pd.read_csv(
-        #             fname1,
-        #             sep='\s+',
-        #             header=None,
-        #             names=["lon", "lat", "thickness"],
-        #         )
-        #         # convert to meters
-        #         df.thickness = df.thickness * 1000
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
-        #         # re-project to polar stereographic
-        #         df = utils.reproject(
-        #             df,
-        #             input_crs="epsg:4326",
-        #             output_crs="epsg:3031",
-        #             input_coord_names=("lon", "lat"),
-        #             output_coord_names=("x", "y"),
-        #         )
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    sep=r"\s+",
+                    header=None,
+                    names=["lon", "lat", "thickness"],
+                )
+                # convert to meters
+                df.thickness = df.thickness * 1000
 
-        #         # block-median and grid the data
-        #         df = pygmt.blockmedian(
-        #             df[["x", "y", "thickness"]],
-        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
-        #             region=regions.antarctica,
-        #             registration="g",
-        #         )
-        #         processed = pygmt.surface(
-        #             data=df[["x", "y", "thickness"]],
-        #             spacing=10e3  # given as 0.5degrees, which is ~3.5km at the pole,
-        #             region=regions.antarctica,
-        #             registration="g",
-        #             maxradius="1c",
-        #         )
-        #         # Save to disk
-        #         processed.to_netcdf(fname_processed)
-        #     return str(fname_processed)
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
+                )
 
-        # url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "thickness"]],  # type: ignore[call-overload]
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+                processed = pygmt.surface(
+                    data=df[["x", "y", "thickness"]],
+                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
+                    region=regions.antarctica,
+                    registration="g",
+                    maxradius="1c",
+                )
+                # Save to disk
+                processed.to_zarr(fname_processed)
+            return str(fname_processed)
 
-        # path = pooch.retrieve(
-        #     url=url,
-        #     known_hash=None,
-        #     fname="shen_2018_crustal_thickness.dat",
-        #     path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
-        #     processor=preprocessing,
-        #     progressbar=True,
-        # )
+        url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
 
-        # grid = xr.load_dataarray(path)
+        try:
+            path = pooch.retrieve(
+                url=url,
+                known_hash="b748879927176ed6b69f3c82cb08b0fcf0f7ae35d9058db6cff1fb81ba19350b",
+                fname="shen_2018_crustal_thickness.dat",
+                path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
+                processor=preprocessing,
+                progressbar=True,
+            )
+        except pd.errors.ParserError as e:
+            msg = "the link to the shen-2018 data appears to be broken"
+            raise ValueError(msg) from e
 
-        # resampled = resample_grid(
-        #     grid,
-        #     spacing,
-        #     region,
-        #     registration,
-        # )
+        grid = xr.open_zarr(path)
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+        )
 
     if version == "an-2015":
 
-        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, reproject the .nc file, and save it back"
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
+            "Unzip the folder, reproject the file, and save it back as a zarr file"
             path = pooch.Untar(
                 extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
             )(fname, action, _pooch2)
             fname1 = pathlib.Path(path[0])
-            # Rename to the file to ***_preprocessed.nc
-            fname_processed = fname1.with_stem(fname1.stem + "_preprocessed")
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load grid
@@ -4842,8 +4920,8 @@ def crustal_thickness(
                     .squeeze()
                     .drop_vars(["spatial_ref"])
                 )
-                # save to netcdf
-                reprojected.to_netcdf(fname_processed)
+                # save to zarr
+                reprojected.to_zarr(fname_processed)
 
             return str(fname_processed)
 
@@ -4856,7 +4934,7 @@ def crustal_thickness(
             processor=preprocessing,
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -4930,16 +5008,16 @@ def moho(
     if version == "shen-2018":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .dat file, grid it, and save it back as a .nc"
-            path = pooch.Untar(
+            "Load the .dat file, grid it, and save it back as a .zarr"
+            path = pooch.Unzip(
                 extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
             )(fname, action, _pooch2)
             fname1 = next(p for p in path if p.endswith("moho.final.dat"))
             fname2 = pathlib.Path(fname1)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
@@ -4977,20 +5055,22 @@ def moho(
                     maxradius="1c",
                 )
                 # Save to disk
-                processed.to_netcdf(fname_processed)
+                processed.to_zarr(fname_processed)
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
-            fname="shen_2018_moho.tar",
+            url="https://drive.usercontent.google.com/download?id=1PGbdCxkbtlOWMFWkcv60dLBEjnevjs6v&export=download&authuser=0&confirm=t&uuid=602c3ecb-e55c-4bfc-8ede-00433d2dada1&at=AKSUxGOws8RXXwtTgMFlBN9hNzwJ:1762164387041",
+            # url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
+            fname="WCANT_MODEL.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-            known_hash=None,
+            known_hash="794b30ca1eab97bdfdd4dca4a67623459c5d19502039a53b33b0e093fc098034",
+            # known_hash=None, # changes with each download
             progressbar=True,
             processor=preprocessing,
             downloader=pooch.HTTPDownloader(timeout=60),
         )
 
-        grid = xr.load_dataarray(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,

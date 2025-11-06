@@ -58,4 +58,5 @@ ice_shelf_buttressing
 groundingline
 ice_boundaries
 geology
+bed_type
 ```
