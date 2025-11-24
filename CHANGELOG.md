@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## v1.3.0
+Released on 2025-11-06
+Contributors:
+- Matt Tankersley
 
 ### 🚀 Added
 - known hashes used for all fetches (except some which are changed on each download)
@@ -22,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ✏️ Changed
 - try to use original file names where applicable
 - for any preprocessed grid file, use the .zarr data format for quicker loading of data
+- renamed all kwargs for `add_faults` to start with `faults_` instead of `fault_`
 
 <!--
 Below is an example for a release
