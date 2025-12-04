@@ -4256,7 +4256,7 @@ def ghf(
     From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
 
-    version='HR24'
+    version='hazzard-richards-2024'
     From :footcite:t:`hazzardantarctic2024`.
     Accessed from https://osf.io/54zam/overview
 
