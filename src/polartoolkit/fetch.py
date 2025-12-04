@@ -4701,7 +4701,7 @@ def ghf(
             )[0]
             return path
 
-        path_HR24 = pooch.retrieve(
+        path = pooch.retrieve(
             url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
             processor=preprocessing,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
