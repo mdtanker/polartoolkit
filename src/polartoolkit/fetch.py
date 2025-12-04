@@ -4724,7 +4724,7 @@ def ghf(
     else:
         msg = (
             "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
-            "'losing-ebbing-2021', 'aq1', or 'shen-2020' , 'HR24'"
+            "'losing-ebbing-2021', 'aq1', or 'shen-2020' , 'hazzard-richards-2024'"
         )
 
         raise ValueError(msg)
