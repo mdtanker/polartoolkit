@@ -4263,7 +4263,7 @@ def ghf(
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 'HR24',
+        Either 'an-2015', 'martos-2017', 'shen-2020', 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1' or 'hazzard-richards-2024',
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
