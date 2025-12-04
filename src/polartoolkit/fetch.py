@@ -4737,7 +4737,7 @@ def ghf(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                data = np.loadtxt(path) 
+                data = np.loadtxt(path)
                 X = data[:, 0]*1000
                 Y = data[:, 1]*1000
                 GHF = data[:, 2]
@@ -4748,7 +4748,7 @@ def ghf(
                     spacing=10e3,
                     registration="g",
                 )
-                
+
                 # resample to ensure correct region and spacing
                 processed = resample_grid(
                     processed,
