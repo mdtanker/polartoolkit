@@ -4691,7 +4691,7 @@ def ghf(
             registration,
             **kwargs,
         )
-    elif version == "HR24":
+    elif version == "hazzard-richards-2024":
 
         def preprocessing(fname: str, action: str, _pooch2) -> str:
             "Unzip the folder, then unzip the internal zipped file"
