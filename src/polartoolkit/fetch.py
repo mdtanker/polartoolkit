@@ -4700,7 +4700,7 @@ def ghf(
         def preprocessing(fname: str, action: str, _pooch2) -> str:
             "Unzip the folder, then unzip the internal zipped file"
             path = pooch.Unzip()(fname, action, _pooch2)[0]
-            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
+           return pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
                 path, action, _pooch2
             )[0]
             return path
