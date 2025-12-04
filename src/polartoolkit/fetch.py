@@ -4256,10 +4256,14 @@ def ghf(
     From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
 
+    version='HR24'
+    From :footcite:t:`hazzardantarctic2024`.
+    Accessed from https://osf.io/54zam/overview   
+
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
+        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 'HR24',
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -4687,10 +4691,38 @@ def ghf(
             registration,
             **kwargs,
         )
+    elif version == 'HR24':
+        def preprocessing(fname: str, action: str, _pooch2) -> str:
+            "Unzip the folder, then unzip the internal zipped file"
+            path = pooch.Unzip()(fname, action, _pooch2)[0]
+            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(path, action, _pooch2)[0]
+            return path
+    
+        path_HR24 = pooch.retrieve(
+            url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
+            processor=preprocessing,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        grid = xr.open_dataset(path_HR24).z
+        grid['x'] = grid["x"]*1000
+        grid['y'] = grid["y"]*1000
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+          
+
     else:
         msg = (
             "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
-            "'losing-ebbing-2021', 'aq1', or 'shen-2020'"
+            "'losing-ebbing-2021', 'aq1', or 'shen-2020' , 'HR24'"
         )
 
         raise ValueError(msg)
