@@ -4709,7 +4709,7 @@ def ghf(
             progressbar=True,
         )
 
-        grid = xr.open_dataset(path_HR24).z
+        grid = xr.open_dataset(path).z
         grid["x"] = grid["x"] * 1000
         grid["y"] = grid["y"] * 1000
 
