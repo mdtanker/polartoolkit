@@ -4258,7 +4258,7 @@ def ghf(
 
     version='HR24'
     From :footcite:t:`hazzardantarctic2024`.
-    Accessed from https://osf.io/54zam/overview   
+    Accessed from https://osf.io/54zam/overview
 
     Parameters
     ----------
@@ -4691,13 +4691,16 @@ def ghf(
             registration,
             **kwargs,
         )
-    elif version == 'HR24':
+    elif version == "HR24":
+
         def preprocessing(fname: str, action: str, _pooch2) -> str:
             "Unzip the folder, then unzip the internal zipped file"
             path = pooch.Unzip()(fname, action, _pooch2)[0]
-            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(path, action, _pooch2)[0]
+            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
+                path, action, _pooch2
+            )[0]
             return path
-    
+
         path_HR24 = pooch.retrieve(
             url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
             processor=preprocessing,
@@ -4707,8 +4710,8 @@ def ghf(
         )
 
         grid = xr.open_dataset(path_HR24).z
-        grid['x'] = grid["x"]*1000
-        grid['y'] = grid["y"]*1000
+        grid["x"] = grid["x"] * 1000
+        grid["y"] = grid["y"] * 1000
 
         resampled = resample_grid(
             grid,
@@ -4717,7 +4720,6 @@ def ghf(
             registration,
             **kwargs,
         )
-          
 
     else:
         msg = (
