@@ -4226,7 +4226,7 @@ def ghf(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
+    Load 1 of 8 'versions' of Antarctic geothermal heat flux data.
 
     version='an-2015'
     From :footcite:t:`antemperature2015`.
@@ -4256,10 +4256,18 @@ def ghf(
     From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
 
+    version='hazzard-richards-2024'
+    From :footcite:t:`hazzardantarctic2024`.
+    Accessed from https://osf.io/54zam/overview
+
+    version='haeger-2024'
+    From :footcite:t:`haegergeothermal2022` and `haegergeothermal2022a`.
+    Accessed from https://doi.org/10.5880/GFZ.1.3.2022.002
+
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
+        Either 'an-2015', 'martos-2017', 'shen-2020', 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 'hazzard-richards-2024', or 'haeger-2024'
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -4687,10 +4695,92 @@ def ghf(
             registration,
             **kwargs,
         )
+    elif version == "hazzard-richards-2024":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Unzip the folder, then unzip the internal zipped file"
+            path = pooch.Unzip()(fname, action, _pooch2)[0]
+            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
+                path, action, _pooch2
+            )[0]
+            return str(path)
+
+        path = pooch.retrieve(
+            url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
+            processor=preprocessing,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        grid = xr.open_dataset(path).z
+        grid["x"] = grid["x"] * 1000
+        grid["y"] = grid["y"] * 1000
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+    elif version == "haeger-2024":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            path = pooch.Unzip(
+                members=[
+                    "2022-002_Haeger-et-al_data/2022-002_Haeger-et-al_HFSurface.txt"
+                ]
+            )(fname, action, _pooch2)[0]
+            "Load the .txt file, grid it, and save it back as a .nc"
+            fname1 = pathlib.Path(path)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".nc")
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                data = np.loadtxt(fname1)
+                X = data[:, 0] * 1000
+                Y = data[:, 1] * 1000
+                GHF_surface = data[:, 2]
+
+                df = pd.DataFrame({"x": X, "y": Y, "ghf": GHF_surface})
+                processed = df.set_index(["y", "x"]).to_xarray().ghf
+
+                # convert to dataset for netcdf
+                processed = processed.to_dataset(name="ghf")
+                # Save to .nc file
+                processed.to_netcdf(
+                    fname_processed,
+                )
+
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://datapub.gfz-potsdam.de/download/10.5880.GFZ.1.3.2022.002Kaveb/2022-002_Haeger-et-al_data.zip",
+            processor=preprocessing,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+            known_hash="b121ecf4fe46debddf8085b9e2cc7331290883e1d08395cdcad1d2846151df37",
+            progressbar=True,
+        )
+
+        grid = xr.load_dataset(
+            path,
+        )["ghf"]
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
     else:
         msg = (
             "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
-            "'losing-ebbing-2021', 'aq1', or 'shen-2020'"
+            "'losing-ebbing-2021', 'aq1', or 'shen-2020' , 'hazzard-richards-2024', 'haeger-2024'"
         )
 
         raise ValueError(msg)
