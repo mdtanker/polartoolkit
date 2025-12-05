@@ -4697,13 +4697,13 @@ def ghf(
         )
     elif version == "hazzard-richards-2024":
 
-        def preprocessing(fname: str, action: str, _pooch2) -> str:
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Unzip the folder, then unzip the internal zipped file"
             path = pooch.Unzip()(fname, action, _pooch2)[0]
-           return pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
+            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
                 path, action, _pooch2
             )[0]
-            return path
+            return str(path)
 
         path = pooch.retrieve(
             url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
@@ -4727,41 +4727,32 @@ def ghf(
     elif version == "haeger-2024":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .txt file, grid it, and save it back as a .zarr"
-            fname1 = pathlib.Path(fname)
+            path = pooch.Unzip(
+                members=[
+                    "2022-002_Haeger-et-al_data/2022-002_Haeger-et-al_HFSurface.txt"
+                ]
+            )(fname, action, _pooch2)[0]
+            "Load the .txt file, grid it, and save it back as a .nc"
+            fname1 = pathlib.Path(path)
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".zarr")
-
+            fname_processed = fname_pre.with_suffix(".nc")
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                data = np.loadtxt(path)
-                X = data[:, 0]*1000
-                Y = data[:, 1]*1000
-                GHF = data[:, 2]
+                data = np.loadtxt(fname1)
+                X = data[:, 0] * 1000
+                Y = data[:, 1] * 1000
+                GHF_surface = data[:, 2]
 
-                processed = pygmt.xyz2grd(
-                    data=[X, Y, GHF],
-                    region=(-3700000, 3700000, -3700000, 3700000),
-                    spacing=10e3,
-                    registration="g",
-                )
+                df = pd.DataFrame({"x": X, "y": Y, "ghf": GHF_surface})
+                processed = df.set_index(["y", "x"]).to_xarray().ghf
 
-                # resample to ensure correct region and spacing
-                processed = resample_grid(
-                    processed,
-                    spacing=10e3,
-                    region=regions.antarctica,
-                    registration="g",
-                )
-
-                # convert to dataset for zarr
+                # convert to dataset for netcdf
                 processed = processed.to_dataset(name="ghf")
-
-                # Save to .zarr file
-                processed.to_zarr(
+                # Save to .nc file
+                processed.to_netcdf(
                     fname_processed,
                 )
 
@@ -4769,12 +4760,23 @@ def ghf(
 
         path = pooch.retrieve(
             url="https://datapub.gfz-potsdam.de/download/10.5880.GFZ.1.3.2022.002Kaveb/2022-002_Haeger-et-al_data.zip",
-            processor=pooch.Unzip(members=["2022-002_Haeger-et-al_data/2022-002_Haeger-et-al_HFSurface.txt"]),
+            processor=preprocessing,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="b121ecf4fe46debddf8085b9e2cc7331290883e1d08395cdcad1d2846151df37",
             progressbar=True,
-        )[0]
+        )
 
+        grid = xr.load_dataset(
+            path,
+        )["ghf"]
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
     else:
         msg = (
             "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
