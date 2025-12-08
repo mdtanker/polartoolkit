@@ -3,7 +3,7 @@
   "description": "<p><strong>PolarToolkit</strong> is a Python package to make polar (i.e. Antarctic, Arctic, Greenland) research more efficient, reproducible, and accessible.</p><p><strong>Documentation</strong>: <a href=\"http://polartoolkit.readthedocs.io/\">http://polartoolkit.readthedocs.io/</a></p><p><strong>Source code</strong>: <a href=\"https://github.com/mdtanker/polartoolkit\">https://github.com/mdtanker/polartoolkit</a></p>",
   "creators": [
     {
-      "name": "The PolarToolkit Community"
+      "name": "PolarToolkit Community"
     },
     {
       "name": "Tankersley, Matt",
