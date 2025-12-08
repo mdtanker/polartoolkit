@@ -2748,7 +2748,7 @@ def bedmap3(
                 # get min max before, and use as limits after resampling
                 min_val, max_val = utils.get_min_max(grid)
 
-                # resample to be pixel registered to match most grids in PolarToolkit
+                # resample to be gridline registered to match most grids in PolarToolkit
                 grid = pygmt.grdsample(
                     grid=grid,
                     region=(-3333000.0, 3333000.0, -3333000.0, 3333000.0),
