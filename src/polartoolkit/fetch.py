@@ -1018,7 +1018,7 @@ def antarctic_bed_type(
     """
     Bed classification dataset accessed from https://zenodo.org/records/7955584.
 
-    from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+    from :footcite:t:`aitkenantarctic2023` and :footcite:t:`aitkenantarctic2023a`.
 
     Parameters
     ----------
@@ -4261,7 +4261,7 @@ def ghf(
     Accessed from https://osf.io/54zam/overview
 
     version='haeger-2024'
-    From :footcite:t:`haegergeothermal2022` and `haegergeothermal2022a`.
+    From :footcite:t:`haegergeothermal2022` and :footcite:t:`haegergeothermal2022a`.
     Accessed from https://doi.org/10.5880/GFZ.1.3.2022.002
 
     Parameters
