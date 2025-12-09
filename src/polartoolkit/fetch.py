@@ -4775,34 +4775,38 @@ def ghf(
     elif version == "haeger-2024":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .txt file, grid it, and save it back as a .zarr"
             path = pooch.Unzip(
+                extract_dir="haeger_2024_ghf",
                 members=[
                     "2022-002_Haeger-et-al_data/2022-002_Haeger-et-al_HFSurface.txt"
-                ]
+                ],
             )(fname, action, _pooch2)[0]
-            "Load the .txt file, grid it, and save it back as a .nc"
             fname1 = pathlib.Path(path)
 
-            # Rename to the file to ***_preprocessed.nc
+            # Rename to the file to ***_preprocessed.zarr
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
-            fname_processed = fname_pre.with_suffix(".nc")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 # load data
-                data = np.loadtxt(fname1)
-                X = data[:, 0] * 1000
-                Y = data[:, 1] * 1000
-                GHF_surface = data[:, 2]
-
-                df = pd.DataFrame({"x": X, "y": Y, "ghf": GHF_surface})
-                processed = df.set_index(["y", "x"]).to_xarray().ghf
-
-                # convert to dataset for netcdf
-                processed = processed.to_dataset(name="ghf")
-                # Save to .nc file
-                processed.to_netcdf(
-                    fname_processed,
+                df = pd.read_csv(
+                    fname1,
+                    header=None,
+                    names=["x", "y", "ghf", "uncert"],
+                    sep=r"\s+",
                 )
+
+                # convert from km to m
+                df["x"] = df["x"] * 1000
+                df["y"] = df["y"] * 1000
+
+                # turn into xarray dataset
+                processed = df.set_index(["y", "x"]).to_xarray()
+
+                # Save to .zarr file
+                processed.to_zarr(fname_processed)
 
             return str(fname_processed)
 
@@ -4811,10 +4815,11 @@ def ghf(
             processor=preprocessing,
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="b121ecf4fe46debddf8085b9e2cc7331290883e1d08395cdcad1d2846151df37",
+            fname="haeger_2024_ghf.zip",
             progressbar=True,
         )
 
-        grid = xr.load_dataset(
+        grid = xr.open_zarr(
             path,
         )["ghf"]
 
