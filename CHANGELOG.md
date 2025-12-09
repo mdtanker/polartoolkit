@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+Contributors:
+- Matt Tankersley
+- Max Lowe
+
+### 🚀 Added
+- new geothermal heat flow models from Haeger et al. 2022 and Hazzard and Richards 2024.
+- Max Lowe added as new author to PolarToolkit!
+
+### 🐛 Fixed
+- fixed a few citations issues in the docs
+
+
 ## v1.3.0
 Released on 2025-11-06
 Contributors:

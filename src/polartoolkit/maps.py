@@ -611,7 +611,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
     ) -> None:
         """
         add bed type classifications from from
-        from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+        from :footcite:t:`aitkenantarctic2023` and :footcite:t:`aitkenantarctic2023a`.
 
         Parameters
         ----------
