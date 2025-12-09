@@ -4698,24 +4698,72 @@ def ghf(
     elif version == "hazzard-richards-2024":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Unzip the folder, then unzip the internal zipped file"
-            path = pooch.Unzip()(fname, action, _pooch2)[0]
+            """
+            Unzip the folder, unzip the internal zipped file, and re-grid the .grd
+            file as a .zarr file
+            """
+            path = pooch.Unzip(extract_dir="hazzard_richards_2024")(
+                fname, action, _pooch2
+            )[0]
             path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
                 path, action, _pooch2
             )[0]
-            return str(path)
+
+            fname1 = pathlib.Path(path)
+
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                grid = xr.load_dataarray(path)
+
+                df = grid.to_dataframe().reset_index()
+
+                # convert from km to m
+                df["x"] = df["x"] * 1000
+                df["y"] = df["y"] * 1000
+
+                # grid isn't exactly evenly spaced (5000.95238 m instead of 5,000 m) and region
+                # is slightly off as well (east min of -3333134.027 instead of -3330000.0)
+                # block-reduce and re-grid to fix this
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "z"]],
+                    region=(-3330e3, 3330e3, -3330e3, 3330e3),
+                    spacing=5e3,
+                    registration="g",
+                )
+                # only grid to extent of non-nan data
+                processed = pygmt.xyz2grd(
+                    data=df[["x", "y", "z"]],
+                    region=(-2525000.0, 2770000.0, -2155000.0, 2225000.0),
+                    spacing="5000+e",
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                processed = processed.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                processed.to_zarr(fname_processed)
+
+            return str(fname_processed)
 
         path = pooch.retrieve(
             url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
             processor=preprocessing,
+            fname="hazzard_richards_2024.zip",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash=None,
             progressbar=True,
         )
 
-        grid = xr.open_dataset(path).z
-        grid["x"] = grid["x"] * 1000
-        grid["y"] = grid["y"] * 1000
+        grid = xr.open_zarr(
+            path,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
