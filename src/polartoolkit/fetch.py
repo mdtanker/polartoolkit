@@ -1038,7 +1038,7 @@ def antarctic_bed_type(
     url = "https://zenodo.org/record/7984586/files/AntarcticBasins_BedTypeCode.tif?download=1"
     path = pooch.retrieve(
         url=url,
-        path=f"{pooch.os_cache('pooch')}/aitken_2023/",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/bed_type/",
         fname="AntarcticBasins_BedTypeCode.tif",
         known_hash="bfa621d041619b588a8de4bebaf644108c11a4ac275879b374af3ce87f7008bf",
         progressbar=True,
@@ -2748,7 +2748,7 @@ def bedmap3(
                 # get min max before, and use as limits after resampling
                 min_val, max_val = utils.get_min_max(grid)
 
-                # resample to be pixel registered to match most grids in PolarToolkit
+                # resample to be gridline registered to match most grids in PolarToolkit
                 grid = pygmt.grdsample(
                     grid=grid,
                     region=(-3333000.0, 3333000.0, -3333000.0, 3333000.0),
