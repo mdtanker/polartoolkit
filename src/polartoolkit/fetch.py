@@ -1018,7 +1018,7 @@ def antarctic_bed_type(
     """
     Bed classification dataset accessed from https://zenodo.org/records/7955584.
 
-    from :footcite:t`aitkenantarctica2023` and `aitkenantarctica2023a`.
+    from :footcite:t:`aitkenantarctic2023` and :footcite:t:`aitkenantarctic2023a`.
 
     Parameters
     ----------
@@ -4226,7 +4226,7 @@ def ghf(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    Load 1 of 6 'versions' of Antarctic geothermal heat flux data.
+    Load 1 of 8 'versions' of Antarctic geothermal heat flux data.
 
     version='an-2015'
     From :footcite:t:`antemperature2015`.
@@ -4256,10 +4256,18 @@ def ghf(
     From :footcite:t:`stalantarctic2021` and :footcite:t:`stalantarctic2020a`.
     Accessed from https://doi.pangaea.de/10.1594/PANGAEA.924857
 
+    version='hazzard-richards-2024'
+    From :footcite:t:`hazzardantarctic2024`.
+    Accessed from https://osf.io/54zam/overview
+
+    version='haeger-2024'
+    From :footcite:t:`haegergeothermal2022` and :footcite:t:`haegergeothermal2022a`.
+    Accessed from https://doi.org/10.5880/GFZ.1.3.2022.002
+
     Parameters
     ----------
     version : str
-        Either 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1',
+        Either 'an-2015', 'martos-2017', 'shen-2020', 'burton-johnson-2020', 'losing-ebbing-2021', 'aq1', 'hazzard-richards-2024', or 'haeger-2024'
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -4687,10 +4695,145 @@ def ghf(
             registration,
             **kwargs,
         )
+    elif version == "hazzard-richards-2024":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            """
+            Unzip the folder, unzip the internal zipped file, and re-grid the .grd
+            file as a .zarr file
+            """
+            path = pooch.Unzip(extract_dir="hazzard_richards_2024")(
+                fname, action, _pooch2
+            )[0]
+            path = pooch.Unzip(members=["model_output/HR24_GHF_mean_PS.grd"])(
+                path, action, _pooch2
+            )[0]
+
+            fname1 = pathlib.Path(path)
+
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                grid = xr.load_dataarray(path)
+
+                df = grid.to_dataframe().reset_index()
+
+                # convert from km to m
+                df["x"] = df["x"] * 1000
+                df["y"] = df["y"] * 1000
+
+                # grid isn't exactly evenly spaced (5000.95238 m instead of 5,000 m) and region
+                # is slightly off as well (east min of -3333134.027 instead of -3330000.0)
+                # block-reduce and re-grid to fix this
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "z"]],
+                    region=(-3330e3, 3330e3, -3330e3, 3330e3),
+                    spacing=5e3,
+                    registration="g",
+                )
+                # only grid to extent of non-nan data
+                processed = pygmt.xyz2grd(
+                    data=df[["x", "y", "z"]],
+                    region=(-2525000.0, 2770000.0, -2155000.0, 2225000.0),
+                    spacing="5000+e",
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                processed = processed.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                processed.to_zarr(fname_processed)
+
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://files.au-1.osf.io/v1/resources/54zam/providers/osfstorage/?zip=",
+            processor=preprocessing,
+            fname="hazzard_richards_2024.zip",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+            known_hash=None,
+            progressbar=True,
+        )
+
+        grid = xr.open_zarr(
+            path,
+        )["ghf"]
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+    elif version == "haeger-2024":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .txt file, grid it, and save it back as a .zarr"
+            path = pooch.Unzip(
+                extract_dir="haeger_2024_ghf",
+                members=[
+                    "2022-002_Haeger-et-al_data/2022-002_Haeger-et-al_HFSurface.txt"
+                ],
+            )(fname, action, _pooch2)[0]
+            fname1 = pathlib.Path(path)
+
+            # Rename to the file to ***_preprocessed.zarr
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    header=None,
+                    names=["x", "y", "ghf", "uncert"],
+                    sep=r"\s+",
+                )
+
+                # convert from km to m
+                df["x"] = df["x"] * 1000
+                df["y"] = df["y"] * 1000
+
+                # turn into xarray dataset
+                processed = df.set_index(["y", "x"]).to_xarray()
+
+                # Save to .zarr file
+                processed.to_zarr(fname_processed)
+
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://datapub.gfz-potsdam.de/download/10.5880.GFZ.1.3.2022.002Kaveb/2022-002_Haeger-et-al_data.zip",
+            processor=preprocessing,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
+            known_hash="b121ecf4fe46debddf8085b9e2cc7331290883e1d08395cdcad1d2846151df37",
+            fname="haeger_2024_ghf.zip",
+            progressbar=True,
+        )
+
+        grid = xr.open_zarr(
+            path,
+        )["ghf"]
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
     else:
         msg = (
             "version must be 'an-2015', 'martos-2017', 'burton-johnson-2020', "
-            "'losing-ebbing-2021', 'aq1', or 'shen-2020'"
+            "'losing-ebbing-2021', 'aq1', or 'shen-2020' , 'hazzard-richards-2024', 'haeger-2024'"
         )
 
         raise ValueError(msg)
