@@ -2903,7 +2903,15 @@ def bedmap3(
             )
             registration_num = grid.gmt.registration
             # convert to the ellipsoid
-            grid = grid + geoid_2_ellipsoid
+            # grid = grid + geoid_2_ellipsoid
+            # should be grid + geod_2_ellipsoid
+            # grd_compare gives grid1 - grid 2
+            # so give it grid1 and -1*grid2
+            grid, _grid1, _grid2 = utils.grd_compare(
+                grid,
+                -geoid_2_ellipsoid,
+                plot=False,
+            )
             # restore registration type
             grid.gmt.registration = registration_num
         elif reference == "eigen-6c4":
