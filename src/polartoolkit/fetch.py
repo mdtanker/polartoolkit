@@ -97,7 +97,7 @@ def resample_grid(
     # get coordinate names
     # original_dims = tuple(grid.sizes.keys())
 
-    verbose = kwargs.get("verbose", "e")
+    verbose = kwargs.get("verbose", "error")
 
     if (spacing is None) & (region is None) & (registration is None):
         logger.info("returning original grid")
@@ -1038,7 +1038,7 @@ def antarctic_bed_type(
     url = "https://zenodo.org/record/7984586/files/AntarcticBasins_BedTypeCode.tif?download=1"
     path = pooch.retrieve(
         url=url,
-        path=f"{pooch.os_cache('pooch')}/aitken_2023/",
+        path=f"{pooch.os_cache('pooch')}/polartoolkit/bed_type/",
         fname="AntarcticBasins_BedTypeCode.tif",
         known_hash="bfa621d041619b588a8de4bebaf644108c11a4ac275879b374af3ce87f7008bf",
         progressbar=True,
@@ -2748,7 +2748,7 @@ def bedmap3(
                 # get min max before, and use as limits after resampling
                 min_val, max_val = utils.get_min_max(grid)
 
-                # resample to be pixel registered to match most grids in PolarToolkit
+                # resample to be gridline registered to match most grids in PolarToolkit
                 grid = pygmt.grdsample(
                     grid=grid,
                     region=(-3333000.0, 3333000.0, -3333000.0, 3333000.0),
@@ -2903,7 +2903,15 @@ def bedmap3(
             )
             registration_num = grid.gmt.registration
             # convert to the ellipsoid
-            grid = grid + geoid_2_ellipsoid
+            # grid = grid + geoid_2_ellipsoid
+            # should be grid + geod_2_ellipsoid
+            # grd_compare gives grid1 - grid 2
+            # so give it grid1 and -1*grid2
+            grid, _grid1, _grid2 = utils.grd_compare(
+                grid,
+                -geoid_2_ellipsoid,
+                plot=False,
+            )
             # restore registration type
             grid.gmt.registration = registration_num
         elif reference == "eigen-6c4":
@@ -3677,7 +3685,7 @@ def gravity(
                     grid,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     spacing=5e3,
-                    verbose=kwargs.get("verbose", "e"),
+                    verbose=kwargs.get("verbose", "error"),
                 ).rename("gravity")
 
                 # add ellipsoidal height of observations
@@ -3907,14 +3915,14 @@ def geoid(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "e"),
+                verbose=kwargs.get("verbose", "error"),
             )
             # get just needed region
             processed = pygmt.grdsample(
                 grid2,
                 region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "e"),
+                verbose=kwargs.get("verbose", "error"),
             )
             # Save to disk
             processed.to_zarr(fname_processed)
