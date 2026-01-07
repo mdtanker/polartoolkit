@@ -5,41 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-Contributors:
-- Matt Tankersley
-- Max Lowe
-
-### 🚀 Added
-- new geothermal heat flow models from Haeger et al. 2022 and Hazzard and Richards 2024.
-- Max Lowe added as new author to PolarToolkit!
-
-### 🐛 Fixed
-- fixed a few citations issues in the docs
-
-
-## v1.3.0
-Released on 2025-11-06
-Contributors:
-- Matt Tankersley
-
-### 🚀 Added
-- known hashes used for all fetches (except some which are changed on each download)
-- add fetch for Aitken et al. 2023 Antarctic bed classifications
-- new function `add_geologic_units()` for plotting Geomap geologic units
-- new function `add_bed_type()` for plotting Antarctic bed classification
-- added notebook to be used periodically to re-download all datasets
-
-### 🐛 Fixed
-- update several broken fetch download links for NSIDC datasets
-- some bugs with colorbars and grids supplied as filenames
-- remove annoying warnings about projections when plotting MODIS data
-
-### ✏️ Changed
-- try to use original file names where applicable
-- for any preprocessed grid file, use the .zarr data format for quicker loading of data
-- renamed all kwargs for `add_faults` to start with `faults_` instead of `fault_`
-
 <!--
 Below is an example for a release
 
@@ -68,6 +33,47 @@ Contributors:
 - removed a password from the code.
 
 -->
+
+
+## v1.4.0
+Released on 2026-01-07
+Contributors:
+- Matt Tankersley
+- Max Lowe
+
+### 🚀 Added
+- new geothermal heat flow models from Haeger et al. 2022 and Hazzard and Richards 2024.
+- Max Lowe added as new author to PolarToolkit!
+- pre-defined regions for all Antarctic ice shelves
+
+### 🐛 Fixed
+- fixed a few citations issues in the docs
+- Antarctic bed type data wasn't in correct pooch cache location
+- use full names for PyGMT verbosity levels
+- issue with Bedmap3 grids when converted to ellipsoidal heights
+
+
+## v1.3.0
+Released on 2025-11-06
+Contributors:
+- Matt Tankersley
+
+### 🚀 Added
+- known hashes used for all fetches (except some which are changed on each download)
+- add fetch for Aitken et al. 2023 Antarctic bed classifications
+- new function `add_geologic_units()` for plotting Geomap geologic units
+- new function `add_bed_type()` for plotting Antarctic bed classification
+- added notebook to be used periodically to re-download all datasets
+
+### 🐛 Fixed
+- update several broken fetch download links for NSIDC datasets
+- some bugs with colorbars and grids supplied as filenames
+- remove annoying warnings about projections when plotting MODIS data
+
+### ✏️ Changed
+- try to use original file names where applicable
+- for any preprocessed grid file, use the .zarr data format for quicker loading of data
+- renamed all kwargs for `add_faults` to start with `faults_` instead of `fault_`
 
 
 ## v1.2.0
