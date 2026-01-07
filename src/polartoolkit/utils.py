@@ -877,7 +877,7 @@ def nearest_grid_fill(
             ]
         )
     # elif method == "pygmt":
-    #     filled = pygmt.grdfill(grid, mode="n", verbose="q").rename(original_name)
+    #     filled = pygmt.grdfill(grid, mode="n", verbose="quiet).rename(original_name)
     else:
         msg = "method must be 'rioxarray', or 'verde'"
         raise ValueError(msg)
@@ -1551,7 +1551,7 @@ def grd_compare(
         )
     shp_mask = kwargs.pop("shp_mask", None)
     region = kwargs.pop("region", None)
-    verbose = kwargs.pop("verbose", "e")
+    verbose = kwargs.pop("verbose", "error")
     if isinstance(da1, str):
         da1 = xr.load_dataarray(da1)
 
@@ -1950,7 +1950,7 @@ def subset_grid(
         da = pygmt.grdcut(
             grid,
             region=region,
-            verbose="q",
+            verbose="quiet",
         )
         # get coordinate names
         original_dims = tuple(grid.sizes.keys())

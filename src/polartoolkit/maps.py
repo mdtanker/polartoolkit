@@ -265,7 +265,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 transparency=transparency,
                 projection=self.proj,
                 region=self.reg,
-                verbose="e",
+                verbose="error",
             )
 
     def add_coast(
@@ -678,7 +678,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             cmap=True,
             projection=self.proj,
             region=self.reg,
-            verbose="e",
+            verbose="error",
             transparency=transparency,
         )
         if legend:
@@ -729,7 +729,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 transparency=transparency,
                 projection=self.proj,
                 region=self.reg,
-                verbose="e",
+                verbose="error",
             )
 
     def add_simple_basemap(
@@ -838,7 +838,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         self,
         box: tuple[float, float, float, float],
         pen: str = "2p,black",
-        verbose: str = "w",
+        verbose: str = "warning",
     ) -> None:
         """
         Plot a GMT region as a box.
@@ -850,7 +850,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         pen : str, optional
             GMT pen string used for the box, by default "2p,black"
         verbose : str, optional
-            verbosity level for pygmt, by default "w" for warnings
+            verbosity level for pygmt, by default "warning" for warnings
         """
         logger.debug("adding box to figure; %s", box)
         self.plot(
@@ -1075,7 +1075,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             grid = pygmt.grdcut(
                 grid,
                 region=self.reg,
-                verbose="q",
+                verbose="quiet",
             )
         except ValueError as e:
             if isinstance(grid, str):
@@ -1109,7 +1109,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             transparency=kwargs.get("grid_transparency", 0),
             projection=self.proj,
             region=self.reg,
-            verbose="e",
+            verbose="error",
         )
 
         if colorbar is True:
@@ -1210,7 +1210,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         hist: bool = False,
         cpt_lims: tuple[float, float] | None = None,
         cbar_frame: list[str] | str | None = None,
-        verbose: str = "w",
+        verbose: str = "warning",
         **kwargs: typing.Any,
     ) -> None:
         """
@@ -1228,7 +1228,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         cbar_frame : list[str] | str, optional
             frame for the colorbar, by default None
         verbose : str, optional
-            verbosity level for pygmt, by default "w" for warnings
+            verbosity level for pygmt, by default "warning" for warnings
         **kwargs : typing.Any
             additional keyword arguments to pass
         """
@@ -1733,7 +1733,7 @@ def add_box(
     fig: pygmt.Figure,
     box: tuple[float, float, float, float],
     pen: str = "2p,black",
-    verbose: str = "w",
+    verbose: str = "warning",
 ) -> None:
     """deprecated function, use class method `add_box` instead"""
     fig.add_box(
@@ -1754,7 +1754,7 @@ def add_colorbar(
     hist: bool = False,
     cpt_lims: tuple[float, float] | None = None,
     cbar_frame: list[str] | str | None = None,
-    verbose: str = "w",
+    verbose: str = "warning",
     **kwargs: typing.Any,
 ) -> None:
     """deprecated function, use class method `add_colorbar` instead"""
@@ -2089,7 +2089,7 @@ def basemap(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
         elif frame is False:
@@ -2099,7 +2099,7 @@ def basemap(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
         else:
@@ -2107,7 +2107,7 @@ def basemap(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
 
@@ -2116,7 +2116,7 @@ def basemap(
             region=fig.reg,
             projection=fig.proj,
             frame=f"+t{title}",
-            verbose="e",
+            verbose="error",
         )
 
     # add satellite imagery (LIMA for Antarctica)
@@ -2400,7 +2400,7 @@ def set_cmap(
         pygmt.makecpt(
             cmap=kwargs.get("modis_cmap", "grayC"),
             series=[15000, 17000, 1],
-            verbose="e",
+            verbose="error",
         )
         colorbar = False
         cmap = True
@@ -2474,7 +2474,7 @@ def set_cmap(
                 color_model=kwargs.get("color_model", "R"),
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
-                verbose="e",
+                verbose="error",
                 log=kwargs.get("cpt_log", False),
             )
             cmap = True
@@ -2512,7 +2512,7 @@ def set_cmap(
                 color_model=kwargs.get("color_model", "R"),
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
-                verbose="e",
+                verbose="error",
                 log=kwargs.get("cpt_log", False),
             )
         except pygmt.exceptions.GMTCLibError as e:
@@ -2524,7 +2524,7 @@ def set_cmap(
                 color_model=kwargs.get("color_model", "R"),
                 categorical=kwargs.get("categorical", False),
                 reverse=reverse_cpt,
-                verbose="e",
+                verbose="error",
                 log=kwargs.get("cpt_log", False),
             )
         cmap = True
@@ -2556,7 +2556,7 @@ def set_cmap(
                 continuous=kwargs.get("continuous", True),
                 series=(zmin, zmax),
                 reverse=reverse_cpt,
-                verbose="e",
+                verbose="error",
                 log=kwargs.get("cpt_log", False),
             )
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
@@ -2566,7 +2566,7 @@ def set_cmap(
                     cmap=cmap,
                     background=True,
                     reverse=reverse_cpt,
-                    verbose="e",
+                    verbose="error",
                     log=kwargs.get("cpt_log", False),
                 )
             else:
@@ -2576,7 +2576,7 @@ def set_cmap(
                     background=True,
                     continuous=kwargs.get("continuous", True),
                     reverse=reverse_cpt,
-                    verbose="e",
+                    verbose="error",
                     log=kwargs.get("cpt_log", False),
                 )
         cmap = True
@@ -2931,7 +2931,7 @@ def plot_grd(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
         elif frame is False:
@@ -2941,7 +2941,7 @@ def plot_grd(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
         else:
@@ -2949,7 +2949,7 @@ def plot_grd(
                 region=fig.reg,
                 projection=fig.proj,
                 frame=frame,
-                verbose="e",
+                verbose="error",
                 transparency=kwargs.get("transparency", 0),
             )
 
@@ -2958,7 +2958,7 @@ def plot_grd(
             region=fig.reg,
             projection=fig.proj,
             frame=f"+t{title}",
-            verbose="e",
+            verbose="error",
         )
 
     # add satellite imagery (LIMA for Antarctica)

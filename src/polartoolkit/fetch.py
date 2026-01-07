@@ -97,7 +97,7 @@ def resample_grid(
     # get coordinate names
     # original_dims = tuple(grid.sizes.keys())
 
-    verbose = kwargs.get("verbose", "e")
+    verbose = kwargs.get("verbose", "error")
 
     if (spacing is None) & (region is None) & (registration is None):
         logger.info("returning original grid")
@@ -3677,7 +3677,7 @@ def gravity(
                     grid,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     spacing=5e3,
-                    verbose=kwargs.get("verbose", "e"),
+                    verbose=kwargs.get("verbose", "error"),
                 ).rename("gravity")
 
                 # add ellipsoidal height of observations
@@ -3907,14 +3907,14 @@ def geoid(
                 grid,
                 projection=proj,  # pylint: disable=possibly-used-before-assignment
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "e"),
+                verbose=kwargs.get("verbose", "error"),
             )
             # get just needed region
             processed = pygmt.grdsample(
                 grid2,
                 region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                 spacing=5e3,
-                verbose=kwargs.get("verbose", "e"),
+                verbose=kwargs.get("verbose", "error"),
             )
             # Save to disk
             processed.to_zarr(fname_processed)

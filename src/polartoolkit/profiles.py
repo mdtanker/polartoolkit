@@ -190,7 +190,7 @@ def sample_grids(
         newcolname=sampled_name,
         # radius=kwargs.get("radius", None),
         no_skip=True,  # if false causes issues
-        verbose=kwargs.get("verbose", "w"),
+        verbose=kwargs.get("verbose", "warning"),
         interpolation=kwargs.get("interpolation", "c"),
     )
 
@@ -308,7 +308,7 @@ def default_layers(
     reference: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
-    verbose: str = "e",
+    verbose: str = "error",
 ) -> dict[str, dict[str, str | xr.DataArray]]:
     """
     Fetch default ice surface, ice base, and bed layers.
@@ -447,7 +447,7 @@ def default_layers(
 def default_data(
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
-    verbose: str = "q",
+    verbose: str = "quiet",
 ) -> dict[typing.Any, typing.Any]:
     """
     Fetch default gravity and magnetic datasets.
