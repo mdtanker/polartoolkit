@@ -36,7 +36,7 @@ Contributors:
 
 
 ## v1.4.0
-Released on 2026-01-07
+Released on 2026-01-08
 Contributors:
 - Matt Tankersley
 - Max Lowe
