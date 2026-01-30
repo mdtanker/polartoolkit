@@ -2562,8 +2562,18 @@ def set_cmap(
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
+
+                # if grid is all one value, set cpt to +/- 1% of that value or +/- 1 if
+                # grid values are zero
+                if zmin == 0 or zmax == 0:
+                    zmin, zmax = -1, 1
+                else:
+                    zmin -= np.abs(zmin * 0.01)  # type: ignore[operator]
+                    zmax += np.abs(zmax * 0.01)  # type: ignore[operator]
+
                 pygmt.makecpt(
                     cmap=cmap,
+                    series=(zmin, zmax),
                     background=True,
                     reverse=reverse_cpt,
                     verbose="error",
