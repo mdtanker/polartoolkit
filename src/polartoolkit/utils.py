@@ -645,10 +645,10 @@ def reproject(
     input_coord_names : tuple, optional
         set names for input coordinate columns, by default "x"/"y" or
         "easting"/"northing" if input_crs is "epsg:3413" or "epsg:3031", or if input_crs
-        is "epsg_4326", "lon"/"lat"
+        is "epsg:4326", "lon"/"lat"
     output_coord_names : tuple, optional
         set names for output coordinate columns, by default "x"/"y" if output_crs is
-        "epsg:3413" or "epsg:3031", or if output_crs is "epsg_4326", "lon"/"lat".
+        "epsg:3413" or "epsg:3031", or if output_crs is "epsg:4326", "lon"/"lat".
 
     Returns
     -------

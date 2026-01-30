@@ -2001,7 +2001,8 @@ def basemap(
             else:
                 msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
                 raise ValueError(msg)
-            region = vd.get_region(points[[x_col, y_col]].values)
+
+            region = vd.get_region((points[x_col].to_numpy(), points[y_col].to_numpy()))
             logger.debug("using region %s from points", region)
     elif region is None:
         region = fig.reg
@@ -2562,8 +2563,18 @@ def set_cmap(
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
+
+                # if grid is all one value, set cpt to +/- 1% of that value or +/- 1 if
+                # grid values are zero
+                if zmin == 0 or zmax == 0:
+                    zmin, zmax = -1, 1
+                else:
+                    zmin -= np.abs(zmin * 0.01)  # type: ignore[operator]
+                    zmax += np.abs(zmax * 0.01)  # type: ignore[operator]
+
                 pygmt.makecpt(
                     cmap=cmap,
+                    series=(zmin, zmax),
                     background=True,
                     reverse=reverse_cpt,
                     verbose="error",
@@ -3079,7 +3090,7 @@ def plot_grd(
             style=kwargs.get("points_style", "c.2c"),
             pen=kwargs.get("points_pen"),
             label=kwargs.get("points_label"),
-            cmap=cmap,
+            cmap=True,
             **kwargs,
         )
 
