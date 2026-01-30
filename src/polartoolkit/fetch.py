@@ -6,6 +6,7 @@ import shutil
 import typing
 import warnings
 from inspect import getmembers, isfunction
+from io import StringIO
 
 import deprecation
 import earthaccess
@@ -16,6 +17,7 @@ import pandas as pd
 import pooch
 import pygmt
 import requests
+import verde as vd
 import xarray as xr
 from dotenv import load_dotenv
 from tqdm.autonotebook import tqdm
@@ -4918,30 +4920,61 @@ def crustal_thickness(
     spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
-) -> xr.DataArray | None:
+) -> xr.DataArray | pd.DataFrame | None:
     """
-    Load 1 of x 'versions' of Antarctic crustal thickness grids.
+    Load various Antarctic crustal thickness data.
+
+    Other models to add:
+        Llubes et al. 2003
+        Block et al. 2009
+        Baranov and Morelli 2013
+        O'Donnell and Nyblade 2014
+        Llubes et al. 2017
+        Llubes et al. 2018
+        Zhang et al. 2020 https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020GC009048?af=R&utm_campaign=RESR_MRKT_Researcher_inbound&utm_medium=referral&sid=researcher&utm_source=researcher_app
+        Lamb et al. 2020 https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020GC009150
+            https://doi.org/10.5281/zenodo.4031646
+
+    Some other model that exist but can't be download via https:
+        Pappa et al. 2019, grids and point data
+        Brown and Fischer 2025, point data
+
+    Other models that don't provide gridded results:
+        Chaput et al. 2014
+        Ramirez et al. 2017
+        Chisenga et al. 2019
 
     version='shen-2018'
     Crustal thickness (excluding ice layer) from :footcite:t:`shencrust2018`.
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
 
     version='an-2015'
-    Crustal thickness (distance from solid (ice and rock) top to Moho discontinuity)
-    from :footcite:t:`ansvelocity2015`.
-    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
-    File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses
-    referred to below are the distance from the solid surface to the Moho. We note that
-    this definition of Moho depth is different from that in the compilation of AN-MOHO".
-    Unclear, but seems moho depth is just negative of crustal thickness. Not sure if its
-    to the ice surface or ice base.
+    This is the bedrock topography from Bedmap2 minus the Moho elevations from
+    fetch.moho(version='an-2015) (relative to sea level).
+
+    version="an-2015-points"
+    Point measurements of crustal thickness used to create the An-2015 model.
+
+    version='baranov-2021'
+    Crustal thickness from :footcite:t:`baranovupdated2021` and
+    :footcite:t:`baranovdata2021`. Individual depths from seismic points were
+    interpolated at 1 degree resolution using a kriging algorithm. Here, we reproject to
+    Polar Stereographic and grid at 50km spacing.
+    Accessed from https://data.mendeley.com/datasets/j58mf2wm9b/1
+
+    version='li-2023'
+    Crustal thickness and uncertainties from :footcite:t:`liantarctic2023` and
+    :footcite:t:`licrustal2024`. Accessed from https://doi.org/10.5281/zenodo.10242299
+
+    version='ji-2022'
+    Crustal thickness from :footcite:t:`jigravityderived2022`. Accessed from
+    https://doi.org/10.6084/m9.figshare.19947779.v2
 
     Parameters
     ----------
     version : str
-        Either 'shen-2018',
-        will add later: 'lamb-2020',  'an-2015', 'baranov', 'chaput', 'crust1',
-        'szwillus', 'llubes', 'pappa', 'stal'
+        Either 'shen-2018', 'an-2015', 'an-2015-points', 'baranov-2021', 'li-2023', or
+        'ji-2022'.
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -4955,8 +4988,9 @@ def crustal_thickness(
         additional keyword arguments to pass to the resample_grid function
     Returns
     -------
-    xarray.DataArray
-         Returns a loaded, and optional clip/resampled grid of crustal thickness.
+    xarray.DataArray, xarray.Dataset, pandas.DataFrame
+        Returns a loaded, and optionally clip/resampled grid of crustal thickness, or a
+        DataFrame of point measurements.
 
     References
     ----------
@@ -4967,7 +5001,13 @@ def crustal_thickness(
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
             "Load the .dat file, grid it, and save it back as a .zarr"
-            fname1 = pathlib.Path(fname)
+
+            path = pooch.Untar(
+                extract_dir="shen_2018_crustal_thickness",
+                members=["WCANT_MODEL/moho.final.dat"],
+            )(fname, action, _pooch2)
+
+            fname1 = pathlib.Path(path[0])
 
             # Rename to the file to ***_preprocessed.nc
             fname_pre = fname1.with_stem("shen_2018_crustal_thickness_preprocessed")
@@ -5012,13 +5052,12 @@ def crustal_thickness(
                 processed.to_zarr(fname_processed)
             return str(fname_processed)
 
-        url = "http://www.google.com/url?q=http%3A%2F%2Fweisen.wustl.edu%2FFor_Comrades%2Ffor_self%2Fmoho.WCANT.dat&sa=D&sntz=1&usg=AOvVaw0XC8VjO2gPVIt96QvzqFtw"
-
+        url = "https://drive.usercontent.google.com/download?id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0&export=download&authuser=0&confirm=t&uuid=274ee5d4-3cbe-4e69-a887-e4002ae49002&at=APcXIO3i5htKLurw7nvIbzrmfJix:1769596878011"
         try:
             path = pooch.retrieve(
                 url=url,
-                known_hash="b748879927176ed6b69f3c82cb08b0fcf0f7ae35d9058db6cff1fb81ba19350b",
-                fname="shen_2018_crustal_thickness.dat",
+                known_hash="90c7f05100cbec280214e8d22c0f9fa1b8b5f87c35e139480b8b94f3bc7f4611",
+                fname="WCANT_MODEL.tar",
                 path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
                 processor=preprocessing,
                 progressbar=True,
@@ -5027,7 +5066,7 @@ def crustal_thickness(
             msg = "the link to the shen-2018 data appears to be broken"
             raise ValueError(msg) from e
 
-        grid = xr.open_zarr(path)
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -5035,52 +5074,89 @@ def crustal_thickness(
             region,
             registration,
         )
+        return typing.cast(xr.DataArray, resampled)
 
     if version == "an-2015":
+        grid = moho(version="an-2015")
+
+        # subtract from Bedmap2 bed topography grid (referenced to sea level (geoid))
+        bed = bedmap2(
+            layer="bed",
+            reference="eigen-gl04c",
+            region=region,
+            spacing=spacing,
+            registration=registration,
+            **kwargs,
+        )
+        grid = bed - grid
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+
+        return typing.cast(xr.DataArray, resampled)
+
+    if version == "an-2015-points":
+        return typing.cast(pd.DataFrame, moho(version="an-2015-points", region=region))
+
+    if version == "baranov-2021":
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
-            "Unzip the folder, reproject the file, and save it back as a zarr file"
-            path = pooch.Untar(
-                extract_dir="An_2015_crustal_thickness", members=["AN1-CRUST.grd"]
-            )(fname, action, _pooch2)
-            fname1 = pathlib.Path(path[0])
+            "Reproject the file, and save it back as a zarr file"
+
             # Rename to the file to ***_preprocessed.zarr
+            fname1 = pathlib.Path(fname)
             fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                # load grid
-                grid = xr.load_dataarray(fname1)
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    sep=r"\s+",
+                )
+
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("long", "lat"),
+                    output_coord_names=("x", "y"),
+                )
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "crustal_thickness"]],  # type: ignore[call-overload]
+                    spacing=50e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
+                    registration="g",
+                )
+                grid = pygmt.surface(
+                    data=df[["x", "y", "crustal_thickness"]],
+                    spacing=50e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
+                    registration="g",
+                )
 
                 # convert to meters
                 grid = grid * 1000
 
-                # write the current projection
-                grid = grid.rio.write_crs("EPSG:4326")
-
-                # set names of coordinates
-                grid = grid.rename({"lon": "x", "lat": "y"})
-
-                # reproject to polar stereographic
-                reprojected = (
-                    grid.rio.reproject(
-                        "EPSG:3031",
-                        resolution=5e3,
-                    )
-                    .squeeze()
-                    .drop_vars(["spatial_ref"])
-                )
                 # save to zarr
-                reprojected.to_zarr(fname_processed)
+                grid.to_zarr(fname_processed)
 
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
-            fname="an_2015_crustal_thickness.tar.gz",
+            url="https://data.mendeley.com/public-files/datasets/j58mf2wm9b/files/77c83eed-751f-4e37-b4e5-74d2ae0b819c/file_downloaded",
+            known_hash=None,
+            fname="baranov-2021.txt",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
-            known_hash="486da67ccbe76bb7f79725981c6078a0429a2cd2797d447702b90302e2b7b1e5",
             progressbar=True,
             processor=preprocessing,
         )
@@ -5094,12 +5170,80 @@ def crustal_thickness(
             registration,
             **kwargs,
         )
+        return typing.cast(xr.DataArray, resampled)
 
-    else:
-        msg = "version must be 'an-2015' or 'shen-2018'"
-        raise ValueError(msg)
+    if version == "li-2023":
+        path = pooch.retrieve(
+            url="https://zenodo.org/records/10242299/files/Ant_Crust.nc?download=1",
+            fname="Ant_Crust.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
+            known_hash="md5:3ac1df4d45b6f1257dd1fe48a48f32ab",
+            progressbar=True,
+        )
 
-    return typing.cast(xr.DataArray, resampled)
+        ds = xr.load_dataset(path)
+
+        original_vars = ["Mean_Crust_th", "STD_Crust_th"]
+        new_vars = ["thickness", "uncertainty"]
+
+        # resample each data variable
+        das = []
+        for i, var in enumerate(original_vars):
+            das.append(
+                resample_grid(
+                    ds[var],
+                    spacing,
+                    region,
+                    registration,
+                    **kwargs,
+                ).rename(new_vars[i])
+            )
+
+        ds = xr.merge(das)
+
+        return typing.cast(xr.DataArray, ds)
+
+    if version == "ji-2022":
+        path = pooch.retrieve(
+            url="doi:10.6084/m9.figshare.19947779.v2/Code.zip",
+            known_hash=None,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
+            fname="ji_2022.zip",
+            processor=pooch.Unzip(
+                extract_dir="ji_2022",
+                members=["Code/CrustalThickness.xyz", "Code/Moho.xyz"],
+            ),
+        )
+
+        df = pd.read_csv(
+            path[1],
+            sep=r"\s+",
+            header=None,
+            names=["x", "y", "z"],
+        )
+        df = df.dropna(subset=["z"])
+
+        df["z"] = df["z"] * 1000  # km to m
+        df["x"] = df["x"] * 1000  # km to m
+        df["y"] = df["y"] * 1000  # km to m
+
+        grid = df.set_index(["y", "x"]).to_xarray().z
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+
+        # clip so no negatives
+        resampled = resampled.where(resampled > 0, 0)
+
+        return typing.cast(xr.DataArray, resampled)
+
+    msg = "version must be 'an-2015', 'an-2015-points', 'shen-2018', 'baranov-2021', 'li-2023' or 'ji-2022'"
+    raise ValueError(msg)
 
 
 def moho(
@@ -5108,32 +5252,75 @@ def moho(
     spacing: float | None = None,
     registration: str | None = None,
     **kwargs: typing.Any,
-) -> xr.DataArray | None:
+) -> xr.DataArray | xr.Dataset | pd.DataFrame | None:
     """
-    Load 1 of x 'versions' of Antarctic Moho depth grids.
+    Load various Antarctic Moho elevation data.
+
+    Other models to add:
+        Llubes et al. 2003
+        Block et al. 2009
+        Baranov and Morelli 2013
+        O'Donnell and Nyblade 2014
+        Llubes et al. 2017
+        Llubes et al. 2018
+        Zhang et al. 2020 https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020GC009048?af=R&utm_campaign=RESR_MRKT_Researcher_inbound&utm_medium=referral&sid=researcher&utm_source=researcher_app
+        Lamb et al. 2020 https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020GC009150
+            https://doi.org/10.5281/zenodo.4031646
+
+    Some other model that exist but can't be download via https:
+        Pappa et al. 2019, grids and point data
+        Brown and Fischer 2025, point data
+
+    Other models that don't provide gridded results:
+        Chaput et al. 2014
+        Ramirez et al. 2017
+        Chisenga et al. 2019
 
     version='shen-2018'
-    Depth to the Moho relative to the surface of solid earth (bottom of ice/ocean)
+    Elevation to the Moho relative to the surface of solid earth (bottom of ice/ocean)
     from :footcite:t:`shencrust2018`.
     Accessed from https://sites.google.com/view/weisen/research-products?authuser=0
-    Appears to be almost identical to crustal thickness from Shen et al. 2018
+    To make this depth relative to sea level (the geoid), we have subtracted the crustal
+    thickness from Bedmap2 bed topography.
 
     version='an-2015'
-    This is fetch.crustal_thickness(version='an-2015)* -1
-    Documentation is unclear whether the An crust model from
-    :footcite:t:`ansvelocity2015` is crustal thickness or moho depths, or whether it
-    makes a big enough difference to matter.
+    Moho elevation  from :footcite:t:`ansvelocity2015`.
+    Accessed from http://www.seismolab.org/model/antarctica/lithosphere/index.html#an1s
+    File is the AN1-CRUST model, paper states "Moho depths and crustal thicknesses
+    referred to below are the distance from the solid surface to the Moho. We note that
+    this definition of Moho depth is different from that in the compilation of AN-MOHO".
+    We sampled the An-2015 point data and found this grid closer matched the Moho depths
+    compared the the crustal thickness, so we have multiplied the file values by -1000 to
+    convert into elevation in meters, relative to sea level (the geoid). We have
+    reprojected to polar stereographic and re-gridded at a 20 km resolution.
 
-    version='pappa-2019'
-    from :footcite:t:`pappamoho2019`.
-    Accessed from supplement material
+    version="an-2015-points"
+    Point measurements of Moho elevation used to create the An-2015 model.
+
+    version='baranov-2021'
+    Moho elevation from :footcite:t:`baranovupdated2021` and
+    :footcite:t:`baranovdata2021`. Individual depths from seismic points were
+    interpolated at 1 degree resolution using a kriging algorithm. Here, we reproject to
+    Polar Stereographic and grid at 50km spacing.
+    Accessed from https://data.mendeley.com/datasets/j58mf2wm9b/1
+
+    version='borghi-2022'
+    Moho elevation from :footcite:t:`borghimoho2022`. This was from a gravity inversion
+    of the AntGG-2016 gravity compilation.
+
+    version='li-2023'
+    Moho elevation and uncertainties from :footcite:t:`liantarctic2023` and
+    :footcite:t:`licrustal2024`. Accessed from https://doi.org/10.5281/zenodo.10242299
+
+    version='ji-2022'
+    Crustal thickness from :footcite:t:`jigravityderived2022`. Accessed from
+    https://doi.org/10.6084/m9.figshare.19947779.v2
 
     Parameters
     ----------
     version : str
-        Either 'shen-2018', 'an-2015', 'pappa-2019',
-        will add later: 'lamb-2020', 'baranov', 'chaput', 'crust1',
-        'szwillus', 'llubes',
+        Either 'shen-2018', 'an-2015', 'an-2015-points', 'baranov-2021', 'borghi-2022',
+        'li-2023', or 'ji-2022'.
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -5148,8 +5335,9 @@ def moho(
 
     Returns
     -------
-    xarray.DataArray
-         Returns a loaded, and optional clip/resampled grid of crustal thickness.
+    xarray.DataArray, xarray.Dataset, pandas.DataFrame
+        Returns a loaded, and optionally clip/resampled grid of Moho elevation, or a
+        DataFrame of point measurements.
 
     References
     ----------
@@ -5157,30 +5345,58 @@ def moho(
     """
 
     if version == "shen-2018":
+        # get crustal thickness grid from Shen-2018
+        thickness_grid = crustal_thickness(
+            version="shen-2018",
+            region=region,
+            spacing=spacing,
+            registration=registration,
+            **kwargs,
+        )
 
-        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
-            "Load the .dat file, grid it, and save it back as a .zarr"
-            path = pooch.Unzip(
-                extract_dir="Shen_2018_moho", members=["WCANT_MODEL/moho.final.dat"]
-            )(fname, action, _pooch2)
-            fname1 = next(p for p in path if p.endswith("moho.final.dat"))
-            fname2 = pathlib.Path(fname1)
+        # subtract from Bedmap2 bed topography to get moho depth relative to WGS84
+        bed = bedmap2(
+            layer="bed",
+            reference="eigen-gl04c",
+            region=region,
+            spacing=spacing,
+            registration=registration,
+            **kwargs,
+        )
 
+        moho_grid = bed - thickness_grid
+
+        resampled = resample_grid(
+            moho_grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+
+        return typing.cast(xr.DataArray, resampled)
+
+    if version == "an-2015":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
+            "Unzip the folder, reproject the file, and save it back as a zarr file"
+            path = pooch.Untar(extract_dir="an_2015_moho", members=["AN1-CRUST.grd"])(
+                fname, action, _pooch2
+            )
+            fname1 = pathlib.Path(path[0])
             # Rename to the file to ***_preprocessed.zarr
-            fname_pre = fname2.with_stem(fname2.stem + "_preprocessed")
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
             fname_processed = fname_pre.with_suffix(".zarr")
 
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
-                # load data
-                df = pd.read_csv(
-                    fname2,
-                    sep=r"\s+",
-                    header=None,
-                    names=["lon", "lat", "depth"],
-                )
-                # convert to meters
-                df.depth = df.depth * -1000
+                # load grid
+                grid = xr.load_dataarray(fname1)
+
+                # convert to elevation in meters
+                grid = grid * -1000
+
+                df = grid.to_dataframe().reset_index().dropna(how="any")
 
                 # re-project to polar stereographic
                 df = utils.reproject(
@@ -5193,32 +5409,31 @@ def moho(
 
                 # block-median and grid the data
                 df = pygmt.blockmedian(
-                    df[["x", "y", "depth"]],  # type: ignore[call-overload]
-                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
-                    region=regions.antarctica,
+                    df[["x", "y", "z"]],  # type: ignore[call-overload]
+                    spacing=20e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
                     registration="g",
                 )
-                processed = pygmt.surface(
-                    data=df[["x", "y", "depth"]],
-                    spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
-                    region=regions.antarctica,
+                grid = pygmt.surface(
+                    data=df[["x", "y", "z"]],
+                    spacing=20e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
-                # Save to disk
-                processed.to_zarr(fname_processed)
+
+                # save to zarr
+                grid.to_zarr(fname_processed)
+
             return str(fname_processed)
 
         path = pooch.retrieve(
-            url="https://drive.usercontent.google.com/download?id=1PGbdCxkbtlOWMFWkcv60dLBEjnevjs6v&export=download&authuser=0&confirm=t&uuid=602c3ecb-e55c-4bfc-8ede-00433d2dada1&at=AKSUxGOws8RXXwtTgMFlBN9hNzwJ:1762164387041",
-            # url="https://drive.google.com/uc?export=download&id=1huoGe54GMNc-WxDAtDWYmYmwNIUGrmm0",
-            fname="WCANT_MODEL.zip",
+            url="http://www.seismolab.org/model/antarctica/lithosphere/AN1-CRUST.tar.gz",
+            fname="an_2015_moho.tar.gz",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-            known_hash="794b30ca1eab97bdfdd4dca4a67623459c5d19502039a53b33b0e093fc098034",
-            # known_hash=None, # changes with each download
+            known_hash="486da67ccbe76bb7f79725981c6078a0429a2cd2797d447702b90302e2b7b1e5",
             progressbar=True,
             processor=preprocessing,
-            downloader=pooch.HTTPDownloader(timeout=60),
         )
 
         grid = xr.open_zarr(path).z
@@ -5230,9 +5445,311 @@ def moho(
             registration,
             **kwargs,
         )
+        return typing.cast(xr.DataArray, resampled)
 
-    elif version == "an-2015":
-        grid = crustal_thickness(version="an-2015") * -1  # type: ignore[operator]
+    if version == "an-2015-points":
+        data = """
+            Name	Longitude (°)	Latitude (°)	Crustal thickness (km) (from the solid surface)	Moho depths(km) (from sea level)	Sources
+            9169	-6.02	-75	45.0	42.3	1
+            9172	-9.7	-73.6	44.0	42.6	1
+            96100B	5.9	-67.7	12.0	16.0	2
+            96100E	6.1	-69.7	23.0	25.0	2
+            96110B	-14.1	-69	10.0	14.0	2
+            96110E	-12.5	-73.5	21.0	23.0	2
+            A	67	-72	32.0	32.0	3 , 4
+            AMERY	73.85	-69.71	30.0	30.0	3 , 4
+            AN01	166.92	-77.19	20.0	19.8	5
+            AN05	163.96	-77.69	18.0	17.8	5
+            AN08	160.15	-77.54	40.0	37.9	5
+            AN09	162.17	-77.93	34.0	32.8	5
+            AN10	162.83	-77.63	32.0	31.3	5
+            AWI2-4	-13.09	-74.5	45.9	45.0	6
+            B	78.2	-68.77	34.0	34.0	3 , 4
+            BEAVER	68.34	-70.75	30.0	30.0	3 , 4
+            BT01	166.563	-71.112	25.0	23.3	7
+            BT05	158.928	-69.89	31.0	29.5	7
+            BT06	157.337	-69.514	32.0	31.4	7
+            BT07	155.03	-69.245	31.0	30.0	7
+            BVLK	68.17	-70.8	33.0	32.9	8
+            BYRD	-119.473	-80.0168	26.75	25.2	9
+            BYRD	-119.5466	-80	27.0	25.5	10
+            C	69.09	-71.55	24.0	24.0	3 , 4
+            CASE	160.1262	-80.4481	27.8	27.0	11
+            CASEY	110.31	-66.17	30.0	30.0	12
+            CBOB	163.1707	-77.0342	20.1	20.0	11
+            CBRI	166.4266	-77.2516	18.3	18.0	11
+            CCRZ	169.0947	-77.5166	19.8	19.0	11
+            CHNA	77.013	-78.677	46.8	43.3	13
+            CHNB	76.976	-77.1744	57.5	54.5	13
+            CLRK	-141.8485	-77.3231	30	29.0	9
+            CPHI	162.6484	-75.0745	22.2	22.0	11
+            CRES	64.17	-72.66	33.0	31.6	8
+            CTEA	160.7643	-78.9439	21.3	20.0	11
+            D000	298.5	-74.86	37.0	37.0	14
+            D100	301	-75.45	35.0	35.0	14
+            D200	304	-76.06	33.0	33.0	14
+            D320	-52.5	-76.8	32.0	32.0	14
+            D420	-49	-77.2	30.0	30.0	14
+            D500	-47	-77.7	29.0	29.0	14
+            D640	-41	-77.8	32.0	32.0	14
+            D	72.38	-69.49	24.0	24.0	3 , 4
+            D780	-36	-77.8	41.0	41.0	14
+            DAVI	78	-68.7	39.0	38.9	8
+            DEVL	161.9745	-81.4757	18	17.9	9
+            DIHI	159.48	-79.8491	21.4	21.0	11
+            DNTW	-107.7804	-76.4571	25.21	24.2	9
+            DOMEA	77.1047	-80.422	61.6	57.5	13
+            DRV	140	-66.8	28.0	27.6	15
+            DSS2	-59.5	-62.5	33.0	32.9	16
+            DSS6	-62.5	-64.7	35.0	34.4	16
+            DT154	77.0257	-74.5824	49.3	46.6	13
+            DUFK	-53.2007	-82.8619	38.4	37.4	9
+            E000	163.6175	-77.6262	20.3	20.0	11
+            E002	163.0078	-77.575	24.7	24.0	11
+            E004	162.0661	-77.4133	30.7	30.0	11
+            E006	161.6256	-77.3703	34.6	34.0	11
+            E008	160.5033	-77.2817	37.8	36.0	11
+            E010	160.086	-77.1847	39.0	37.2	17 , 18
+            E012	159.326	-77.0461	40.6	38.7	18
+            E018	157.224	-76.8234	40.7	38.6	18
+            E020	156.547	-76.7295	45.2	43.0	18
+            E024	155.238	-76.5394	45.6	43.4	18
+            E028	154.039	-76.3075	45.6	43.3	18
+            E030	153.379	-76.2511	45.5	43.2	18
+            EAGLE	77.0448	-76.4154	58.4	55.6	13
+            ERS-11	-174.445	-77.12	17.5	18.0	19
+            ERS-13	-173.637	-77.1217	17.5	18.0	19
+            ERS-17	-172.027	-77.1217	18.5	19.0	19
+            ERS-20	-170.813	-77.1217	19.5	20.0	19
+            ERS-23	-169.61	-77.1217	21.5	22.0	19
+            ERS-3	-178.583	-77.12	23.4	24.0	19
+            ERS-5	-176.99	-77.1167	23.4	24.0	19
+            ESPZ	301.6	-63.7	37.0	36.4	20
+            FALL	-143.6284	-85.3066	24	23.7	9
+            FISH	162.5652	-78.9276	17	16.7	9
+            FISHER	67.39	-71.52	39.0	38.4	8
+            GM01	104.7291	-83.9858	34.5	31.2	21
+            GM02	97.5815	-79.4251	42.3	38.6	21
+            GM03	85.9439	-80.2169	56.0	52.1	21
+            GM04	61.1124	-82.9997	51.5	47.7	21
+            GM05	51.1588	-81.1841	50.2	46.4	21
+            GROV	75	-72.9	40.0	38.0	8
+            HOWD	-86.7694	-77.5285	37	35.5	9
+            ISDE	-134.9935	-80	28.0	27.4	10
+            J01-SP1	41.2	-70.2	41.0	40.0	22
+            J01-SP2	41.5	-69.8	41.0	40.0	22
+            J01-SP5	42.4	-69.25	41.0	40.0	22
+            J01-SP6	42.7	-69.08	41.0	40.0	22
+            J01-SP7	42.95	-68.7	41.0	40.0	22
+            J99-S1	40.06	-69.04	38.0	37.0	23
+            J99-S2	40.65	-69.06	40.0	39.0	23
+            J99-S3	41.3	-69.3	41.0	40.0	23
+            J99-S4	42	-69.6	42.0	41.0	23
+            J99-S5	42.6	-69.8	43.5	42.0	23
+            J99-S6	43.4	-70.2	45.0	43.0	23
+            JNCT	157.901	-76.9313	38.0	35.8	18
+            LONW	152.735	-81.3466	45	43.5	9
+            LT892	77.767	-71.6708	45.7	43.5	13
+            M450	165.4	-77.75	21.0	21.0	24
+            MAGL	162.4083	-76.1381	23.0	23.0	11
+            MBL	-130.2241	-78.093	25.0	23.4	10
+            MECK	-72.1849	-75.2807	26.5	25.4	9
+            MILR	156.2517	-83.3063	45	43.1	9
+            MINN	166.88	-78.5504	20.5	20.0	11
+            MPAT	-155.022	-78.0297	27.5	27.0	9
+            MTM	-100.0123	-79.496	21.0	19.0	10
+            MUC6-8	-11.065	-75.25	53.1	51.0	6
+            MZH	44.3	-70.1	44.0	42.0	23 , 25
+            N000	160.378	-76.0088	32.8	31.1	18
+            N020	155.818	-77.4678	40.5	38.2	18
+            N036	151.278	-78.5508	44.0	41.7	18
+            N044	148.616	-79.0692	47.0	44.7	18
+            N060	142.595	-80.0001	47.9	45.5	18
+            N076	135.434	-80.8062	48.0	45.5	18
+            N092	126.98	-81.4593	46.6	43.8	18
+            N100	122.61	-81.6525	45.5	42.6	18
+            N108	117.605	-81.8795	47.0	43.9	18
+            N116	112.571	-82.0098	45.1	41.9	18
+            N124	107.6406	-82.0745	47.9	44.5	21
+            N132	101.9534	-82.0751	45.3	41.9	21
+            N140	96.7692	-82.0086	49.3	45.7	21
+            N156	86.5045	-81.6726	46.3	42.4	21
+            N165	81.7604	-81.4084	56.5	52.5	21
+            N173	77.4736	-81.1122	59.2	55.2	21
+            N182	73.1898	-80.7363	57.8	53.7	21
+            N190	69.431	-80.3275	51.5	47.6	21
+            N198	65.9607	-79.8597	53.4	49.6	21
+            N206	62.8556	-79.3947	50.3	46.6	21
+            N215	59.9943	-78.9045	47.9	44.4	21
+            NOVO	11.835	-70.776	42.0	41.8	6
+            OND	-125.7358	-80.7456	28.0	26.9	10
+            P061	77.2238	-84.4996	46.1	42.6	21
+            P071	77.3347	-83.6465	43.0	39.4	21
+            P080	77.364	-82.8054	48.0	44.2	21
+            P116	77.0451	-79.5669	56.7	52.8	21
+            P124	77.657	-78.8718	58.9	55.3	21
+            PECA	-68.5527	-85.6124	37	35.5	9
+            PMSA	296	-64.8	40.0	39.8	20
+            **PMSA	-64	-64.8	36.0	36.0	15
+            REIN	72.55	-70.45	33.0	32.9	8
+            RIS51	-61	-74.7	33.0	33.0	26
+            RIS56	-55	-75.8	27.0	27.0	26
+            SAE33B	-12.5	-71.5	32.0	32.0	6 , 27
+            SAE33E	-7.2	-70.7	32.0	32.0	6 , 27
+            SAE34B	-10.5	-71	33.0	33.0	6 , 27
+            SAE34E	-4.8	-73.4	41.0	39.0	6 , 27 ; 1
+            SBA	166.7573	-77.8491	21.0	21.0	11
+            SBA	166.757	-77.8491	21.0	21.0	5
+            SDM	-148.85	-81.6148	27.0	26.3	10
+            SILY	-125.966	-77.1332	32.8	30.7	9
+            SIPL	-148.9555	-81.6405	28.03	27.4	9
+            SNAA	-2.838	-71.671	40.0	39.2	6
+            SPA	0	-90	34.0	31.2	10
+            ST01	-98.7419	-83.2279	30.24	28.2	9
+            ST02	-109.1243	-82.069	34.24	32.5	9
+            ST03	-113.1504	-81.4065	26.53	24.9	9
+            ST04	-116.5782	-80.715	23.76	22.2	9
+            ST06	-121.8196	-79.3316	24.8	23.3	9
+            ST07	-123.7953	-78.6387	26.21	24.6	9
+            ST08	-125.5313	-77.9576	26.8	25.0	9
+            ST09	-128.4734	-76.5309	31.74	29.5	9
+            ST10	-129.7489	-75.8143	29.83	28.1	9
+            ST12	-123.816	-76.897	24.02	21.8	9
+            ST13	-130.5139	-77.5609	32.18	30.3	9
+            ST14	-134.0802	-77.8378	28.93	27.3	9
+            STC	-136.4061	-82.3575	31.0	30.5	10
+            SURP	-171.2018	-84.7199	26.5	26.1	9
+            THUR	-97.5606	-72.5301	24.1	23.9	9
+            TNV	164.12	-74.7	22.1	22.0	11
+            UPTW	-109.0396	-77.5797	22.39	21.1	9
+            VNDA	161.8456	-77.5139	35.6	35.0	11
+            **VNDA	161.846	-77.5139	35.0	34.4	5 , 17
+            **VNDA	161.853	-77.5172	35.3	34.7	18
+            VOSTOK	106.48	-78.28	30.0	26.5	28
+            **VOSTOK	106.48	-78.28	35.0	31.5	29
+            WA-AM	131.5	-64	18.0	21.0	30
+            WA-AN	132	-63.2	12.0	16.3	30
+            WA-BM	141	-65.1	16.0	18.7	30
+            WA-BN	141	-64.1	7.0	10.6	30
+            WA-BS	141	-65.6	23.0	24.1	30
+            WAIS	-111.7776	-79.4181	25.57	23.8	9
+            WEIGEL	-9.622	-74.275	44.0	42.5	6
+            WHIT	-104.3867	-82.6823	31.5	30.2	9
+            WILS	-80.5587	-80.0396	30	29.3	9
+            WM72	11.524	-72.144	50.0	47.4	6
+            WM73	11.562	-71.437	45.0	43.6	6
+            WM79	13.215	-72.04	51.0	48.6	6
+            WNDY	-119.4129	-82.3695	23.17	22.2	9
+            WRS-10	172.386	-77.0717	18.3	19.0	19
+            WRS-11	172.788	-77.0755	16.4	17.0	19
+            WRS-12	173.203	-77.0892	14.4	15.0	19
+            WRS-14	174.005	-77.1055	13.5	14.0	19
+            WRS-17	175.215	-77.1052	20.6	21.0	19
+            WRS-21	176.826	-77.1051	23.6	24.0	19
+            WRS-2	169.226	-77.0939	15.1	16.0	19
+            WRS-25	178.445	-77.1214	23.5	24.0	19
+            WRS-29	-179.937	-77.1218	23.3	24.0	19
+            WRS-3	169.618	-77.1018	16.1	17.0	19
+            WRS-4	169.986	-77.1021	16.2	17.0	19
+            WRS-6	170.773	-77.0716	18.2	19.0	19
+            WRS-7	171.18	-77.0539	19.2	20.0	19
+            WRS-8	171.58	-77.0551	20.3	21.0	19
+            WRS-9	171.988	-77.0641	20.3	21.0	19
+            ZHSH	76.3727	-69.3747	38.3	38.3	13
+        """
+
+        df = pd.read_csv(StringIO(data), sep="\t")
+
+        df = df.rename(
+            columns={
+                "Longitude (°)": "lon",
+                "Latitude (°)": "lat",
+                "Crustal thickness (km) (from the solid surface)": "crustal_thickness",
+                "Moho depths(km) (from sea level)": "moho_elevation",
+            }
+        )
+
+        # convert to meters / elevations
+        df["crustal_thickness"] = df["crustal_thickness"] * 1000  # km to m
+        df["moho_elevation"] = -df["moho_elevation"] * 1000  # km to m and to elevation
+
+        # reproject
+        df = utils.reproject(
+            df,
+            input_crs="epsg:4326",
+            output_crs="epsg:3031",
+            input_coord_names=("lon", "lat"),
+            output_coord_names=("x", "y"),
+        )
+
+        # return points in requested region
+        if region is not None:
+            df = utils.points_inside_region(
+                df,
+                region,
+            )
+
+        return typing.cast(pd.DataFrame, df)
+
+    if version == "baranov-2021":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
+            "Reproject the file, and save it back as a zarr file"
+
+            # Rename to the file to ***_preprocessed.zarr
+            fname1 = pathlib.Path(fname)
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    sep=r"\s+",
+                )
+
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("long", "lat"),
+                    output_coord_names=("x", "y"),
+                )
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "MOHO"]],  # type: ignore[call-overload]
+                    spacing=50e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
+                    registration="g",
+                )
+                grid = pygmt.surface(
+                    data=df[["x", "y", "MOHO"]],  # type: ignore[unused-ignore]
+                    spacing=50e3,
+                    region=(-3300e3, 3300e3, -3300e3, 3300e3),
+                    registration="g",
+                )
+
+                # convert to meters and depth
+                grid = grid * -1000
+
+                # save to zarr
+                grid.to_zarr(fname_processed)
+
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://data.mendeley.com/public-files/datasets/j58mf2wm9b/files/77c83eed-751f-4e37-b4e5-74d2ae0b819c/file_downloaded",
+            known_hash=None,
+            fname="baranov-2021.txt",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.open_zarr(path).z
 
         resampled = resample_grid(
             grid,
@@ -5241,52 +5758,157 @@ def moho(
             registration,
             **kwargs,
         )
+        return typing.cast(xr.DataArray, resampled)
 
-    elif version == "pappa-2019":
-        msg = "This link is broken, and the data is not available anymore."
-        raise ValueError(msg)
-        # resampled = pooch.retrieve(
-        #     url="https://agupubs.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1029%2F2018GC008111&file=GGGE_21848_DataSetsS1-S6.zip",
-        #     fname="pappa_moho.zip",
-        #     path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
-        #     known_hash=None,
-        #     progressbar=True,
-        #     processor=pooch.Unzip(extract_dir="pappa_moho"),
-        # )
-        # # fname = "/Volumes/arc_04/tankerma/Datasets/Pappa_et_al_2019_data/2018GC008111_Moho_depth_inverted_with_combined_depth_points.grd"
-        # grid = pygmt.load_dataarray(resampled)
-        # df = grid.to_dataframe().reset_index()
-        # df.z = df.z.apply(lambda x: x * -1000)
+    if version == "borghi-2022":
 
-        # # re-project to polar stereographic
-        # df = utils.reproject(
-        #     df,
-        #     input_crs="epsg:4326",
-        #     output_crs="epsg:3031",
-        #     input_coord_names=("lon", "lat"),
-        #     output_coord_names=("x", "y"),
-        # )
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:  # pylint: disable=function-redefined
+            "Reproject the file, and save it back as a zarr file"
 
-        # df = pygmt.blockmedian(
-        #     df[["x", "y", "z"]],
-        #     spacing=10e3,
-        #     registration="g",
-        #     region="-1560000/1400000/-2400000/560000",
-        # )
+            # Rename to the file to ***_preprocessed.zarr
+            fname1 = pathlib.Path(fname)
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
 
-        # fname = "inversion_layers/Pappa_moho.nc"
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                df = pd.read_csv(
+                    fname1,
+                    sep=r"\s+",
+                    names=["lon", "lat", "moho"],
+                    skiprows=1,
+                )
 
-        # pygmt.surface(
-        #     df[["x", "y", "z"]],
-        #     region="-1560000/1400000/-2400000/560000",
-        #     spacing=10e3,
-        #     registration="g",
-        #     maxradius="1c",
-        #     outgrid=fname,
-        # )
+                # convert to elevation in meters
+                df["moho"] = df["moho"] * 1000  # km to m
 
-    else:
-        msg = "version must be 'shen-2018', 'an-2015', or 'pappa-2019'"
-        raise ValueError(msg)
+                # re-project to polar stereographic
+                df = utils.reproject(
+                    df,
+                    input_crs="epsg:4326",
+                    output_crs="epsg:3031",
+                    input_coord_names=("lon", "lat"),
+                    output_coord_names=("x", "y"),
+                )
 
-    return typing.cast(xr.DataArray, resampled)
+                spacing = 10e3
+
+                region = vd.get_region((df.x.to_numpy(), df.y.to_numpy()))  # type: ignore[union-attr]
+
+                # change region to nearest multiple of spacing
+                region = tuple([spacing * round(x / spacing) for x in region])  # pylint: disable=consider-using-generator
+
+                # block-median and grid the data
+                df = pygmt.blockmedian(
+                    df[["x", "y", "moho"]],  # type: ignore[call-overload]
+                    spacing=spacing,
+                    region=region,
+                    registration="g",
+                )
+                grid = pygmt.surface(
+                    data=df[["x", "y", "moho"]],
+                    spacing=spacing,
+                    region=region,
+                    registration="g",
+                    # max_radius="1c",
+                )
+
+                grid = vd.convexhull_mask(
+                    data_coordinates=(df.x.to_numpy(), df.y.to_numpy()),
+                    grid=grid.to_dataset(name="upward"),
+                )
+
+                # save to zarr
+                grid.to_zarr(fname_processed)
+
+            return str(fname_processed)
+
+        path = pooch.retrieve(
+            url="https://zenodo.org/records/6811567/files/mohoTOT-2step-xZenodo.dat?download=1",
+            known_hash="md5:e1f9284b3e68240b7cc04e29b8ff5f5d",
+            fname="borghi-2022.dat",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
+            progressbar=True,
+            processor=preprocessing,
+        )
+
+        grid = xr.open_zarr(path).upward
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+        return typing.cast(xr.DataArray, resampled)
+
+    if version == "li-2023":
+        path = pooch.retrieve(
+            url="https://zenodo.org/records/10242299/files/Ant_Crust.nc?download=1",
+            fname="Ant_Crust.nc",
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/moho",
+            known_hash="md5:3ac1df4d45b6f1257dd1fe48a48f32ab",
+            progressbar=True,
+        )
+
+        ds = xr.load_dataset(path)
+
+        original_vars = ["Mean_Moho", "STD_Moho"]
+        new_vars = ["upward", "uncertainty"]
+
+        # resample each data variable
+        das = []
+        for i, var in enumerate(original_vars):
+            das.append(
+                resample_grid(
+                    ds[var],
+                    spacing,
+                    region,
+                    registration,
+                    **kwargs,
+                ).rename(new_vars[i])
+            )
+
+        ds = xr.merge(das)
+
+        return typing.cast(xr.DataArray, ds)
+
+    if version == "ji-2022":
+        path = pooch.retrieve(
+            url="doi:10.6084/m9.figshare.19947779.v2/Code.zip",
+            known_hash=None,
+            path=f"{pooch.os_cache('pooch')}/polartoolkit/crustal_thickness",
+            fname="ji_2022.zip",
+            processor=pooch.Unzip(
+                extract_dir="ji_2022",
+                members=["Code/CrustalThickness.xyz", "Code/Moho.xyz"],
+            ),
+        )
+
+        df = pd.read_csv(
+            path[0],
+            sep=r"\s+",
+            header=None,
+            names=["x", "y", "z"],
+        )
+        df = df.dropna(subset=["z"])
+
+        df["z"] = df["z"] * -1000  # km to elevation in m
+        df["x"] = df["x"] * 1000  # km to m
+        df["y"] = df["y"] * 1000  # km to m
+
+        grid = df.set_index(["y", "x"]).to_xarray().z
+
+        resampled = resample_grid(
+            grid,
+            spacing,
+            region,
+            registration,
+            **kwargs,
+        )
+        return typing.cast(xr.DataArray, resampled)
+
+    msg = "version must be 'an-2015', 'an-2015-points', 'shen-2018', 'baranov-2021', 'borghi-2022', 'li-2023', or 'ji-2022'"
+    raise ValueError(msg)

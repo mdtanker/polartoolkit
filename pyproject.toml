@@ -217,4 +217,4 @@ messages_control.disable = [
 ]
 
 [tool.codespell]
-ignore-words-list = ["word_to_ignore"]
+ignore-words-list = ["word_to_ignore", "OND", "THUR", "WHIT"]

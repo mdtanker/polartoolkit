@@ -1587,23 +1587,53 @@ def test_gia(test_input, expected):
 # %% crustal_thickness
 
 crust_test = [
-    # (
-    #     "shen-2018",
-    #     (
-    #         10000,
-    #         (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-    #         17216.1484375,
-    #         57233.3320313,
-    #         "g",
-    #     ),
-    # ),
     (
         "an-2015",
         (
-            5000,
-            (-8055988.01606, 8059011.98394, -8059011.64301, 8055988.35699),
-            5629.39257812,
-            65076.78125,
+            20000,
+            (-3300000.0, 3300000.0, -3300000.0, 3300000.0),
+            1218.99853516,
+            66076.578125,
+            "g",
+        ),
+    ),
+    (
+        "shen-2018",
+        (
+            10000,
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
+            17218.0996094,
+            57223.5273438,
+            "g",
+        ),
+    ),
+    (
+        "baranov-2021",
+        (
+            50000,
+            (-3300000.0, 3300000.0, -3300000.0, 3300000.0),
+            6956.75439453,
+            59125.9101562,
+            "g",
+        ),
+    ),
+    (
+        "li-2023",
+        (
+            20000,
+            (-3340000.0, 3340000.0, -3340000.0, 3340000.0),
+            863.798950195,
+            58056.1054688,
+            "p",
+        ),
+    ),
+    (
+        "ji-2022",
+        (
+            10000,
+            (-2710000.0, 2930000.0, -2340000.0, 2400000.0),
+            0,
+            60903.578125,
             "g",
         ),
     ),
@@ -1615,6 +1645,10 @@ crust_test = [
 @pytest.mark.parametrize(("test_input", "expected"), crust_test)
 def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
+
+    if test_input == "li-2023":
+        grid = grid.thickness  # type: ignore[union-attr]
+
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
@@ -1624,29 +1658,85 @@ def test_crustal_thickness(test_input, expected):
     )
 
 
-# grid = fetch.crustal_thickness(version='an-2015')
-# utils.get_grid_info(grid)
+@pytest.mark.fetch
+def test_crustal_thickness_points():
+    df = fetch.crustal_thickness(
+        version="an-2015-points",
+        region=regions.minna_bluff,
+    )
+    expected = [
+        "            AN05",
+        163.96,
+        -77.69,
+        18000.0,
+        -17800.0,
+        "5",
+        370936.38039461087,
+        -1290208.6894404038,
+    ]
+    assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)  # type: ignore[union-attr]
+
 
 # %% moho
 
 moho_test = [
     (
-        "shen-2018",
+        "an-2015",
         (
-            10000,
-            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
-            -57223.5273438,
-            -17218.0996094,
+            20000,
+            (-3300000.0, 3300000.0, -3300000.0, 3300000.0),
+            -64885.140625,
+            -6265.95361328,
             "g",
         ),
     ),
     (
-        "an-2015",
+        "shen-2018",
         (
-            5000,
-            (-8055988.01606, 8059011.98394, -8059011.64301, 8055988.35699),
-            -65076.78125,
-            -5629.39257812,
+            10000,
+            (-2800000.0, 2800000.0, -2800000.0, 2800000.0),
+            -56434.2734375,
+            -18005.0996094,
+            "g",
+        ),
+    ),
+    (
+        "baranov-2021",
+        (
+            50000,
+            (-3300000.0, 3300000.0, -3300000.0, 3300000.0),
+            -59132.2773438,
+            -5217.92724609,
+            "g",
+        ),
+    ),
+    (
+        "borghi-2022",
+        (
+            10000,
+            (-3150000.0, 3220000.0, -2120000.0, 3010000.0),
+            -54782.8984375,
+            -20059.703125,
+            "g",
+        ),
+    ),
+    (
+        "li-2023",
+        (
+            20000,
+            (-3340000.0, 3340000.0, -3340000.0, 3340000.0),
+            -56260.125,
+            -7457.54882812,
+            "p",
+        ),
+    ),
+    (
+        "ji-2022",
+        (
+            10000,
+            (-2710000.0, 2930000.0, -2340000.0, 2400000.0),
+            -58622.640625,
+            -4044.28857422,
             "g",
         ),
     ),
@@ -1658,7 +1748,10 @@ moho_test = [
 @pytest.mark.parametrize(("test_input", "expected"), moho_test)
 def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
-    # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
+
+    if test_input == "li-2023":
+        grid = grid.upward  # type: ignore[union-attr]
+
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
         expected,
