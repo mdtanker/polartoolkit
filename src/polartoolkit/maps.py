@@ -2001,7 +2001,8 @@ def basemap(
             else:
                 msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
                 raise ValueError(msg)
-            region = vd.get_region(points[[x_col, y_col]].values)
+
+            region = vd.get_region((points[x_col].to_numpy(), points[y_col].to_numpy()))
             logger.debug("using region %s from points", region)
     elif region is None:
         region = fig.reg
