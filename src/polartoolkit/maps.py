@@ -3079,7 +3079,7 @@ def plot_grd(
             style=kwargs.get("points_style", "c.2c"),
             pen=kwargs.get("points_pen"),
             label=kwargs.get("points_label"),
-            cmap=cmap,
+            cmap=True,
             **kwargs,
         )
 
