@@ -274,6 +274,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         pen: str | None = None,
         version: str | None = None,
         label: str | None = None,
+        epsg: str | None = None,
     ) -> None:
         """
         add coastline and or groundingline to figure.
@@ -300,38 +301,62 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             elif self.hemisphere == "south":
                 version = "measures-v2"
 
-        if version == "depoorter-2013":
-            if no_coast is False:
-                data = fetch.groundingline(version=version)
-            elif no_coast is True:
-                gdf = gpd.read_file(
-                    fetch.groundingline(version=version), engine="pyogrio"
-                )
-                data = gdf[gdf.Id_text == "Grounded ice or land"]
-        elif version == "measures-v2":
-            if no_coast is False:
-                gl = gpd.read_file(
-                    fetch.groundingline(version=version), engine="pyogrio"
-                )
-                coast = gpd.read_file(
-                    fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
-                )
-                data = pd.concat([gl, coast])
-            elif no_coast is True:
-                data = fetch.groundingline(version=version)
-        elif version in ("BAS", "measures-greenland"):
-            data = fetch.groundingline(version=version)
-        else:
-            msg = "invalid version string"
-            raise ValueError(msg)
+        if version == "gmt":
+            if epsg is None:
+                msg = "EPSG code must be provided when coast version is 'gmt'"
+                raise ValueError(msg)
 
-        self.plot(
-            data,  # pylint: disable=used-before-assignment
-            projection=self.proj,
-            region=self.reg,
-            pen=pen,
-            label=label,
-        )
+            pen = f"1/{pen}"
+
+            proj_latlon = f"{epsg}/{self.proj[1:]}"
+            reg_latlon = utils.reproject(
+                utils.region_to_df(self.reg).drop(index=[1, 2]),  # type: ignore[union-attr]
+                epsg,
+                "epsg:4326",
+                reg=True,
+            )
+            reg_ll_bbox = utils.region_to_bounding_box(reg_latlon)  # type: ignore[arg-type]
+            reg_ll_bbox = utils.gmt_str_to_list(reg_ll_bbox) + "+r"  # type: ignore[assignment]
+
+            self.coast(
+                region=reg_ll_bbox,
+                projection=proj_latlon,
+                shorelines=pen,
+            )
+        else:
+            if version == "depoorter-2013":
+                if no_coast is False:
+                    data = fetch.groundingline(version=version)
+                elif no_coast is True:
+                    gdf = gpd.read_file(
+                        fetch.groundingline(version=version), engine="pyogrio"
+                    )
+                    data = gdf[gdf.Id_text == "Grounded ice or land"]
+            elif version == "measures-v2":
+                if no_coast is False:
+                    gl = gpd.read_file(
+                        fetch.groundingline(version=version), engine="pyogrio"
+                    )
+                    coast = gpd.read_file(
+                        fetch.antarctic_boundaries(version="Coastline"),
+                        engine="pyogrio",
+                    )
+                    data = pd.concat([gl, coast])
+                elif no_coast is True:
+                    data = fetch.groundingline(version=version)
+            elif version in ("BAS", "measures-greenland"):
+                data = fetch.groundingline(version=version)
+            else:
+                msg = "invalid version string"
+                raise ValueError(msg)
+
+            self.plot(
+                data,  # pylint: disable=used-before-assignment
+                projection=self.proj,
+                region=self.reg,
+                pen=pen,
+                label=label,
+            )
 
     def add_gridlines(
         self,
@@ -988,6 +1013,21 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         length = kwargs.get("length")
         length_perc = kwargs.get("length_perc", 0.25)
         position = kwargs.get("position", "n.5/.05")
+        epsg = kwargs.get("epsg")
+
+        if epsg is not None:
+            projection = f"{epsg}/{self.proj[1:]}"
+            reg_latlon = utils.reproject(
+                utils.region_to_df(self.reg).drop(index=[1, 2]),  # type: ignore[union-attr]
+                epsg,
+                "epsg:4326",
+                reg=True,
+            )
+            reg_ll_bbox = utils.region_to_bounding_box(reg_latlon)  # type: ignore[arg-type]
+            region = utils.gmt_str_to_list(reg_ll_bbox) + "+r"
+        else:
+            region = self.reg_latlon
+            projection = self.proj_latlon  # type: ignore[assignment]
 
         def round_to_1(x: float) -> float:
             return round(x, -floor(log10(abs(x))))
@@ -1006,8 +1046,8 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             MAP_TICK_PEN_PRIMARY=f"0.5p,{font_color}",
         ):
             self.basemap(
-                region=self.reg_latlon,
-                projection=self.proj_latlon,
+                region=region,
+                projection=projection,
                 map_scale=f"{position}+w{length}k+f+lkm+ar",
                 box=kwargs.get("scalebar_box", "+gwhite"),
             )
@@ -2171,6 +2211,7 @@ def basemap(
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version"),
             label=kwargs.get("coast_label", None),
+            epsg=kwargs.get("epsg", None),
         )
 
     # plot faults
@@ -3020,6 +3061,7 @@ def plot_grd(
             no_coast=kwargs.get("no_coast", False),
             version=kwargs.get("coast_version"),
             label=kwargs.get("coast_label", None),
+            epsg=kwargs.get("epsg", None),
         )
 
     # plot faults
