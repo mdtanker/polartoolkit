@@ -2599,7 +2599,65 @@ def set_cmap(
     return cmap, colorbar, cpt_lims
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `plot_grid()` instead",
+)
 def plot_grd(
+    grid: str | xr.DataArray,
+    region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
+    cmap: str | bool = "viridis",
+    coast: bool = False,
+    north_arrow: bool = False,
+    scalebar: bool = False,
+    faults: bool = False,
+    geologic_units: bool = False,
+    simple_basemap: bool = False,
+    imagery_basemap: bool = False,
+    modis_basemap: bool = False,
+    bed_type: bool = False,
+    title: str | None = None,
+    inset: bool = False,
+    points: pd.DataFrame | None = None,
+    gridlines: bool = False,
+    origin_shift: str | None = "initialize",
+    fig: pygmt.Figure | None = None,
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
+    """
+    Deprecated, use renamed function `plot_grid()` instead.
+    """
+    msg = "`plot_grd` is deprecated, use `plot_grid` instead."
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+    return plot_grd(
+        grid=grid,
+        region=region,
+        hemisphere=hemisphere,
+        cmap=cmap,
+        coast=coast,
+        north_arrow=north_arrow,
+        scalebar=scalebar,
+        faults=faults,
+        geologic_units=geologic_units,
+        simple_basemap=simple_basemap,
+        imagery_basemap=imagery_basemap,
+        modis_basemap=modis_basemap,
+        bed_type=bed_type,
+        title=title,
+        inset=inset,
+        points=points,
+        gridlines=gridlines,
+        origin_shift=origin_shift,
+        fig=fig,
+        **kwargs,
+    )
+
+
+def plot_grid(
     grid: str | xr.DataArray,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
@@ -3470,7 +3528,7 @@ def subplots(
             if (v is not None) & (kwargs2.get(k) is None):
                 kwargs2[k] = v[i]
 
-        fig = plot_grd(
+        fig = plot_grid(
             g,
             fig=fig,
             origin_shift=origin_shift,

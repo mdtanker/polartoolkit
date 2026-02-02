@@ -1429,7 +1429,7 @@ def grid_trend(
         title: typing.Any = kwargs.get("title", "Detrending a grid")
         detrended_label: typing.Any = kwargs.get("detrended_label", "detrended")
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             da,
             cbar_label=input_label,
             title=title,
@@ -1444,7 +1444,7 @@ def grid_trend(
             **kwargs,
         )
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             fit,
             fig=fig,
             cmap=cmap,
@@ -1457,7 +1457,7 @@ def grid_trend(
             **kwargs,
         )
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             detrend,
             fig=fig,
             cmap=cmap,
@@ -1804,7 +1804,7 @@ def grid_compare(
             for key, value in new_kwargs.items()
             if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
         }
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             grid1,
             cmap=cmap,
             region=region,
@@ -1823,7 +1823,7 @@ def grid_compare(
                 offset=kwargs.get("label_offset", "j0/.3"),
                 no_clip=True,
             )
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             dif,
             cmap=kwargs.get("diff_cmap", "balance+h0"),
             region=region,
@@ -1847,7 +1847,7 @@ def grid_compare(
                 offset=kwargs.get("label_offset", "j0/.3"),
                 no_clip=True,
             )
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             grid2,
             cmap=cmap,
             region=region,
