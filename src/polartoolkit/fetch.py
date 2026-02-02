@@ -4612,9 +4612,6 @@ def ghf(
         # restore registration type
         resampled.gmt.registration = grid.gmt.registration
 
-        if spacing is None:
-            spacing = 20e3
-
         resampled = resample_grid(
             grid,
             spacing,
