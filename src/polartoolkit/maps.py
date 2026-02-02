@@ -1980,9 +1980,9 @@ def basemap(
 
     Example
     -------
-    >>> from polartoolkit import maps, regions
+    >>> import polartoolkit as ptk
     ...
-    >>> fig = maps.basemap(region=regions.ross_ice_shelf)
+    >>> fig = ptk.basemap(region=ptk.regions.ross_ice_shelf)
     ...
     >>> fig.show()
     """
@@ -2889,10 +2889,10 @@ def plot_grid(
 
     Example
     -------
-    >>> from polartoolkit import maps
+    >>> import polartoolkit as ptk
     ...
-    >>> fig = maps.plot_grd('grid1.nc')
-    >>> fig = maps.plot_grd(
+    >>> fig = ptk.plot_grid('grid1.nc')
+    >>> fig = ptk.plot_grid(
     ... 'grid2.nc',
     ... origin_shift = 'x',
     ... fig = fig,
@@ -3409,7 +3409,7 @@ def subplots(
 ) -> pygmt.Figure:
     """
     Plot a series of grids as individual suplots. This will automatically configure the
-    layout to be closest to a square. Add any parameters from `plot_grd()` here as
+    layout to be closest to a square. Add any parameters from `plot_grid()` here as
     keyword arguments for further customization.
 
     Parameters
@@ -3423,7 +3423,7 @@ def subplots(
         [xmin, xmax, ymin, ymax], by default None
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
-        `utils.square_subplots()` to make a square(~ish) layout.
+        `square_subplots()` to make a square(~ish) layout.
     fig_title : str, optional
         add a title to the figure, by default None
     fig_x_axis_title : str, optional
@@ -3906,12 +3906,12 @@ def interactive_data(
 
     Example
     -------
-    >>> from polartoolkit import regions, utils, maps
+    >>> import polartoolkit as ptk
     ...
-    >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
-    >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
+    >>> bedmap2_bed = ptk.fetch.bedmap2(layer='bed', region=ptk.regions.ross_ice_shelf)
+    >>> GHF_point_data = ptk.fetch.ghf(version='burton-johnson-2020', points=True)
     ...
-    >>> image = maps.interactive_data(
+    >>> image = ptk.interactive_data(
     ...    hemisphere="south",
     ...    grid = bedmap2_bed,
     ...    points = GHF_point_data[['x','y','GHF']],

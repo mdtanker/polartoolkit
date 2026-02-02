@@ -1,12 +1,12 @@
 # %%
 """
-Tests for fetch module. Use pre-determined results of utils.get_grid_info() to verify
+Tests for fetch module. Use pre-determined results of ptk.get_grid_info() to verify
 grids have been properly fetch. Also tests the `resample_grid()` function
 Follow this format:
 def test_():
     grid = fetch.()
     expected =
-    assert utils.get_grid_info(grid) == expected
+    assert ptk.get_grid_info(grid) == expected
 """
 
 import os
