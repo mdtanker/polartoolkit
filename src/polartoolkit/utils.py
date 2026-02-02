@@ -2341,7 +2341,28 @@ def change_registration(grid: xr.DataArray) -> xr.DataArray:
     return f_out
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_blend` instead",
+)
 def grd_blend(
+    grid1: xr.DataArray,
+    grid2: xr.DataArray,
+) -> xr.DataArray:
+    """Deprecated, use `grid_blend` instead."""
+
+    msg = "grd_blend is deprecated, use grid_blend instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_blend(grid1, grid2)
+
+
+def grid_blend(
     grid1: xr.DataArray,
     grid2: xr.DataArray,
 ) -> xr.DataArray:
