@@ -2633,7 +2633,7 @@ def plot_grd(
     msg = "`plot_grd` is deprecated, use `plot_grid` instead."
     warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
-    return plot_grd(
+    return plot_grid(
         grid=grid,
         region=region,
         hemisphere=hemisphere,
