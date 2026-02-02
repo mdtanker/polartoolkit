@@ -896,6 +896,7 @@ def nearest_grid_fill(
 def filter_grid(
     grid: xr.DataArray,
     filter_width: float | None = None,
+    filter_type: str = "lowpass",
     filt_type: str = "lowpass",
     pad_width_factor: int = 3,
     pad_mode: str = "linear_ramp",
@@ -911,9 +912,11 @@ def filter_grid(
         grid to filter the values of
     filter_width : float | None, optional
         width of the filter in meters for high and low pass filtering, by default None
-    filt_type : str, optional
+    filter_type : str, optional
         type of filter to use from 'lowpass', 'highpass' 'up_deriv', 'easting_deriv',
         'northing_deriv', or 'total_gradient' by default "lowpass"
+    filt_type : str, optional
+        deprecated, use filter_type instead, by default "lowpass"
     pad_width_factor : int, optional
         factor of grid width to pad the grid by, by default 3, which equates to a pad
         with a width of 1/3 of the grid width.
@@ -929,6 +932,14 @@ def filter_grid(
     xarray.DataArray
         a filtered grid
     """
+    if filt_type != "lowpass":
+        warnings.warn(
+            "'filt_type' is deprecated, use 'filter_type' instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        filter_type = filt_type
+
     # get coordinate names
     original_dims = tuple(grid.sizes.keys())
 
@@ -983,21 +994,21 @@ def filter_grid(
         **pad_kwargs,
     )
 
-    if filt_type == "lowpass":
+    if filter_type == "lowpass":
         filt = hm.gaussian_lowpass(padded, wavelength=filter_width).rename("filt")
-    elif filt_type == "highpass":
+    elif filter_type == "highpass":
         filt = hm.gaussian_highpass(padded, wavelength=filter_width).rename("filt")
-    elif filt_type == "up_deriv":
+    elif filter_type == "up_deriv":
         filt = hm.derivative_upward(padded).rename("filt")
-    elif filt_type == "easting_deriv":
+    elif filter_type == "easting_deriv":
         filt = hm.derivative_easting(padded).rename("filt")
-    elif filt_type == "northing_deriv":
+    elif filter_type == "northing_deriv":
         filt = hm.derivative_northing(padded).rename("filt")
-    elif filt_type == "total_gradient":
+    elif filter_type == "total_gradient":
         filt = hm.total_gradient_amplitude(padded).rename("filt")
     else:
         msg = (
-            "filt_type must be 'lowpass', 'highpass' 'up_deriv', 'easting_deriv', "
+            "filter_type must be 'lowpass', 'highpass' 'up_deriv', 'easting_deriv', "
             "'northing_deriv', or 'total_gradient'"
         )
         raise ValueError(msg)
