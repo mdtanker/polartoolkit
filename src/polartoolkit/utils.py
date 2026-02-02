@@ -1327,7 +1327,38 @@ def set_proj(
     return proj, proj_latlon, fig_width, fig_height
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_trend()` instead",
+)
 def grd_trend(
+    da: xr.DataArray,
+    coords: tuple[str, str, str] = ("x", "y", "z"),
+    deg: int = 1,
+    plot: bool = False,
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray]:
+    """
+    Deprecated, use grid_trend instead.
+    """
+    msg = "grd_trend is deprecated, use grid_trend instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_trend(
+        da=da,
+        coords=coords,
+        deg=deg,
+        plot=plot,
+        **kwargs,
+    )
+
+
+def grid_trend(
     da: xr.DataArray,
     coords: tuple[str, str, str] = ("x", "y", "z"),
     deg: int = 1,
