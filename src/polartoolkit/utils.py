@@ -1538,7 +1538,40 @@ def get_combined_min_max(
     return np.min(ar[:, 0]), np.max(ar[:, 1])
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_compare()` instead",
+)
 def grd_compare(
+    da1: xr.DataArray | str,
+    da2: xr.DataArray | str,
+    plot: bool = True,
+    plot_type: typing.Any | None = None,
+    robust: bool = False,
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+    """
+    Deprecated, use grid_compare instead.
+    """
+    msg = "grd_compare is deprecated, use grid_compare instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_compare(
+        da1=da1,
+        da2=da2,
+        plot=plot,
+        plot_type=plot_type,
+        robust=robust,
+        **kwargs,
+    )
+
+
+def grid_compare(
     da1: xr.DataArray | str,
     da2: xr.DataArray | str,
     plot: bool = True,

@@ -2907,9 +2907,9 @@ def bedmap3(
             # convert to the ellipsoid
             # grid = grid + geoid_2_ellipsoid
             # should be grid + geod_2_ellipsoid
-            # grd_compare gives grid1 - grid 2
+            # grid_compare gives grid1 - grid 2
             # so give it grid1 and -1*grid2
-            grid, _grid1, _grid2 = utils.grd_compare(
+            grid, _grid1, _grid2 = utils.grid_compare(
                 grid,
                 -geoid_2_ellipsoid,
                 plot=False,
