@@ -471,10 +471,10 @@ def draw_region(**kwargs: typing.Any) -> list[typing.Any]:
 
     Example
     -------
-    >>> from polartoolkit import regions, utils
+    >>> import polartoolkit as ptk
     ...
-    >>> polygon = regions.draw_region()
-    >>> region = utils.polygon_to_region(polygon, hemisphere="north")
+    >>> polygon = ptk.regions.draw_region()
+    >>> region = ptk.polygon_to_region(polygon, hemisphere="north")
     """
 
     if ipyleaflet is None:

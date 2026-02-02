@@ -521,11 +521,11 @@ def plot_profile(
         Choose sampling method, either "points", "shapefile", or "polyline"
     layers_dict : dict, optional
         nested dictionary of layers to include in cross-section, construct with
-        `profiles.make_data_dict`, by default is created from Bedmap2, Bedmap3, or
+        `ptk.make_data_dict`, by default is created from Bedmap2, Bedmap3, or
         Bedmachine data, as chosen from `layers_version`.
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
-        `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
+        `ptk.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool
         Choose whether to add a location map, by default is False.
     layers_version : str, optional
@@ -1226,7 +1226,7 @@ def plot_data(
         Choose sampling method, either "points", "shapefile", or "polyline"
     data_dict : dict, optional
         nested dictionary of data to include in option graph, construct with
-        `profiles.make_data_dict`, by default is gravity and magnetic anomalies.
+        `ptk.make_data_dict`, by default is gravity and magnetic anomalies.
     add_map : bool
         Choose whether to add a location map, by default is False.
     fig_height : float, optional

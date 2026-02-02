@@ -645,10 +645,10 @@ def reproject(
     input_coord_names : tuple, optional
         set names for input coordinate columns, by default "x"/"y" or
         "easting"/"northing" if input_crs is "epsg:3413" or "epsg:3031", or if input_crs
-        is "epsg_4326", "lon"/"lat"
+        is "epsg:4326", "lon"/"lat"
     output_coord_names : tuple, optional
         set names for output coordinate columns, by default "x"/"y" if output_crs is
-        "epsg:3413" or "epsg:3031", or if output_crs is "epsg_4326", "lon"/"lat".
+        "epsg:3413" or "epsg:3031", or if output_crs is "epsg:4326", "lon"/"lat".
 
     Returns
     -------
@@ -896,6 +896,7 @@ def nearest_grid_fill(
 def filter_grid(
     grid: xr.DataArray,
     filter_width: float | None = None,
+    filter_type: str = "lowpass",
     filt_type: str = "lowpass",
     pad_width_factor: int = 3,
     pad_mode: str = "linear_ramp",
@@ -911,9 +912,11 @@ def filter_grid(
         grid to filter the values of
     filter_width : float | None, optional
         width of the filter in meters for high and low pass filtering, by default None
-    filt_type : str, optional
+    filter_type : str, optional
         type of filter to use from 'lowpass', 'highpass' 'up_deriv', 'easting_deriv',
         'northing_deriv', or 'total_gradient' by default "lowpass"
+    filt_type : str, optional
+        deprecated, use filter_type instead, by default "lowpass"
     pad_width_factor : int, optional
         factor of grid width to pad the grid by, by default 3, which equates to a pad
         with a width of 1/3 of the grid width.
@@ -929,6 +932,14 @@ def filter_grid(
     xarray.DataArray
         a filtered grid
     """
+    if filt_type != "lowpass":
+        warnings.warn(
+            "'filt_type' is deprecated, use 'filter_type' instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        filter_type = filt_type
+
     # get coordinate names
     original_dims = tuple(grid.sizes.keys())
 
@@ -983,21 +994,21 @@ def filter_grid(
         **pad_kwargs,
     )
 
-    if filt_type == "lowpass":
+    if filter_type == "lowpass":
         filt = hm.gaussian_lowpass(padded, wavelength=filter_width).rename("filt")
-    elif filt_type == "highpass":
+    elif filter_type == "highpass":
         filt = hm.gaussian_highpass(padded, wavelength=filter_width).rename("filt")
-    elif filt_type == "up_deriv":
+    elif filter_type == "up_deriv":
         filt = hm.derivative_upward(padded).rename("filt")
-    elif filt_type == "easting_deriv":
+    elif filter_type == "easting_deriv":
         filt = hm.derivative_easting(padded).rename("filt")
-    elif filt_type == "northing_deriv":
+    elif filter_type == "northing_deriv":
         filt = hm.derivative_northing(padded).rename("filt")
-    elif filt_type == "total_gradient":
+    elif filter_type == "total_gradient":
         filt = hm.total_gradient_amplitude(padded).rename("filt")
     else:
         msg = (
-            "filt_type must be 'lowpass', 'highpass' 'up_deriv', 'easting_deriv', "
+            "filter_type must be 'lowpass', 'highpass' 'up_deriv', 'easting_deriv', "
             "'northing_deriv', or 'total_gradient'"
         )
         raise ValueError(msg)
@@ -1316,7 +1327,38 @@ def set_proj(
     return proj, proj_latlon, fig_width, fig_height
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_trend()` instead",
+)
 def grd_trend(
+    da: xr.DataArray,
+    coords: tuple[str, str, str] = ("x", "y", "z"),
+    deg: int = 1,
+    plot: bool = False,
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray]:
+    """
+    Deprecated, use grid_trend instead.
+    """
+    msg = "grd_trend is deprecated, use grid_trend instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_trend(
+        da=da,
+        coords=coords,
+        deg=deg,
+        plot=plot,
+        **kwargs,
+    )
+
+
+def grid_trend(
     da: xr.DataArray,
     coords: tuple[str, str, str] = ("x", "y", "z"),
     deg: int = 1,
@@ -1387,7 +1429,7 @@ def grd_trend(
         title: typing.Any = kwargs.get("title", "Detrending a grid")
         detrended_label: typing.Any = kwargs.get("detrended_label", "detrended")
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             da,
             cbar_label=input_label,
             title=title,
@@ -1402,7 +1444,7 @@ def grd_trend(
             **kwargs,
         )
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             fit,
             fig=fig,
             cmap=cmap,
@@ -1415,7 +1457,7 @@ def grd_trend(
             **kwargs,
         )
 
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             detrend,
             fig=fig,
             cmap=cmap,
@@ -1496,7 +1538,40 @@ def get_combined_min_max(
     return np.min(ar[:, 0]), np.max(ar[:, 1])
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_compare()` instead",
+)
 def grd_compare(
+    da1: xr.DataArray | str,
+    da2: xr.DataArray | str,
+    plot: bool = True,
+    plot_type: typing.Any | None = None,
+    robust: bool = False,
+    **kwargs: typing.Any,
+) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+    """
+    Deprecated, use grid_compare instead.
+    """
+    msg = "grd_compare is deprecated, use grid_compare instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_compare(
+        da1=da1,
+        da2=da2,
+        plot=plot,
+        plot_type=plot_type,
+        robust=robust,
+        **kwargs,
+    )
+
+
+def grid_compare(
     da1: xr.DataArray | str,
     da2: xr.DataArray | str,
     plot: bool = True,
@@ -1662,7 +1737,7 @@ def grd_compare(
                 "registration hasn't been correctly changed",
                 stacklevel=2,
             )
-            grid1 = change_reg(grid1)
+            grid1 = change_registration(grid1)
 
         reg = grid2.gmt.registration
         grid_registration = "g" if reg == 0 else "p"
@@ -1671,7 +1746,7 @@ def grd_compare(
                 "registration hasn't been correctly changed",
                 stacklevel=2,
             )
-            grid2 = change_reg(grid2)
+            grid2 = change_registration(grid2)
 
     grid1 = typing.cast(xr.DataArray, grid1)
     grid2 = typing.cast(xr.DataArray, grid2)
@@ -1729,7 +1804,7 @@ def grd_compare(
             for key, value in new_kwargs.items()
             if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
         }
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             grid1,
             cmap=cmap,
             region=region,
@@ -1748,7 +1823,7 @@ def grd_compare(
                 offset=kwargs.get("label_offset", "j0/.3"),
                 no_clip=True,
             )
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             dif,
             cmap=kwargs.get("diff_cmap", "balance+h0"),
             region=region,
@@ -1772,7 +1847,7 @@ def grd_compare(
                 offset=kwargs.get("label_offset", "j0/.3"),
                 no_clip=True,
             )
-        fig = maps.plot_grd(
+        fig = maps.plot_grid(
             grid2,
             cmap=cmap,
             region=region,
@@ -2218,7 +2293,24 @@ def mask_from_polygon(
     return typing.cast(xr.DataArray, masked)
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `change_registration` instead",
+)
 def change_reg(grid: xr.DataArray) -> xr.DataArray:
+    """Deprecated, use change_registration instead."""
+    msg = "change_reg is deprecated, use change_registration instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return change_registration(grid)
+
+
+def change_registration(grid: xr.DataArray) -> xr.DataArray:
     """
     Use GMT grdedit to change the registration type in the metadata.
 
@@ -2249,7 +2341,28 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
     return f_out
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `grid_blend` instead",
+)
 def grd_blend(
+    grid1: xr.DataArray,
+    grid2: xr.DataArray,
+) -> xr.DataArray:
+    """Deprecated, use `grid_blend` instead."""
+
+    msg = "grd_blend is deprecated, use grid_blend instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return grid_blend(grid1, grid2)
+
+
+def grid_blend(
     grid1: xr.DataArray,
     grid2: xr.DataArray,
 ) -> xr.DataArray:

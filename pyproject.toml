@@ -196,6 +196,7 @@ ignore = [
 
 
 [tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # disable unused-imports errors on __init__.py
 "tests/**" = ["T20"]
 "noxfile.py" = ["T20"]
 "*.ipynb" = ["T201"]
@@ -217,4 +218,4 @@ messages_control.disable = [
 ]
 
 [tool.codespell]
-ignore-words-list = ["word_to_ignore"]
+ignore-words-list = ["word_to_ignore", "OND", "THUR", "WHIT"]

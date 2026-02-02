@@ -1980,9 +1980,9 @@ def basemap(
 
     Example
     -------
-    >>> from polartoolkit import maps, regions
+    >>> import polartoolkit as ptk
     ...
-    >>> fig = maps.basemap(region=regions.ross_ice_shelf)
+    >>> fig = ptk.basemap(region=ptk.regions.ross_ice_shelf)
     ...
     >>> fig.show()
     """
@@ -2001,7 +2001,8 @@ def basemap(
             else:
                 msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
                 raise ValueError(msg)
-            region = vd.get_region(points[[x_col, y_col]].values)
+
+            region = vd.get_region((points[x_col].to_numpy(), points[y_col].to_numpy()))
             logger.debug("using region %s from points", region)
     elif region is None:
         region = fig.reg
@@ -2562,8 +2563,18 @@ def set_cmap(
         except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
+
+                # if grid is all one value, set cpt to +/- 1% of that value or +/- 1 if
+                # grid values are zero
+                if zmin == 0 or zmax == 0:
+                    zmin, zmax = -1, 1
+                else:
+                    zmin -= np.abs(zmin * 0.01)  # type: ignore[operator]
+                    zmax += np.abs(zmax * 0.01)  # type: ignore[operator]
+
                 pygmt.makecpt(
                     cmap=cmap,
+                    series=(zmin, zmax),
                     background=True,
                     reverse=reverse_cpt,
                     verbose="error",
@@ -2588,7 +2599,65 @@ def set_cmap(
     return cmap, colorbar, cpt_lims
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `plot_grid()` instead",
+)
 def plot_grd(
+    grid: str | xr.DataArray,
+    region: tuple[float, float, float, float] | None = None,
+    hemisphere: str | None = None,
+    cmap: str | bool = "viridis",
+    coast: bool = False,
+    north_arrow: bool = False,
+    scalebar: bool = False,
+    faults: bool = False,
+    geologic_units: bool = False,
+    simple_basemap: bool = False,
+    imagery_basemap: bool = False,
+    modis_basemap: bool = False,
+    bed_type: bool = False,
+    title: str | None = None,
+    inset: bool = False,
+    points: pd.DataFrame | None = None,
+    gridlines: bool = False,
+    origin_shift: str | None = "initialize",
+    fig: pygmt.Figure | None = None,
+    **kwargs: typing.Any,
+) -> pygmt.Figure:
+    """
+    Deprecated, use renamed function `plot_grid()` instead.
+    """
+    msg = "`plot_grd` is deprecated, use `plot_grid` instead."
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+    return plot_grd(
+        grid=grid,
+        region=region,
+        hemisphere=hemisphere,
+        cmap=cmap,
+        coast=coast,
+        north_arrow=north_arrow,
+        scalebar=scalebar,
+        faults=faults,
+        geologic_units=geologic_units,
+        simple_basemap=simple_basemap,
+        imagery_basemap=imagery_basemap,
+        modis_basemap=modis_basemap,
+        bed_type=bed_type,
+        title=title,
+        inset=inset,
+        points=points,
+        gridlines=gridlines,
+        origin_shift=origin_shift,
+        fig=fig,
+        **kwargs,
+    )
+
+
+def plot_grid(
     grid: str | xr.DataArray,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
@@ -2820,10 +2889,10 @@ def plot_grd(
 
     Example
     -------
-    >>> from polartoolkit import maps
+    >>> import polartoolkit as ptk
     ...
-    >>> fig = maps.plot_grd('grid1.nc')
-    >>> fig = maps.plot_grd(
+    >>> fig = ptk.plot_grid('grid1.nc')
+    >>> fig = ptk.plot_grid(
     ... 'grid2.nc',
     ... origin_shift = 'x',
     ... fig = fig,
@@ -3079,7 +3148,7 @@ def plot_grd(
             style=kwargs.get("points_style", "c.2c"),
             pen=kwargs.get("points_pen"),
             label=kwargs.get("points_label"),
-            cmap=cmap,
+            cmap=True,
             **kwargs,
         )
 
@@ -3340,7 +3409,7 @@ def subplots(
 ) -> pygmt.Figure:
     """
     Plot a series of grids as individual suplots. This will automatically configure the
-    layout to be closest to a square. Add any parameters from `plot_grd()` here as
+    layout to be closest to a square. Add any parameters from `plot_grid()` here as
     keyword arguments for further customization.
 
     Parameters
@@ -3354,7 +3423,7 @@ def subplots(
         [xmin, xmax, ymin, ymax], by default None
     dims : tuple, optional
         customize the subplot dimensions (# rows, # columns), by default will use
-        `utils.square_subplots()` to make a square(~ish) layout.
+        `square_subplots()` to make a square(~ish) layout.
     fig_title : str, optional
         add a title to the figure, by default None
     fig_x_axis_title : str, optional
@@ -3459,7 +3528,7 @@ def subplots(
             if (v is not None) & (kwargs2.get(k) is None):
                 kwargs2[k] = v[i]
 
-        fig = plot_grd(
+        fig = plot_grid(
             g,
             fig=fig,
             origin_shift=origin_shift,
@@ -3837,12 +3906,12 @@ def interactive_data(
 
     Example
     -------
-    >>> from polartoolkit import regions, utils, maps
+    >>> import polartoolkit as ptk
     ...
-    >>> bedmap2_bed = fetch.bedmap2(layer='bed', region=regions.ross_ice_shelf)
-    >>> GHF_point_data = fetch.ghf(version='burton-johnson-2020', points=True)
+    >>> bedmap2_bed = ptk.fetch.bedmap2(layer='bed', region=ptk.regions.ross_ice_shelf)
+    >>> GHF_point_data = ptk.fetch.ghf(version='burton-johnson-2020', points=True)
     ...
-    >>> image = maps.interactive_data(
+    >>> image = ptk.interactive_data(
     ...    hemisphere="south",
     ...    grid = bedmap2_bed,
     ...    points = GHF_point_data[['x','y','GHF']],
