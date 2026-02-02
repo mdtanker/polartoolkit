@@ -1737,7 +1737,7 @@ def grid_compare(
                 "registration hasn't been correctly changed",
                 stacklevel=2,
             )
-            grid1 = change_reg(grid1)
+            grid1 = change_registration(grid1)
 
         reg = grid2.gmt.registration
         grid_registration = "g" if reg == 0 else "p"
@@ -1746,7 +1746,7 @@ def grid_compare(
                 "registration hasn't been correctly changed",
                 stacklevel=2,
             )
-            grid2 = change_reg(grid2)
+            grid2 = change_registration(grid2)
 
     grid1 = typing.cast(xr.DataArray, grid1)
     grid2 = typing.cast(xr.DataArray, grid2)
@@ -2293,7 +2293,24 @@ def mask_from_polygon(
     return typing.cast(xr.DataArray, masked)
 
 
+@deprecation.deprecated(
+    deprecated_in="1.3.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `change_registration` instead",
+)
 def change_reg(grid: xr.DataArray) -> xr.DataArray:
+    """Deprecated, use change_registration instead."""
+    msg = "change_reg is deprecated, use change_registration instead"
+    warnings.warn(
+        msg,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return change_registration(grid)
+
+
+def change_registration(grid: xr.DataArray) -> xr.DataArray:
     """
     Use GMT grdedit to change the registration type in the metadata.
 

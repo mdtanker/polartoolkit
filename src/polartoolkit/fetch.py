@@ -201,14 +201,14 @@ def resample_grid(
     if rules[0] and rules[1] and not rules[2]:
         logger.info("changing grid registration")
         try:
-            return utils.change_reg(grid)
+            return utils.change_registration(grid)
         except ValueError as e:
             logger.exception(e)
             logger.error("changing registration failed")
             return grid
         # changed = check_registration_changed(grid, resampled)
         # if not changed:
-        # resampled = utils.change_reg(resampled)
+        # resampled = utils.change_registration(resampled)
     # other combinations
     else:
         # if both spacing and region changed
