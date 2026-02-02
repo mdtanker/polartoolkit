@@ -196,6 +196,7 @@ ignore = [
 
 
 [tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # disable unused-imports errors on __init__.py
 "tests/**" = ["T20"]
 "noxfile.py" = ["T20"]
 "*.ipynb" = ["T201"]
