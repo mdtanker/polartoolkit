@@ -39,7 +39,7 @@ dependencies = [
     "pooch",
     "rioxarray",
     "tqdm",
-    "pygmt>=0.10.0", # need parameter "log" for colorbar
+    "pygmt>=0.18.0", # need aliases for scale and deprecated parameters such as barwidth
     "harmonica>=0.6.0", # need load_oasis_montaj_grid function
     "deprecation",
     "openpyxl", # needed for fetch.ghf to read an excel file into pandas
