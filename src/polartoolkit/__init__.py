@@ -43,6 +43,7 @@ from .utils import (  # noqa: E402
     dd2dms,
     epsg3031_to_latlon,
     epsg3413_to_latlon,
+    epsg_central_coordinates,
     filter_grid,
     get_combined_min_max,
     get_fig_height,

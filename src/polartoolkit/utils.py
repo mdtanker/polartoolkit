@@ -10,6 +10,7 @@ import harmonica as hm
 import numpy as np
 import pandas as pd
 import pygmt
+import pyproj
 import verde as vd
 import xarray as xr
 import xrft
@@ -709,6 +710,30 @@ def reproject(
     else:
         df = tuple(transformer.transform(df[0], df[1]))  # type: ignore[misc]
     return df
+
+
+def epsg_central_coordinates(
+    epsg: str,
+) -> tuple[float, float]:
+    """
+    Returns the central coordinates for the EPSG code in degrees.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code to use as a string ("3031").
+
+    Returns
+    -------
+    tuple
+        central coordinates (lat, lon) in degrees.
+    """
+    crs = pyproj.CRS(f"epsg:{epsg}")
+
+    return (
+        crs.coordinate_operation.params[0].value,
+        crs.coordinate_operation.params[1].value,
+    )
 
 
 def points_inside_region(
