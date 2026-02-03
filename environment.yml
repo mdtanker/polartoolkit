@@ -15,7 +15,7 @@ dependencies:
   - pooch
   - rioxarray
   - tqdm
-  - pygmt>=0.10.0
+  - pygmt>=0.18.0
   - harmonica>=0.6.0
   - deprecation
   - openpyxl

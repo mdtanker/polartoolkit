@@ -990,7 +990,7 @@ def plot_profile(
                 fig.legend(
                     position=kwargs.get("data_legend_loc", "JBR+jBL+o0c"),
                     box=kwargs.get("data_legend_box", False),
-                    S=kwargs.get("data_legend_scale", 1),
+                    scale=kwargs.get("data_legend_scale", 1),
                 )
 
         if kwargs.get("data_line_cmap") is not None:
@@ -1150,7 +1150,7 @@ def plot_profile(
             fig.legend(
                 position=kwargs.get("layers_legend_loc", "JBR+jBL+o0c"),
                 box=kwargs.get("layers_legend_box", False),
-                S=kwargs.get("layers_legend_scale", 1),
+                scale=kwargs.get("layers_legend_scale", 1),
             )
 
     # plot 'A','B' locations
@@ -1585,7 +1585,7 @@ def plot_data(
             fig.legend(
                 position=kwargs.get("data_legend_loc", "JBR+jBL+o0c"),
                 box=kwargs.get("data_legend_box", False),
-                S=kwargs.get("data_legend_scale", 1),
+                scale=kwargs.get("data_legend_scale", 1),
             )
     if kwargs.get("data_line_cmap") is not None:
         fig.colorbar(

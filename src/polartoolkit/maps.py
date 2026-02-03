@@ -1485,7 +1485,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     cmap=cmap,
                     fill=kwargs.get("hist_fill"),
                     pen=kwargs.get("hist_pen", "default"),
-                    barwidth=kwargs.get("hist_barwidth"),
+                    bar_width=kwargs.get("hist_barwidth"),
                     center=kwargs.get("hist_center", False),
                     distribution=kwargs.get("hist_distribution", False),
                     cumulative=kwargs.get("hist_cumulative", False),
