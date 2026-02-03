@@ -375,7 +375,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             MAP_ANNOT_MIN_SPACING="auto",
             MAP_FRAME_TYPE="inside",
             MAP_ANNOT_OBLIQUE="anywhere",
-            FONT_ANNOT_PRIMARY="8p,black,-=2p,white",
+            FONT_ANNOT_PRIMARY="8p,-=2p,white",
             MAP_GRID_PEN_PRIMARY="auto,gray",
             MAP_TICK_LENGTH_PRIMARY="auto",
             MAP_TICK_PEN_PRIMARY="auto,gray",
