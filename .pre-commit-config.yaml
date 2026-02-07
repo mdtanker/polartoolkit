@@ -21,7 +21,7 @@ repos:
     rev: "v6.0.0"
     hooks:
       - id: check-added-large-files
-        exclude: ^docs/datasets/
+        exclude: ^(docs/datasets/|docs/gallery/masking_and_subsetting_data.ipynb)
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
