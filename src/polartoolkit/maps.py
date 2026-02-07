@@ -158,14 +158,13 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         yshift_extra: float = 0.4,
     ) -> None:
         """Determine if and how much to shift origin of figure"""
-
         # allow various alternative strings for origin_shift
         if (origin_shift == "x_shift") | (origin_shift == "xshift"):
             origin_shift = "x"
             msg = "`origin_shift` parameter has changed, use 'x' instead."
             warnings.warn(
                 msg,
-                DeprecationWarning,
+                UserWarning,
                 stacklevel=2,
             )
         if (origin_shift == "y_shift") | (origin_shift == "yshift"):
@@ -173,7 +172,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "`origin_shift` parameter has changed, use 'y' instead."
             warnings.warn(
                 msg,
-                DeprecationWarning,
+                UserWarning,
                 stacklevel=2,
             )
         if origin_shift == "both_shift":
@@ -181,7 +180,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "`origin_shift='both_shift'` is deprecated, use 'both' instead."
             warnings.warn(
                 msg,
-                DeprecationWarning,
+                UserWarning,
                 stacklevel=2,
             )
         if origin_shift == "no_shift":
@@ -189,7 +188,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "origin_shift 'no_shift' is deprecated, use None instead."
             warnings.warn(
                 msg,
-                DeprecationWarning,
+                UserWarning,
                 stacklevel=2,
             )
         if origin_shift == "initialize":
@@ -197,7 +196,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "origin_shift 'initialize' is deprecated, use None instead."
             warnings.warn(
                 msg,
-                DeprecationWarning,
+                UserWarning,
                 stacklevel=2,
             )
 
@@ -448,15 +447,15 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         if fault_activity is not None:
             faults_activity = fault_activity
             msg = "fault_activity is deprecated, use faults_activity instead"
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if fault_motion is not None:
             faults_motion = fault_motion
             msg = "fault_motion is deprecated, use faults_motion instead"
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if fault_exposure is not None:
             faults_exposure = fault_exposure
             msg = "fault_exposure is deprecated, use faults_exposure instead"
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
         faults = fetch.geomap(version="faults", region=self.reg)
 
@@ -1394,6 +1393,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     "supplied, if cpt_lims were used to create the colorscale, pass "
                     "them there or else histogram will not properly align with "
                     "colorbar!",
+                    UserWarning,
                     stacklevel=2,
                 )
                 zmin, zmax = utils.get_min_max(
@@ -2180,13 +2180,13 @@ def basemap(
 
         if kwargs.get("fault_label", None) is not None:
             msg = "`fault_label` is deprecated, use `faults_label` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if kwargs.get("fault_pen", None) is not None:
             msg = "`fault_pen` is deprecated, use `faults_pen` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if kwargs.get("fault_style", None) is not None:
             msg = "`fault_style` is deprecated, use `faults_style` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
         fig.add_faults(
             label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
@@ -2252,19 +2252,19 @@ def basemap(
 
         if kwargs.get("scale_font_color", None) is not None:
             msg = "`scale_font_color` is deprecated, use `scalebar_font_color` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_font_color = kwargs.get("scale_font_color", "black")
 
         if kwargs.get("scale_length_perc", None) is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
             )
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
 
         if kwargs.get("scale_position", None) is not None:
             msg = "`scale_position` is deprecated, use `scalebar_position` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_position = kwargs.get("scale_position", "n.5/.05")
 
         fig.add_scalebar(
@@ -2364,36 +2364,42 @@ def set_cmap(
         if modis is True:
             warnings.warn(
                 warn_msg("modis"),
+                UserWarning,
                 stacklevel=2,
             )
         if grd2cpt is True:
             warnings.warn(
                 warn_msg("grd2cpt"),
+                UserWarning,
                 stacklevel=2,
             )
         if cpt_lims is not None:
             warnings.warn(
                 warn_msg("cpt_lims"),
+                UserWarning,
                 stacklevel=2,
             )
         if cmap_region is not None:
             warnings.warn(
                 warn_msg("cmap_region"),
+                UserWarning,
                 stacklevel=2,
             )
         if robust is True:
             warnings.warn(
                 warn_msg("robust"),
+                UserWarning,
                 stacklevel=2,
             )
         if reverse_cpt is True:
             warnings.warn(
                 warn_msg("reverse_cpt"),
+                UserWarning,
                 stacklevel=2,
             )
         if shp_mask is not None:
             warnings.warn(
-                warn_msg("shp_mask"),
+                UserWarning,
                 stacklevel=2,
             )
     elif modis is True:
@@ -2413,6 +2419,7 @@ def set_cmap(
         if grid is None:
             warnings.warn(
                 "`grd2cpt` ignored since no grid was passed",
+                UserWarning,
                 stacklevel=2,
             )
         else:
@@ -2452,16 +2459,18 @@ def set_cmap(
                 if cmap_region is not None:
                     warnings.warn(
                         warn_msg("cmap_region"),
+                        UserWarning,
                         stacklevel=2,
                     )
                 if robust is True:
                     warnings.warn(
                         warn_msg("robust"),
+                        UserWarning,
                         stacklevel=2,
                     )
                 if shp_mask is not None:
                     warnings.warn(
-                        warn_msg("shp_mask"),
+                        UserWarning,
                         stacklevel=2,
                     )
 
@@ -2492,16 +2501,18 @@ def set_cmap(
         if cmap_region is not None:
             warnings.warn(
                 warn_msg("cmap_region"),
+                UserWarning,
                 stacklevel=2,
             )
         if robust is True:
             warnings.warn(
                 warn_msg("robust"),
+                UserWarning,
                 stacklevel=2,
             )
         if shp_mask is not None:
             warnings.warn(
-                warn_msg("shp_mask"),
+                UserWarning,
                 stacklevel=2,
             )
         try:
@@ -2631,7 +2642,7 @@ def plot_grd(
     Deprecated, use renamed function `plot_grid()` instead.
     """
     msg = "`plot_grd` is deprecated, use `plot_grid` instead."
-    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+    warnings.warn(msg, UserWarning, stacklevel=2)
 
     return plot_grid(
         grid=grid,
@@ -3097,13 +3108,13 @@ def plot_grid(
 
         if kwargs.get("fault_label", None) is not None:
             msg = "`fault_label` is deprecated, use `faults_label` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if kwargs.get("fault_pen", None) is not None:
             msg = "`fault_pen` is deprecated, use `faults_pen` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         if kwargs.get("fault_style", None) is not None:
             msg = "`fault_style` is deprecated, use `faults_style` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
         fig.add_faults(
             label=kwargs.get("faults_label", kwargs.get("fault_label", None)),
@@ -3175,19 +3186,19 @@ def plot_grid(
 
         if kwargs.get("scale_font_color", None) is not None:
             msg = "`scale_font_color` is deprecated, use `scalebar_font_color` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_font_color = kwargs.get("scale_font_color", "black")
 
         if kwargs.get("scale_length_perc", None) is not None:
             msg = (
                 "`scale_length_perc` is deprecated, use `scalebar_length_perc` instead."
             )
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_length_perc = kwargs.get("scale_length_perc", 0.25)
 
         if kwargs.get("scale_position", None) is not None:
             msg = "`scale_position` is deprecated, use `scalebar_position` instead."
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             scalebar_position = kwargs.get("scale_position", "n.5/.05")
 
         fig.add_scalebar(

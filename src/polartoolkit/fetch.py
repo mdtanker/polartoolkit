@@ -499,7 +499,7 @@ def basal_melt(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # This is the path to the processed (magnitude) grid
     url = "https://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
@@ -608,7 +608,7 @@ def buttressing(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     base_url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0664_antarctic_iceshelf_buttress/"
 
@@ -716,13 +716,13 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 msg = (
                     "preprocessing this grid in full resolution is very "
                     "computationally demanding, consider choosing a lower resolution "
                     "using the parameter `spacing`."
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     processed = (ds.VX**2 + ds.VY**2) ** 0.5
                     # restore registration type
@@ -748,7 +748,7 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     vx_5k = resample_grid(
                         ds.VX,
@@ -1734,7 +1734,7 @@ def ibcso_coverage(
             "a bounding box region via `region` to subset the data, using "
             "`regions.antarctica` as a default"
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # users supply region in EPSG:3031, but the data is in EPSG:9354
     reg_df = utils.region_to_df(region)
@@ -1840,7 +1840,7 @@ def ibcso(
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             # load grid
             grid = xr.load_dataset(fname1).z
 
@@ -1877,7 +1877,7 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "Resampling IBCSO data to 5km resolution, this may take a while!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load the full-res preprocessed grid
             grid = ibcso(layer=layer)
@@ -2045,7 +2045,7 @@ def bedmachine(
     if layer == "thickness":
         layer = "ice_thickness"
         msg = "'thickness' is deprecated, use 'ice_thickness' instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # users use 'ice_thickness' but the dataset uses 'thickness'
     if layer == "ice_thickness":
@@ -2096,7 +2096,7 @@ def bedmachine(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "resampling this file to 5 km may take some time!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load grid
             grid = xr.load_dataset(fname1)
@@ -2297,7 +2297,7 @@ def bedmap_points(
             "Consider installing pyarrow for faster performance when reading "
             "geodataframes."
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if region is not None:
         bbox = utils.region_to_bounding_box(region)
@@ -2307,7 +2307,7 @@ def bedmap_points(
             "this file is large, if you only need a subset of data please provide "
             "a bounding box region via `region` to subset the data."
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if version == "bedmap1":
 
@@ -2390,7 +2390,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap2_point_data")(
@@ -2506,7 +2506,7 @@ def bedmap_points(
                     "this file is large (14 Gb!) and will take some time to "
                     "download and preprocess!"
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap3_point_data")(
@@ -2732,7 +2732,7 @@ def bedmap3(
             "Preprocessing Bedmap3 data to gridline registration, this may take a "
             "while!"
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
         # go through each layer, update to gridline registration and save to a zarr file
         for lyr in valid_variables:
             with xr.open_dataset(fname1) as ds:
@@ -2792,7 +2792,7 @@ def bedmap3(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "Resampling Bedmap3 data to 5km resolution, this may take a while!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load the full-res preprocessed grid
             grid = bedmap3(layer=layer)
@@ -3015,7 +3015,7 @@ def bedmap2(
     if layer == "thickness":
         layer = "ice_thickness"
         msg = "'thickness' is deprecated, use 'ice_thickness' instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if layer == "thickness_uncertainty_5km":
         layer = "ice_thickness_uncertainty"
@@ -3023,7 +3023,7 @@ def bedmap2(
             "'thickness_uncertainty_5km' is deprecated, use "
             "'ice_thickness_uncertainty' instead"
         )
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # download url
     url = (

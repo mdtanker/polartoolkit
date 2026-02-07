@@ -960,7 +960,7 @@ def filter_grid(
     if filt_type != "lowpass":
         warnings.warn(
             "'filt_type' is deprecated, use 'filter_type' instead",
-            DeprecationWarning,
+            UserWarning,
             stacklevel=2,
         )
         filter_type = filt_type
@@ -1207,7 +1207,7 @@ def mask_from_shp(
         msg = "`xr_grid` parameter has changed, use 'grid' instead."
         warnings.warn(
             msg,
-            DeprecationWarning,
+            UserWarning,
             stacklevel=2,
         )
     if grid_file is not None:
@@ -1215,7 +1215,7 @@ def mask_from_shp(
         msg = "`grid_file` parameter has changed, use 'grid' instead."
         warnings.warn(
             msg,
-            DeprecationWarning,
+            UserWarning,
             stacklevel=2,
         )
 
@@ -1371,7 +1371,7 @@ def grd_trend(
     msg = "grd_trend is deprecated, use grid_trend instead"
     warnings.warn(
         msg,
-        DeprecationWarning,
+        UserWarning,
         stacklevel=2,
     )
     return grid_trend(
@@ -1583,7 +1583,7 @@ def grd_compare(
     msg = "grd_compare is deprecated, use grid_compare instead"
     warnings.warn(
         msg,
-        DeprecationWarning,
+        UserWarning,
         stacklevel=2,
     )
     return grid_compare(
@@ -1646,7 +1646,7 @@ def grid_compare(
     if plot_type is not None:
         warnings.warn(
             "plot_type has been deprecated and will default to 'pygmt'",
-            DeprecationWarning,
+            UserWarning,
             stacklevel=2,
         )
     shp_mask = kwargs.pop("shp_mask", None)
@@ -1758,8 +1758,10 @@ def grid_compare(
         reg = grid1.gmt.registration
         grid_registration: str = "g" if reg == 0 else "p"
         if grid_registration != registration:
+            msg = "registration hasn't been correctly changed"
             warnings.warn(
-                "registration hasn't been correctly changed",
+                msg,
+                UserWarning,
                 stacklevel=2,
             )
             grid1 = change_registration(grid1)
@@ -1767,8 +1769,10 @@ def grid_compare(
         reg = grid2.gmt.registration
         grid_registration = "g" if reg == 0 else "p"
         if grid_registration != registration:
+            msg = "registration hasn't been correctly changed"
             warnings.warn(
-                "registration hasn't been correctly changed",
+                msg,
+                UserWarning,
                 stacklevel=2,
             )
             grid2 = change_registration(grid2)
@@ -2329,7 +2333,7 @@ def change_reg(grid: xr.DataArray) -> xr.DataArray:
     msg = "change_reg is deprecated, use change_registration instead"
     warnings.warn(
         msg,
-        DeprecationWarning,
+        UserWarning,
         stacklevel=2,
     )
     return change_registration(grid)
@@ -2381,7 +2385,7 @@ def grd_blend(
     msg = "grd_blend is deprecated, use grid_blend instead"
     warnings.warn(
         msg,
-        DeprecationWarning,
+        UserWarning,
         stacklevel=2,
     )
     return grid_blend(grid1, grid2)
