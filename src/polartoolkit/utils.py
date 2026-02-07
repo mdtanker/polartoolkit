@@ -2473,3 +2473,23 @@ def gmt_str_to_list(region: tuple[float, float, float, float]) -> str:
         a GMT style region string
     """
     return "".join([str(x) + "/" for x in region])[:-1]
+
+
+def gmt_projection_from_epsg(epsg: str) -> None:
+    """
+    Get a GMT projection string from an EPSG code. This just prints it out to stdout,
+    but doesn't capture the actual value.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code to get the projection string for, for example "3031"
+    """
+    data = [0, 0]
+
+    with pygmt.clib.Session() as session:  # noqa: SIM117
+        with session.virtualfile_in(data=data) as vin:
+            session.call_module(
+                "mapproject",
+                f"-J{epsg} -I -V {vin}",
+            )

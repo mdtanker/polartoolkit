@@ -53,6 +53,7 @@ from .utils import (  # noqa: E402
     get_grid_registration,
     get_grid_spacing,
     get_min_max,
+    gmt_projection_from_epsg,
     gmt_str_to_list,
     grid_blend,
     grid_compare,
