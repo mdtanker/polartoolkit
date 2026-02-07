@@ -2500,7 +2500,7 @@ def mask_from_polygon(
 
     # reverse the mask
     if invert is True:
-        inverse = masked.isna()
+        inverse = masked.isnull()  # noqa: PD003
         inverse = inverse.where(inverse != 0)
         masked = inverse * ds.z
 
