@@ -4382,10 +4382,7 @@ def ghf(
                 processed = resample_grid(
                     processed,
                     spacing=15e3,
-                    region=tuple(  # type: ignore[arg-type]
-                        float(pygmt.grdinfo(processed, per_column="n", o=i)[:-1])
-                        for i in range(4)
-                    ),
+                    region=regions.antarctica,
                     registration="g",
                 )
 
@@ -4410,7 +4407,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=None,
+            consolidated=False,
         )["ghf"]
 
         resampled = resample_grid(
