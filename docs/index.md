@@ -74,6 +74,12 @@ datasets/greenland_arctic/index.md
 ```
 
 ```{toctree}
+:hidden:
+:caption: 🖼️ Gallery examples
+gallery/index.md
+```
+
+```{toctree}
 :maxdepth: 2
 :hidden:
 :caption: 📖 API
