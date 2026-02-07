@@ -2493,3 +2493,54 @@ def gmt_projection_from_epsg(epsg: str) -> None:
                 "mapproject",
                 f"-J{epsg} -I -V {vin}",
             )
+
+
+def square_around_region(
+    region: tuple[float, float, float, float],
+    factor: float = 1,
+) -> tuple[float, float, float, float]:
+    """
+    Get a square region around a supplied region, by expanding the smaller dimension to
+    match the larger one and optionally scaling it by a multiple of the larger
+    dimension. For example, a 50 x 100 km region would expanded to be 100 x 100 km, and
+    with a factor of 5 would be expanded to a 500 x 500 km region, both centered on the
+    same point as the original region.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float]
+        bounding region in format [xmin, xmax, ymin, ymax]
+    factor : float, optional
+        factor to expand the encompassing square region by, by default 1
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        square bounding region in format [xmin, xmax, ymin, ymax]
+    """
+
+    x_diff = region[1] - region[0]
+    y_diff = region[3] - region[2]
+
+    assert x_diff > 0, "xmax should be greater than xmin"
+    assert y_diff > 0, "ymax should be greater than ymin"
+
+    x_center = np.mean([region[0], region[1]])
+    y_center = np.mean([region[2], region[3]])
+
+    width = max(x_diff, y_diff) * factor
+
+    assert width > 0, "width should be greater than 0"
+
+    new_region = (
+        x_center - width / 2,
+        x_center + width / 2,
+        y_center - width / 2,
+        y_center + width / 2,
+    )
+
+    assert new_region[1] - new_region[0] == new_region[3] - new_region[2], (
+        "new region should be square"
+    )
+
+    return new_region

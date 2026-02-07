@@ -76,6 +76,7 @@ from .utils import (  # noqa: E402
     rmse,
     set_proj,
     shapes_to_df,
+    square_around_region,
     square_subplots,
     subset_grid,
 )
