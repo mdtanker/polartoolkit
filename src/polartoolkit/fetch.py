@@ -4592,22 +4592,57 @@ def ghf(
         )
 
     elif version == "aq1":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .csv file, grid it, and save it back as a .zarr"
+            fname1 = pathlib.Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                grid = xr.load_dataset(fname1)["Q"]
+
+                # convert from W/m^2 to mW/m^2
+                grid = grid * 1000
+
+                # restore registration type
+                grid.gmt.registration = grid.gmt.registration
+
+                # resample to ensure correct region and spacing
+                resampled = resample_grid(
+                    grid,
+                    spacing=20e3,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                resampled = resampled.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                resampled.to_zarr(
+                    fname_processed,
+                )
+
+            return str(fname_processed)
+
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             fname="aq1_01_20.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="946ae69e0a3d15a7500d7252fe0ce4f5cb126eaeb6170555ade0acdc38b86d7f",
             progressbar=True,
+            processor=preprocessing,
         )
-        grid = xr.load_dataset(path)["Q"]
 
-        # convert from W/m^2 to mW/m^2
-        grid = grid * 1000
-
-        resampled = grid * 1000
-
-        # restore registration type
-        resampled.gmt.registration = grid.gmt.registration
+        grid = xr.open_zarr(
+            path,
+            consolidated=None,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
