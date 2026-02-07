@@ -4431,8 +4431,6 @@ def interactive_data(
         else:
             coast_gdf = None
     else:
-        # msg = "`interactive_data` only implemented for EPSG:3031 and EPSG:3413"
-        # raise NotImplementedError(msg)
         crsys = crs.epsg(epsg)
         coast_gdf = None
 
