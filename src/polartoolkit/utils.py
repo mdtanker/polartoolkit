@@ -1471,6 +1471,11 @@ def set_proj(
         msg = "either fig_height or fig_width must be set"
         raise ValueError(msg)
 
+    if fig_height is not None and fig_width is not None:
+        msg = "only one of fig_height or fig_width can be set"
+        raise ValueError(msg)
+
+    # fig_width takes priority over fig_height if both are set.
     if fig_width is not None:
         fig_height = fig_width * (ymax - ymin) / (xmax - xmin)
         ratio = (xmax - xmin) / (fig_width / 100)

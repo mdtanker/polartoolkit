@@ -101,6 +101,11 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 reg = tuple(lib.extract_region().data)
                 assert len(reg) == 4
 
+        # if both width and height provided, raise error
+        if width is not None and height is not None:
+            msg = "only one of width or height can be set."
+            raise ValueError(msg)
+
         # if figure passed, use it, if not, initialize a new one
         if fig is None:
             super().__init__()
@@ -113,9 +118,11 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             # reactivate the figure
             # self._activate_figure()
 
-            # extract width and height from the figure
-            width = utils.get_fig_width()
-            height = utils.get_fig_height()
+            # only width OR height can be passed to `set_proj()`
+            # if neither width or height provided, use current figure width
+            if width is None and height is None:
+                width = utils.get_fig_width()
+                height = None
 
         try:
             hemisphere = utils.default_hemisphere(hemisphere)
@@ -2152,6 +2159,15 @@ def basemap(
     # else:
     #     frame = kwargs.get("frame", "nesw+gwhite")
 
+    # if using existing figure and no width or height provided extract from existing
+    # figure
+    if fig is not None:
+        original_width = fig.width
+        original_height = fig.height
+    else:
+        original_width = None
+        original_height = None
+
     # initialize figure
     fig = Figure(
         fig=fig,
@@ -2160,6 +2176,9 @@ def basemap(
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
     )
+    new_width = fig.width
+    new_height = fig.height
+
     # need to mock show the figure for pygmt to set the temp file
     fig.show(method="none")
 
@@ -2199,6 +2218,12 @@ def basemap(
         yshift_extra += 1
 
     # shift figure origin if needed
+    # temporarily reset figure width and height to original
+    if original_width is not None:
+        fig.width = original_width
+    if original_height is not None:
+        fig.height = original_height
+
     fig.shift_figure(
         origin_shift=origin_shift,
         yshift_amount=kwargs.get("yshift_amount", -1),
@@ -2207,10 +2232,15 @@ def basemap(
         xshift_extra=kwargs.get("xshift_extra", 0.4),
     )
 
+    # reset figure width and height to new values
+    fig.width = new_width
+    fig.height = new_height
+
     if frame is None:
         frame = False
     if title is None:
         title = ""
+
     # plot basemap with optional colored background (+gwhite) and frame
     with pygmt.config(
         MAP_FRAME_PEN=kwargs.get("frame_pen", "auto"),
@@ -3092,6 +3122,15 @@ def plot_grid(
     # else:
     #     frame = kwargs.get("frame", "nesw+gwhite")
 
+    # if using existing figure and no width or height provided extract from existing
+    # figure
+    if fig is not None:
+        original_width = fig.width
+        original_height = fig.height
+    else:
+        original_width = None
+        original_height = None
+
     # initialize figure
     fig = Figure(
         fig=fig,
@@ -3100,6 +3139,9 @@ def plot_grid(
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
     )
+    new_width = fig.width
+    new_height = fig.height
+
     # need to mock show the figure for pygmt to set the temp file
     fig.show(method="none")
 
@@ -3137,6 +3179,12 @@ def plot_grid(
         yshift_extra += 1
 
     # shift figure origin if needed
+    # temporarily reset figure width and height to original
+    if original_width is not None:
+        fig.width = original_width
+    if original_height is not None:
+        fig.height = original_height
+
     fig.shift_figure(
         origin_shift=origin_shift,
         yshift_amount=kwargs.get("yshift_amount", -1),
@@ -3145,10 +3193,15 @@ def plot_grid(
         xshift_extra=kwargs.get("xshift_extra", 0.4),
     )
 
+    # reset figure width and height to new values
+    fig.width = new_width
+    fig.height = new_height
+
     if frame is None:
         frame = False
     if title is None:
         title = ""
+
     # plot basemap with optional colored background (+gwhite) and frame
     with pygmt.config(
         MAP_FRAME_PEN=kwargs.get("frame_pen", "auto"),
