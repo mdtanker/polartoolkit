@@ -1185,6 +1185,12 @@ def points_inside_shp(
     return points
 
 
+@deprecation.deprecated(
+    deprecated_in="1.4.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `mask_from_shapefile()` instead",
+)
 def mask_from_shp(
     shapefile: str | gpd.GeoDataFrame,
     hemisphere: str | None = None,
@@ -1196,7 +1202,46 @@ def mask_from_shp(
     spacing: float | None = None,
     masked: bool = False,
     pixel_register: bool = True,
-    input_coord_names: tuple[str, str] = ("easting", "northign"),
+    input_coord_names: tuple[str, str] = ("easting", "northing"),
+) -> xr.DataArray:
+    """
+    Deprecated, use `mask_from_shapefile` instead.
+    """
+    msg = "`mask_from_shp` is deprecated, use `mask_from_shapefile` instead."
+    warnings.warn(
+        msg,
+        UserWarning,
+        stacklevel=2,
+    )
+    return mask_from_shapefile(
+        shapefile=shapefile,
+        hemisphere=hemisphere,
+        epsg=epsg,
+        invert=invert,
+        grid=grid,
+        xr_grid=xr_grid,
+        grid_file=grid_file,
+        region=region,
+        spacing=spacing,
+        masked=masked,
+        pixel_register=pixel_register,
+        input_coord_names=input_coord_names,
+    )
+
+
+def mask_from_shapefile(
+    shapefile: str | gpd.GeoDataFrame,
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+    invert: bool = True,
+    grid: xr.DataArray | str | None = None,
+    xr_grid: xr.DataArray | None = None,
+    grid_file: str | None = None,
+    region: str | tuple[float, float, float, float] | None = None,
+    spacing: float | None = None,
+    masked: bool = False,
+    pixel_register: bool = True,
+    input_coord_names: tuple[str, str] = ("easting", "northing"),
 ) -> xr.DataArray:
     """
     Create a mask or a masked grid from area inside or outside of a closed shapefile.
@@ -2183,7 +2228,7 @@ def get_min_max(
             v_min, v_max = np.nanmin(values), np.nanmax(values)
     elif shapefile is not None:
         if isinstance(values, xr.DataArray):
-            masked = mask_from_shp(
+            masked = mask_from_shapefile(
                 shapefile,
                 hemisphere=hemisphere,
                 grid=values,

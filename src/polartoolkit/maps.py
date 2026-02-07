@@ -3777,7 +3777,7 @@ def plot_3d(
     for i, grid in enumerate(grids):
         # if provided, mask grid with shapefile
         if shp_mask is not None:
-            grid = utils.mask_from_shp(  # noqa: PLW2901
+            grid = utils.mask_from_shapefile(  # noqa: PLW2901
                 shp_mask,
                 grid=grid,
                 masked=True,

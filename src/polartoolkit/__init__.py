@@ -60,7 +60,7 @@ from .utils import (  # noqa: E402
     latlon_to_epsg3413,
     make_grid,
     mask_from_polygon,
-    mask_from_shp,
+    mask_from_shapefile,
     nearest_grid_fill,
     points_inside_region,
     points_inside_shp,
