@@ -864,7 +864,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         inset_position: str = "jTL+jTL+o0/0",
         inset_width: float = 0.25,
         inset_reg: tuple[float, float, float, float] | None = None,
-        **kwargs: typing.Any,
+        inset_region: tuple[float, float, float, float] | None = None,
     ) -> None:
         """
         add an inset map showing the figure region relative to the Antarctic continent.
@@ -877,12 +877,10 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             Inset width as percentage of the smallest figure dimension, by default is 25%
             (0.25)
         inset_reg : tuple[float, float, float, float], optional
-            Region of Antarctica/Greenland to plot for the inset map, by default is whole
-            area
-        """
-
-        if kwargs.get("inset_pos") is not None:
-            inset_position = kwargs.get("inset_pos")  # type: ignore[assignment]
+        if inset_reg is not None:
+            msg = "inset_reg is deprecated, use inset_region instead"
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            inset_region = inset_reg
             msg = "inset_pos is deprecated, use inset_position instead"
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
         if kwargs.get("inset_offset") is not None:
