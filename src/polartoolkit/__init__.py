@@ -1,10 +1,61 @@
 import logging
 
+import scooby
+
 from ._version import version as __version__
 
 __all__ = ["__version__"]
 
 logger = logging.getLogger(__name__)
+
+
+class Report(scooby.Report):  # type: ignore[misc]
+    def __init__(self, additional=None, ncol=3, text_width=80, sort=False):  # type: ignore[no-untyped-def]
+        """Initiate a scooby.Report instance."""
+
+        # Mandatory packages.
+        core = [
+            "polartoolkit",
+            "numpy",
+            "pandas",
+            "xarray",
+            "scipy",
+            "verde",
+            "pooch",
+            "rioxarray",
+            "tqdm",
+            "pygmt",
+            "harmonica",
+            "deprecation",
+            "openpyxl",
+            "pyproj",
+            "geopandas",
+            "pyogrio",
+            "zarr",
+            "python-dotenv",
+            "requests",
+            "earthaccess",
+            "xrft",
+        ]
+
+        # Optional packages.
+        optional = [
+            "geoviews",
+            "cartopy",
+            "ipyleaflet",
+            "ipython",
+        ]
+
+        scooby.Report.__init__(
+            self,
+            additional=additional,
+            core=core,
+            optional=optional,
+            ncol=ncol,
+            text_width=text_width,
+            sort=sort,
+        )
+
 
 from .fetch import (  # noqa: E402
     resample_grid,

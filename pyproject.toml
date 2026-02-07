@@ -51,6 +51,7 @@ dependencies = [
     "requests",
     "earthaccess",
     "xrft",
+    "scooby",
 ]
 
 [dependency-groups]

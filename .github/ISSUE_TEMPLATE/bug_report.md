@@ -29,3 +29,12 @@ PASTE YOUR CODE HERE
 PASTE ERROR MESSAGE HERE
 ```
 <!-- blacken-docs:on -->
+
+**Info on your environment**
+Paste the output of `polartoolkit.Report()` below:
+
+<!-- blacken-docs:off -->
+```
+Paste the output of `polartoolkit.Report()` HERE
+```
+<!-- blacken-docs:on -->
