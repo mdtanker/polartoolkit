@@ -1519,9 +1519,17 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     UserWarning,
                     stacklevel=2,
                 )
+                shapefile = kwargs.get("shapefile")
+                if kwargs.get("shp_mask") is not None:
+                    msg = (
+                        "'shp_mask' kwarg is deprecated, use 'shapefile' kwarg instead"
+                    )
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    shapefile = kwargs.get("shp_mask")
+
                 zmin, zmax = utils.get_min_max(
                     vals,
-                    shapefile=kwargs.get("shp_mask"),
+                    shapefile=shapefile,
                     region=kwargs.get("cmap_region"),
                     robust=kwargs.get("robust", False),
                     hemisphere=self.hemisphere,
@@ -2422,6 +2430,7 @@ def set_cmap(
     absolute: bool = False,
     reverse_cpt: bool = False,
     shp_mask: gpd.GeoDataFrame | str | None = None,
+    shapefile: gpd.GeoDataFrame | str | None = None,
     hemisphere: str | None = None,
     colorbar: bool = True,
     **kwargs: typing.Any,
@@ -2458,10 +2467,12 @@ def set_cmap(
     reverse_cpt : bool, optional
         change the direction of the cmap, by default False
     shp_mask : geopandas.GeoDataFrame | str | None, optional
+        deprecated, use shapefile instead
+    shapefile : geopandas.GeoDataFrame | str | None, optional
         a shapefile to mask the grid or points by before extracting limits, by default
         None
     hemisphere : str | None, optional
-        "north" or "south" hemisphere needed for using shp_mask, by default None
+        "north" or "south" hemisphere needed for using shapefile if `epsg` not provided,
     colorbar : bool, optional
         tell subsequent plotting functions whether to add a colorbar, by default True
 
@@ -2475,6 +2486,10 @@ def set_cmap(
     if (grid is not None) and (points is not None):
         msg = "Only one of `grid` or `points` can be passed to `set_cmap`."
         raise ValueError(msg)
+
+    if shp_mask is not None:
+        msg = "'shp_mask' is deprecated, use 'shapefile' instead"
+        shapefile = shp_mask
 
     # set cmap
     if cmap is True and modis is False:
@@ -2520,8 +2535,9 @@ def set_cmap(
                 UserWarning,
                 stacklevel=2,
             )
-        if shp_mask is not None:
+        if shapefile is not None:
             warnings.warn(
+                warn_msg("shapefile"),
                 UserWarning,
                 stacklevel=2,
             )
@@ -2549,7 +2565,7 @@ def set_cmap(
             if cpt_lims is None and isinstance(grid, (xr.DataArray)):
                 zmin, zmax = utils.get_min_max(
                     grid,
-                    shp_mask,
+                    shapefile=shapefile,
                     region=cmap_region,
                     robust=robust,
                     hemisphere=hemisphere,
@@ -2560,7 +2576,7 @@ def set_cmap(
                 with xr.load_dataarray(grid) as da:
                     zmin, zmax = utils.get_min_max(
                         da,
-                        shp_mask,
+                        shapefile=shapefile,
                         region=cmap_region,
                         robust=robust,
                         hemisphere=hemisphere,
@@ -2591,8 +2607,9 @@ def set_cmap(
                         UserWarning,
                         stacklevel=2,
                     )
-                if shp_mask is not None:
+                if shapefile is not None:
                     warnings.warn(
+                        warn_msg("shapefile"),
                         UserWarning,
                         stacklevel=2,
                     )
@@ -2633,8 +2650,9 @@ def set_cmap(
                 UserWarning,
                 stacklevel=2,
             )
-        if shp_mask is not None:
+        if shapefile is not None:
             warnings.warn(
+                warn_msg("shapefile"),
                 UserWarning,
                 stacklevel=2,
             )
@@ -2678,7 +2696,7 @@ def set_cmap(
                 values = xr.load_dataarray(grid)
             zmin, zmax = utils.get_min_max(
                 values,
-                shp_mask,
+                shapefile=shapefile,
                 region=cmap_region,
                 robust=robust,
                 hemisphere=hemisphere,
@@ -2933,6 +2951,8 @@ def plot_grid(
     reverse_cpt : bool
         reverse the color scale, by default is False.
     shp_mask : geopandas.GeoDataFrame | str
+        deprecated, use `shapefile` instead.
+    shapefile : geopandas.GeoDataFrame | str
         shapefile to use to mask the grid before extracting limits, by default is None.
     colorbar : bool
         choose to add a colorbar to the plot, by default is True.
@@ -3035,6 +3055,11 @@ def plot_grid(
     >>> fig.show()
     """
     kwargs = copy.deepcopy(kwargs)
+
+    if kwargs.get("shp_mask") is not None:
+        msg = "'shp_mask' kwarg is deprecated, use 'shapefile' kwarg instead"
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        kwargs["shapefile"] = kwargs.get("shp_mask", kwargs.get("shapefile"))
 
     if isinstance(grid, str):
         pass
@@ -3768,6 +3793,7 @@ def plot_3d(
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
     shp_mask: str | gpd.GeoDataFrame | None = None,
+    shapefile: str | gpd.GeoDataFrame | None = None,
     polygon_mask: list[float] | None = None,
     colorbar: bool = True,
     cbar_perspective: bool = True,
@@ -3793,6 +3819,8 @@ def plot_3d(
     hemisphere : str, optional
         choose between plotting in the "north" or "south" hemispheres, by default None
     shp_mask : Union[str or geopandas.GeoDataFrame], optional
+        deprecated, use shapefile instead
+    shapefile : Union[str or geopandas.GeoDataFrame], optional
         shapefile or geodataframe to clip the grids with, by default None
     colorbar : bool, optional
         whether to plot a colorbar, by default True
@@ -3896,12 +3924,17 @@ def plot_3d(
     # initialize the figure
     fig = pygmt.Figure()
 
+    if shp_mask is not None:
+        msg = "'shp_mask' is deprecated, use 'shapefile' instead"
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        shapefile = shp_mask
+
     # iterate through grids and plot them
     for i, grid in enumerate(grids):
         # if provided, mask grid with shapefile
-        if shp_mask is not None:
+        if shapefile is not None:
             grid = utils.mask_from_shapefile(  # noqa: PLW2901
-                shp_mask,
+                shapefile=shapefile,
                 grid=grid,
                 masked=True,
                 invert=kwargs.get("invert", False),

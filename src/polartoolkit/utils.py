@@ -1663,9 +1663,9 @@ def get_combined_min_max(
     region : tuple[float, float, float, float], optional
         give a subset region to get min and max values from, in format
         [xmin, xmax, ymin, ymax], by default None
-    hemisphere : str, optional
-        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
-        "south" hemisphere (EPSG:3031)
+    hemisphere : str, optional,
+        if using a shapefile to subset the data, set projection based on "north" or
+        "south" hemispheres, by default None
     absolute : bool, optional
         choose whether to return the absolute min and max values, by default False
     robust_percentiles : tuple[float, float], optional
@@ -1763,7 +1763,9 @@ def grid_compare(
     Keyword Args
     ------------
     shp_mask : str
-        shapefile filename to use to mask the grids for setting the color range.
+        deprecated, use `shapefile` instead,
+    shapefile : str or geopandas.GeoDataFrame
+        shapefile or filename to use to mask the grids for setting the color range.
     robust : bool
         use xarray robust color lims instead of min and max, by default is False.
     region : tuple[float, float, float, float]
@@ -1789,6 +1791,13 @@ def grid_compare(
             stacklevel=2,
         )
     shp_mask = kwargs.pop("shp_mask", None)
+    shapefile = kwargs.pop("shapefile", None)
+
+    if shp_mask is not None:
+        msg = "'shp_mask' kwarg is deprecated, use 'shapefile' kwarg instead"
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        shapefile = shp_mask
+
     region = kwargs.pop("region", None)
     verbose = kwargs.pop("verbose", "error")
     if isinstance(da1, str):
@@ -1929,7 +1938,7 @@ def grid_compare(
         else:
             vmin, vmax = get_combined_min_max(
                 (grid1, grid2),
-                shapefile=shp_mask,
+                shapefile=shapefile,
                 robust=robust,
                 region=region,
                 absolute=kwargs.get("maxabs", False),
@@ -1941,7 +1950,7 @@ def grid_compare(
         if diff_lims is None:
             diff_lims = get_min_max(
                 dif,
-                shapefile=shp_mask,
+                shapefile=shapefile,
                 robust=robust,
                 region=region,
                 absolute=kwargs.get("diff_maxabs", True),
@@ -1964,13 +1973,13 @@ def grid_compare(
             if key
             not in [
                 "cmap",
-                "shp_mask",
+                "shapefile",
             ]
         }
         diff_kwargs = {
             key: value
             for key, value in new_kwargs.items()
-            if key not in ["reverse_cpt", "cbar_label", "shp_mask"]
+            if key not in ["reverse_cpt", "cbar_label", "shapefile"]
         }
         fig = maps.plot_grid(
             grid1,
@@ -2241,9 +2250,9 @@ def get_min_max(
     region : tuple[float, float, float, float], optional
         give a subset region to get min and max values from, in format
         [xmin, xmax, ymin, ymax], by default None
-    hemisphere : str, optional
-        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
-        "south" hemisphere (EPSG:3031)
+    hemisphere : str, optional,
+        if using a shapefile to subset the data, set projection based on "north" or
+        "south" hemispheres, by default None
     absolute : bool, optional
         return the absolute min and max values, by default False
     robust_percentiles : tuple[float, float], optional
