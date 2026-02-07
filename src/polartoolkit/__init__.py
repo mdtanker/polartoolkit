@@ -67,6 +67,7 @@ from .utils import (  # noqa: E402
     points_inside_region,
     points_inside_shp,
     polygon_to_region,
+    polygon_to_shapefile,
     random_color,
     region_ll_to_xy,
     region_to_bounding_box,

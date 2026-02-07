@@ -2228,6 +2228,47 @@ def polygon_to_region(
     return reg
 
 
+def polygon_to_shapefile(
+    polygon: list[float],
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+) -> gpd.GeoDataFrame:
+    """
+    Convert a polygon drawn with `ptk.draw_region` to a geopandas GeoDataFrame
+
+    Parameters
+    ----------
+    polygon : list
+       list of polygon vertices
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        returns a geopandas GeoDataFrame of the polygon
+    """
+
+    epsg = default_epsg(epsg, hemisphere)
+
+    # convert drawn polygon into dataframe
+    df = shapes_to_df(polygon, epsg=epsg)
+
+    # remove additional polygons
+    if df.shape_num.max() > 0:
+        logger.info(
+            "supplied dataframe has multiple polygons, only using the first one."
+        )
+        df = df[df.shape_num == 0]
+
+    coords = zip(df.easting, df.northing, strict=True)
+
+    poly = shapely.geometry.Polygon(coords)
+    return gpd.GeoDataFrame(index=[0], crs=f"EPSG:{epsg}", geometry=[poly])
+
+
 def mask_from_polygon(
     polygon: list[float],
     hemisphere: str | None = None,
