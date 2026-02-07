@@ -861,35 +861,65 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
     def add_inset(
         self,
+        inset_pos: str | None = None,
         inset_position: str = "jTL+jTL+o0/0",
         inset_width: float = 0.25,
         inset_reg: tuple[float, float, float, float] | None = None,
         inset_region: tuple[float, float, float, float] | None = None,
+        inset_offset: str | None = None,
+        inset_box: bool | str = False,
+        inset_coast_pen: str = "0.2p,black",
+        inset_box_pen: str = "1p,red",
     ) -> None:
         """
         add an inset map showing the figure region relative to the Antarctic continent.
 
         Parameters
         ----------
+        inset_pos : str, optional
+            Deprecated, use inset_position instead.
         inset_position : str, optional
             GMT location string for inset map, by default 'jTL+jTL+o0/0' (top left)
         inset_width : float, optional
             Inset width as percentage of the smallest figure dimension, by default is 25%
             (0.25)
         inset_reg : tuple[float, float, float, float], optional
+            Deprecated, use inset_region instead.
+        inset_region : tuple[float, float, float, float], optional
+            Regional extent of the inset map.
+        inset_width_factor : float, optional
+            If provided, the inset region will be scaled to be `inset_width_factor`
+            times the narrowest dimension of the figure region, while keeping the same
+            center as the figure region. This overrides the `inset_region` parameter.
+        inset_offset : str, optional
+            Deprecated, add offset via '+o0c/0c' to inset_position instead.
+        inset_box : bool | str, optional
+            whether to plot a box bordering the inset map showing the figure region, by
+            default False
+        inset_coast_pen : str, optional
+            GMT pen string for the coastline in the inset map, by default "0.2p,black"
+        inset_box_pen : str, optional
+            GMT pen string for the box showing the figure region in the inset map, by
+            default "1p,red"
+        """
+
         if inset_reg is not None:
             msg = "inset_reg is deprecated, use inset_region instead"
             warnings.warn(msg, UserWarning, stacklevel=2)
             inset_region = inset_reg
+
+        if inset_pos is not None:
             msg = "inset_pos is deprecated, use inset_position instead"
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        if kwargs.get("inset_offset") is not None:
-            inset_position = inset_position + f"+o{kwargs.get('inset_offset')}"
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            inset_position = inset_pos
+
+        if inset_offset is not None:
+            inset_position = inset_position + f"+o{inset_offset}"
             msg = (
                 "inset_offset is deprecated, add offset via '+o0c/0c' to inset_position "
                 "instead"
             )
-            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
         inset_width = inset_width * (min(self.width, self.height))
         inset_map = f"X{inset_width}c"
@@ -2229,17 +2259,16 @@ def basemap(
 
     # add inset map to show figure location
     if inset is True:
-        # removed duplicate kwargs before passing to add_inset
-        new_kwargs = {
-            key: value
-            for key, value in kwargs.items()
-            if key
-            not in [
-                "fig",
-            ]
-        }
         fig.add_inset(
-            **new_kwargs,
+            inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+            inset_pos=kwargs.get("inset_pos", None),
+            inset_width=kwargs.get("inset_width", 0.25),
+            inset_region=kwargs.get("inset_region"),
+            inset_reg=kwargs.get("inset_reg"),
+            inset_offset=kwargs.get("inset_offset", None),
+            inset_box=kwargs.get("inset_box", False),
+            inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
+            inset_coast_pen=kwargs.get("inset_coast_pen", "0.2p,black"),
         )
 
     # add scalebar
@@ -3163,17 +3192,16 @@ def plot_grid(
 
     # add inset map to show figure location
     if inset is True:
-        # removed duplicate kwargs before passing to add_inset
-        new_kwargs = {
-            key: value
-            for key, value in kwargs.items()
-            if key
-            not in [
-                "fig",
-            ]
-        }
         fig.add_inset(
-            **new_kwargs,
+            inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
+            inset_pos=kwargs.get("inset_pos", None),
+            inset_width=kwargs.get("inset_width", 0.25),
+            inset_region=kwargs.get("inset_region"),
+            inset_reg=kwargs.get("inset_reg"),
+            inset_offset=kwargs.get("inset_offset", None),
+            inset_box=kwargs.get("inset_box", False),
+            inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
+            inset_coast_pen=kwargs.get("inset_coast_pen", "0.2p,black"),
         )
 
     # add scalebar

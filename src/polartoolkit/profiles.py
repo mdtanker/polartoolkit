@@ -800,7 +800,12 @@ def plot_profile(
                 inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
                 inset_pos=kwargs.get("inset_pos"),
                 inset_width=kwargs.get("inset_width", 0.25),
+                inset_region=kwargs.get("inset_region"),
                 inset_reg=kwargs.get("inset_reg"),
+                inset_offset=kwargs.get("inset_offset"),
+                inset_box=kwargs.get("inset_box", False),
+                inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
+                inset_coast_pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
 
         yshift_extra = 0.0
@@ -1409,7 +1414,12 @@ def plot_data(
                 inset_position=kwargs.get("inset_position", "jTL+jTL+o0/0"),
                 inset_pos=kwargs.get("inset_pos"),
                 inset_width=kwargs.get("inset_width", 0.25),
+                inset_region=kwargs.get("inset_region"),
                 inset_reg=kwargs.get("inset_reg"),
+                inset_offset=kwargs.get("inset_offset"),
+                inset_box=kwargs.get("inset_box", False),
+                inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
+                inset_coast_pen=kwargs.get("inset_coast_pen", "0.2p,black"),
             )
 
         yshift_extra = 0.0
