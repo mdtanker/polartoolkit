@@ -21,44 +21,97 @@ import polartoolkit
 from polartoolkit import logger, maps, regions
 
 
-def default_hemisphere(hemisphere: str | None) -> str:
+def default_epsg(epsg: str | None, hemisphere: str | None) -> str:
     """
-    Returns the default hemisphere set in the users environment variables or raises a
-    error.
+    Returns the provided EPSG code through 1 of 4 methods in the following preference.
+    1) the parameter `epsg` which is an EPSG code as a string ("3031")
+    2) the parameter `hemisphere` which is either the strings "north" or "south" (which
+    correspond to EPSG codes 3413 and 3031 respectively),
+    3) the user-set environment variable POLARTOOLKIT_EPSG which should be a EPSG code
+    as a string ("3031") or
+    4) the user-set environment variable POLARTOOLKIT_HEMISPHERE which should be set to
+    "north" or "south" (which correspond to EPSG codes 3413 and 3031 respectively). If
+    none of these are provided, an error is raised informing the user how to set the
+    values.
 
     Parameters
     ----------
+    epsg : str | None
+        an EPSG code as a string ("3031"), by default None.
     hemisphere : str | None
-        hemisphere to use, either "north" or "south", or None to use the default set in
-        the users environment variables.
+        hemisphere to use, either "north" or "south", corresponding to EPSG codes 3413
+        and 3031 respectively, by default None.
 
     Returns
     -------
     str
-        hemisphere to use, either "north" or "south"
+        EPSG code to use
     """
+    # Raise error that both are provided
+    if epsg is not None and hemisphere is not None:
+        msg = "only provide `epsg` or `hemisphere`, not both"
+        raise ValueError(msg)
 
-    if hemisphere is None:
+    # checks for correct types / value
+    if not isinstance(epsg, (str, type(None))):
+        msg = f"`epsg` must be a string or None, not {type(epsg)}"  # type: ignore[unreachable]
+        raise ValueError(msg)
+    if isinstance(epsg, str) and not epsg.isdigit():
+        msg = f"`epsg` must be a string of digits or None, not {epsg}"
+        raise ValueError(msg)
+    if hemisphere not in ["north", "south", None]:
+        msg = f"`hemisphere` must be 'north', 'south', or None, not {hemisphere}"
+        raise ValueError(msg)
+
+    # 1st priority: if epsg provided, use that
+    if epsg is not None:
+        if epsg == "3431":
+            msg = (
+                "Are you sure you didn't mean EPSG 3413 (North Polar Stereographic) "
+                "instead of 3431 (For Nevada USA)?"
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+        return epsg
+
+    # 2nd priority: if hemisphere provided, use that
+    if hemisphere is not None:
+        if hemisphere == "north":
+            return "3413"
+        if hemisphere == "south":
+            return "3031"
+
+    # 3rd priority: look for POLARTOOLKIT_EPSG environment variable
+    try:
+        epsg = os.environ["POLARTOOLKIT_EPSG"]
+        # check epsg is string of digits
+        assert epsg.isdigit(), (
+            f"Environment variable POLARTOOLKIT_EPSG must be a string of numbers, not {epsg}"
+        )
+        return epsg
+    # 4th priority: look for POLARTOOLKIT_HEMISPHERE environment variable
+    except KeyError as e:
         try:
             hemisphere = os.environ["POLARTOOLKIT_HEMISPHERE"]
-
-            if hemisphere not in ["north", "south"]:
-                msg = f"hemisphere must be either 'north' or 'south', not {hemisphere}"
-                raise ValueError(msg)
-
-            return hemisphere
-
-        except KeyError as e:
+            if hemisphere == "north":
+                return "3413"
+            if hemisphere == "south":
+                return "3031"
+            msg = f"Environment variable POLARTOOLKIT_HEMISPHERE must be either 'north' or 'south', not {hemisphere}"
+            raise ValueError(msg)  # pylint: disable=raise-missing-from
+        # if neither found, raise error
+        except KeyError:
             msg = (
-                "hemisphere not set, either set it as a temp environment variable in "
-                "python (os.environ['POLARTOOLKIT_HEMISPHERE']='north'), set it as a "
-                "permanent operating system environment variable (i.e. for Unix, add "
-                "'export POLARTOOLKIT_HEMISPHERE=south' to the end of your .bashrc "
-                "file) or pass it as an argument (hemisphere='north')"
+                "You must either 1) supply `epsg` as a string of an EPSG code, 2) "
+                "supply `hemisphere` as one of the strings 'north' or 'south', 3) set "
+                "the environment variable POLARTOOLKIT_EPSG as an EPSG code string, or "
+                "4) set the environment variable 'POLARTOOLKIT_HEMISPHERE' as either "
+                "'north' or 'south'. These can be either set as a temporary environment"
+                " variable in python (os.environ['POLARTOOLKIT_EPSG']='3031') or "
+                "set as a permanent operating system environment variable (i.e. for"
+                "Unix, add 'export POLARTOOLKIT_EPSG=3031' to the end of your "
+                ".bashrc file)."
             )
             raise KeyError(msg) from e
-
-    return hemisphere
 
 
 def rmse(data: typing.Any, as_median: bool = False) -> float:

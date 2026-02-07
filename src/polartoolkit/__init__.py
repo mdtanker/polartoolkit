@@ -1,5 +1,3 @@
-"""Helpful tools for polar researchers"""
-
 import logging
 
 from ._version import version as __version__
@@ -7,7 +5,6 @@ from ._version import version as __version__
 __all__ = ["__version__"]
 
 logger = logging.getLogger(__name__)
-
 
 from .fetch import (  # noqa: E402
     resample_grid,
@@ -41,6 +38,7 @@ from .utils import (  # noqa: E402
     block_reduce,
     change_registration,
     dd2dms,
+    default_epsg,
     epsg3031_to_latlon,
     epsg3413_to_latlon,
     epsg_central_coordinates,
