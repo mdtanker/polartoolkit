@@ -165,3 +165,5 @@ data/*
 tmp*
 
 .vscode*
+
+docs/api/generated/

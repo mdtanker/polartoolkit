@@ -13,7 +13,8 @@ assignees: ''
 
 ## Update dependencies
 
-- [ ] Check all the dependency changes since the last release are  reflected in `environment.yml`
+- [ ] Check all the dependency changes since the last release are  reflected in `environment.yml`, `pyproject.toml`, and the Scooby list in `__init__.py`
+- [ ] Check any new function are added to `__init__.py` and `docs/api/polartoolkit.rst`
 - [ ] Update the backup environment file `env/environment.yml` with `make conda_export`
 - [ ] update PolarToolkit version in `environment.yml` in [PolarToolkit-Binder repo](https://github.com/mdtanker/polartoolkit-binder) to the latest version number
 

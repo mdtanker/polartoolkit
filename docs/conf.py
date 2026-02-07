@@ -7,7 +7,7 @@ version = release = importlib.metadata.version("polartoolkit")
 
 extensions = [
     "myst_parser",
-    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
@@ -75,6 +75,7 @@ nitpick_ignore = [
 always_document_param_types = True
 add_module_names = False
 add_function_parentheses = False
+# toc_object_entries_show_parents = "hide"
 
 
 nbsphinx_execute = "never"

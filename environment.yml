@@ -27,6 +27,7 @@ dependencies:
   - requests
   - earthaccess
   - xrft
+  - scooby
   # Optional dependencies
   # interactive
   - geoviews

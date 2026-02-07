@@ -114,24 +114,6 @@ def docs(session: nox.Session) -> None:
         session.run("sphinx-build", "--keep-going", *shared_args)
 
 
-@nox.session(default=False)
-def build_api_docs(session: nox.Session) -> None:
-    """
-    Build (regenerate) API docs.
-    """
-
-    session.install("sphinx")
-    session.run(
-        "sphinx-apidoc",
-        "-o",
-        "docs/api/",
-        "--module-first",
-        "--no-toc",
-        "--force",
-        "src/polartoolkit",
-    )
-
-
 @nox.session
 def build(session: nox.Session) -> None:
     """

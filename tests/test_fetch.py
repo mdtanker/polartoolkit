@@ -240,7 +240,7 @@ def test_resample_grid(test_input, expected):
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.filterwarnings("ignore: this file is large")
 def test_ice_vel_lowres():
-    grid = fetch.ice_vel(spacing=5e3, hemisphere="south")
+    grid = fetch.ice_vel(spacing=5e3, epsg="3031")
     expected = (
         5000,
         (-2800000.0, 2795000.0, -2795000.0, 2800000.0),
@@ -261,7 +261,7 @@ def test_ice_vel_lowres():
 @pytest.mark.filterwarnings("ignore:preprocessing this grid")
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_ice_vel_highres():
-    grid = fetch.ice_vel(spacing=450, hemisphere="south")
+    grid = fetch.ice_vel(spacing=450, epsg="3031")
     expected = (
         450,
         (-2800000.0, 2799800.0, -2799800.0, 2800000.0),
@@ -277,7 +277,7 @@ def test_ice_vel_highres():
         significant_digits=2,
     )
 
-    grid = fetch.ice_vel(spacing=250, hemisphere="north")
+    grid = fetch.ice_vel(spacing=250, epsg="3413")
     expected = (
         250,
         (-645125.0, 859875.0, -3369875.0, -640375.0),
@@ -302,7 +302,7 @@ def test_ice_vel_highres():
 @skip_earthdata
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_modis():
-    grid = fetch.modis(version="750m", hemisphere="south")
+    grid = fetch.modis(version="750m", epsg="3031")
     expected = (
         750,
         (-3174450.0, 2867550.0, -2816675.0, 2406325.0),
@@ -318,7 +318,7 @@ def test_modis():
         significant_digits=2,
     )
 
-    grid = fetch.modis(version="500m", hemisphere="north")
+    grid = fetch.modis(version="500m", epsg="3413")
     expected = (
         500,
         (-1200000.0, 900000.0, -3400000.0, -600000.0),
@@ -710,9 +710,9 @@ bedmachine_test = [
 @skip_earthdata
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), bedmachine_test)
-def test_bedmachine(test_input, expected, hemisphere):
-    grid = fetch.bedmachine(test_input, spacing=5e3, hemisphere=hemisphere)
+@pytest.mark.parametrize(("test_input", "expected", "epsg"), bedmachine_test)
+def test_bedmachine(test_input, expected, epsg):
+    grid = fetch.bedmachine(test_input, spacing=5e3, epsg=epsg)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
@@ -732,24 +732,24 @@ def test_bedmachine_reference_south():
     eigen_6c4_grid = fetch.geoid(
         spacing=500,
         region=region,
-        hemisphere="south",
+        epsg="3031",
     )
     BM_eigen_6c4_grid = fetch.bedmachine(
         layer="geoid",
         region=region,
-        hemisphere="south",
+        epsg="3031",
     )
     surface_6c4_grid = fetch.bedmachine(
         layer="surface",
         reference="eigen-6c4",
         region=region,
-        hemisphere="south",
+        epsg="3031",
     )
     surface_ellipsoid_grid = fetch.bedmachine(
         layer="surface",
         reference="ellipsoid",
         region=region,
-        hemisphere="south",
+        epsg="3031",
     )
 
     # get mean values
@@ -774,24 +774,24 @@ def test_bedmachine_reference_north():
     eigen_6c4_grid = fetch.geoid(
         spacing=150,
         region=region,
-        hemisphere="north",
+        epsg="3413",
     )
     BM_eigen_6c4_grid = fetch.bedmachine(
         layer="geoid",
         region=region,
-        hemisphere="north",
+        epsg="3413",
     )
     surface_6c4_grid = fetch.bedmachine(
         layer="surface",
         reference="eigen-6c4",
         region=region,
-        hemisphere="north",
+        epsg="3413",
     )
     surface_ellipsoid_grid = fetch.bedmachine(
         layer="surface",
         reference="ellipsoid",
         region=region,
-        hemisphere="north",
+        epsg="3413",
     )
 
     # get mean values
@@ -925,7 +925,7 @@ def test_bedmap3_reference():
     eigen_6c4_grid = fetch.geoid(
         region=region,
         spacing=1e3,
-        hemisphere="south",
+        epsg="3031",
     )
     surface_6c4_grid = fetch.bedmap3(
         layer="surface",
@@ -1065,7 +1065,7 @@ def test_bedmap2_reference():
     eigen_6c4_grid = fetch.geoid(
         region=region,
         spacing=1e3,
-        hemisphere="south",
+        epsg="3031",
     )
     surface_6c4_grid = fetch.bedmap2(
         layer="surface",
@@ -1236,9 +1236,9 @@ gravity_test = [
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), gravity_test)
-def test_gravity(test_input, expected, hemisphere):
-    grid = fetch.gravity(test_input, anomaly_type="FA", hemisphere=hemisphere)
+@pytest.mark.parametrize(("test_input", "expected", "epsg"), gravity_test)
+def test_gravity(test_input, expected, epsg):
+    grid = fetch.gravity(test_input, anomaly_type="FA", epsg=epsg)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     if test_input == "antgg":
         grid = grid.free_air_anomaly
@@ -1311,9 +1311,9 @@ magnetics_test = [
 
 @pytest.mark.fetch
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@pytest.mark.parametrize(("test_input", "expected", "hemisphere"), magnetics_test)
-def test_magnetics(test_input, expected, hemisphere):
-    grid = fetch.magnetics(test_input, hemisphere=hemisphere)
+@pytest.mark.parametrize(("test_input", "expected", "epsg"), magnetics_test)
+def test_magnetics(test_input, expected, epsg):
+    grid = fetch.magnetics(test_input, epsg=epsg)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
@@ -1793,7 +1793,7 @@ geoid_test = [
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), geoid_test)
 def test_geoid(test_input, expected):
-    grid = fetch.geoid(hemisphere=test_input)
+    grid = fetch.geoid(epsg=test_input)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),
@@ -1837,7 +1837,7 @@ etopo_test = [
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(("test_input", "expected"), etopo_test)
 def test_etopo(test_input, expected):
-    grid = fetch.etopo(hemisphere=test_input)
+    grid = fetch.etopo(epsg=test_input)
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),

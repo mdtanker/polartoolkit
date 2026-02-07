@@ -344,6 +344,7 @@ def sample_shp(name: str) -> str:
 def mass_change(
     version: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
@@ -372,6 +373,9 @@ def mass_change(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -393,13 +397,14 @@ def mass_change(
     .. footbibliography::
     """
     if version is None:
-        hemisphere = utils.default_hemisphere(hemisphere)
-        if hemisphere == "south":
+        epsg = utils.default_epsg(epsg, hemisphere)
+
+        if epsg == "3031":
             version = "ais_dhdt_grounded"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             version = "gris_dhdt"
         else:
-            msg = "if version is None, must provide 'hemisphere'"
+            msg = "`mass_change` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
     # This is the path to the processed (magnitude) grid
@@ -499,7 +504,7 @@ def basal_melt(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # This is the path to the processed (magnitude) grid
     url = "https://library.ucsd.edu/dc/object/bb0448974g/_3_1.h5/download"
@@ -608,7 +613,7 @@ def buttressing(
     if variable is not None:
         version = variable
         msg = "variable parameter is deprecated, please use version parameter instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     base_url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0664_antarctic_iceshelf_buttress/"
 
@@ -652,6 +657,7 @@ def ice_vel(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -686,6 +692,9 @@ def ice_vel(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     kwargs : typing.Any
         additional keyword arguments to pass to resample_grid
 
@@ -698,9 +707,9 @@ def ice_vel(
     ----------
     .. footbibliography::
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         if spacing is None:
             spacing = 5e3
 
@@ -716,13 +725,13 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 msg = (
                     "preprocessing this grid in full resolution is very "
                     "computationally demanding, consider choosing a lower resolution "
                     "using the parameter `spacing`."
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     processed = (ds.VX**2 + ds.VY**2) ** 0.5
                     # restore registration type
@@ -748,7 +757,7 @@ def ice_vel(
             # Only recalculate if new download or the processed file doesn't exist yet
             if action in ("download", "update") or not fname_processed.exists():
                 msg = "this file is large (~7Gb) and may take some time to download!"
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
                 with xr.open_dataset(fname1) as ds:
                     vx_5k = resample_grid(
                         ds.VX,
@@ -798,8 +807,7 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
-
-    elif hemisphere == "north":
+    elif epsg == "3413":
         if spacing is None:
             spacing = 250
 
@@ -858,12 +866,17 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
+    else:
+        msg = "`ice_vel` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
+
     return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def modis(
     version: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> str:
     """
     Load the MODIS Mosaic of Antarctica (MoA) or Greenland (MoG) imagery.
@@ -888,6 +901,9 @@ def modis(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
 
     Returns
     -------
@@ -899,15 +915,15 @@ def modis(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if version is None:
-        if hemisphere == "south":
+        if epsg == "3031":
             version = "750m"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             version = "500m"
 
-    if hemisphere == "south":
+    if epsg == "3031":
         if version == "125m":
             url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz"
             fname = "moa125.tif.gz"
@@ -934,8 +950,7 @@ def modis(
             known_hash=known_hash,
             progressbar=True,
         )
-
-    if hemisphere == "north":
+    elif epsg == "3413":
         if version == "100m":
             url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog100_2015_hp1_v02.tif"
             fname = "mog100_2015_hp1_v02.tif"
@@ -959,6 +974,10 @@ def modis(
             known_hash=known_hash,
             progressbar=True,
         )
+    else:
+        msg = "`modis` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
+
     return path  # pylint: disable=possibly-used-before-assignment
 
 
@@ -1734,7 +1753,7 @@ def ibcso_coverage(
             "a bounding box region via `region` to subset the data, using "
             "`regions.antarctica` as a default"
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # users supply region in EPSG:3031, but the data is in EPSG:9354
     reg_df = utils.region_to_df(region)
@@ -1840,7 +1859,7 @@ def ibcso(
                 "preprocessing for this grid (reprojecting to EPSG:3031) for"
                 " the first time can take several minutes!"
             )
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
             # load grid
             grid = xr.load_dataset(fname1).z
 
@@ -1877,7 +1896,7 @@ def ibcso(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "Resampling IBCSO data to 5km resolution, this may take a while!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load the full-res preprocessed grid
             grid = ibcso(layer=layer)
@@ -1947,7 +1966,7 @@ def ibcso(
             spacing=initial_spacing,
             region=initial_region,
             registration=initial_registration,
-            hemisphere="south",
+            epsg="3031",
             **kwargs,
         )
 
@@ -1974,6 +1993,7 @@ def bedmachine(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -2027,6 +2047,9 @@ def bedmachine(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     **kwargs : typing.Any
         additional keyword arguments to pass to the resample_grid function
     Returns
@@ -2040,12 +2063,12 @@ def bedmachine(
     """
     logger.debug("Loading Bedmachine data for %s", layer)
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if layer == "thickness":
         layer = "ice_thickness"
         msg = "'thickness' is deprecated, use 'ice_thickness' instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # users use 'ice_thickness' but the dataset uses 'thickness'
     if layer == "ice_thickness":
@@ -2056,12 +2079,12 @@ def bedmachine(
         fname1 = pathlib.Path(fname)
 
         # Rename to the file
-        if hemisphere == "south":
+        if epsg == "3031":
             fname_pre = fname1.with_stem(fname1.stem + "_antarctica")
-        elif hemisphere == "north":
+        elif epsg == "3413":
             fname_pre = fname1.with_stem(fname1.stem + "_greenland")
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         fname_processed = fname_pre.with_suffix(".zarr")
@@ -2083,12 +2106,12 @@ def bedmachine(
         fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_5k.zarr
-        if hemisphere == "south":
+        if epsg == "3031":
             fname_pre = fname1.with_stem(fname1.stem + "_antarctica_5k")
-        elif hemisphere == "north":
+        elif epsg == "3413":
             fname_pre = fname1.with_stem(fname1.stem + "_greenland_5k")
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         fname_processed = fname_pre.with_suffix(".zarr")
@@ -2096,7 +2119,7 @@ def bedmachine(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "resampling this file to 5 km may take some time!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load grid
             grid = xr.load_dataset(fname1)
@@ -2113,7 +2136,7 @@ def bedmachine(
                 "thickness",
             ]
 
-            if hemisphere == "north":
+            if epsg == "3413":
                 var_names.remove("firn")
 
             # resample each data variable to 5 km
@@ -2132,7 +2155,7 @@ def bedmachine(
 
         return str(fname_processed)
 
-    if hemisphere == "north":
+    if epsg == "3413":
         url = (
             "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
             "ICEBRIDGE/IDBMG4/5/1993/01/01/BedMachineGreenland-v5.nc"
@@ -2149,7 +2172,7 @@ def bedmachine(
         if spacing is None:
             spacing = 150
 
-    elif hemisphere == "south":
+    elif epsg == "3031":
         url = (
             "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
             "MEASURES/NSIDC-0756/3/1970/01/01/BedMachineAntarctica-v3.nc"
@@ -2160,7 +2183,7 @@ def bedmachine(
         if spacing is None:
             spacing = 500
     else:
-        msg = "hemisphere must be 'north' or 'south'"
+        msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
         raise ValueError(msg)
 
     # determine which resolution of preprocessed grid to use
@@ -2297,7 +2320,7 @@ def bedmap_points(
             "Consider installing pyarrow for faster performance when reading "
             "geodataframes."
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if region is not None:
         bbox = utils.region_to_bounding_box(region)
@@ -2307,7 +2330,7 @@ def bedmap_points(
             "this file is large, if you only need a subset of data please provide "
             "a bounding box region via `region` to subset the data."
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if version == "bedmap1":
 
@@ -2390,7 +2413,7 @@ def bedmap_points(
                     "this file is large and will take some time to "
                     "download and preprocess!"
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap2_point_data")(
@@ -2506,7 +2529,7 @@ def bedmap_points(
                     "this file is large (14 Gb!) and will take some time to "
                     "download and preprocess!"
                 )
-                warnings.warn(msg, stacklevel=2)
+                warnings.warn(msg, UserWarning, stacklevel=2)
 
                 # extract the files and get list of csv paths
                 path = pooch.Unzip(extract_dir="bedmap3_point_data")(
@@ -2732,7 +2755,7 @@ def bedmap3(
             "Preprocessing Bedmap3 data to gridline registration, this may take a "
             "while!"
         )
-        warnings.warn(msg, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
         # go through each layer, update to gridline registration and save to a zarr file
         for lyr in valid_variables:
             with xr.open_dataset(fname1) as ds:
@@ -2792,7 +2815,7 @@ def bedmap3(
         # Only recalculate if new download or the processed file doesn't exist yet
         if action in ("download", "update") or not fname_processed.exists():
             msg = "Resampling Bedmap3 data to 5km resolution, this may take a while!"
-            warnings.warn(msg, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=2)
 
             # load the full-res preprocessed grid
             grid = bedmap3(layer=layer)
@@ -2935,7 +2958,7 @@ def bedmap3(
                 spacing=spacing,
                 region=region,
                 registration=registration,
-                hemisphere="south",
+                epsg="3031",
                 **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
@@ -3015,7 +3038,7 @@ def bedmap2(
     if layer == "thickness":
         layer = "ice_thickness"
         msg = "'thickness' is deprecated, use 'ice_thickness' instead"
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     if layer == "thickness_uncertainty_5km":
         layer = "ice_thickness_uncertainty"
@@ -3023,7 +3046,7 @@ def bedmap2(
             "'thickness_uncertainty_5km' is deprecated, use "
             "'ice_thickness_uncertainty' instead"
         )
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # download url
     url = (
@@ -3277,7 +3300,7 @@ def bedmap2(
                 spacing=spacing,
                 region=region,
                 registration=registration,
-                hemisphere="south",
+                epsg="3031",
                 **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
@@ -3467,6 +3490,7 @@ def gravity(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3505,6 +3529,9 @@ def gravity(
         by default is None.
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
         None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid and set the anomaly_type.
@@ -3647,14 +3674,14 @@ def gravity(
                 pass
 
     elif version == "eigen":
-        hemisphere = utils.default_hemisphere(hemisphere)
+        epsg = utils.default_epsg(epsg, hemisphere)
 
-        if hemisphere == "south":
+        if epsg == "3031":
             proj = "EPSG:3031"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             proj = "EPSG:3413"
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`gravity` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -3662,12 +3689,12 @@ def gravity(
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            if hemisphere == "south":
+            if epsg == "3031":
                 fname_pre = fname1.with_stem(fname1.stem + "_epsg3031_preprocessed")
-            elif hemisphere == "north":
+            elif epsg == "3413":
                 fname_pre = fname1.with_stem(fname1.stem + "_epsg3413_preprocessed")
             else:
-                msg = "hemisphere must be 'north' or 'south'"
+                msg = "`gravity` only available for EPSG:3031 and EPSG:3413"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -3751,6 +3778,7 @@ def etopo(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3774,6 +3802,9 @@ def etopo(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     **kwargs : optional
         additional keyword arguments to pass to the resample_grid function
 
@@ -3787,14 +3818,17 @@ def etopo(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         proj = "EPSG:3031"
         fname = "earth-topography-10arcmin_south.nc"
-    elif hemisphere == "north":
+    elif epsg == "3413":
         proj = "EPSG:3413"
         fname = "earth-topography-10arcmin_north.nc"
+    else:
+        msg = "`etopo` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it to a .zarr file"
@@ -3850,6 +3884,7 @@ def geoid(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3859,7 +3894,7 @@ def geoid(
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
-    To convert a topographic grid which is referenced to the geoid to be referencde to
+    To convert a topographic grid which is referenced to the geoid to be referenced to
     the ellipsoid, add this grid.
 
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
@@ -3879,6 +3914,9 @@ def geoid(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid.
 
@@ -3892,14 +3930,17 @@ def geoid(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         proj = "EPSG:3031"
         fname = "earth-geoid-10arcmin_south.nc"
-    elif hemisphere == "north":
+    elif epsg == "3413":
         proj = "EPSG:3413"
         fname = "earth-geoid-10arcmin_north.nc"
+    else:
+        msg = "`geoid` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it to a .zarr file"
@@ -3958,6 +3999,7 @@ def magnetics(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
@@ -3996,6 +4038,9 @@ def magnetics(
         the original type of the grid
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
         None
     kwargs : typing.Any
         key word arguments to pass to resample_grid.
@@ -4055,7 +4100,7 @@ def magnetics(
                     spacing=5e3,
                     region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed.to_zarr(fname_processed)
@@ -4134,13 +4179,13 @@ def magnetics(
         resampled = path
 
     elif version == "LCS-1":
-        hemisphere = utils.default_hemisphere(hemisphere)
-        if hemisphere == "south":
+        epsg = utils.default_epsg(epsg, hemisphere)
+        if epsg == "3031":
             proj = "EPSG:3031"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             proj = "EPSG:3413"
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`magnetics` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -4149,12 +4194,12 @@ def magnetics(
             fname1 = pathlib.Path(path[0])
 
             # Rename to the file to ***_preprocessed.nc
-            if hemisphere == "south":
+            if epsg == "3031":
                 fname_pre = fname1.with_stem(fname1.stem + "epsg3031_preprocessed")
-            elif hemisphere == "north":
+            elif epsg == "3413":
                 fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
             else:
-                msg = "hemisphere must be 'north' or 'south'"
+                msg = "`magnetics` only available for EPSG:3031 and EPSG:3413"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -4190,7 +4235,7 @@ def magnetics(
                     spacing=10e3,  # .25 degree resolution, ~20 km,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed = processed.to_dataset(name="mag")
@@ -4210,7 +4255,7 @@ def magnetics(
 
         grid = xr.open_zarr(
             path,
-            consolidated=None,
+            consolidated=False,
         )["mag"]
 
         resampled = resample_grid(
@@ -4382,10 +4427,7 @@ def ghf(
                 processed = resample_grid(
                     processed,
                     spacing=15e3,
-                    region=tuple(  # type: ignore[arg-type]
-                        float(pygmt.grdinfo(processed, per_column="n", o=i)[:-1])
-                        for i in range(4)
-                    ),
+                    region=regions.antarctica,
                     registration="g",
                 )
 
@@ -4410,7 +4452,7 @@ def ghf(
 
         grid = xr.open_zarr(
             path,
-            consolidated=None,
+            consolidated=False,
         )["ghf"]
 
         resampled = resample_grid(
@@ -4546,9 +4588,9 @@ def ghf(
 
                 # clip to coastline
                 shp = gpd.read_file(antarctic_boundaries(version="Coastline"))
-                processed = utils.mask_from_shp(
+                processed = utils.mask_from_shapefile(
                     shp,
-                    hemisphere="south",
+                    epsg="3031",
                     grid=processed,
                     masked=True,
                     invert=False,
@@ -4595,22 +4637,57 @@ def ghf(
         )
 
     elif version == "aq1":
+
+        def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
+            "Load the .csv file, grid it, and save it back as a .zarr"
+            fname1 = pathlib.Path(fname)
+
+            # Rename to the file to ***_preprocessed.nc
+            fname_pre = fname1.with_stem(fname1.stem + "_preprocessed")
+            fname_processed = fname_pre.with_suffix(".zarr")
+
+            # Only recalculate if new download or the processed file doesn't exist yet
+            if action in ("download", "update") or not fname_processed.exists():
+                # load data
+                grid = xr.load_dataset(fname1)["Q"]
+
+                # convert from W/m^2 to mW/m^2
+                grid = grid * 1000
+
+                # restore registration type
+                grid.gmt.registration = grid.gmt.registration
+
+                # resample to ensure correct region and spacing
+                resampled = resample_grid(
+                    grid,
+                    spacing=20e3,
+                    region=regions.antarctica,
+                    registration="g",
+                )
+
+                # convert to dataset for zarr
+                resampled = resampled.to_dataset(name="ghf")
+
+                # Save to .zarr file
+                resampled.to_zarr(
+                    fname_processed,
+                )
+
+            return str(fname_processed)
+
         path = pooch.retrieve(
             url="https://download.pangaea.de/dataset/924857/files/aq1_01_20.nc",
             fname="aq1_01_20.nc",
             path=f"{pooch.os_cache('pooch')}/polartoolkit/ghf",
             known_hash="946ae69e0a3d15a7500d7252fe0ce4f5cb126eaeb6170555ade0acdc38b86d7f",
             progressbar=True,
+            processor=preprocessing,
         )
-        grid = xr.load_dataset(path)["Q"]
 
-        # convert from W/m^2 to mW/m^2
-        grid = grid * 1000
-
-        resampled = grid * 1000
-
-        # restore registration type
-        resampled.gmt.registration = grid.gmt.registration
+        grid = xr.open_zarr(
+            path,
+            consolidated=None,
+        )["ghf"]
 
         resampled = resample_grid(
             grid,
@@ -4660,7 +4737,7 @@ def ghf(
                     spacing=10e3,
                     region=regions.antarctica,
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
 
                 # resample to ensure correct region and spacing
@@ -5043,7 +5120,7 @@ def crustal_thickness(
                     spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
                     region=regions.antarctica,
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed.to_zarr(fname_processed)

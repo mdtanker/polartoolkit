@@ -45,8 +45,14 @@ clear_how_to:
 run_how_to:
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/how_to/*.ipynb
 
-clear_docs: clear_datasets clear_tutorial clear_how_to
+clear_gallery:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/gallery/*.ipynb
+
+run_gallery:
+	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb
+
+clear_docs: clear_datasets clear_tutorial clear_how_to clear_gallery
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/*.ipynb
 
-run_docs: run_datasets run_tutorial run_how_to
+run_docs: run_datasets run_tutorial run_how_to run_gallery
 	jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb
