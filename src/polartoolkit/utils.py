@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import pygmt
 import pyproj
+import shapely
 import verde as vd
 import xarray as xr
 import xrft
@@ -379,17 +380,17 @@ def dd2dms(dd: float) -> str:
 
 
 def region_to_df(
-    region: tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame,
+    region: tuple[float, float, float, float] | pd.DataFrame,
     coord_names: tuple[str, str] = ("easting", "northing"),
     reverse: bool = False,
-) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pd.DataFrame:
+) -> tuple[float, float, float, float] | pd.DataFrame:
     """
     Convert region bounds in format [xmin, xmax, ymin, ymax] to pandas dataframe with
     coordinates of region corners, or reverse this if `reverse` is True.
 
     Parameters
     ----------
-    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pandas.DataFrame
+    region : tuple[float, float, float, float] | pandas.DataFrame
         bounding region in format [xmin, xmax, ymin, ymax] or, if `reverse` is True,
         a DataFrame with coordinate columns with names set by `cood_names`
     coord_names : tuple[str, str], optional
@@ -408,10 +409,10 @@ def region_to_df(
 
     if reverse:
         return (
-            region[coord_names[0]][0],  # type: ignore[call-overload]
-            region[coord_names[0]][1],  # type: ignore[call-overload]
-            region[coord_names[1]][0],  # type: ignore[call-overload]
-            region[coord_names[1]][2],  # type: ignore[call-overload]
+            region[coord_names[0]][0],  # type: ignore[call-overload,index]
+            region[coord_names[0]][1],  # type: ignore[call-overload,index]
+            region[coord_names[1]][0],  # type: ignore[call-overload,index]
+            region[coord_names[1]][2],  # type: ignore[call-overload,index]
         )
 
     bl = (region[0], region[2])
@@ -424,36 +425,80 @@ def region_to_df(
 def region_xy_to_ll(
     region: tuple[typing.Any, typing.Any, typing.Any, typing.Any],
     hemisphere: str | None = None,
+    epsg: str | None = None,
     dms: bool = False,
-) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any]:
+    as_corners: bool = False,
+) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | str:
     """
     Convert region in format [xmin, xmax, ymin, ymax] in projected meters to lat / lon
 
     Parameters
     ----------
-    hemisphere : str, optional,
-        choose between the "north" or "south" hemispheres
-    region : tuple[typing.Any, typing.Any, typing.Any, typing.Any]
+    region : tuple[float, float, float, float]
         region boundaries in format [xmin, xmax, ymin, ymax] in meters
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
     dms: bool
         if True, will return results as deg:min:sec instead of decimal degrees, by
         default False
+    as_corners: bool = False,
+        if True, will return the region string in the format (lower left longitude /
+        lower left latitude / upper right longitude / upper right latitude +r)
 
     Returns
     -------
-    tuple[typing.Any, typing.Any, typing.Any, typing.Any]
-        region boundaries in format [lon_min, lon_max, lat_min, lat_max]
+    tuple[float, float, float, float] | str
+        region boundaries in format [lon_min, lon_max, lat_min, lat_max] or as GMT
+        region string in the format (lower left longitude / lower left latitude / upper
+        right longitude / upper right latitude +r).
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
+
+    if as_corners:
+        ll_xy = (region[0], region[2])
+        ur_xy = (region[1], region[3])
+
+        ll_lonlat = reproject(
+            ll_xy,
+            input_crs=f"epsg:{epsg}",
+            output_crs="EPSG:4326",
+        )
+        ur_lonlat = reproject(
+            ur_xy,
+            input_crs=f"epsg:{epsg}",
+            output_crs="EPSG:4326",
+        )
+
+        assert not any(np.isinf(ll_lonlat)), (
+            "Failed to reproject lower lect corner of inset region to lat/lon coordinates. The inset region was likely too large."
+        )
+
+        assert not any(np.isinf(ur_lonlat)), (
+            "Failed to reproject upper right corner of inset region to lat/lon coordinates. The inset region was likely too large."
+        )
+
+        if epsg == "3857":
+            # for web mercator, latitudes need to be between -85 and 85 degrees
+            assert abs(ll_lonlat[1]) < 85, (  # type: ignore[misc]
+                "Failed to reproject inset region to lat/lon coordinates. Web Mercator projection only supports latitudes between -85 and 85 degrees. The inset region was likely too large."
+            )
+            assert abs(ur_lonlat[1]) < 85, (  # type: ignore[misc]
+                "Failed to reproject inset region to lat/lon coordinates. Web Mercator projection only supports latitudes between -85 and 85 degrees. The inset region was likely too large."
+            )
+
+        return f"{ll_lonlat[0]}/{ll_lonlat[1]}/{ur_lonlat[0]}/{ur_lonlat[1]}+r"  # type: ignore[misc]
 
     df = region_to_df(region)
-    if hemisphere == "north":
-        df_proj = epsg3413_to_latlon(df, reg=True)
-    elif hemisphere == "south":
-        df_proj = epsg3031_to_latlon(df, reg=True)
-    else:
-        msg = "hemisphere must be 'north' or 'south'"
-        raise ValueError(msg)
+    df_proj = reproject(
+        df,
+        f"epsg:{epsg}",
+        "epsg:4326",
+        reg=True,
+        input_coord_names=("easting", "northing"),
+        output_coord_names=("lon", "lat"),
+    )
 
     return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
@@ -461,6 +506,7 @@ def region_xy_to_ll(
 def region_ll_to_xy(
     region: tuple[float, float, float, float],
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> tuple[float, float, float, float]:
     """
     Convert region in format [lon_min, lon_max, lat_min, lat_max] to projected meters in
@@ -468,27 +514,32 @@ def region_ll_to_xy(
 
     Parameters
     ----------
-    hemisphere : str, optional,
-        choose between the "north" or "south" hemispheres
     region : tuple[float, float, float, float]
         region boundaries in format [xmin, xmax, ymin, ymax] in decimal degrees
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
 
     Returns
     -------
     tuple[float, float, float, float]
         region boundaries in format [x_min, x_max, y_min, y_max]
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
 
     df = region_to_df(region, coord_names=("lon", "lat"))
-    if hemisphere == "north":
-        df_proj: tuple[float, float, float, float] = latlon_to_epsg3413(df, reg=True)
-    elif hemisphere == "south":
-        df_proj = latlon_to_epsg3031(df, reg=True)
-    else:
-        msg = "hemisphere must be 'north' or 'south'"
-        raise ValueError(msg)
-    return df_proj
+
+    return tuple(
+        reproject(
+            df,
+            "epsg:4326",
+            f"epsg:{epsg}",
+            reg=True,
+            input_coord_names=("lon", "lat"),
+            output_coord_names=("easting", "northing"),
+        )
+    )
 
 
 def region_to_bounding_box(
@@ -1132,6 +1183,7 @@ def points_inside_shp(
     crs: str | None = None,
     coord_names: tuple[str, str] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> pd.DataFrame | gpd.GeoDataFrame:
     """
     Deprecated, use `points_inside_shapefile` instead.
@@ -1182,8 +1234,10 @@ def points_inside_shapefile(
         default None
     coord_names : tuple[str, str] | None, optional
         names of coordinate columns, by default 'x' and 'y' or 'easting' and 'northing'
-    hemisphere : str | None, optional
-        hemisphere to use for automatically detecting crs, by default None
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
 
     Returns
     -------
@@ -1194,14 +1248,7 @@ def points_inside_shapefile(
 
     if isinstance(points, pd.DataFrame):
         if crs is None:
-            hemisphere = default_hemisphere(hemisphere)
-            if hemisphere == "north":
-                crs = "epsg:3413"
-            elif hemisphere == "south":
-                crs = "epsg:3031"
-            else:
-                msg = "provide 'crs' or set hemisphere to 'north' or 'south'"
-                raise ValueError(msg)
+            epsg = default_epsg(epsg, hemisphere)
 
         if coord_names is None:
             # check for coord column names
@@ -1216,7 +1263,7 @@ def points_inside_shapefile(
                 x=points[coord_names[0]],  # type: ignore[index]
                 y=points[coord_names[1]],  # type: ignore[index]
             ),
-            crs=crs,
+            crs=f"epsg:{epsg}",
         )
 
     points["inside_tmp"] = points.within(shapefile.geometry.iloc[0])
@@ -1235,6 +1282,7 @@ def points_inside_shapefile(
 def mask_from_shp(
     shapefile: str | gpd.GeoDataFrame,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     invert: bool = True,
     grid: xr.DataArray | str | None = None,
     xr_grid: xr.DataArray | None = None,
@@ -1293,8 +1341,10 @@ def mask_from_shapefile(
         either path to .shp filename, must by in same directory as accompanying files :
         .shx, .prj, .dbf, should be a closed polygon file, or shapefile which as already
         been loaded into a geodataframe.
-    hemisphere : str, optional
-        choose "north" for EPSG:3413 or "south" for EPSG:3031
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
     invert : bool, optional
         choose whether to mask data outside the shape (False) or inside the shape
         (True), by default True (masks inside of shape)
@@ -1325,21 +1375,14 @@ def mask_from_shapefile(
     xarray.DataArray
         Returns either a masked grid, or the mask grid itself.
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
+    crs = f"epsg:{epsg}"
 
     shp = (
         gpd.read_file(shapefile, engine="pyogrio")
         if isinstance(shapefile, str)
         else shapefile
     )
-
-    if hemisphere == "north":
-        crs = "epsg:3413"
-    elif hemisphere == "south":
-        crs = "epsg:3031"
-    else:
-        msg = "hemisphere must be 'north' or 'south'"
-        raise ValueError(msg)
 
     if xr_grid is not None:
         grid = xr_grid
@@ -1434,20 +1477,23 @@ def alter_region(
 def set_proj(
     region: tuple[float, float, float, float],
     hemisphere: str | None = None,
+    epsg: str | None = None,
     fig_height: float | None = None,
     fig_width: float | None = None,
 ) -> tuple[str, str | None, float, float]:
     """
-    Gives GMT format projection string from region and figure height or width.
+    Gives GMT projection strings in project and geographic units, from region and figure
+    height or width.
     Inspired from https://github.com/mrsiegfried/Venturelli2020-GRL.
 
     Parameters
     ----------
     region : tuple[float, float, float, float]
         region boundaries in format [xmin, xmax, ymin, ymax] in projected meters
-    hemisphere : str, optional
-        set whether to lat lon projection is for "north" hemisphere (EPSG:3413) or
-        "south" hemisphere (EPSG:3031)
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
     fig_height : float | None
         desired figure height in cm, by default is None
     fig_width : float | None
@@ -1460,11 +1506,19 @@ def set_proj(
         returns a tuple of the following variables: proj, proj_latlon, fig_width,
         fig_height
     """
-    try:
-        hemisphere = default_hemisphere(hemisphere)
-    except KeyError:
-        hemisphere = None
+    epsg = default_epsg(epsg, hemisphere)
 
+    if epsg == "3857":
+        msg = (
+            "EPSG:3857 (Web Mercator) is not recommended, especially for high latitudes"
+            " as it can cause significant distortion. Consider using a different "
+            "projection."
+        )
+        warnings.warn(
+            msg,
+            UserWarning,
+            stacklevel=2,
+        )
     xmin, xmax, ymin, ymax = region
 
     if fig_height is None and fig_width is None:
@@ -1484,14 +1538,39 @@ def set_proj(
         fig_width = fig_height * (xmax - xmin) / (ymax - ymin)
         ratio = (ymax - ymin) / (fig_height / 100)
 
-    proj = f"x1:{ratio}"
+    ratio = f"1:{ratio}"  # type: ignore[assignment]
 
-    if hemisphere == "north":
-        proj_latlon = f"s-45/90/70/1:{ratio}"
-    elif hemisphere == "south":
-        proj_latlon = f"s0/-90/-71/1:{ratio}"
+    # define projection string in projected units (EPSG)
+    # x denotes ratio is in plot-units/data-units
+    proj = f"x{ratio}"
+
+    # define projection string in lat/lon using the same ratio
+    if epsg == "3413":
+        # s denotes stereographic projection
+        # -45/90 denotes the lon and lat at the center of the projection (north pole)
+        # -45 is central meridian
+        # 90 is the central latitude
+        # 70 is the latitude of true scale
+        # 70/ratio denotes the true scale is located at -71 deg lat
+        proj_latlon = f"s-45/90/70/{ratio}"
+    elif epsg == "3031":
+        # s denotes stereographic projection
+        # 0/-90 denotes the lon and lat at the center of the projection (south pole)
+        # 0 is the central meridian
+        # -90 is the central latitude
+        # -71 is the latitude of true scale
+        # -71/ratio denotes the true scale is located at -71 deg lat
+        proj_latlon = f"s0/-90/-71/{ratio}"
     else:
-        proj_latlon = None
+        # just use the EPSG codes directly
+        proj_latlon = f"EPSG:{epsg}/{ratio}"
+
+        # instead, we can get PROJ code from EPSG and give that to GMT
+        # https://docs.generic-mapping-tools.org/latest/gmt.html#j
+        # get PROJ string of EPSG code
+        # crs = pyproj.CRS(f"EPSG:{epsg}")
+        # proj_str = crs.to_proj4().replace(" ", "")
+        # proj_latlon = f'{proj_str}/{ratio}'
 
     return proj, proj_latlon, fig_width, fig_height
 
@@ -1650,6 +1729,7 @@ def get_combined_min_max(
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     absolute: bool = False,
     robust_percentiles: tuple[float, float] = (0.02, 0.98),
 ) -> tuple[float, float]:
@@ -1671,6 +1751,9 @@ def get_combined_min_max(
     hemisphere : str, optional,
         if using a shapefile to subset the data, set projection based on "north" or
         "south" hemispheres, by default None
+    epsg : str | None, optional
+        if using a shapefile to subset the data, set projection from EPSG code string
+        ("3031"), by default None
     absolute : bool, optional
         choose whether to return the absolute min and max values, by default False
     robust_percentiles : tuple[float, float], optional
@@ -1682,9 +1765,9 @@ def get_combined_min_max(
         returns the min and max values.
     """
     try:
-        hemisphere = default_hemisphere(hemisphere)
+        epsg = default_epsg(epsg, hemisphere)
     except KeyError:
-        hemisphere = None
+        epsg = None
 
     # get min max of each grid
     limits = []
@@ -1695,7 +1778,7 @@ def get_combined_min_max(
                 robust=robust,
                 region=region,
                 shapefile=shapefile,
-                hemisphere=hemisphere,
+                epsg=epsg,
                 absolute=absolute,
                 robust_percentiles=robust_percentiles,
             )
@@ -2237,6 +2320,7 @@ def get_min_max(
     robust: bool = False,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     absolute: bool = False,
     robust_percentiles: tuple[float, float] = (0.02, 0.98),
 ) -> tuple[float, float]:
@@ -2258,6 +2342,9 @@ def get_min_max(
     hemisphere : str, optional,
         if using a shapefile to subset the data, set projection based on "north" or
         "south" hemispheres, by default None
+    epsg : str | None, optional
+        if using a shapefile to subset the data, set projection from EPSG code string
+        ("3031"), by default None
     absolute : bool, optional
         return the absolute min and max values, by default False
     robust_percentiles : tuple[float, float], optional
@@ -2269,9 +2356,9 @@ def get_min_max(
         returns the min and max values.
     """
     try:
-        hemisphere = default_hemisphere(hemisphere)
+        epsg = default_epsg(epsg, hemisphere)
     except KeyError:
-        hemisphere = None
+        epsg = None
 
     if region is not None:
         values = subset_grid(values, region)
@@ -2285,7 +2372,7 @@ def get_min_max(
         if isinstance(values, xr.DataArray):
             masked = mask_from_shapefile(
                 shapefile,
-                hemisphere=hemisphere,
+                epsg=epsg,
                 grid=values,
                 masked=True,
                 invert=False,
@@ -2309,24 +2396,27 @@ def get_min_max(
 def shapes_to_df(
     shapes: list[float],
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> pd.DataFrame:
     """
-    convert the output of `regions.draw_region` and `profiles.draw_lines` to a dataframe
+    convert the output of `ptk.draw_region` and `ptk.draw_lines` to a dataframe
     of easting and northing points
 
     Parameters
     ----------
-    hemisphere : str, optional
-        choose between the "north" or "south" hemispheres
     shapes : list
         list of vertices
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
 
     Returns
     -------
     pandas.DataFrame
         Dataframe with easting, northing, and shape_num.
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
 
     df = pd.DataFrame()
     for i, j in enumerate(shapes):
@@ -2335,40 +2425,42 @@ def shapes_to_df(
         shape = pd.DataFrame({"lon": lon, "lat": lat, "shape_num": i})
         df = pd.concat((df, shape))
 
-    if hemisphere == "north":
-        df = latlon_to_epsg3413(df)
-    elif hemisphere == "south":
-        df = latlon_to_epsg3031(df)
-    else:
-        msg = "hemisphere must be 'north' or 'south'"
-        raise ValueError(msg)
-
-    return df
+    return reproject(
+        df,
+        "epsg:4326",
+        f"epsg:{epsg}",
+        reg=False,
+        input_coord_names=("lon", "lat"),
+        output_coord_names=("easting", "northing"),
+    )
 
 
 def polygon_to_region(
     polygon: list[float],
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> tuple[float, float, float, float]:
     """
-    convert the output of `regions.draw_region` to bounding region in EPSG:3031 for the
-    south hemisphere and EPSG:3413 for the north hemisphere.
+    convert the output of `ptk.draw_region` to bounding region in the supplied
+    projected units.
 
     Parameters
     ----------
     polyon : list
         list of polygon vertices
-    hemisphere : str, optional
-        choose between the "north" or "south" hemispheres
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
 
     Returns
     -------
     tuple[float, float, float, float]
         region in format in format [xmin, xmax, ymin, ymax]
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
 
-    df = shapes_to_df(shapes=polygon, hemisphere=hemisphere)
+    df = shapes_to_df(shapes=polygon, epsg=epsg)
 
     if df.shape_num.max() > 0:
         logger.info(
@@ -2425,6 +2517,7 @@ def polygon_to_shapefile(
 def mask_from_polygon(
     polygon: list[float],
     hemisphere: str | None = None,
+    epsg: str | None = None,
     invert: bool = False,
     drop_nans: bool = False,
     grid: str | xr.DataArray | None = None,
@@ -2433,14 +2526,16 @@ def mask_from_polygon(
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
-    convert the output of `regions.draw_region` to a mask or use it to mask a grid
+    convert the output of `ptk.draw_region` to a mask or use it to mask a grid
 
     Parameters
     ----------
     polygon : list
        list of polygon vertices
-    hemisphere : str, optional
-        choose between the "north" or "south" hemispheres
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
     invert : bool, optional
         reverse the sense of masking, by default False
     drop_nans : bool, optional
@@ -2458,10 +2553,10 @@ def mask_from_polygon(
     xarray.DataArray
         masked grid or mask grid with 1's inside the mask.
     """
-    hemisphere = default_hemisphere(hemisphere)
+    epsg = default_epsg(epsg, hemisphere)
 
     # convert drawn polygon into dataframe
-    df = shapes_to_df(polygon, hemisphere=hemisphere)
+    df = shapes_to_df(polygon, epsg=epsg)
     data_coords = (df.easting, df.northing)
 
     # remove additional polygons

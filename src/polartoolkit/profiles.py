@@ -305,6 +305,7 @@ def make_data_dict(
 def default_layers(
     version: str,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     reference: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
@@ -318,8 +319,10 @@ def default_layers(
     version : str
         choose between 'bedmap2', 'bedmap3', and 'bedmachine' layers for Antarctica, and
         just 'bedmachine' Greenland
-    hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
     reference : str, optional
         choose between 'ellipsoid', 'eigen-6c4' or 'eigen-gl04c' (only for bedmap),
         for an elevation reference frame, by default None
@@ -335,11 +338,11 @@ def default_layers(
     dict[str, dict[str, str | xarray.DataArray]]
         Nested dictionary of earth layers and attributes
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if version == "bedmap2":
-        if hemisphere == "north":
-            msg = "Bedmap2 is not available for the northern hemisphere."
+        if epsg != "3031":
+            msg = "Bedmap2 is only available for EPSG:3031"
             raise ValueError(msg)
         if reference is None:
             reference = "eigen-gl04c"
@@ -367,8 +370,8 @@ def default_layers(
             verbose=verbose,
         )
     elif version == "bedmap3":
-        if hemisphere == "north":
-            msg = "Bedmap3 is not available for the northern hemisphere."
+        if epsg != "3031":
+            msg = "Bedmap3 is only available for EPSG:3031"
             raise ValueError(msg)
         if reference is None:
             reference = "eigen-gl04c"
@@ -400,7 +403,7 @@ def default_layers(
             reference = "eigen-6c4"
         surface = fetch.bedmachine(
             "surface",
-            hemisphere=hemisphere,
+            epsg=epsg,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -408,7 +411,7 @@ def default_layers(
         )
         icebase = fetch.bedmachine(
             "icebase",
-            hemisphere=hemisphere,
+            epsg=epsg,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -416,7 +419,7 @@ def default_layers(
         )
         bed = fetch.bedmachine(
             "bed",
-            hemisphere=hemisphere,
+            epsg=epsg,
             region=region,
             reference=reference,
             spacing=spacing,
@@ -447,6 +450,7 @@ def default_layers(
 def default_data(
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     verbose: str = "quiet",
 ) -> dict[typing.Any, typing.Any]:
     """
@@ -456,18 +460,20 @@ def default_data(
     ----------
     region : tuple[float, float, float, float], optional
         region to subset grids by, in format [xmin, xmax, ymin, ymax], by default None
-    hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
 
     Returns
     -------
     dict[typing.Any, typing.Any]
         Nested dictionary of data and attributes
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "north":
-        msg = "Default data is not yet available for the northern hemisphere."
+    if epsg != "3031":
+        msg = "Default data is only available for EPSG:3031."
         raise ValueError(msg)
 
     mag = fetch.magnetics(
@@ -510,6 +516,7 @@ def plot_profile(
     fig_height: float = 9,
     fig_width: float = 14,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> tuple[pygmt.Figure, pd.DataFrame, pd.DataFrame]:
     """
@@ -535,8 +542,11 @@ def plot_profile(
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
         Set the width of the figure (excluding the map) in cm, by default is 14.
-    hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+
     Keyword Args
     ------------
     default_layers_spacing: float
@@ -595,9 +605,9 @@ def plot_profile(
         this will be an empty DataFrame.
     """
     try:
-        hemisphere = utils.default_hemisphere(hemisphere)
+        epsg = utils.default_epsg(epsg, hemisphere)
     except KeyError:
-        hemisphere = None
+        epsg = None
 
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
@@ -619,11 +629,16 @@ def plot_profile(
     # if no layers supplied, use default
     if layers_dict is None:
         if layers_version is None:
-            if hemisphere == "north":
+            if epsg == "3413":
                 layers_version = "bedmachine"
-            elif hemisphere == "south":
+            elif epsg == "3031":
                 layers_version = "bedmap3"
-
+            else:
+                msg = (
+                    "Default layers_version only available for EPSG:3031 and 3413, "
+                    "please supply `layers_dict`."
+                )
+                raise ValueError(msg)
         # get region around profile, padded by 5% total profile distance
         default_region = vd.pad_region(
             vd.get_region((points.easting, points.northing)),
@@ -651,18 +666,18 @@ def plot_profile(
         )
 
         layers_dict = default_layers(
-            layers_version,  # type: ignore[arg-type]
+            layers_version,
             region=default_region,
             reference=kwargs.get("default_layers_reference"),
             spacing=default_spacing,
-            hemisphere=hemisphere,
+            epsg=epsg,
         )
 
     # create default data dictionary
     if data_dict == "default":
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
-            hemisphere=hemisphere,
+            epsg=epsg,
         )
 
     # sample cross-section layers from grids
@@ -717,14 +732,14 @@ def plot_profile(
             fig = maps.Figure(
                 reg=map_reg,
                 height=fig_height,
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
             fig = maps.Figure(
                 reg=map_reg,
                 width=fig_width,
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
         else:
             msg = "invalid subplot_orientation string"
@@ -1221,6 +1236,7 @@ def plot_data(
     fig_height: float = 9,
     fig_width: float = 14,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> tuple[pygmt.Figure, pd.DataFrame]:
     """
@@ -1239,8 +1255,11 @@ def plot_data(
         Set the height of the figure (excluding the map) in cm, by default is 9.
     fig_width : float, optional
         Set the width of the figure (excluding the map) in cm, by default is 14.
-    hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+    hemisphere : str, optional,
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+
     Keyword Args
     ------------
     num: int
@@ -1281,9 +1300,9 @@ def plot_data(
         this will be an empty DataFrame.
     """
     try:
-        hemisphere = utils.default_hemisphere(hemisphere)
+        epsg = utils.default_epsg(epsg, hemisphere)
     except KeyError:
-        hemisphere = None
+        epsg = None
 
     inset = kwargs.get("inset", True)
     subplot_orientation = kwargs.get("subplot_orientation", "horizontal")
@@ -1298,7 +1317,7 @@ def plot_data(
     if data_dict == "default":
         data_dict = default_data(
             region=vd.get_region((points.easting, points.northing)),
-            hemisphere=hemisphere,
+            epsg=epsg,
         )
 
     # shorten profiles
@@ -1331,14 +1350,14 @@ def plot_data(
             fig = maps.Figure(
                 reg=map_reg,
                 height=fig_height,
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
         elif subplot_orientation == "vertical":
             # if shifting vertically, set map width to match graph width
             fig = maps.Figure(
                 reg=map_reg,
                 width=fig_width,
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
         else:
             msg = "invalid subplot_orientation string"

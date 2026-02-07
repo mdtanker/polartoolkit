@@ -344,6 +344,7 @@ def sample_shp(name: str) -> str:
 def mass_change(
     version: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     spacing: float | None = None,
     registration: str | None = None,
@@ -372,6 +373,9 @@ def mass_change(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     region : tuple[float, float, float, float], optional
         region to clip the loaded grid to, in format [xmin, xmax, ymin, ymax], by
         default doesn't clip
@@ -393,13 +397,14 @@ def mass_change(
     .. footbibliography::
     """
     if version is None:
-        hemisphere = utils.default_hemisphere(hemisphere)
-        if hemisphere == "south":
+        epsg = utils.default_epsg(epsg, hemisphere)
+
+        if epsg == "3031":
             version = "ais_dhdt_grounded"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             version = "gris_dhdt"
         else:
-            msg = "if version is None, must provide 'hemisphere'"
+            msg = "`mass_change` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
     # This is the path to the processed (magnitude) grid
@@ -652,6 +657,7 @@ def ice_vel(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -686,6 +692,9 @@ def ice_vel(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     kwargs : typing.Any
         additional keyword arguments to pass to resample_grid
 
@@ -698,9 +707,9 @@ def ice_vel(
     ----------
     .. footbibliography::
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         if spacing is None:
             spacing = 5e3
 
@@ -798,8 +807,7 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
-
-    elif hemisphere == "north":
+    elif epsg == "3413":
         if spacing is None:
             spacing = 250
 
@@ -858,12 +866,17 @@ def ice_vel(
             registration=registration,
             **kwargs,
         )
+    else:
+        msg = "`ice_vel` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
+
     return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def modis(
     version: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
 ) -> str:
     """
     Load the MODIS Mosaic of Antarctica (MoA) or Greenland (MoG) imagery.
@@ -888,6 +901,9 @@ def modis(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
 
     Returns
     -------
@@ -899,15 +915,15 @@ def modis(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if version is None:
-        if hemisphere == "south":
+        if epsg == "3031":
             version = "750m"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             version = "500m"
 
-    if hemisphere == "south":
+    if epsg == "3031":
         if version == "125m":
             url = "https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0593_moa2009_v02/geotiff/moa125_2009_hp1_v02.0.tif.gz"
             fname = "moa125.tif.gz"
@@ -934,8 +950,7 @@ def modis(
             known_hash=known_hash,
             progressbar=True,
         )
-
-    if hemisphere == "north":
+    elif epsg == "3413":
         if version == "100m":
             url = "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/MEASURES/NSIDC-0547/2/2015/03/12/mog100_2015_hp1_v02.tif"
             fname = "mog100_2015_hp1_v02.tif"
@@ -959,6 +974,10 @@ def modis(
             known_hash=known_hash,
             progressbar=True,
         )
+    else:
+        msg = "`modis` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
+
     return path  # pylint: disable=possibly-used-before-assignment
 
 
@@ -1947,7 +1966,7 @@ def ibcso(
             spacing=initial_spacing,
             region=initial_region,
             registration=initial_registration,
-            hemisphere="south",
+            epsg="3031",
             **kwargs,
         )
 
@@ -1974,6 +1993,7 @@ def bedmachine(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -2027,6 +2047,9 @@ def bedmachine(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     **kwargs : typing.Any
         additional keyword arguments to pass to the resample_grid function
     Returns
@@ -2040,7 +2063,7 @@ def bedmachine(
     """
     logger.debug("Loading Bedmachine data for %s", layer)
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if layer == "thickness":
         layer = "ice_thickness"
@@ -2056,12 +2079,12 @@ def bedmachine(
         fname1 = pathlib.Path(fname)
 
         # Rename to the file
-        if hemisphere == "south":
+        if epsg == "3031":
             fname_pre = fname1.with_stem(fname1.stem + "_antarctica")
-        elif hemisphere == "north":
+        elif epsg == "3413":
             fname_pre = fname1.with_stem(fname1.stem + "_greenland")
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         fname_processed = fname_pre.with_suffix(".zarr")
@@ -2083,12 +2106,12 @@ def bedmachine(
         fname1 = pathlib.Path(fname)
 
         # Rename to the file to ***_5k.zarr
-        if hemisphere == "south":
+        if epsg == "3031":
             fname_pre = fname1.with_stem(fname1.stem + "_antarctica_5k")
-        elif hemisphere == "north":
+        elif epsg == "3413":
             fname_pre = fname1.with_stem(fname1.stem + "_greenland_5k")
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         fname_processed = fname_pre.with_suffix(".zarr")
@@ -2113,7 +2136,7 @@ def bedmachine(
                 "thickness",
             ]
 
-            if hemisphere == "north":
+            if epsg == "3413":
                 var_names.remove("firn")
 
             # resample each data variable to 5 km
@@ -2132,7 +2155,7 @@ def bedmachine(
 
         return str(fname_processed)
 
-    if hemisphere == "north":
+    if epsg == "3413":
         url = (
             "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
             "ICEBRIDGE/IDBMG4/5/1993/01/01/BedMachineGreenland-v5.nc"
@@ -2149,7 +2172,7 @@ def bedmachine(
         if spacing is None:
             spacing = 150
 
-    elif hemisphere == "south":
+    elif epsg == "3031":
         url = (
             "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/"
             "MEASURES/NSIDC-0756/3/1970/01/01/BedMachineAntarctica-v3.nc"
@@ -2160,7 +2183,7 @@ def bedmachine(
         if spacing is None:
             spacing = 500
     else:
-        msg = "hemisphere must be 'north' or 'south'"
+        msg = "`bedmachine` only available for EPSG:3031 and EPSG:3413"
         raise ValueError(msg)
 
     # determine which resolution of preprocessed grid to use
@@ -2935,7 +2958,7 @@ def bedmap3(
                 spacing=spacing,
                 region=region,
                 registration=registration,
-                hemisphere="south",
+                epsg="3031",
                 **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
@@ -3277,7 +3300,7 @@ def bedmap2(
                 spacing=spacing,
                 region=region,
                 registration=registration,
-                hemisphere="south",
+                epsg="3031",
                 **kwargs,
             )
             # convert from ellipsoid back to eigen geoid
@@ -3467,6 +3490,7 @@ def gravity(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3505,6 +3529,9 @@ def gravity(
         by default is None.
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
         None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid and set the anomaly_type.
@@ -3647,14 +3674,14 @@ def gravity(
                 pass
 
     elif version == "eigen":
-        hemisphere = utils.default_hemisphere(hemisphere)
+        epsg = utils.default_epsg(epsg, hemisphere)
 
-        if hemisphere == "south":
+        if epsg == "3031":
             proj = "EPSG:3031"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             proj = "EPSG:3413"
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`gravity` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -3662,12 +3689,12 @@ def gravity(
             fname1 = pathlib.Path(fname)
 
             # Rename to the file to ***_preprocessed.nc
-            if hemisphere == "south":
+            if epsg == "3031":
                 fname_pre = fname1.with_stem(fname1.stem + "_epsg3031_preprocessed")
-            elif hemisphere == "north":
+            elif epsg == "3413":
                 fname_pre = fname1.with_stem(fname1.stem + "_epsg3413_preprocessed")
             else:
-                msg = "hemisphere must be 'north' or 'south'"
+                msg = "`gravity` only available for EPSG:3031 and EPSG:3413"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -3751,6 +3778,7 @@ def etopo(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3774,6 +3802,9 @@ def etopo(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     **kwargs : optional
         additional keyword arguments to pass to the resample_grid function
 
@@ -3787,14 +3818,17 @@ def etopo(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         proj = "EPSG:3031"
         fname = "earth-topography-10arcmin_south.nc"
-    elif hemisphere == "north":
+    elif epsg == "3413":
         proj = "EPSG:3413"
         fname = "earth-topography-10arcmin_north.nc"
+    else:
+        msg = "`etopo` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it to a .zarr file"
@@ -3850,6 +3884,7 @@ def geoid(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray:
     """
@@ -3859,7 +3894,7 @@ def geoid(
     Negative values indicate the geoid is below the ellipsoid surface and vice-versa.
     To convert a topographic grid which is referenced to the ellipsoid to be referenced
     to the geoid, add this grid.
-    To convert a topographic grid which is referenced to the geoid to be referencde to
+    To convert a topographic grid which is referenced to the geoid to be referenced to
     the ellipsoid, add this grid.
 
     originally from https://dataservices.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897
@@ -3879,6 +3914,9 @@ def geoid(
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
         None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
+        None
     kwargs : typing.Any
         additional kwargs to pass to resample_grid.
 
@@ -3892,14 +3930,17 @@ def geoid(
     .. footbibliography::
     """
 
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
-    if hemisphere == "south":
+    if epsg == "3031":
         proj = "EPSG:3031"
         fname = "earth-geoid-10arcmin_south.nc"
-    elif hemisphere == "north":
+    elif epsg == "3413":
         proj = "EPSG:3413"
         fname = "earth-geoid-10arcmin_north.nc"
+    else:
+        msg = "`geoid` only available for EPSG:3031 and EPSG:3413"
+        raise ValueError(msg)
 
     def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
         "Load the .nc file, reproject, and save it to a .zarr file"
@@ -3958,6 +3999,7 @@ def magnetics(
     spacing: float | None = None,
     registration: str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     **kwargs: typing.Any,
 ) -> xr.DataArray | None:
     """
@@ -3996,6 +4038,9 @@ def magnetics(
         the original type of the grid
     hemisphere : str, optional
         choose which hemisphere to retrieve data for, "north" or "south", by default
+        None
+    epsg : str | None
+        choose which region to retrieve data for, either "3031" or "3413", by default
         None
     kwargs : typing.Any
         key word arguments to pass to resample_grid.
@@ -4134,13 +4179,13 @@ def magnetics(
         resampled = path
 
     elif version == "LCS-1":
-        hemisphere = utils.default_hemisphere(hemisphere)
-        if hemisphere == "south":
+        epsg = utils.default_epsg(epsg, hemisphere)
+        if epsg == "3031":
             proj = "EPSG:3031"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             proj = "EPSG:3413"
         else:
-            msg = "hemisphere must be 'north' or 'south'"
+            msg = "`magnetics` only available for EPSG:3031 and EPSG:3413"
             raise ValueError(msg)
 
         def preprocessing(fname: str, action: str, _pooch2: typing.Any) -> str:
@@ -4149,12 +4194,12 @@ def magnetics(
             fname1 = pathlib.Path(path[0])
 
             # Rename to the file to ***_preprocessed.nc
-            if hemisphere == "south":
+            if epsg == "3031":
                 fname_pre = fname1.with_stem(fname1.stem + "epsg3031_preprocessed")
-            elif hemisphere == "north":
+            elif epsg == "3413":
                 fname_pre = fname1.with_stem(fname1.stem + "epsg3413_preprocessed")
             else:
-                msg = "hemisphere must be 'north' or 'south'"
+                msg = "`magnetics` only available for EPSG:3031 and EPSG:3413"
                 raise ValueError(msg)
             fname_processed = fname_pre.with_suffix(".zarr")
 
@@ -4543,9 +4588,9 @@ def ghf(
 
                 # clip to coastline
                 shp = gpd.read_file(antarctic_boundaries(version="Coastline"))
-                processed = utils.mask_from_shp(
+                processed = utils.mask_from_shapefile(
                     shp,
-                    hemisphere="south",
+                    epsg="3031",
                     grid=processed,
                     masked=True,
                     invert=False,

@@ -88,6 +88,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         fig: pygmt.Figure | None = None,
         reg: tuple[float, float, float, float] | None = None,
         hemisphere: str | None = None,
+        epsg: str | None = None,
         height: float | None = None,
         width: float | None = None,
     ) -> None:
@@ -124,23 +125,11 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 width = utils.get_fig_width()
                 height = None
 
-        try:
-            hemisphere = utils.default_hemisphere(hemisphere)
-        except KeyError:
-            hemisphere = None
-        if hemisphere is None:
-            msg = (
-                "you must provide the argument hemisphere as either 'north' or 'south'"
-            )
-            raise ValueError(msg)
+        epsg = utils.default_epsg(epsg, hemisphere)
 
         reg = typing.cast(tuple[float, float, float, float], reg)
         self.reg = reg
-        self.hemisphere: str = hemisphere
-
-        if self.hemisphere not in ["north", "south"]:
-            msg = "hemisphere must be either 'north' or 'south'"
-            raise ValueError(msg)
+        self.epsg = epsg
 
         # use default height if not set
         if width is None and height is None:
@@ -150,11 +139,45 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             self.reg,
             fig_height=height,
             fig_width=width,
-            hemisphere=self.hemisphere,
+            epsg=self.epsg,
         )
 
-        self.reg_latlon = "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
         self.origin_shift: str | None = None
+
+        # assign geographic region in format for PyGMT to need for mixing projected and
+        # geographic plotting elements
+        if self.epsg in ("3031", "3413"):
+            self.reg_latlon = (
+                "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
+            )  # codespell:ignore ue
+            # self.reg_latlon = (*self.reg, "+ue", "") # codespell:ignore ue
+        else:
+            # # option 1: region from grid file
+            # # make a grid of the right region
+            # da = utils.make_grid(
+            #     region=self.reg,
+            #     spacing=100,
+            #     value=0,
+            #     name="dummy",
+            # )
+            # # save to temporary netcdf file
+            # da.to_netcdf("temp_grid.nc")
+
+            # self.reg_latlon = "temp_grid.nc"
+
+            # option 2: region from reprojected lower left and upper right corners
+            # this is slightly offset if using EPSG proj string
+            # from https://forum.generic-mapping-tools.org/t/topography-in-utm-m-projection/6273/3
+            self.reg_latlon = utils.region_xy_to_ll(  # type: ignore[assignment]
+                self.reg,
+                epsg=self.epsg,
+                as_corners=True,
+            )
+
+            # option 3: projected region with +ue # codespell:ignore ue
+            # doesn't work with EPSG or PROJ string, but works with Stereographic projections
+            # self.reg_latlon = "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
+            # self.reg_latlon = (*self.reg, "+ue", "") # codespell:ignore ue
 
     def shift_figure(
         self,
@@ -259,12 +282,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             transparency of the imagery, by default 0
         """
 
-        if self.hemisphere == "north":
+        if self.epsg == "3413":
             self.add_modis(
                 version="500m",
                 transparency=transparency,
             )
-        elif self.hemisphere == "south":
+        elif self.epsg == "3031":
             self.grdimage(
                 grid=fetch.imagery(),
                 cmap=None,
@@ -273,6 +296,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 region=self.reg,
                 verbose="error",
             )
+        else:
+            msg = "`add_imagery` only supports EPSG:3031 and EPSG:3413."
+            raise NotImplementedError(msg)
 
     def add_coast(
         self,
@@ -291,8 +317,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         pen : None
             GMT pen string, by default "0.6p,black"
         version : str, optional
-            version of groundingline to plot, by default is 'BAS' for north hemisphere and
-            'measures-v2' for south hemisphere
+            version of coastline to plot, by default is 'BAS' for north hemisphere,
+            'measures-v2' for south hemisphere, and 'gmt' (GSHHG from GMT) if a
+            different EPSG projection is set (other than 3031 or 3413).
         label : str, optional
             label to add to the legend, by default is None
         """
@@ -301,12 +328,36 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             pen = "0.6p,black"
 
         if version is None:
-            if self.hemisphere == "north":
+            if self.epsg == "3413":
                 version = "BAS"
-            elif self.hemisphere == "south":
+            elif self.epsg == "3031":
                 version = "measures-v2"
+            else:
+                version = "gmt"
 
+        if version == "gmt":
+            # plot coastline (groundingline for ice sheets)
+            self.coast(
+                region=self.reg_latlon,
+                projection=self.proj_latlon,
+                shorelines=f"1/{pen}",
+                area_thresh="+ag",  # treat grounding line as coastline
+            )
+            if no_coast is False:
+                # plot ice shelf extent / global coastline
+                self.coast(
+                    region=self.reg_latlon,
+                    projection=self.proj_latlon,
+                    shorelines=f"1/{pen}",
+                    area_thresh="+ai",  # treat ice extent as coastline
+                )
+                # reset region and projection
+                self.basemap(region=self.reg, projection=self.proj, frame="+t")
+            return
         if version == "depoorter-2013":
+            if self.epsg != "3031":
+                msg = "depoorter-2013 coastline is only available for EPSG:3031."
+                raise NotImplementedError(msg)
             if no_coast is False:
                 data = fetch.groundingline(version=version)
             elif no_coast is True:
@@ -315,17 +366,24 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 )
                 data = gdf[gdf.Id_text == "Grounded ice or land"]
         elif version == "measures-v2":
+            if self.epsg != "3031":
+                msg = "measures-v2 coastline is only available for EPSG:3031."
+                raise NotImplementedError(msg)
             if no_coast is False:
                 gl = gpd.read_file(
                     fetch.groundingline(version=version), engine="pyogrio"
                 )
                 coast = gpd.read_file(
-                    fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
+                    fetch.antarctic_boundaries(version="Coastline"),
+                    engine="pyogrio",
                 )
                 data = pd.concat([gl, coast])
             elif no_coast is True:
                 data = fetch.groundingline(version=version)
         elif version in ("BAS", "measures-greenland"):
+            if self.epsg != "3413":
+                msg = f"{version} coastline is only available for EPSG:3413."
+                raise NotImplementedError(msg)
             data = fetch.groundingline(version=version)
         else:
             msg = "invalid version string"
@@ -352,9 +410,11 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         Parameters
         ----------
         x_spacing : float, optional
-            spacing for x gridlines in degrees, by default is None
+            spacing for x gridlines in degrees, by default is automatically determined
+            by PyGMT
         y_spacing : float, optional
-            spacing for y gridlines in degrees, by default is None
+            spacing for y gridlines in degrees, by default is automatically determined
+            by PyGMT
         annotation_offset : str, optional
             offset for gridline annotations, by default "20p"
         """
@@ -409,6 +469,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     ],
                 )
 
+        # reset region and projection
+        self.basemap(region=self.reg, projection=self.proj, frame="+t")
+
     def add_faults(
         self,
         faults_activity: str | None = None,
@@ -447,8 +510,8 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         legend_loc : str | None, optional
             location of the legend, by default is lower left
         """
-        if self.hemisphere == "north":
-            msg = "Faults are not available for the northern hemisphere."
+        if self.epsg != "3031":
+            msg = "Faults are only available for EPSG:3031."
             raise NotImplementedError(msg)
 
         if fault_activity is not None:
@@ -560,8 +623,8 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         legend_loc : str | None, optional
             location of the legend, by default is lower left
         """
-        if self.hemisphere == "north":
-            msg = "Geologic units are not available for the northern hemisphere."
+        if self.epsg != "3031":
+            msg = "Geologic units are only available for EPSG:3031."
             raise NotImplementedError(msg)
 
         geologic_units = fetch.geomap(version="units", region=self.reg)
@@ -628,8 +691,8 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         transparency : int, optional
             transparency of the bed type layer, by default 0
         """
-        if self.hemisphere == "north":
-            msg = "Bed type classifications are not available for the northern hemisphere."
+        if self.epsg != "3031":
+            msg = "Bed type classifications are only available for EPSG:3031."
             raise NotImplementedError(msg)
 
         bed_type = fetch.antarctic_bed_type(region=self.reg)
@@ -715,19 +778,21 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             colormap to use for MODIS imagery, by default "grayC"
         """
 
-        if self.hemisphere == "north" and version is None:
+        if self.epsg == "3413" and version is None:
             version = "500m"
-        elif self.hemisphere == "south" and version is None:
+        elif self.epsg == "3031" and version is None:
             version = "750m"
+        else:
+            msg = "`add_modis` only supports EPSG:3031 and EPSG:3413."
+            raise NotImplementedError(msg)
 
-        image = fetch.modis(version=version, hemisphere=self.hemisphere)
+        image = fetch.modis(version=version, epsg=self.epsg)
 
         imagery_cmap, _, _ = set_cmap(
             True,
             modis=True,
             modis_cmap=cmap,
         )
-
         with set_env(GTIFF_SRS_SOURCE="EPSG"):
             self.grdimage(
                 grid=image,
@@ -747,14 +812,15 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         floating_color: str = "skyblue",
     ) -> None:
         """
-        Add a simple basemap to a figure with grounded ice shown as grey and floating ice as
-        blue.
+        Add a simple basemap to a figure with grounded ice / land shown as grey and
+        floating ice as blue.
 
         Parameters
         ----------
         version : str | None, optional
-            which version of shapefiles to use for grounding line / coastline, by default
-            "measures-v2" for southern hemisphere and "BAS" for northern hemisphere
+            version of shapefile to use, by default is 'BAS' for north hemisphere,
+            'measures-v2' for south hemisphere, and 'gmt' (GSHHG from GMT) if a
+            different EPSG projection is set (other than 3031 or 3413).
         transparency : int, optional
             transparency of all the plotted elements, by default 0
         pen : str, optional
@@ -765,80 +831,112 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             color for the floating ice, by default "skyblue"
         """
 
-        if self.hemisphere == "north":
-            if version is None:
+        if version is None:
+            if self.epsg == "3413":
                 version = "BAS"
-
-            if version == "BAS":
-                gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
-                self.plot(
-                    data=gdf,
-                    fill=grounded_color,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
-                self.plot(
-                    data=gdf,
-                    pen=pen,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
-            else:
-                msg = "version must be BAS for northern hemisphere"
-                raise ValueError(msg)
-
-        elif self.hemisphere == "south":
-            if version is None:
+            elif self.epsg == "3031":
                 version = "measures-v2"
+            else:
+                version = "gmt"
 
-            if version == "depoorter-2013":
-                gdf = gpd.read_file(
-                    fetch.groundingline("depoorter-2013"), engine="pyogrio"
-                )
-                # plot floating ice as blue
-                self.plot(
-                    data=gdf[gdf.Id_text == "Ice shelf"],
-                    fill=floating_color,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
-                # plot grounded ice as gray
-                self.plot(
-                    data=gdf[gdf.Id_text == "Grounded ice or land"],
-                    fill=grounded_color,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
-                # plot coastline on top
-                self.plot(
-                    data=gdf,
-                    pen=pen,
-                    transparency=transparency,
-                )
-            elif version == "measures-v2":
-                self.plot(
-                    data=fetch.antarctic_boundaries(version="Coastline"),
-                    fill=floating_color,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
-                self.plot(
-                    data=fetch.groundingline(version="measures-v2"),
-                    fill=grounded_color,
-                    transparency=transparency,
-                )
-                self.plot(
-                    fetch.groundingline(version="measures-v2"),
-                    pen=pen,
-                    transparency=transparency,
-                    projection=self.proj,
-                    region=self.reg,
-                )
+        if version == "gmt":
+            # plot floating ice as blue
+            self.coast(
+                region=self.reg_latlon,
+                projection=self.proj_latlon,
+                shorelines=f"1/{pen}",
+                area_thresh="+ai",  # ice shelf boundary
+                transparency=transparency,
+                land=floating_color,
+            )
+            # plot grounded ice as gray
+            self.coast(
+                region=self.reg_latlon,
+                projection=self.proj_latlon,
+                shorelines=f"1/{pen}",
+                area_thresh="+ag",  # grounded ice boundary
+                transparency=transparency,
+                land=grounded_color,
+            )
+
+            # reset region and projection
+            self.basemap(region=self.reg, projection=self.proj, frame="+t")
+
+        elif version == "depoorter-2013":
+            if self.epsg != "3031":
+                msg = "simple basemap with depoorter-2013 is only available for EPSG:3031."
+                raise NotImplementedError(msg)
+            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine="pyogrio")
+            # plot floating ice as blue
+            self.plot(
+                data=gdf[gdf.Id_text == "Ice shelf"],
+                fill=floating_color,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+            # plot grounded ice as gray
+            self.plot(
+                data=gdf[gdf.Id_text == "Grounded ice or land"],
+                fill=grounded_color,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+            # plot coastline on top
+            self.plot(
+                data=gdf,
+                pen=pen,
+                transparency=transparency,
+            )
+
+        elif version == "measures-v2":
+            if self.epsg != "3031":
+                msg = "simple basemap with measures-v2 is only available for EPSG:3031."
+                raise NotImplementedError(msg)
+            self.plot(
+                data=fetch.antarctic_boundaries(version="Coastline"),
+                fill=floating_color,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+            self.plot(
+                data=fetch.groundingline(version="measures-v2"),
+                fill=grounded_color,
+                transparency=transparency,
+            )
+            self.plot(
+                fetch.groundingline(version="measures-v2"),
+                pen=pen,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+
+        elif version == "BAS":
+            if self.epsg != "3413":
+                msg = "simple basemap with BAS is only available for EPSG:3413."
+                raise NotImplementedError(msg)
+            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
+            self.plot(
+                data=gdf,
+                fill=grounded_color,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+            self.plot(
+                data=gdf,
+                pen=pen,
+                transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
+            )
+
+        else:
+            msg = "invalid version string"
+            raise ValueError(msg)
 
     def add_box(
         self,
@@ -880,7 +978,11 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         inset_box_pen: str = "1p,red",
     ) -> None:
         """
-        add an inset map showing the figure region relative to the Antarctic continent.
+        add an inset map showing the figure region relative to a larger region. The
+        larger region can be set with `inset_region` parameter, or by default is chosen
+        based on the projection of the figure. For EPSG:3031 the region is all of
+        Antarctica. For EPSG:3031 the region is all Greenland and for other EPSG code
+        the region is 10x with widest dimension of the figure region.
 
         Parameters
         ----------
@@ -930,7 +1032,6 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             warnings.warn(msg, UserWarning, stacklevel=2)
 
         inset_width = inset_width * (min(self.width, self.height))
-        inset_map = f"X{inset_width}c"
 
         position = f"{inset_position}+w{inset_width}c"
         logger.debug("using position; %s", position)
@@ -1101,6 +1202,81 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                         inset_box_pen=inset_box_pen,
                     )
 
+            else:  # Non polar-stereographic projections
+
+                def plot_inset(
+                    inset_region: tuple[float, float, float, float],
+                    self: Figure,
+                    inset_coast_pen: str,
+                    inset_box_pen: str,
+                ) -> None:
+                    if (
+                        inset_region[1] - inset_region[0]
+                        != inset_region[3] - inset_region[2]
+                    ):
+                        logger.warning(
+                            "Inset region should be square or else projection will be off."
+                        )
+
+                    inset_region_latlon = utils.region_xy_to_ll(
+                        inset_region,
+                        epsg=self.epsg,
+                        as_corners=True,
+                    )
+
+                    logger.info("Inset region: %s", inset_region_latlon)
+
+                    # plot land as gray
+                    self.coast(
+                        projection=f"EPSG:{self.epsg}/?",
+                        region=inset_region_latlon,
+                        land="grey",
+                        shorelines=f"1/{inset_coast_pen}",
+                        verbose="error",
+                    )
+
+                    box = self.reg
+                    self.plot(
+                        x=[box[0], box[0], box[1], box[1], box[0]],
+                        y=[box[2], box[3], box[3], box[2], box[2]],
+                        pen=inset_box_pen,
+                        region=inset_region,
+                        projection="x?",  # auto determine region from inset width
+                    )
+
+                if inset_region is None:
+                    # if region not provided, start as 10x the narrowest dimension of
+                    # the figure region and decrease until it works
+                    if inset_width_factor is None:
+                        width_factor = 10
+                    else:
+                        width_factor = inset_width_factor  # type: ignore[assignment]
+
+                    while True:  # continue trying until break
+                        try:  # try with width_factor, if fails, decrease by 1
+                            inset_region = utils.square_around_region(
+                                self.region, width_factor
+                            )
+                            plot_inset(
+                                inset_region,
+                                self,
+                                inset_coast_pen=inset_coast_pen,
+                                inset_box_pen=inset_box_pen,
+                            )
+                        except AssertionError:
+                            width_factor -= 1
+                        else:
+                            break
+                else:
+                    plot_inset(
+                        inset_region,
+                        self,
+                        inset_coast_pen=inset_coast_pen,
+                        inset_box_pen=inset_box_pen,
+                    )
+                # reset region and projection for main map
+                self.basemap(region=self.reg, projection=self.proj, frame="+t")
+
     def add_scalebar(
         self,
         **kwargs: typing.Any,
@@ -1123,7 +1299,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         if length is None:
             length = typing.cast(float, length)
-            # get shorter of east-west vs north-sides
+            # get shorter of east-west vs north-south sides
             width = abs(self.reg[1] - self.reg[0])
             height = abs(self.reg[3] - self.reg[2])
             length = round_to_1((min(width, height)) / 1000 * length_perc)
@@ -1134,12 +1310,32 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             MAP_SCALE_HEIGHT="6p",
             MAP_TICK_PEN_PRIMARY=f"0.5p,{font_color}",
         ):
+            # if self.epsg in ["3031", "3413"]:
+            map_scale = f"{position}+w{length}k+f+lkm+ar"
+            projection = self.proj_latlon
+            # else:
+            #     # region_center = (self.reg[0] + self.reg[1]) / 2, (self.reg[2] + self.reg[3]) / 2
+            #     # region_center_lonlat = utils.reproject(
+            #     #     region_center,
+            #     #     self.epsg,
+            #     #     "4326",
+            #     # )
+            #     # origin = f"+c{region_center_lonlat[0]}/{region_center_lonlat[1]}"
+
+            #     # for non-polar projections, length needs to be in meters and can't
+            #     # use +f for fancy
+            #     map_scale = f"{position}+w{length * 1e3}+lm+ar"
+            #     projection = self.proj
+
             self.basemap(
                 region=self.reg_latlon,
-                projection=self.proj_latlon,
-                map_scale=f"{position}+w{length}k+f+lkm+ar",
+                projection=projection,
+                map_scale=map_scale,
                 box=kwargs.get("scalebar_box", "+gwhite"),
             )
+
+        # reset region and projection
+        self.basemap(region=self.reg, projection=self.proj, frame="+t")
 
     def add_north_arrow(
         self,
@@ -1165,6 +1361,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             box=kwargs.get("rose_box", False),
             perspective=kwargs.get("perspective", False),
         )
+
+        # reset region and projection
+        self.basemap(region=self.reg, projection=self.proj, frame="+t")
 
     def add_grid(
         self,
@@ -1224,6 +1423,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             cmap,
             grid=grid,
             colorbar=colorbar,
+            epsg=self.epsg,
             **kwargs,
         )
 
@@ -1296,7 +1496,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             cmap, colorbar, cpt_lims = set_cmap(
                 cmap,
                 points=points[fill],
-                hemisphere=self.hemisphere,
+                epsg=self.epsg,
                 colorbar=colorbar,
                 **kwargs,
             )
@@ -1539,7 +1739,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     shapefile=shapefile,
                     region=kwargs.get("cmap_region"),
                     robust=kwargs.get("robust", False),
-                    hemisphere=self.hemisphere,
+                    epsg=self.epsg,
                     robust_percentiles=kwargs.get("robust_percentiles", (0.02, 0.98)),
                     absolute=kwargs.get("absolute", False),
                 )
@@ -1908,6 +2108,7 @@ def add_colorbar(
 def basemap(
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     coast: bool = False,
     north_arrow: bool = False,
     scalebar: bool = False,
@@ -1944,11 +2145,14 @@ def basemap(
         set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
         (EPSG:3031), can be set manually, or will read from the environment variable:
         "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     coast : bool, optional
         choose whether to plot coastline and grounding line, by default False. Version
-        of shapefiles to plots depends on `hemisphere`, and can be changed with kwargs
-        `coast_version`, which defaults to `BAS` for the northern hemisphere and
-        `measures-v2` for the southern.
+        of shapefiles to plots depends on the set projection, and can be changed with
+        kwargs `coast_version`, which defaults to `BAS` for the northern hemisphere,
+        `measures-v2` for the southern hemisphere, and GSHHG from GMT for other regions.
     north_arrow : bool, optional
         choose to add a north arrow to the plot, by default is False.
     scalebar : bool, optional
@@ -1989,7 +2193,7 @@ def basemap(
         choose to plot lat/lon grid lines, by default is False
     origin_shift : str, | None, optional
         choose what to do with the plot when creating the figure. By default is
-        'initialize' which will create a new figure instance. To plot additional grids
+        None which will create a new figure instance. To plot additional grids
         on top of the existing figure provide a figure instance to `fig` and set
         origin_shift to None. To create subplots, provide the existing figure instance
         to `fig`, and set `origin_shift` to 'x' to add the the new plot to the right of
@@ -2080,7 +2284,7 @@ def basemap(
     no_coast : bool
         choose to not plot coastlines, just grounding lines, by default is False
     coast_version : str
-        version of coastlines to plot, by default depends on the hemisphere
+        version of coastlines to plot, by default depends on the projection
     coast_label : str
         label to add to coastlines, by default is None
     faults_label : str
@@ -2125,6 +2329,8 @@ def basemap(
     >>> fig.show()
     """
     kwargs = copy.deepcopy(kwargs)
+
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if fig is None:
         if region is None:
@@ -2172,7 +2378,7 @@ def basemap(
     fig = Figure(
         fig=fig,
         reg=region,
-        hemisphere=hemisphere,
+        epsg=epsg,
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
     )
@@ -2462,6 +2668,7 @@ def set_cmap(
     shp_mask: gpd.GeoDataFrame | str | None = None,
     shapefile: gpd.GeoDataFrame | str | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     colorbar: bool = True,
     **kwargs: typing.Any,
 ) -> tuple[str | bool, bool, tuple[float, float] | None]:
@@ -2503,6 +2710,10 @@ def set_cmap(
         None
     hemisphere : str | None, optional
         "north" or "south" hemisphere needed for using shapefile if `epsg` not provided,
+        by default None
+    epsg : str | None
+        string of EPSG code needed for using shapefile if `hemisphere` not provided,
+        by default None
     colorbar : bool, optional
         tell subsequent plotting functions whether to add a colorbar, by default True
 
@@ -2512,6 +2723,10 @@ def set_cmap(
         a tuple with the pygmt colormap, as a string or boolean, a boolean of whether to
         plot the colorbar, and a tuple of 2 floats with the cpt limits.
     """
+    try:
+        epsg = utils.default_epsg(epsg, hemisphere)
+    except KeyError:
+        epsg = None
 
     if (grid is not None) and (points is not None):
         msg = "Only one of `grid` or `points` can be passed to `set_cmap`."
@@ -2598,7 +2813,7 @@ def set_cmap(
                     shapefile=shapefile,
                     region=cmap_region,
                     robust=robust,
-                    hemisphere=hemisphere,
+                    epsg=epsg,
                     robust_percentiles=robust_percentiles,
                     absolute=absolute,
                 )
@@ -2609,7 +2824,7 @@ def set_cmap(
                         shapefile=shapefile,
                         region=cmap_region,
                         robust=robust,
-                        hemisphere=hemisphere,
+                        epsg=epsg,
                         robust_percentiles=robust_percentiles,
                         absolute=absolute,
                     )
@@ -2729,7 +2944,7 @@ def set_cmap(
                 shapefile=shapefile,
                 region=cmap_region,
                 robust=robust,
-                hemisphere=hemisphere,
+                epsg=epsg,
                 robust_percentiles=robust_percentiles,
                 absolute=absolute,
             )
@@ -2843,6 +3058,7 @@ def plot_grid(
     grid: str | xr.DataArray,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     cmap: str | bool = "viridis",
     coast: bool = False,
     north_arrow: bool = False,
@@ -2857,7 +3073,7 @@ def plot_grid(
     inset: bool = False,
     points: pd.DataFrame | None = None,
     gridlines: bool = False,
-    origin_shift: str | None = "initialize",
+    origin_shift: str | None = None,
     fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
@@ -2885,14 +3101,17 @@ def plot_grid(
         set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
         (EPSG:3031), can be set manually, or will read from the environment variable:
         "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     cmap : str or bool, optional
         GMT color scale to use, by default 'viridis'. If True, will use the last use
         cmap from PyGMT. See available options at https://docs.generic-mapping-tools.org/6.2/cookbook/cpts.html.
     coast : bool, optional
         choose whether to plot coastline and grounding line, by default False. Version
-        of shapefiles to plots depends on `hemisphere`, and can be changed with kwargs
-        `coast_version`, which defaults to `BAS` for the northern hemisphere and
-        `measures-v2` for the southern.
+        of shapefiles to plots depends on the set projection, and can be changed with
+        kwargs `coast_version`, which defaults to `BAS` for the northern hemisphere,
+        `measures-v2` for the southern hemisphere, and GSHHG from GMT for other regions.
     north_arrow : bool, optional
         choose to add a north arrow to the plot, by default is False.
     scalebar : bool, optional
@@ -2905,21 +3124,11 @@ def plot_grid(
     simple_basemap: bool, optional
         choose to plot a simple basemap with floating ice colored blue and grounded ice
         colored grey.
-    simple_basemap_transparency : int, optional
-        transparency to use for the simple basemap, by default is 0
-    simple_basemap_version : str, optional
-        version of the simple basemap to plot, by default is None
     imagery_basemap : bool, optional
         choose to add a background imagery basemap, by default is False. If true, will
         use LIMA for southern hemisphere and MODIS MoG for the northern hemisphere.
-    imagery_transparency : int, optional
-        transparency to use for the imagery basemap, by default is 0
     modis_basemap : bool, optional
         choose to add a MODIS background imagery basemap, by default is False.
-    modis_transparency : int, optional
-        transparency to use for the MODIS basemap, by default is 0
-    modis_version : str, optional
-        version of the MODIS basemap to plot, by default is None
     bed_type : bool, optional
         choose to plot bed type classifications on the map, by default is False
     title : str | None, optional
@@ -2933,7 +3142,7 @@ def plot_grid(
         choose to plot lat/lon grid lines, by default is False
     origin_shift : str, | None, optional
         choose what to do with the plot when creating the figure. By default is
-        'initialize' which will create a new figure instance. To plot additional grids
+        None which will create a new figure instance. To plot additional grids
         on top of the existing figure provide a figure instance to `fig` and set
         origin_shift to None. To create subplots, provide the existing figure instance
         to `fig`, and set `origin_shift` to 'x' to add the the new plot to the right of
@@ -2945,6 +3154,19 @@ def plot_grid(
     fig : pygmt.Figure, optional
         supply a figure instance for adding subplots or using other PyGMT plotting
         methods, by default None
+
+    Keyword Arguments
+    -----------------
+    simple_basemap_transparency : int, optional
+        transparency to use for the simple basemap, by default is 0
+    simple_basemap_version : str, optional
+        version of the simple basemap to plot, by default is None
+    imagery_transparency : int, optional
+        transparency to use for the imagery basemap, by default is 0
+    modis_transparency : int, optional
+        transparency to use for the MODIS basemap, by default is 0
+    modis_version : str, optional
+        version of the MODIS basemap to plot, by default is None
     fig_height : int or float
         height in cm for figures, by default is 15cm.
     fig_width : int or float
@@ -3035,7 +3257,7 @@ def plot_grid(
     no_coast : bool
         choose to not plot coastlines, just grounding lines, by default is False
     coast_version : str
-        version of coastlines to plot, by default depends on the hemisphere
+        version of coastlines to plot, by default depends on the projection
     coast_label : str
         label to add to coastlines, by default is None
     faults_label : str
@@ -3086,6 +3308,8 @@ def plot_grid(
     """
     kwargs = copy.deepcopy(kwargs)
 
+    epsg = utils.default_epsg(epsg, hemisphere)
+
     if kwargs.get("shp_mask") is not None:
         msg = "'shp_mask' kwarg is deprecated, use 'shapefile' kwarg instead"
         warnings.warn(msg, UserWarning, stacklevel=2)
@@ -3135,7 +3359,7 @@ def plot_grid(
     fig = Figure(
         fig=fig,
         reg=region,
-        hemisphere=hemisphere,
+        epsg=epsg,
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
     )
@@ -3423,6 +3647,7 @@ def plot_grid(
 
 def interactive_map(
     hemisphere: str | None = None,
+    epsg: str | None = None,
     center_yx: tuple[float] | None = None,
     zoom: float | None = None,
     display_xy: bool = True,
@@ -3431,15 +3656,20 @@ def interactive_map(
     **kwargs: typing.Any,
 ) -> typing.Any:
     """
-    Plot an interactive map with satellite imagery. Clicking gives the cursor location
-    in a Polar Stereographic projection [x,y]. Requires ipyleaflet
+    Plot an interactive map with various basemaps. Clicking gives the cursor location
+    in a the supplied projection [x,y]. Requires ipyleaflet
 
     Parameters
     ----------
     hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), can be set manually, or will read from the environment variable:
+        "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     center_yx : tuple, optional
-        choose center coordinates in EPSG3031 [y,x], by default [0,0]
+        choose center coordinates in projected units [y,x], by default None
     zoom : float, optional
         choose zoom level, by default None
     display_xy : bool, optional
@@ -3448,7 +3678,7 @@ def interactive_map(
         choose whether to display the map, by default True
     points : pandas.DataFrame, optional
         choose to plot points supplied as columns 'x', 'y', or 'easting', 'northing', in
-        EPSG:3031 in a dataframe
+        the supplied projection in a dataframe
     basemap_type : str, optional
         choose what basemap to plot, options are 'BlueMarble', 'Imagery', 'Basemap', and
         "IceVelocity", by default 'BlueMarble' for northern hemisphere and 'Imagery' for
@@ -3459,7 +3689,7 @@ def interactive_map(
     typing.Any
         interactive map
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if ipyleaflet is None:
         msg = """
@@ -3488,13 +3718,16 @@ def interactive_map(
             center_ll = [points.lon.mean(), points.lat.mean()]
         else:
             # convert points to lat lon
-            if hemisphere == "south":
+            if epsg == "3031":
                 points_ll: pd.DataFrame = utils.epsg3031_to_latlon(points)
-            elif hemisphere == "north":
+            elif epsg == "3413":
                 points_ll = utils.epsg3413_to_latlon(points)
             else:
-                msg = "hemisphere must be north or south"
-                raise ValueError(msg)
+                points_ll = utils.reproject(
+                    points,
+                    f"epsg:{epsg}",
+                    "epsg:4326",
+                )
             # if points supplied, center map on points
             center_ll = [np.nanmedian(points_ll.lat), np.nanmedian(points_ll.lon)]
             # add points to geodataframe
@@ -3506,30 +3739,32 @@ def interactive_map(
                 geo_dataframe=gdf,
                 point_style={"radius": 1, "color": "red", "weight": 1},
             )
-    # if no points, center map on 0, 0
-    elif hemisphere == "south":
+
+    elif epsg == "3031":
         center_ll = (-90, 0)  # type: ignore[assignment]
-    elif hemisphere == "north":
-        center_ll = (90, -45)  # type: ignore[assignment]
     else:
-        msg = "hemisphere must be north or south"
-        raise ValueError(msg)
+        center_ll = utils.epsg_central_coordinates(epsg)  # type: ignore[assignment]
+
     if center_yx is not None:
-        if hemisphere == "south":
+        if epsg == "3031":
             center_ll = utils.epsg3031_to_latlon(center_yx)  # type: ignore[assignment]
-        elif hemisphere == "north":
+        elif epsg == "3413":
             center_ll = utils.epsg3413_to_latlon(center_yx)  # type: ignore[assignment]
         else:
-            msg = "hemisphere must be north or south"
-            raise ValueError(msg)
+            center_ll = utils.reproject(  # type: ignore[assignment]
+                center_yx,
+                f"epsg:{epsg}",
+                "epsg:4326",
+            )
 
     if basemap_type is None:
-        if hemisphere == "south":
+        if epsg == "3031":
             basemap_type = "Imagery"
-        elif hemisphere == "north":
+        elif epsg == "3413":
             basemap_type = "BlueMarble"
-
-    if hemisphere == "south":
+        else:
+            basemap_type = "Imagery"
+    if epsg == "3031":
         if basemap_type == "BlueMarble":
             base = ipyleaflet.basemaps.NASAGIBS.BlueMarbleBathymetry3031  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3031.NASAGIBS
@@ -3547,28 +3782,35 @@ def interactive_map(
         else:
             msg = "invalid string for basemap_type"
             raise ValueError(msg)
-    elif hemisphere == "north":
+    elif epsg == "3413":
         if basemap_type == "BlueMarble":
             base = ipyleaflet.basemaps.NASAGIBS.BlueMarbleBathymetry3413  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3413.NASAGIBS
-        # elif basemap_type == "Imagery":
-        #   base = ipyleaflet.basemaps.Esri.ArcticImagery  # pylint: disable=no-member
-        #   proj = ipyleaflet.projections.EPSG5936.ESRIImagery
-        # elif basemap_type == "Basemap":
-        #   base = ipyleaflet.basemaps.Esri.OceanBasemap  # pylint: disable=no-member
-        #   proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
-        #   base = ipyleaflet.basemaps.Esri.ArcticOceanBase  # pylint: disable=no-member
-        #   proj = ipyleaflet.projections.EPSG5936.ESRIBasemap
         elif basemap_type == "IceVelocity":
             base = ipyleaflet.basemaps.NASAGIBS.MEaSUREsIceVelocity3413  # pylint: disable=no-member
             proj = ipyleaflet.projections.EPSG3413.NASAGIBS
-
         else:
             msg = "invalid string for basemap_type"
             raise ValueError(msg)
+    elif epsg == "3857":
+        if basemap_type == "BlueMarble":
+            base = ipyleaflet.basemaps.NASAGIBS.BlueMarble  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3857
+        elif basemap_type == "Imagery":
+            base = ipyleaflet.basemaps.Esri.WorldImagery  # pylint: disable=no-member
+            proj = ipyleaflet.projections.EPSG3857
+        else:
+            msg = "invalid string for basemap_type"
+            raise ValueError(msg)
+        # proj = dict(
+        #     name=f"EPSG{epsg}",
+        #     custom=False,
+        # )
     else:
-        msg = "hemisphere must be north or south"
-        raise ValueError(msg)
+        msg = (
+            "`interactive_map` only implemented for EPSG:3031, EPSG:3413 and EPSG:3857."
+        )
+        raise NotImplementedError(msg)
 
     if zoom is None:
         zoom = 0
@@ -3594,10 +3836,9 @@ def interactive_map(
         def handle_click(**kwargs: typing.Any) -> None:
             if kwargs.get("type") == "click":
                 latlon = kwargs.get("coordinates")[::-1]  # type: ignore[index]
-                if hemisphere == "south":
-                    label_xy.value = str(utils.latlon_to_epsg3031(latlon))
-                elif hemisphere == "north":
-                    label_xy.value = str(utils.latlon_to_epsg3413(latlon))
+                label_xy.value = str(
+                    utils.reproject(latlon, "epsg:4326", f"epsg:{epsg}")
+                )
 
         m.on_interaction(handle_click)
 
@@ -3607,6 +3848,7 @@ def interactive_map(
 def subplots(
     grids: list[xr.DataArray],
     hemisphere: str | None = None,
+    epsg: str | None = None,
     region: tuple[float, float, float, float] | None = None,
     dims: tuple[int, int] | None = None,
     fig_title: str | None = None,
@@ -3629,7 +3871,12 @@ def subplots(
     grids : list
         list of xarray.DataArray's to be plotted
     hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), can be set manually, or will read from the environment variable:
+        "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     region : tuple[float, float, float, float], optional
         choose to subset the grids to a specified region, in format
         [xmin, xmax, ymin, ymax], by default None
@@ -3660,6 +3907,8 @@ def subplots(
     """
 
     kwargs = copy.deepcopy(kwargs)
+
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if isinstance(grids, xr.DataArray):
         grids = [grids]
@@ -3747,7 +3996,7 @@ def subplots(
             xshift_amount=xshift,
             yshift_amount=yshift,
             region=region,
-            hemisphere=hemisphere,
+            epsg=epsg,
             **kwargs2,
         )
 
@@ -3845,6 +4094,7 @@ def plot_3d(
     vlims: tuple[float, float] | None = None,
     region: tuple[float, float, float, float] | None = None,
     hemisphere: str | None = None,
+    epsg: str | None = None,
     shp_mask: str | gpd.GeoDataFrame | None = None,
     shapefile: str | gpd.GeoDataFrame | None = None,
     polygon_mask: list[float] | None = None,
@@ -3870,7 +4120,12 @@ def plot_3d(
     region : tuple[float, float, float, float], optional
         region for the figure in format [xmin, xmax, ymin, ymax], by default None
     hemisphere : str, optional
-        choose between plotting in the "north" or "south" hemispheres, by default None
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), can be set manually, or will read from the environment variable:
+        "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     shp_mask : Union[str or geopandas.GeoDataFrame], optional
         deprecated, use shapefile instead
     shapefile : Union[str or geopandas.GeoDataFrame], optional
@@ -3885,6 +4140,8 @@ def plot_3d(
     pygmt.Figure
         Returns a figure object, which can be used by other PyGMT plotting functions.
     """
+    epsg = utils.default_epsg(epsg, hemisphere)
+
     fig_height = kwargs.get("fig_height", 15)
     fig_width = kwargs.get("fig_width")
 
@@ -3958,14 +4215,14 @@ def plot_3d(
         proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_height=fig_height,
-            hemisphere=hemisphere,
+            epsg=epsg,
         )
     # if fig_width is set, use it to set projection
     else:
         proj, _proj_latlon, fig_width, fig_height = utils.set_proj(
             region,
             fig_width=fig_width,
-            hemisphere=hemisphere,
+            epsg=epsg,
         )
 
     # set vertical limits
@@ -3991,7 +4248,7 @@ def plot_3d(
                 grid=grid,
                 masked=True,
                 invert=kwargs.get("invert", False),
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
             grid.to_netcdf("tmp.nc")
             grid = xr.load_dataset("tmp.nc")["z"]  # noqa: PLW2901
@@ -4002,7 +4259,7 @@ def plot_3d(
             grid = utils.mask_from_polygon(  # noqa: PLW2901
                 polygon_mask,
                 grid=grid,
-                hemisphere=hemisphere,
+                epsg=epsg,
             )
         # create colorscales
         cpt_kwargs = {
@@ -4016,7 +4273,6 @@ def plot_3d(
                 "cmap_region",
                 "robust",
                 "reverse_cpt",
-                "shp_mask",
             ]
         }
         cmap, colorbar, _ = set_cmap(
@@ -4028,11 +4284,10 @@ def plot_3d(
             cmap_region=cmap_region[i],
             robust=robust[i],
             reverse_cpt=reverse_cpt[i],
-            hemisphere=hemisphere,
+            epsg=epsg,
             colorbar=colorbar,
             **cpt_kwargs,
         )
-
         # set transparency values
         transparencies = kwargs.get("transparencies")
         transparency = 0 if transparencies is None else transparencies[i]
@@ -4050,7 +4305,7 @@ def plot_3d(
             transparency=transparency,
             # plane='-9000+ggrey',
             shading=kwargs.get("shading", False),
-            drapegrid=drapegrids[i],
+            drape_grid=drapegrids[i],
         )
 
         # display colorbar
@@ -4087,6 +4342,7 @@ def plot_3d(
 
 def interactive_data(
     hemisphere: str | None = None,
+    epsg: str | None = None,
     coast: bool = True,
     grid: xr.DataArray | None = None,
     grid_cmap: str = "inferno",
@@ -4103,7 +4359,11 @@ def interactive_data(
     ----------
     hemisphere : str, optional
         set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
-        (EPSG:3031)
+        (EPSG:3031), can be set manually, or will read from the environment variable:
+        "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
     coast : bool, optional
         choose whether to plot coastline data, by default True
     grid : xarray.DataArray, optional
@@ -4132,14 +4392,14 @@ def interactive_data(
     >>> GHF_point_data = ptk.fetch.ghf(version='burton-johnson-2020', points=True)
     ...
     >>> image = ptk.interactive_data(
-    ...    hemisphere="south",
+    ...    epsg="3031",
     ...    grid = bedmap2_bed,
     ...    points = GHF_point_data[['x','y','GHF']],
     ...    points_z = 'GHF',
     ...    )
     >>> image
     """
-    hemisphere = utils.default_hemisphere(hemisphere)
+    epsg = utils.default_epsg(epsg, hemisphere)
 
     if gv is None:
         msg = (
@@ -4154,30 +4414,46 @@ def interactive_data(
     gv.extension("bokeh")
 
     # initialize figure with coastline
-    if hemisphere == "north":
-        coast_gdf = gpd.read_file(fetch.groundingline(version="BAS"), engine="pyogrio")
+    if epsg == "3413":
         crsys = crs.NorthPolarStereo()
-    elif hemisphere == "south":
-        coast_gdf = gpd.read_file(
-            fetch.groundingline(version="measures-v2"), engine="pyogrio"
-        )
+        if coast:
+            coast_gdf = gpd.read_file(
+                fetch.groundingline(version="BAS"), engine="pyogrio"
+            )
+        else:
+            coast_gdf = None
+    elif epsg == "3031":
         crsys = crs.SouthPolarStereo()
+        if coast:
+            coast_gdf = gpd.read_file(
+                fetch.groundingline(version="measures-v2"), engine="pyogrio"
+            )
+        else:
+            coast_gdf = None
     else:
-        msg = "hemisphere must be north or south"
-        raise ValueError(msg)
+        # msg = "`interactive_data` only implemented for EPSG:3031 and EPSG:3413"
+        # raise NotImplementedError(msg)
+        crsys = crs.epsg(epsg)
+        coast_gdf = None
 
-    coast_fig = gv.Path(
-        coast_gdf,
-        crs=crsys,
-    )
-    # set projection, and change groundingline attributes
-    coast_fig.opts(
-        projection=crsys,
-        color=kwargs.get("coast_color", "black"),
-        data_aspect=1,
-    )
+    coast_fig = None
+    if coast_gdf is None:
+        msg = "Coastline data could not be loaded for the specified EPSG."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+    else:
+        coast_fig = gv.Path(
+            coast_gdf,
+            crs=crsys,
+        )
 
-    figure = coast_fig
+        # set projection, and change groundingline attributes
+        coast_fig.opts(
+            projection=crsys,
+            color=kwargs.get("coast_color", "black"),
+            data_aspect=1,
+        )
+
+    figure = None
 
     # display grid
     if grid is not None:
@@ -4194,7 +4470,7 @@ def interactive_data(
         gv_grid.opts(cmap=grid_cmap, colorbar=True, tools=["hover"])
 
         # add to figure
-        figure = figure * gv_grid
+        figure = gv_grid
 
     # display points
     if points is not None:
@@ -4203,59 +4479,16 @@ def interactive_data(
             points_z=points_z,
             points_color=points_color,
             points_cmap=points_cmap,
+            epsg=epsg,
             **kwargs,
         )
-        # if len(points.columns) < 3:
-        #     # if only 2 cols are given, give points a constant color
-        #     # turn points into geoviews dataset
-        #     gv_points = gv.Points(
-        #         points,
-        #         crs=crs.SouthPolarStereo(),
-        #         )
-
-        #     # change options
-        #     gv_points.opts(
-        #         color=points_color,
-        #         cmap=points_cmap,
-        #         colorbar=True,
-        #         colorbar_position='top',
-        #         tools=['hover'],
-        #         marker=kwargs.get('marker', 'circle'),
-        #         alpha=kwargs.get('alpha', 1),
-        #         size= kwargs.get('size', 4),
-        #         )
-
-        # else:
-        #     # if more than 2 columns, color points by third column
-        #     # turn points into geoviews dataset
-        #     gv_points = gv.Points(
-        #         data = points,
-        #         vdims = [points_z],
-        #         crs = crs.SouthPolarStereo(),
-        #         )
-
-        #     # change options
-        #     gv_points.opts(
-        #         color=points_z,
-        #         cmap=points_cmap,
-        #         colorbar=True,
-        #         colorbar_position='top',
-        #         tools=['hover'],
-        #         marker=kwargs.get('marker', 'circle'),
-        #         alpha=kwargs.get('alpha', 1),
-        #         size= kwargs.get('size', 4),
-        #         )
 
         # add to figure
-        figure = figure * gv_points
+        figure = gv_points if figure is None else figure * gv_points
 
     # optionally plot coast again, so it's on top
-    if coast is True:
+    if coast_fig is not None:
         figure = figure * coast_fig
-
-    # trying to get datashader to auto scale colormap based on current map extent
-    # from holoviews.operation.datashader import regrid
-    # from holoviews.operation.datashader import rasterize
 
     return figure
 
@@ -4265,6 +4498,8 @@ def geoviews_points(
     points_z: str | None = None,
     points_color: str = "red",
     points_cmap: str = "viridis",
+    epsg: str | None = None,
+    hemisphere: str | None = None,
     **kwargs: typing.Any,
 ) -> typing.Any:
     """
@@ -4279,6 +4514,13 @@ def geoviews_points(
         color for the points, by default "red"
     points_cmap : str, optional
         colormap to use to color the points based on `points_z`, by default "viridis"
+    hemisphere : str, optional
+        set whether to plot in "north" hemisphere (EPSG:3413) or "south" hemisphere
+        (EPSG:3031), can be set manually, or will read from the environment variable:
+        "POLARTOOLKIT_HEMISPHERE"
+    epsg : str | None, optional
+        set which EPSG projection to use for plotting, can be set manually, or will read
+        from the environment variable: "POLARTOOLKIT_EPSG", by default None
 
     Returns
     -------
@@ -4295,9 +4537,19 @@ def geoviews_points(
         msg = "Missing optional dependency 'cartopy' required for interactive plotting."
         raise ImportError(msg)
 
+    epsg = utils.default_epsg(epsg, hemisphere)
+
+    # initialize figure with coastline
+    if epsg == "3413":
+        crsys = crs.NorthPolarStereo()
+    elif epsg == "3031":
+        crsys = crs.SouthPolarStereo()
+    else:
+        crsys = crs.epsg(epsg)
+
     gv_points = gv.Points(
         data=points,
-        crs=crs.SouthPolarStereo(),
+        crs=crsys,
     )
 
     if len(points.columns) < 3:
@@ -4343,7 +4595,7 @@ def geoviews_points(
             size=kwargs.get("size", 4),
         )
     gv_points.opts(
-        projection=crs.SouthPolarStereo(),
+        projection=crsys,
         data_aspect=1,
     )
 
