@@ -63,7 +63,7 @@ from .utils import (  # noqa: E402
     mask_from_shapefile,
     nearest_grid_fill,
     points_inside_region,
-    points_inside_shp,
+    points_inside_shapefile,
     polygon_to_region,
     polygon_to_shapefile,
     random_color,

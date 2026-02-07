@@ -1120,6 +1120,12 @@ def filter_grid(
     return result.rename(original_name)
 
 
+@deprecation.deprecated(
+    deprecated_in="1.4.1",
+    removed_in="2.0.0",
+    current_version=polartoolkit.__version__,
+    details="Use the new function `points_inside_shapefile()` instead. Note the new function returns only the subset of data instead of the dataframe with a new column 'inside'",
+)
 def points_inside_shp(
     points: pd.DataFrame | gpd.GeoDataFrame,
     shapefile: gpd.GeoDataFrame,
@@ -1128,7 +1134,41 @@ def points_inside_shp(
     hemisphere: str | None = None,
 ) -> pd.DataFrame | gpd.GeoDataFrame:
     """
-    Add a column to a dataframe indicating whether each point is inside a shapefile.
+    Deprecated, use `points_inside_shapefile` instead.
+    Note the new function returns only the subset of data instead of the dataframe with a new column 'inside'
+    """
+    msg = "`points_inside_shp` is deprecated, use `points_inside_shapefile` instead. Note the new function returns only the subset of data instead of the dataframe with a new column 'inside'"
+    warnings.warn(
+        msg,
+        UserWarning,
+        stacklevel=2,
+    )
+    df = points_inside_shapefile(
+        points=points,
+        shapefile=shapefile,
+        crs=crs,
+        coord_names=coord_names,
+        hemisphere=hemisphere,
+        epsg=epsg,
+    )
+
+    df2 = points.copy()
+    df2["inside"] = False
+    df2.loc[df.index.to_numpy(), "inside"] = True
+
+    return df2
+
+
+def points_inside_shapefile(
+    points: pd.DataFrame | gpd.GeoDataFrame,
+    shapefile: gpd.GeoDataFrame,
+    crs: str | None = None,
+    coord_names: tuple[str, str] | None = None,
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+) -> pd.DataFrame | gpd.GeoDataFrame:
+    """
+    return a subset of a dataframe which is located inside a shapefile.
 
     Parameters
     ----------
@@ -1148,8 +1188,7 @@ def points_inside_shp(
     Returns
     -------
     pandas.DataFrame | geopandas.GeoDataFrame
-        Dataframe with a new column 'inside' which is True if the point is inside the
-        shapefile
+        returns a subset dataframe
     """
     points = points.copy()
 
@@ -1180,9 +1219,11 @@ def points_inside_shp(
             crs=crs,
         )
 
-    points["inside"] = points.within(shapefile.geometry[0])
+    points["inside_tmp"] = points.within(shapefile.geometry.iloc[0])
 
-    return points
+    points = points[points.inside_tmp]
+
+    return points.drop(columns="inside_tmp")
 
 
 @deprecation.deprecated(
