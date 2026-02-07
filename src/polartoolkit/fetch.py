@@ -4055,7 +4055,7 @@ def magnetics(
                     spacing=5e3,
                     region=(-3330000.0, 3330000.0, -3330000.0, 3330000.0),
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed.to_zarr(fname_processed)
@@ -4190,7 +4190,7 @@ def magnetics(
                     spacing=10e3,  # .25 degree resolution, ~20 km,
                     region=(-3500000.0, 3500000.0, -3500000.0, 3500000.0),
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed = processed.to_dataset(name="mag")
@@ -4210,7 +4210,7 @@ def magnetics(
 
         grid = xr.open_zarr(
             path,
-            consolidated=None,
+            consolidated=False,
         )["mag"]
 
         resampled = resample_grid(
@@ -4692,7 +4692,7 @@ def ghf(
                     spacing=10e3,
                     region=regions.antarctica,
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
 
                 # resample to ensure correct region and spacing
@@ -5075,7 +5075,7 @@ def crustal_thickness(
                     spacing=10e3,  # given as 0.5degrees, which is ~3.5km at the pole,
                     region=regions.antarctica,
                     registration="g",
-                    maxradius="1c",
+                    max_radius="1c",
                 )
                 # Save to disk
                 processed.to_zarr(fname_processed)
