@@ -866,6 +866,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         inset_width: float = 0.25,
         inset_reg: tuple[float, float, float, float] | None = None,
         inset_region: tuple[float, float, float, float] | None = None,
+        inset_width_factor: float | None = None,
         inset_offset: str | None = None,
         inset_box: bool | str = False,
         inset_coast_pen: str = "0.2p,black",
@@ -929,75 +930,169 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         with self.inset(
             position=position,
-            box=kwargs.get("inset_box", False),
+            box=inset_box,
         ):
-            if self.hemisphere == "north":
-                if inset_reg is None:
+            if self.epsg == "3413":
+
+                def plot_inset(
+                    inset_region: tuple[float, float, float, float],
+                    self: Figure,
+                    inset_coast_pen: str,
+                    inset_box_pen: str,
+                ) -> None:
+                    if (
+                        inset_region[1] - inset_region[0]
+                        != inset_region[3] - inset_region[2]
+                    ):
+                        logger.warning(
+                            "Inset region should be square or else projection will be off."
+                        )
+
+                    # plot grounded ice/ land as gray
+                    gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
+                    self.plot(
+                        region=inset_region,
+                        data=gdf,
+                        fill="grey",
+                    )
+
+                    # plot coastline on top
+                    self.plot(
+                        data=gdf,
+                        pen=inset_coast_pen,
+                    )
+
+                    # shown main figure region as red box
+                    self.add_box(
+                        box=self.reg,
+                        pen=inset_box_pen,
+                    )
+
+                # default region for inset map is a square centered on Greenland
+                # of the inset map (defaults to all of Greenland)
+                if inset_region is None:
                     if "L" in inset_position[0:3]:
                         # inset reg needs to be square,
                         # if on left side, make square by adding to right side of region
-                        inset_reg = (-800e3, 2000e3, -3400e3, -600e3)
+                        inset_region = (-800e3, 2000e3, -3400e3, -600e3)
                     elif "R" in inset_position[0:3]:
-                        inset_reg = (-1800e3, 1000e3, -3400e3, -600e3)
+                        inset_region = (-1800e3, 1000e3, -3400e3, -600e3)
                     else:
-                        inset_reg = (-1300e3, 1500e3, -3400e3, -600e3)
+                        inset_region = (-1300e3, 1500e3, -3400e3, -600e3)
 
-                if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
-                    logger.warning(
-                        "Inset region should be square or else projection will be off."
+                # if inset_width_factor is provided, instead make inset region a square
+                # centered on the same point as the figure region, with width equal to
+                # inset_width_factor times the widest dimension of the figure region
+                if inset_width_factor is not None:
+                    inset_region = utils.square_around_region(
+                        self.region, inset_width_factor
                     )
-                gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
-                self.plot(
-                    projection=inset_map,
-                    region=inset_reg,
-                    data=gdf,
-                    fill="grey",
-                )
-                self.plot(
-                    data=gdf,
-                    pen=kwargs.get("inset_coast_pen", "0.2p,black"),
-                )
-            elif self.hemisphere == "south":
-                if inset_reg is None:
-                    inset_reg = regions.antarctica
-                if inset_reg[1] - inset_reg[0] != inset_reg[3] - inset_reg[2]:
-                    logger.warning(
-                        "Inset region should be square or else projection will be off."
+                    while True:  # continue trying until break
+                        try:  # try with width_factor, if fails, decrease by 1
+                            inset_region = utils.square_around_region(
+                                self.region, inset_width_factor
+                            )
+                            plot_inset(
+                                inset_region,
+                                self,
+                                inset_coast_pen=inset_coast_pen,
+                                inset_box_pen=inset_box_pen,
+                            )
+                        except AssertionError:
+                            inset_width_factor -= 1
+                        else:
+                            break
+                else:
+                    plot_inset(
+                        inset_region,
+                        self,
+                        inset_coast_pen=inset_coast_pen,
+                        inset_box_pen=inset_box_pen,
                     )
-                logger.debug("plotting floating ice")
-                self.plot(
-                    projection=inset_map,
-                    region=inset_reg,
-                    data=fetch.antarctic_boundaries(version="Coastline"),
-                    fill="skyblue",
-                )
-                logger.debug("plotting grounded ice")
-                self.plot(
-                    data=fetch.groundingline(version="measures-v2"),
-                    fill="grey",
-                )
-                logger.debug("plotting coastline")
-                gl = gpd.read_file(
-                    fetch.groundingline(version="measures-v2"),
-                    engine="pyogrio",
-                )
-                coast = gpd.read_file(
-                    fetch.antarctic_boundaries(version="Coastline"), engine="pyogrio"
-                )
-                data = pd.concat([gl, coast])
-                self.plot(
-                    data,
-                    pen=kwargs.get("inset_coast_pen", "0.2p,black"),
-                )
-            else:
-                msg = "hemisphere must be north or south"
-                raise ValueError(msg)
-            logger.debug("add inset box")
-            self.add_box(
-                box=self.reg,
-                pen=kwargs.get("inset_box_pen", "1p,red"),
-            )
-            logger.debug("inset complete")
+
+            elif self.epsg == "3031":
+
+                def plot_inset(
+                    inset_region: tuple[float, float, float, float],
+                    self: Figure,
+                    inset_coast_pen: str,
+                    inset_box_pen: str,
+                ) -> None:
+                    if (
+                        inset_region[1] - inset_region[0]
+                        != inset_region[3] - inset_region[2]
+                    ):
+                        logger.warning(
+                            "Inset region should be square or else projection will be off."
+                        )
+
+                    # plot floating ice as blue
+                    self.plot(
+                        region=inset_region,
+                        data=fetch.antarctic_boundaries(version="Coastline"),
+                        fill="skyblue",
+                    )
+
+                    # plot grounded ice/ land as gray
+                    self.plot(
+                        data=fetch.groundingline(version="measures-v2"),
+                        fill="grey",
+                    )
+
+                    # plot coastline on top
+                    gl = gpd.read_file(
+                        fetch.groundingline(version="measures-v2"),
+                        engine="pyogrio",
+                    )
+                    coast = gpd.read_file(
+                        fetch.antarctic_boundaries(version="Coastline"),
+                        engine="pyogrio",
+                    )
+                    data = pd.concat([gl, coast])
+                    self.plot(
+                        data=data,
+                        pen=inset_coast_pen,
+                    )
+
+                    # show main figure region as red box
+                    self.add_box(
+                        box=self.reg,
+                        pen=inset_box_pen,
+                    )
+
+                # default region for inset map is a square centered on Antarctica
+                if inset_region is None:
+                    inset_region = regions.antarctica
+
+                # if inset_width_factor is provided, instead make inset region a square
+                # centered on the same point as the figure region, with width equal to
+                # inset_width_factor times the widest dimension of the figure region
+                if inset_width_factor is not None:
+                    inset_region = utils.square_around_region(
+                        self.region, inset_width_factor
+                    )
+                    while True:  # continue trying until break
+                        try:  # try with width_factor, if fails, decrease by 1
+                            inset_region = utils.square_around_region(
+                                self.region, inset_width_factor
+                            )
+                            plot_inset(
+                                inset_region,
+                                self,
+                                inset_coast_pen=inset_coast_pen,
+                                inset_box_pen=inset_box_pen,
+                            )
+                        except AssertionError:
+                            inset_width_factor -= 1
+                        else:
+                            break
+                else:
+                    plot_inset(
+                        inset_region,
+                        self,
+                        inset_coast_pen=inset_coast_pen,
+                        inset_box_pen=inset_box_pen,
+                    )
 
     def add_scalebar(
         self,
@@ -2265,6 +2360,7 @@ def basemap(
             inset_width=kwargs.get("inset_width", 0.25),
             inset_region=kwargs.get("inset_region"),
             inset_reg=kwargs.get("inset_reg"),
+            inset_width_factor=kwargs.get("inset_width_factor", None),
             inset_offset=kwargs.get("inset_offset", None),
             inset_box=kwargs.get("inset_box", False),
             inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
@@ -3198,6 +3294,7 @@ def plot_grid(
             inset_width=kwargs.get("inset_width", 0.25),
             inset_region=kwargs.get("inset_region"),
             inset_reg=kwargs.get("inset_reg"),
+            inset_width_factor=kwargs.get("inset_width_factor", None),
             inset_offset=kwargs.get("inset_offset", None),
             inset_box=kwargs.get("inset_box", False),
             inset_box_pen=kwargs.get("inset_box_pen", "1p,red"),
