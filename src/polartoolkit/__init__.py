@@ -9,7 +9,7 @@ __all__ = ["__version__"]
 logger = logging.getLogger(__name__)
 
 
-class Report(scooby.Report):  # type: ignore[misc]
+class Report(scooby.Report):  # type: ignore[misc] # pylint: disable=missing-class-docstring
     def __init__(self, additional=None, ncol=3, text_width=80, sort=False):  # type: ignore[no-untyped-def]
         """Initiate a scooby.Report instance."""
 
