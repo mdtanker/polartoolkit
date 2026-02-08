@@ -31,7 +31,6 @@ PASTE ERROR MESSAGE HERE
 <!-- blacken-docs:on -->
 
 **Info on your environment**
-Paste the output of `polartoolkit.Report()` below:
 
 <!-- blacken-docs:off -->
 ```
