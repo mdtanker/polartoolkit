@@ -34,6 +34,55 @@ Contributors:
 
 -->
 
+## v1.5.0
+Released on 2026-02-08
+Contributors:
+- Matt Tankersley
+
+### 🚀 Added
+- several Moho elevation and crustal thickness models for Antarctica
+- added Scooby as a dependency, giving a nice environment report to use in the issues template
+- all functions now allow passing an EPSG code instead of a hemisphere string
+- many plotting functions now work for non polar stereographic projection by passing an EPSG code
+- support for variable figure sizes when using `origin_shift`
+- new function `polygon_to_shapefile` to convert output of interactive clicking to a shapefile
+- new function `square_around_region` to define a square centered around a region, used in the `add_inset` function
+- new function `epsg_central_coordinates` to get the central point of a EPSG projection, to be used for interactive data plotting
+- new parameter `inset_width_factor` to make region of the inset map a square x times larger than the figure region, centered on the figure region
+
+- new function `gmt_projection_from_epsg`
+- new section of docs for Gallery examples
+- new How-to notebook for plotting non-polar data
+
+### ✏️ Changed
+- add all user-facing functions to `polartoolkit` namespace to be used with needed module names
+- updated all PyGMT parameter names based on deprecation
+- bump min support PyGMT version to v0.18.0
+- removed autodoc in favor of manually created .rst file for API
+
+### ⚠️ Deprecated
+- rename function `grd_trend` to `grid_trend`
+- rename function `grd_compare` to `grid_compare`
+- rename function `plot_grd` to `plot_grid`
+- rename function `change_reg` to `change_registration`
+- rename function `grd_blend` to `grid_blend`
+- rename function `mask_from_shp` to `mask_from_shapefile`
+- rename function `points_inside_shp` to `points_inside_shapefile`, and have it return a subset of the dataframe, instead of adding a new column 'inside'
+- rename parameter `filt_type` to `filter_type`
+- rename parameter `shp_mask` to `shapefile`
+- rename parameter `inset_reg` to `inset_region`
+
+### ❌ Removed
+- function `default_hemisphere` in favor of new function `default_epsg`
+
+### 🐛 Fixed
+- issues with preprocessing of Martos-2017 and AQ1 heat flow models
+- bug getting region from points during plotting
+- error message with grid of constant value during plotting
+- bug which didn't make points use same cmap as grid
+- annoying warning about GMT invalid font
+- ensure all past deprecation warnings are actually raised for users
+
 
 ## v1.4.0
 Released on 2026-01-08
