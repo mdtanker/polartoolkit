@@ -98,4 +98,4 @@ I welcome all forms of contribution! If you have any questions, comments or sugg
 
 Also, please feel free to share how you're using PolarToolkit, I'd love to know.
 
-Please, read our [Contributor Guide](contributing.md) to learn how you can contribute to the project.
+Please, read our [Contributor Guide](CONTRIBUTING.md) to learn how you can contribute to the project.
