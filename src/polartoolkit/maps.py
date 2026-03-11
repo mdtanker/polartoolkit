@@ -778,10 +778,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             colormap to use for MODIS imagery, by default "grayC"
         """
 
-        if self.epsg == "3413" and version is None:
-            version = "500m"
-        elif self.epsg == "3031" and version is None:
-            version = "750m"
+        if self.epsg == "3413":
+            if version is None:
+                version = "500m"
+        elif self.epsg == "3031":
+            if version is None:
+                version = "750m"
         else:
             msg = "`add_modis` only supports EPSG:3031 and EPSG:3413."
             raise NotImplementedError(msg)
