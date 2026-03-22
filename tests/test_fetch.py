@@ -1649,7 +1649,7 @@ def test_crustal_thickness(test_input, expected):
     grid = fetch.crustal_thickness(test_input)
 
     if test_input == "li-2023":
-        grid = grid.thickness
+        grid = grid.thickness  # type: ignore[union-attr]
 
     # assert utils.get_grid_info(grid) == pytest.approx(expected, rel=0.1)
     assert not deepdiff.DeepDiff(
@@ -1676,7 +1676,7 @@ def test_crustal_thickness_points():
         370936.38039461087,
         -1290208.6894404038,
     ]
-    assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)
+    assert df.iloc[0].dropna().tolist() == pytest.approx(expected, rel=0.1)  # type: ignore[union-attr]
 
 
 # %% moho
@@ -1752,7 +1752,7 @@ def test_moho(test_input, expected):
     grid = fetch.moho(test_input)
 
     if test_input == "li-2023":
-        grid = grid.upward
+        grid = grid.upward  # type: ignore[union-attr]
 
     assert not deepdiff.DeepDiff(
         utils.get_grid_info(grid),

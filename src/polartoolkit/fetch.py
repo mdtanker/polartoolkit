@@ -764,13 +764,13 @@ def ice_vel(
                         spacing=5e3,
                         **kwargs,
                     )
-                    vx_5k = typing.cast(xr.DataArray, vx_5k)
+                    vx_5k = typing.cast("xr.DataArray", vx_5k)
                     vy_5k = resample_grid(
                         ds.VY,
                         spacing=5e3,
                         **kwargs,
                     )
-                    vy_5k = typing.cast(xr.DataArray, vy_5k)
+                    vy_5k = typing.cast("xr.DataArray", vy_5k)
                     processed = (vx_5k**2 + vy_5k**2) ** 0.5
                     # restore registration type
                     processed.gmt.registration = ds.VX.gmt.registration
@@ -824,7 +824,7 @@ def ice_vel(
             base_url=base_url,
             registry=registry,
         )
-        for k, _ in registry.items():
+        for k in registry:
             pup.fetch(
                 fname=k,
                 downloader=EarthDataDownloader(),
@@ -870,7 +870,7 @@ def ice_vel(
         msg = "`ice_vel` only available for EPSG:3031 and EPSG:3413"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
+    return typing.cast("xr.DataArray", resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def modis(
@@ -1030,7 +1030,7 @@ def imagery() -> str:
         known_hash="7e7daa7af128f1ad18ac597d95d716ba26f745e75f8abb81c10049419a070c37",
         progressbar=True,
     )
-    return typing.cast(str, next(p for p in path if p.endswith(".tif")))
+    return typing.cast("str", next(p for p in path if p.endswith(".tif")))
 
 
 def antarctic_bed_type(
@@ -1275,7 +1275,7 @@ def groundingline(
             registry=registry,
         )
 
-        for k, _ in registry.items():
+        for k in registry:
             pup.fetch(
                 fname=k,
                 downloader=EarthDataDownloader(),
@@ -1317,7 +1317,7 @@ def groundingline(
             # The registry specifies the files that can be fetched
             registry=registry,
         )
-        for k, _ in registry.items():
+        for k in registry:
             pup.fetch(
                 fname=k,
                 downloader=EarthDataDownloader(),
@@ -1397,7 +1397,7 @@ def antarctic_boundaries(
             # The registry specifies the files that can be fetched
             registry=registry,
         )
-        for k, _ in registry.items():
+        for k in registry:
             pup.fetch(
                 fname=k,
                 downloader=EarthDataDownloader(),
@@ -1444,7 +1444,7 @@ def antarctic_boundaries(
             # The registry specifies the files that can be fetched
             registry=registry,
         )
-        for k, _ in registry.items():
+        for k in registry:
             pup.fetch(
                 fname=k,
                 downloader=EarthDataDownloader(),
@@ -1703,7 +1703,7 @@ def sediment_thickness(
         )
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def ibcso_coverage(
@@ -1983,7 +1983,7 @@ def ibcso(
         msg = "reference must be 'geoid' or 'ellipsoid'"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, grid)
+    return typing.cast("xr.DataArray", grid)
 
 
 def bedmachine(
@@ -2270,7 +2270,7 @@ def bedmachine(
             msg = "reference must be 'eigen-6c4' or 'ellipsoid'"
             raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, grid)
+    return typing.cast("xr.DataArray", grid)
 
 
 def bedmap_points(
@@ -2476,7 +2476,7 @@ def bedmap_points(
                             append=True,
                             geometry_type="Point",
                         )
-                    except Exception as e:
+                    except Exception:
                         logger.exception(
                             "Error writing to geopackage for file number %s, deleting "
                             "geopackage file",
@@ -2484,7 +2484,7 @@ def bedmap_points(
                         )
                         # delete the file
                         pathlib.Path.unlink(fname_processed)
-                        raise e
+                        raise
 
                 # delete the folder with csv files
                 shutil.rmtree(new_fold)
@@ -2586,7 +2586,7 @@ def bedmap_points(
                             append=True,
                             geometry_type="Point",
                         )
-                    except Exception as e:
+                    except Exception:
                         logger.exception(
                             "Error writing to geopackage for file number %s, deleting "
                             "geopackage file",
@@ -2594,7 +2594,7 @@ def bedmap_points(
                         )
                         # delete the file
                         pathlib.Path.unlink(fname_processed)
-                        raise e
+                        raise
 
                 # delete the folder with csv files
                 shutil.rmtree(fold)
@@ -2968,7 +2968,7 @@ def bedmap3(
         elif reference == "eigen-gl04c":
             pass
 
-    return typing.cast(xr.DataArray, grid)
+    return typing.cast("xr.DataArray", grid)
 
 
 def bedmap2(
@@ -3310,7 +3310,7 @@ def bedmap2(
         elif reference == "eigen-gl04c":
             pass
 
-    return typing.cast(xr.DataArray, grid)
+    return typing.cast("xr.DataArray", grid)
 
 
 def rema(
@@ -3429,7 +3429,7 @@ def rema(
         **kwargs,
     )
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def deepbedmap(
@@ -3579,17 +3579,16 @@ def gravity(
             ]
         )
 
-        resampled_vars = []
-        for var in file.data_vars:
-            resampled_vars.append(
-                resample_grid(
-                    file[var],
-                    spacing,
-                    region,
-                    registration,
-                    **kwargs,
-                ).rename(var)
-            )
+        resampled_vars = [
+            resample_grid(
+                file[var],
+                spacing,
+                region,
+                registration,
+                **kwargs,
+            ).rename(var)
+            for var in file.data_vars
+        ]
 
         resampled = xr.merge(resampled_vars)
 
@@ -3876,7 +3875,7 @@ def etopo(
         **kwargs,
     )
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def geoid(
@@ -3990,7 +3989,7 @@ def geoid(
         **kwargs,
     )
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def magnetics(
@@ -4270,7 +4269,7 @@ def magnetics(
         msg = "version must be 'admap1', 'admap2', 'admap2_gdb' or 'LCS-1'"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def ghf(
@@ -4922,7 +4921,7 @@ def ghf(
 
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)  # pylint: disable=possibly-used-before-assignment
+    return typing.cast("xr.DataArray", resampled)  # pylint: disable=possibly-used-before-assignment
 
 
 def gia(
@@ -4985,7 +4984,7 @@ def gia(
         msg = "version must be 'stal-2020'"
         raise ValueError(msg)
 
-    return typing.cast(xr.DataArray, resampled)
+    return typing.cast("xr.DataArray", resampled)
 
 
 def crustal_thickness(
@@ -5148,7 +5147,7 @@ def crustal_thickness(
             region,
             registration,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "an-2015":
         grid = moho(version="an-2015")
@@ -5172,10 +5171,12 @@ def crustal_thickness(
             **kwargs,
         )
 
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "an-2015-points":
-        return typing.cast(pd.DataFrame, moho(version="an-2015-points", region=region))
+        return typing.cast(
+            "pd.DataFrame", moho(version="an-2015-points", region=region)
+        )
 
     if version == "baranov-2021":
 
@@ -5244,7 +5245,7 @@ def crustal_thickness(
             registration,
             **kwargs,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "li-2023":
         path = pooch.retrieve(
@@ -5275,7 +5276,7 @@ def crustal_thickness(
 
         ds = xr.merge(das)
 
-        return typing.cast(xr.DataArray, ds)
+        return typing.cast("xr.DataArray", ds)
 
     if version == "ji-2022":
         path = pooch.retrieve(
@@ -5314,7 +5315,7 @@ def crustal_thickness(
         # clip so no negatives
         resampled = resampled.where(resampled > 0, 0)
 
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     msg = "version must be 'an-2015', 'an-2015-points', 'shen-2018', 'baranov-2021', 'li-2023' or 'ji-2022'"
     raise ValueError(msg)
@@ -5448,7 +5449,7 @@ def moho(
             **kwargs,
         )
 
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "an-2015":
 
@@ -5519,7 +5520,7 @@ def moho(
             registration,
             **kwargs,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "an-2015-points":
         data = """
@@ -5763,7 +5764,7 @@ def moho(
                 region,
             )
 
-        return typing.cast(pd.DataFrame, df)
+        return typing.cast("pd.DataFrame", df)
 
     if version == "baranov-2021":
 
@@ -5832,7 +5833,7 @@ def moho(
             registration,
             **kwargs,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "borghi-2022":
 
@@ -5916,7 +5917,7 @@ def moho(
             registration,
             **kwargs,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     if version == "li-2023":
         path = pooch.retrieve(
@@ -5947,7 +5948,7 @@ def moho(
 
         ds = xr.merge(das)
 
-        return typing.cast(xr.DataArray, ds)
+        return typing.cast("xr.DataArray", ds)
 
     if version == "ji-2022":
         path = pooch.retrieve(
@@ -5982,7 +5983,7 @@ def moho(
             registration,
             **kwargs,
         )
-        return typing.cast(xr.DataArray, resampled)
+        return typing.cast("xr.DataArray", resampled)
 
     msg = "version must be 'an-2015', 'an-2015-points', 'shen-2018', 'baranov-2021', 'borghi-2022', 'li-2023', or 'ji-2022'"
     raise ValueError(msg)
