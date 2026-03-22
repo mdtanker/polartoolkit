@@ -56,13 +56,13 @@ def default_epsg(epsg: str | None, hemisphere: str | None) -> str:
     # checks for correct types / value
     if not isinstance(epsg, (str, type(None))):
         msg = f"`epsg` must be a string or None, not {type(epsg)}"  # type: ignore[unreachable]
-        raise ValueError(msg)
+        raise TypeError(msg)
     if isinstance(epsg, str) and not epsg.isdigit():
         msg = f"`epsg` must be a string of digits or None, not {epsg}"
-        raise ValueError(msg)
+        raise TypeError(msg)
     if hemisphere not in ["north", "south", None]:
         msg = f"`hemisphere` must be 'north', 'south', or None, not {hemisphere}"
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     # 1st priority: if epsg provided, use that
     if epsg is not None:
@@ -84,11 +84,6 @@ def default_epsg(epsg: str | None, hemisphere: str | None) -> str:
     # 3rd priority: look for POLARTOOLKIT_EPSG environment variable
     try:
         epsg = os.environ["POLARTOOLKIT_EPSG"]
-        # check epsg is string of digits
-        assert epsg.isdigit(), (
-            f"Environment variable POLARTOOLKIT_EPSG must be a string of numbers, not {epsg}"
-        )
-        return epsg
     # 4th priority: look for POLARTOOLKIT_HEMISPHERE environment variable
     except KeyError as e:
         try:
@@ -113,6 +108,12 @@ def default_epsg(epsg: str | None, hemisphere: str | None) -> str:
                 ".bashrc file)."
             )
             raise KeyError(msg) from e
+    else:
+        # check epsg is string of digits
+        assert epsg.isdigit(), (
+            f"Environment variable POLARTOOLKIT_EPSG must be a string of numbers, not {epsg}"
+        )
+        return epsg
 
 
 def rmse(data: typing.Any, as_median: bool = False) -> float:
@@ -167,7 +168,7 @@ def get_grid_region(
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid region can't be extracted")
-        raise e
+        raise
 
     return region
 
@@ -194,7 +195,7 @@ def get_grid_spacing(
 
     try:
         spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid spacing can't be extracted")
@@ -238,7 +239,8 @@ def get_grid_registration(
             except AttributeError:
                 logger.warning("grid registration can't be extracted, setting to 'g'.")
                 registration = "g"
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
+        # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid registration can't be extracted")
         registration = None
@@ -291,7 +293,8 @@ def get_grid_info(
 
     try:
         spacing: float | None = float(pygmt.grdinfo(grid, per_column="n", o=7)[:-1])
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
+        # pygmt.exceptions.GMTInvalidInput:
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid spacing can't be extracted")
@@ -301,7 +304,8 @@ def get_grid_info(
         region: typing.Any = tuple(
             float(pygmt.grdinfo(grid, per_column="n", o=i)[:-1]) for i in range(4)
         )
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
+        # pygmt.exceptions.GMTInvalidInput:
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid region can't be extracted")
@@ -309,7 +313,8 @@ def get_grid_info(
 
     try:
         zmin: float | None = float(pygmt.grdinfo(grid, per_column="n", o=4)[:-1])
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
+        # pygmt.exceptions.GMTInvalidInput:
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid zmin can't be extracted")
@@ -317,7 +322,8 @@ def get_grid_info(
 
     try:
         zmax = float(pygmt.grdinfo(grid, per_column="n", o=5)[:-1])
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
+        # pygmt.exceptions.GMTInvalidInput:
         # pygmt.exceptions.GMTInvalidInput:
         logger.exception(e)
         logger.warning("grid zmax can't be extracted")
@@ -338,7 +344,7 @@ def get_grid_info(
             except AttributeError:
                 logger.warning("grid registration can't be extracted, setting to 'g'.")
                 registration = "g"
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
         logger.exception(e)
         logger.warning("grid registration can't be extracted")
         registration = None
@@ -1454,7 +1460,7 @@ def mask_from_shapefile(
     except ValueError as e:
         logger.exception(e)
 
-    return typing.cast(xr.DataArray, output)
+    return typing.cast("xr.DataArray", output)
 
 
 @deprecation.deprecated(
@@ -1534,7 +1540,7 @@ def set_proj(
         fig_height = fig_width * (ymax - ymin) / (xmax - xmin)
         ratio = (xmax - xmin) / (fig_width / 100)
     else:
-        fig_height = typing.cast(float, fig_height)
+        fig_height = typing.cast("float", fig_height)
         fig_width = fig_height * (xmax - xmin) / (ymax - ymin)
         ratio = (ymax - ymin) / (fig_height / 100)
 
@@ -1770,19 +1776,18 @@ def get_combined_min_max(
         epsg = None
 
     # get min max of each grid
-    limits = []
-    for v in values:
-        limits.append(
-            get_min_max(
-                v,
-                robust=robust,
-                region=region,
-                shapefile=shapefile,
-                epsg=epsg,
-                absolute=absolute,
-                robust_percentiles=robust_percentiles,
-            )
+    limits = [
+        get_min_max(
+            v,
+            robust=robust,
+            region=region,
+            shapefile=shapefile,
+            epsg=epsg,
+            absolute=absolute,
+            robust_percentiles=robust_percentiles,
         )
+        for v in values
+    ]
 
     # get min of all mins and max of all maxes
     ar = np.array(limits)
@@ -1921,9 +1926,9 @@ def grid_compare(
 
     # extract regions of both grids
     da1_reg = da1_info[1]
-    da1_reg = typing.cast(tuple[float, float, float, float], da1_reg)
+    da1_reg = typing.cast("tuple[float, float, float, float]", da1_reg)
     da2_reg = da2_info[1]
-    da2_reg = typing.cast(tuple[float, float, float, float], da2_reg)
+    da2_reg = typing.cast("tuple[float, float, float, float]", da2_reg)
 
     # extract registrations of both grids
     da1_registration = da1_info[-1]
@@ -2013,8 +2018,8 @@ def grid_compare(
             )
             grid2 = change_registration(grid2)
 
-    grid1 = typing.cast(xr.DataArray, grid1)
-    grid2 = typing.cast(xr.DataArray, grid2)
+    grid1 = typing.cast("xr.DataArray", grid1)
+    grid2 = typing.cast("xr.DataArray", grid2)
 
     dif = grid1 - grid2
 
@@ -2179,7 +2184,7 @@ def make_grid(
     coords = vd.grid_coordinates(region=region, spacing=spacing, pixel_register=True)
     data = np.ones_like(coords[0]) * value
     return typing.cast(
-        xr.DataArray,
+        "xr.DataArray",
         vd.make_xarray_grid(coords, data, dims=["y", "x"], data_names=name),
     )
 
@@ -2569,7 +2574,7 @@ def mask_from_polygon(
     # if grid given as filename, load it
     if isinstance(grid, str):
         grid = xr.load_dataarray(grid)
-        grid = typing.cast(xr.DataArray, grid)
+        grid = typing.cast("xr.DataArray", grid)
         ds = grid.to_dataset(name="z")  # type: ignore[union-attr]
     elif isinstance(grid, xr.DataArray):
         ds = grid.to_dataset()
@@ -2608,7 +2613,7 @@ def mask_from_polygon(
     if drop_nans is True:
         masked = masked.where(masked.notna() == 1, drop=True)
 
-    return typing.cast(xr.DataArray, masked)
+    return typing.cast("xr.DataArray", masked)
 
 
 @deprecation.deprecated(

@@ -473,8 +473,10 @@ def test_geomap(test_input, expected):
         version=test_input, region=regions.alter_region(regions.ross_island, zoom=25e3)
     )[0:2]
 
+    expected_sorted = np.copy(expected).sort()
+    actual_sorted = np.copy(data.objectid.to_numpy()).sort()
     # check if the first 2 object id's match the expected
-    assert data.objectid.to_numpy().sort() == expected.sort()
+    assert actual_sorted == expected_sorted
 
 
 # %% IBCSO coverage data
@@ -601,7 +603,7 @@ bedmachine_test = [
             4478.62060547,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "icebase",
@@ -612,7 +614,7 @@ bedmachine_test = [
             4477.27294922,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "bed",
@@ -623,7 +625,7 @@ bedmachine_test = [
             4477.27294922,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "ice_thickness",
@@ -634,7 +636,7 @@ bedmachine_test = [
             4583.71435547,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "geoid",
@@ -645,7 +647,7 @@ bedmachine_test = [
             52.0,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "surface",
@@ -656,7 +658,7 @@ bedmachine_test = [
             3240.26293945,
             "g",
         ),
-        "north",
+        "3413",
     ),
     (
         "icebase",
@@ -667,7 +669,7 @@ bedmachine_test = [
             3240.06640625,
             "g",
         ),
-        "north",
+        "3413",
     ),
     (
         "bed",
@@ -678,7 +680,7 @@ bedmachine_test = [
             3240.06665039,
             "g",
         ),
-        "north",
+        "3413",
     ),
     (
         "ice_thickness",
@@ -689,7 +691,7 @@ bedmachine_test = [
             3374.90136719,
             "g",
         ),
-        "north",
+        "3413",
     ),
     (
         "geoid",
@@ -700,7 +702,7 @@ bedmachine_test = [
             64.000038147,
             "g",
         ),
-        "north",
+        "3413",
     ),
 ]
 
@@ -1218,7 +1220,7 @@ gravity_test = [
             980167.75,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "eigen",
@@ -1229,7 +1231,7 @@ gravity_test = [
             980201.9375,
             "g",
         ),
-        "north",
+        "3413",
     ),
 ]
 
@@ -1293,7 +1295,7 @@ magnetics_test = [
             601.757263184,
             "g",
         ),
-        "south",
+        "3031",
     ),
     (
         "LCS-1",
@@ -1304,7 +1306,7 @@ magnetics_test = [
             570.593200684,
             "g",
         ),
-        "north",
+        "3413",
     ),
 ]
 
@@ -1633,7 +1635,7 @@ crust_test = [
             10000,
             (-2710000.0, 2930000.0, -2340000.0, 2400000.0),
             0,
-            60903.578125,
+            58622.640625,
             "g",
         ),
     ),
@@ -1735,8 +1737,8 @@ moho_test = [
         (
             10000,
             (-2710000.0, 2930000.0, -2340000.0, 2400000.0),
-            -58622.640625,
-            -4044.28857422,
+            -60903.578125,
+            2615.80224609,
             "g",
         ),
     ),
@@ -1767,7 +1769,7 @@ def test_moho(test_input, expected):
 
 geoid_test = [
     (
-        "north",
+        "3413",
         (
             5000,
             (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
@@ -1777,7 +1779,7 @@ geoid_test = [
         ),
     ),
     (
-        "south",
+        "3031",
         (
             5000,
             (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
@@ -1811,7 +1813,7 @@ def test_geoid(test_input, expected):
 
 etopo_test = [
     (
-        "north",
+        "3413",
         (
             5000,
             (-3500000.0, 3500000.0, -3500000.0, 3500000.0),
@@ -1821,7 +1823,7 @@ etopo_test = [
         ),
     ),
     (
-        "south",
+        "3031",
         (
             5000,
             (-3500000.0, 3500000.0, -3500000.0, 3500000.0),

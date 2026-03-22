@@ -510,10 +510,9 @@ def draw_region(**kwargs: typing.Any) -> list[typing.Any]:
 
     def handle_rect_draw(self: typing.Any, action: str, geo_json: typing.Any) -> None:  # noqa: ARG001 # pylint: disable=unused-argument
         global poly  # noqa: PLW0602 # pylint: disable=global-variable-not-assigned
-        shapes = []
-        for coords in geo_json["geometry"]["coordinates"][0][:-1][:]:
-            shapes.append(list(coords))
-        shapes = list(shapes)
+        shapes = [
+            list(coords) for coords in geo_json["geometry"]["coordinates"][0][:-1][:]
+        ]
         if action == "created":
             poly.append(shapes)  # type: ignore[name-defined]
 

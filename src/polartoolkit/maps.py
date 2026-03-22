@@ -127,7 +127,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         epsg = utils.default_epsg(epsg, hemisphere)
 
-        reg = typing.cast(tuple[float, float, float, float], reg)
+        reg = typing.cast("tuple[float, float, float, float]", reg)
         self.reg = reg
         self.epsg = epsg
 
@@ -778,10 +778,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             colormap to use for MODIS imagery, by default "grayC"
         """
 
-        if self.epsg == "3413" and version is None:
-            version = "500m"
-        elif self.epsg == "3031" and version is None:
-            version = "750m"
+        if self.epsg == "3413":
+            if version is None:
+                version = "500m"
+        elif self.epsg == "3031":
+            if version is None:
+                version = "750m"
         else:
             msg = "`add_modis` only supports EPSG:3031 and EPSG:3413."
             raise NotImplementedError(msg)
@@ -1298,7 +1300,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             return round(x, -floor(log10(abs(x))))
 
         if length is None:
-            length = typing.cast(float, length)
+            length = typing.cast("float", length)
             # get shorter of east-west vs north-south sides
             width = abs(self.reg[1] - self.reg[0])
             height = abs(self.reg[3] - self.reg[2])
@@ -1823,7 +1825,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     cmap=cmap,
                     fill=kwargs.get("hist_fill"),
                     pen=kwargs.get("hist_pen", "default"),
-                    bar_width=kwargs.get("hist_barwidth"),
+                    barwidth=kwargs.get("hist_barwidth"),
                     center=kwargs.get("hist_center", False),
                     distribution=kwargs.get("hist_distribution", False),
                     cumulative=kwargs.get("hist_cumulative", False),
@@ -1853,7 +1855,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             except pygmt.exceptions.GMTCLibError as e:
                 logger.warning(e)
                 logger.warning("issue with plotting histogram, skipping...")
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
                 logger.exception("An error occurred: %s", e)
 
             # shift figure back
@@ -2957,7 +2959,7 @@ def set_cmap(
                 verbose="error",
                 log=kwargs.get("cpt_log", False),
             )
-        except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught
+        except (pygmt.exceptions.GMTCLibError, Exception) as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
             if "Option T: min >= max" in str(e):
                 logger.warning("supplied min value is greater or equal to max value")
 
@@ -3322,7 +3324,7 @@ def plot_grid(
 
     if isinstance(grid, xr.Dataset):
         msg = "grid must be a DataArray, not a Dataset."
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     if fig is None:
         if region is None:
@@ -3917,11 +3919,11 @@ def subplots(
     if region is None:
         try:
             region = utils.get_grid_info(grids[0])[1]
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except Exception as e:  # pylint: disable=broad-exception-caught # noqa: BLE001
             logger.exception(e)
             logger.warning("grid region can't be extracted, using antarctic region.")
             region = regions.antarctica
-    region = typing.cast(tuple[float, float, float, float], region)
+    region = typing.cast("tuple[float, float, float, float]", region)
 
     # get best dimensions for subplot
     nrows, ncols = utils.square_subplots(len(grids)) if dims is None else dims
@@ -4207,7 +4209,7 @@ def plot_3d(
             msg = "first grids' region can't be extracted, please provide with `region`"
             raise ValueError(msg) from e
 
-    region = typing.cast(tuple[float, float, float, float], region)
+    region = typing.cast("tuple[float, float, float, float]", region)
 
     # set figure projection and size from input region and figure dimensions
     # by default use figure height to set projection
@@ -4305,7 +4307,7 @@ def plot_3d(
             transparency=transparency,
             # plane='-9000+ggrey',
             shading=kwargs.get("shading", False),
-            drape_grid=drapegrids[i],
+            drapegrid=drapegrids[i],
         )
 
         # display colorbar

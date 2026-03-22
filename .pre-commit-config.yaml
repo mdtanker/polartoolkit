@@ -6,8 +6,8 @@ ci:
 exclude: |
   (?x)^(
       .github/config.yml |
-      environment.yml |
-      env/environment.yml
+      env/environment.yml |
+      pixi.lock
   )$
 
 repos:
@@ -21,7 +21,7 @@ repos:
     rev: "v6.0.0"
     hooks:
       - id: check-added-large-files
-        exclude: ^(docs/datasets/|docs/gallery/masking_and_subsetting_data.ipynb)
+        exclude: ^(pixi.lock|docs/datasets/|docs/gallery/masking_and_subsetting_data.ipynb)
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
@@ -90,7 +90,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.24.1"
+    rev: "v0.25"
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]

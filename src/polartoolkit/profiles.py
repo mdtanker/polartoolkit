@@ -482,7 +482,7 @@ def default_data(
         # spacing=10e3,
         verbose=verbose,
     )
-    mag = typing.cast(xr.DataArray, mag)
+    mag = typing.cast("xr.DataArray", mag)
 
     fa_grav = fetch.gravity(
         version="antgg-2021",
@@ -1011,7 +1011,7 @@ def plot_profile(
                 fig.legend(
                     position=kwargs.get("data_legend_loc", "JBR+jBL+o0c"),
                     box=kwargs.get("data_legend_box", False),
-                    scale=kwargs.get("data_legend_scale", 1),
+                    S=kwargs.get("data_legend_scale", 1),
                 )
 
         if kwargs.get("data_line_cmap") is not None:
@@ -1171,7 +1171,7 @@ def plot_profile(
             fig.legend(
                 position=kwargs.get("layers_legend_loc", "JBR+jBL+o0c"),
                 box=kwargs.get("layers_legend_box", False),
-                scale=kwargs.get("layers_legend_scale", 1),
+                S=kwargs.get("layers_legend_scale", 1),
             )
 
     # plot 'A','B' locations
@@ -1616,7 +1616,7 @@ def plot_data(
             fig.legend(
                 position=kwargs.get("data_legend_loc", "JBR+jBL+o0c"),
                 box=kwargs.get("data_legend_box", False),
-                scale=kwargs.get("data_legend_scale", 1),
+                S=kwargs.get("data_legend_scale", 1),
             )
     if kwargs.get("data_line_cmap") is not None:
         fig.colorbar(
@@ -1782,10 +1782,7 @@ def draw_lines(**kwargs: typing.Any) -> list[typing.Any]:
 
     def handle_line_draw(self: typing.Any, action: str, geo_json: typing.Any) -> None:  # noqa: ARG001 # pylint:disable=unused-argument
         global lines  # noqa: PLW0602 # pylint:disable=global-variable-not-assigned
-        shapes = []
-        for coords in geo_json["geometry"]["coordinates"]:
-            shapes.append(list(coords))
-        shapes = list(shapes)
+        shapes = [list(coords) for coords in geo_json["geometry"]["coordinates"]]
         if action == "created":
             lines.append(shapes)  # type: ignore[name-defined]
 
