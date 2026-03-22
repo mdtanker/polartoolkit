@@ -14,8 +14,5 @@ build:
       - curl -fsSL https://pixi.sh/install.sh | bash
       - $HOME/.pixi/bin/pixi list -e docs
 
-conda:
-  environment: docs/environment.yml
-
 sphinx:
   configuration: docs/conf.py
