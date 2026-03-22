@@ -34,10 +34,11 @@ Contributors:
 
 -->
 
-## v1.5.0
-Released on 2026-02-08
+## v1.5.1
+Released on 2026-03-22
 Contributors:
 - Matt Tankersley
+- Boris Konstantinov
 
 ### 🚀 Added
 - several Moho elevation and crustal thickness models for Antarctica
@@ -49,15 +50,13 @@ Contributors:
 - new function `square_around_region` to define a square centered around a region, used in the `add_inset` function
 - new function `epsg_central_coordinates` to get the central point of a EPSG projection, to be used for interactive data plotting
 - new parameter `inset_width_factor` to make region of the inset map a square x times larger than the figure region, centered on the figure region
-
 - new function `gmt_projection_from_epsg`
 - new section of docs for Gallery examples
 - new How-to notebook for plotting non-polar data
 
 ### ✏️ Changed
+- replaced Nox, Make, and Conda commands with Pixi
 - add all user-facing functions to `polartoolkit` namespace to be used with needed module names
-- updated all PyGMT parameter names based on deprecation
-- bump min support PyGMT version to v0.18.0
 - removed autodoc in favor of manually created .rst file for API
 
 ### ⚠️ Deprecated
@@ -82,6 +81,12 @@ Contributors:
 - bug which didn't make points use same cmap as grid
 - annoying warning about GMT invalid font
 - ensure all past deprecation warnings are actually raised for users
+- incorrect link to the Contributor Guide in the docs
+- a bug when in the add_modis function
+
+
+## v1.5.0
+Yanked from PyPI and conda-forge due to error in dependency version for pygmt.
 
 
 ## v1.4.0
