@@ -8,11 +8,15 @@ build:
   tools:
     python: "latest"
   jobs:
+    create_environment:
+      - asdf plugin add pixi
+      - asdf install pixi latest
+      - asdf global pixi latest
     install:
-      # Install specific pixi environment and list packages
-      - free -h
-      - curl -fsSL https://pixi.sh/install.sh | bash
-      - $HOME/.pixi/bin/pixi list -e docs
+      - pixi install -e docs
+    build:
+      html:
+        - pixi run -e docs sphinx-build -T -b html docs $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/conf.py
