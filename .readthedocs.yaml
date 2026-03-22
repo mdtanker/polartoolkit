@@ -9,9 +9,13 @@ build:
     python: "mambaforge-23.11"
   jobs:
     install:
-      - pip install --no-deps -e .
+      # Install specific pixi environment and list packages
+      - free -h
+      - curl -fsSL https://pixi.sh/install.sh | bash
+      - $HOME/.pixi/bin/pixi list -e docs
+
 conda:
-  environment: environment.yml
+  environment: docs/environment.yml
 
 sphinx:
   configuration: docs/conf.py

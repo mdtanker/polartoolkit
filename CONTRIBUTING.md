@@ -5,7 +5,7 @@
 * clone your forked repository on your computer: `git clone https://github.com/mdtanker/polartoolkit`.
 * [create a branch](https://docs.github.com/en/get-started/using-github/github-flow#create-a-branch) for your edits: `git checkout -b new-branch`
 * make your changes
-* run the style checkers: `nox -s style`
+* run the style checkers: `pixi run style`
 * add your changed files: `git add .`
 * once the style checks pass, commit your changes: `git commit -m "a short description of your changes"`
 * push your changes: `git push -u origin new-branch`
@@ -42,41 +42,28 @@ contributions.
 
 ## Contents
 
-- [How to contribute](#how-to-contribute)
-  - [TLDR (Too long; didn't read)](#tldr-too-long-didnt-read)
-  - [Contents](#contents)
-  - [What Can I Do?](#what-can-i-do)
-  - [Reporting a Bug](#reporting-a-bug)
-  - [Editing the Documentation](#editing-the-documentation)
-  - [Contributing Code](#contributing-code)
-    - [General guidelines](#general-guidelines)
-    - [Fork the repository](#fork-the-repository)
-    - [Clone the repository](#clone-the-repository)
-    - [Setting up `nox`](#setting-up-nox)
-    - [Setting up your environment](#setting-up-your-environment)
-    - [Make a branch](#make-a-branch)
-    - [Make your changes](#make-your-changes)
-    - [Code style and linting](#code-style-and-linting)
-      - [Docstrings](#docstrings)
-      - [Type hints](#type-hints)
-      - [Logging](#logging)
-    - [Testing your code](#testing-your-code)
-    - [Documentation](#documentation)
-      - [Run all .ipynb's to update them](#run-all-ipynbs-to-update-them)
-      - [Check the build manually (optional)](#check-the-build-manually-optional)
-      - [Automatically build the docs](#automatically-build-the-docs)
-    - [Committing changes](#committing-changes)
-    - [Push your changes](#push-your-changes)
-    - [Open a PR](#open-a-pr)
-    - [Code review](#code-review)
-    - [Sync your fork and local](#sync-your-fork-and-local)
-    - [Add yourself as an author](#add-yourself-as-an-author)
-  - [Publish a new release](#publish-a-new-release)
-    - [PyPI (pip)](#pypi-pip)
-    - [Conda-Forge](#conda-forge)
-  - [Update the dependencies](#update-the-dependencies)
-  - [Create a conda environment file](#create-a-conda-environment-file)
-  - [Set up the binder configuration](#set-up-the-binder-configuration)
+* [What Can I Do?](#what-can-i-do)
+* [Reporting a Bug](#reporting-a-bug)
+* [Editing the Documentation](#editing-the-documentation)
+* [Contributing Code](#contributing-code)
+  - [General guidelines](#general-guidelines)
+  - [Fork the repository](#fork-the-repository)
+  - [Clone the repository](#clone-the-repository)
+  - [Setting up your environment](#setting-up-your-environment)
+  - [Make a branch](#make-a-branch)
+  - [Make your changes](#make-your-changes)
+  - [Testing your code](#testing-your-code)
+  - [Documentation](#documentation)
+  - [Committing changes](#committing-changes)
+  - [Push your changes](#push-your-changes)
+  - [Open a PR](#open-a-pr)
+  - [Code review](#code-review)
+  - [Sync your fork and local](#sync-your-fork-and-local)
+  - [Add yourself as an author](#add-yourself-as-an-author)
+* [Publish a new release](#publish-a-new-release)
+* [Update the Dependencies](#update-the-dependencies)
+* [Create a conda environment file](#create-a-conda-environment-file)
+* [Set up the binder configuration](#set-up-the-binder-configuration)
 
 ## What Can I Do?
 
@@ -195,22 +182,12 @@ You can install nox with `pip install nox`.
 
 ### Setting up your environment
 
-Run the following `make` command to create a new environment and install the package dependencies. If you don't have / want to install make, just copy the commands from the Makefile file and run them in the terminal.
+We use `pixi` to manage our dependencies and to run certain workflows, like style-checking the code and building the documentation.
+If you don't have `pixi`, see the install instructions [here](https://pixi.prefix.dev/latest/installation/).
 
-```
-make create
-```
-Activate the environment:
-```
-mamba activate polartoolkit
-```
-Install your local version:
-```
-make install
-```
-This environment now contains your local, editable version of polartoolkit, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
+Run `pixi install` to set up your environments.
 
-> **Note:** You'll need to activate the environment every time you start a new terminal.
+This contains your local, editable version of airbornegeo, meaning if you alter code in the package, it will automatically include those changes in your environment (you may need to restart your kernel if using Jupyter). If you need to update the dependencies, see the [update the dependencies](#update-the-dependencies) section below.
 
 ### Make a branch
 
@@ -224,11 +201,11 @@ git checkout -b new-branch
 
 Now your ready to make your changes! Make sure to read the below sections to see how to correctly format and style your code contributions.
 
-### Code style and linting
+#### Code style and linting
 
 We use [pre-commit](https://pre-commit.com/) to check code style. This can be used locally, by installing pre-commit, or can be used as a pre-commit hook, where it is automatically run by git for each commit to the repository. This pre-commit hook won't add or commit any changes, but will just inform your of what should be changed. Pre-commit is setup within the `.pre-commit-config.yaml` file. There are lots of hooks (processes) which run for each pre-commit call, including [Ruff](https://docs.astral.sh/ruff/) to format and lint the code. This allows you to not think about proper indentation, line length, or aligning your code during development. Before committing, or periodically while you code, run the following to automatically format your code:
 ```
-nox -s lint
+pixi run format
 ```
 
 To have `pre-commit` locally run automatically on commits, install it with `pre-commit install`. `pre-commit` will also automatically run for any commits to GitHub.
@@ -237,13 +214,13 @@ Go through the output of the `pre-commit` logs and try to change the code based 
 
 We also use [Pylint](https://pylint.readthedocs.io/en/latest/), which performs static-linting on the code. This checks the code and catches many common bugs and errors, without running any of the code. This check is slightly slower the the `Ruff` check. Run it with the following:
 ```
-nox -s pylint
+pixi run lint
 ```
 Similar to using `Ruff`, go through the output of this, search the error codes on the [Pylint documentation](https://pylint.readthedocs.io/en/latest/) for help, and try and fix all the errors and warnings. If there are false-positives, or your confident you don't agree with the warning, add ` # pylint: disable=` at the end of the lines, with the warning code following the `=`.
 
 To run both pre-commit and pylint together use:
 ```
-nox -s style
+pixi run style
 ```
 
 #### Docstrings
@@ -288,12 +265,17 @@ We will help you create the tests and sort out any kind of problem during code r
 
 Run the tests and calculate test coverage using:
 ```
-nox -s test
+pixi run test
 ```
-To run a specific test by name:
+To run only the tests in one file:
 ```
-pytest --cov=. -k "test_name"
+pixi run test tests/test_fetch.py
 ```
+To run only an individual test:
+```
+pixi run test tests/test_fetch.py::test_name
+```
+
 The coverage report will let you know which lines of code are touched by the tests.
 **Strive to get 100% coverage for the lines you changed.**
 It's OK if you can't or don't know how to test something.
@@ -307,7 +289,7 @@ The Docs are build with [Sphinx](https://www.sphinx-doc.org/en/master/) and host
 
 #### Run all .ipynb's to update them
 ```
-make run_docs
+pixi run run_docs
 ```
 If your edits haven't changed any part of the core package, then there is no need to re-run the notebooks. If you changed a notebook, just clear it's contents and re-run that one notebook.
 
@@ -315,22 +297,16 @@ If your edits haven't changed any part of the core package, then there is no nee
 
 You can build the docs using:
 ```bash
-    nox -s build_api_docs
+    pixi run docs
 ```
 
-```bash
-    nox -s docs
-```
-
-Click the link to open your docs in a website which will automatically update as you make edits.
+This should open a webpage showing your local version of the docs. If you make a change to the content of the docs, it should automatically update.
 
 #### Automatically build the docs
 
 Add, commit, and push all changes to GitHub in a Pull Request, and `RTD` should automatically build the docs.
 
 In each PR, you will see section of the checks for `RTD`. Click on this to preview the docs for the PR.
-
-`RTD` uses the conda environment specified in `environment.yml` when it's building.
 
 ### Committing changes
 
@@ -427,18 +403,16 @@ Once the new version is on conda, update the binder .yml file, as below.
 
 ## Update the dependencies
 
-To add or update a dependencies, add it to `pyproject.toml` either under `dependencies` or `optional-dependencies`. This will be included in the next build uploaded to PyPI. Additionally, add any dependency changes to the file `environment.yml`.
+To add or update a dependencies, add it to `pyproject.toml` either under `[dependencies]` or `[optional-dependencies]`. This will be included in the next build uploaded to PyPI. You also need to add it to pixi, with `pixi add PACKAGE`.
 
-If you add a dependency necessary for using the package, make sure to add it to the Binder config file and update the `environment.yml` file in the repository. See below.
+If you just want to add a package to your environment temporarily, but not included it as a dependencies of `polartoolkit`, use can use `pixi add PACKAGE`. The package will be added to the pixi portion of the pyproject.toml, but not to the packages dependencies. When a user installs `polartoolkit`, they will only get the dependencies list in the [project][dependencies] section, not those listed in the [tool.pixi.dependencies] section.
 
 ## Create a conda environment file
 
 As a backup options for users experiencing install issues, we include a `environment.yml` file in the repo, which users can download and install from. To update this, run the following commands:
 
 ```
-make remove
-make conda_install
-make conda_export
+pixi run conda_export
 ```
 
 ## Set up the binder configuration

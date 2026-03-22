@@ -12,9 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Many color libraries just need this variable to be set to any value.
-  # Set it to 3 to support 8-bit color graphics (256 colors per channel)
-  # for libraries that care about the value set.
+  # Many color libraries just need this to be set to any value, but at least
+  # one distinguishes color depth, where "3" -> "256-bit color".
   FORCE_COLOR: 3
 
 defaults:
@@ -22,27 +21,33 @@ defaults:
     shell: bash -el {0}
 
 jobs:
-  lint:
-    name: Pylint
+  style:
+    name: Style checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - uses: astral-sh/setup-uv@v7
-      - name: Run Pylint
-        run: uvx nox -s pylint -- --output-format=github
 
-  checks:
-    name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.65.0
+          cache: true
+          environments: dev
+
+      - run: pixi run style
+
+  test:
+    name: Python Tests ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         runs-on: [ubuntu-latest, windows-latest, macos-14]
 
     env:
@@ -50,38 +55,23 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Switch to Current Branch
-        run: git checkout ${{ env.BRANCH }}
-
-      - name: Get current week number of year
-        id: date
-        run: echo "date=$(date +%Y-W%W)" >> $GITHUB_OUTPUT # e.g., 2024-W19
-
-      # Install Micromamba with conda-forge dependencies
-      - name: Setup Micromamba
-        uses: mamba-org/setup-micromamba@v2
+      - uses: actions/setup-python@v6
         with:
-          environment-file: environment.yml
-          post-cleanup: "all"
-          cache-downloads: false
-          # environment cache is persistent for one week.
-          cache-environment-key:
-            micromamba-environment-${{ steps.date.outputs.date }}
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install package
-        run: pip install --no-deps -e .
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.65.0
+          cache: true
+          environments: test
 
-      - name: Run the tests
-        run: >-
-          pytest -m "not fetch and not issue" -ra --cov --cov-report=xml
-          --cov-report=term --durations=20
+      - run: pixi run test_ci
 
-      - name: Upload coverage report
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

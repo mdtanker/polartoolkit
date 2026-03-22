@@ -167,3 +167,6 @@ tmp*
 .vscode*
 
 docs/api/generated/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

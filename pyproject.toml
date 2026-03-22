@@ -11,7 +11,7 @@ description = "Helpful tools for polar researchers"
 keywords = ["cryosphere", "antarctica", "arctic", "greenland", "maps", "plotting", "pygmt", "cross-section"]
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -27,19 +27,22 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
 dynamic = ["version"]
 dependencies = [
     "numpy>=1.25.0",
     "pandas>=2.0.0",
-    "xarray[io]>=2023.4.0", # includes netCDF4, h5netcdf, pydap, scipy, zarr, fsspec, cftime, cfgrib, pooch
+    "xarray>=2023.4.0",
+    "netCDF4>=1.6.0",
+    "h5netcdf>=1.5.0",
     "scipy>=1.11.0",
     "verde",
     "pooch",
     "rioxarray",
     "tqdm",
-    "pygmt>=0.18.0", # need aliases for scale and deprecated parameters such as barwidth
+    "pygmt>=0.10.0", # parameter "log" for colorbar
     "harmonica>=0.6.0", # need load_oasis_montaj_grid function
     "deprecation",
     "openpyxl", # needed for fetch.ghf to read an excel file into pandas
@@ -61,35 +64,6 @@ interactive = [
     "ipyleaflet",
     "ipython>=8.13.0",
 ]
-test = [
-  {include-group = "interactive"},
-  "pytest >=6",
-  "pytest-cov >=3",
-  "deepdiff",
-]
-dev = [
-    {include-group = "test"},
-    "jupyterlab",
-]
-docs = [
-  "sphinx>=7.0",
-  "myst_parser>=0.13",
-  "sphinx_copybutton",
-  "sphinx_autodoc_typehints",
-  "sphinx-book-theme>=0.3",
-  "nbsphinx",
-  "ipykernel",
-  "nbconvert",
-  "sphinxcontrib-bibtex",
-  "sphinx_design",
-]
-
-all = [
-  {include-group = "interactive"},
-  {include-group = "test"},
-  {include-group = "dev"},
-  {include-group = "docs"},
-]
 
 [project.urls]
 Homepage = "https://github.com/mdtanker/polartoolkit"
@@ -104,7 +78,6 @@ version.source = "vcs"
 build.hooks.vcs.version-file = "src/polartoolkit/_version.py"
 
 [tool.hatch.envs.default]
-# duplicate for now since hatch doesn't support groups yet
 dependencies = []
 scripts.test = "pytest {args}"
 
@@ -118,12 +91,13 @@ packages = ["src/polartoolkit", "src/antarctic_plots"]
 toplevel = ["polartoolkit", "antarctic_plots"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+minversion = "9.0"
+addopts = ["-ra", "--showlocals"]
 xfail_strict = true
 filterwarnings = [
   "error",
   "ignore:.*numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject.*:RuntimeWarning",
+  "ignore:.*invalid escape sequence.*",
 ]
 log_cli_level = "INFO"
 testpaths = [
@@ -168,25 +142,40 @@ disallow_incomplete_defs = true
 extend-select = [
   "ARG",      # flake8-unused-arguments
   "B",        # flake8-bugbear
+  "BLE",    # flake8-blind-except
   "C4",       # flake8-comprehensions
+  "DTZ",    # flake8-datetimez
   "EM",       # flake8-errmsg
   "EXE",      # flake8-executable
+  "FA",     # flake8-future-annotations
+  "FLY",    # flynt
+  "FURB",   # refurb
   "G",        # flake8-logging-format
   "I",        # isort
-  "ICN",      # flake8-import-conventions
-  "NPY",      # NumPy specific rules
-  "PD",       # pandas-vet
-  "PGH",      # pygrep-hooks
-  "PIE",      # flake8-pie
-  "PL",       # pylint
-  "PT",       # flake8-pytest-style
-  "PTH",      # flake8-use-pathlib
-  "RET",      # flake8-return
-  "RUF",      # Ruff-specific
-  "SIM",      # flake8-simplify
-  "T20",      # flake8-print
-  "UP",       # pyupgrade
-  "YTT",      # flake8-2020
+  "ICN",    # flake8-import-conventions
+  "ISC",    # flake8-implicit-str-concat
+  "LOG",    # flake8-logging
+  "NPY",    # NumPy specific rules
+  "PD",     # pandas-vet
+  "PERF",   # perflint
+  "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PL",     # pylint
+  "PT",     # flake8-pytest-style
+  "PTH",    # flake8-use-pathlib
+  "PYI",    # flake8-pyi
+  "Q",      # flake8-quotes
+  "RET",    # flake8-return
+  "RSE",    # flake8-raise
+  "RUF",    # Ruff-specific
+  "SIM",    # flake8-simplify
+  "SLOT",   # flake8-slots
+  "T10",    # flake8-debugger
+  "T20",    # flake8-print
+  "TC",     # flake8-type-checking
+  "TRY",    # tryceratops
+  "UP",     # pyupgrade
+  "YTT",    # flake8-2020
 ]
 ignore = [
   "PLR09",    # Too many <...>
@@ -197,10 +186,13 @@ ignore = [
 
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # disable unused-imports errors on __init__.py
 "tests/**" = ["T20"]
-"noxfile.py" = ["T20"]
-"*.ipynb" = ["T201"]
+"__init__.py" = ["F401"]  # disable unused-imports errors on __init__.py
+"*.ipynb" = [
+  "T201",
+  "PERF401",
+  "PERF102",
+]
 
 
 [tool.pylint]
@@ -220,3 +212,132 @@ messages_control.disable = [
 
 [tool.codespell]
 ignore-words-list = ["word_to_ignore", "OND", "THUR", "WHIT"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+polartoolkit = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+interactive = { features = ["interactive"], solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
+
+[tool.pixi.dependencies]
+numpy = ">=1.25.0"
+pandas = ">=2.0.0"
+xarray = ">=2023.4.0"
+netcdf4 = ">=1.6.0"
+h5netcdf = ">=1.5.0"
+scipy = ">=1.11.0"
+verde = ">=1.9.0,<2"
+pooch = ">=1.9.0,<2"
+rioxarray = ">=0.22.0,<0.23"
+tqdm = ">=4.67.3,<5"
+pygmt = ">=0.10.0"
+harmonica = ">=0.6.0"
+deprecation = ">=2.1.0,<3"
+openpyxl = ">=3.1.5,<4"
+geopandas = ">=1.0"
+pyogrio = ">=0.12.1,<0.13"
+zarr = ">=3.0"
+python-dotenv = ">=1.2.2,<2"
+requests = ">=2.32.5,<3"
+earthaccess = ">=0.16.0,<0.17"
+xrft = ">=1.0.2,<2"
+scooby = ">=0.11.0,<0.12"
+geoviews = ">=1.15.1,<2"
+cartopy = ">=0.25.0,<0.26"
+ipyleaflet = ">=0.20.0,<0.21"
+ipython = ">=8.13"
+ipykernel = ">=7.2.0,<8"
+pyproj = ">=3.7.2,<4"
+
+[tool.pixi.feature.test.dependencies]
+pytest = ">=9"
+pytest-cov = ">=7"
+deepdiff = ">=8.6.2,<9"
+geoviews = ">=1.15.1,<2"
+cartopy = ">=0.25.0,<0.26"
+ipyleaflet = ">=0.20.0,<0.21"
+ipython = ">=8.13.0"
+
+[tool.pixi.feature.dev.dependencies]
+jupyterlab = ">=4.5.6,<5"
+pre-commit = ">=4.5.1,<5"
+pylint = ">=3.2"
+
+[tool.pixi.feature.docs.dependencies]
+nbconvert = ">=7.17.0,<8"
+sphinx = ">=7.0"
+myst-parser = ">=0.13"
+sphinx-copybutton = ">=0.5.2,<0.6"
+sphinx-autodoc-typehints = ">=3.9.9,<4"
+sphinx-book-theme = ">=0.3"
+nbsphinx = ">=0.9.8,<0.10"
+ipykernel = ">=7.2.0,<8"
+sphinxcontrib-bibtex = ">=2.6.5,<3"
+sphinx-design = ">=0.7.0,<0.8"
+sphinx-autobuild = ">=2025.8.25,<2026"
+
+[tool.pixi.feature.test.tasks.test]
+cmd = "pytest -ra {{ target }} --cov --cov-report=xml --cov-report=term"
+args = [{ arg = "target", default = "tests/" }]
+
+[tool.pixi.feature.test.tasks.test_ci]
+cmd = "pytest -ra -m 'not fetch and not issue' --cov --cov-report=xml --cov-report=term --durations=20"
+
+[tool.pixi.feature.dev.tasks.format]
+cmd = "pre-commit run --all-files"
+
+[tool.pixi.feature.dev.tasks.lint]
+cmd = "pylint polartoolkit"
+
+[tool.pixi.feature.dev.tasks.style]
+cmd = "pre-commit run --all-files ; pylint polartoolkit"
+
+[tool.pixi.feature.docs.tasks.docs]
+cmd = "sphinx-autobuild --open-browser -n -T -b=html docs docs/_build/html"
+
+[tool.pixi.feature.docs.tasks.docs_static]
+cmd = "sphinx-build --keep-going -n -T -b=html docs docs/_build/html"
+
+[tool.pixi.feature.docs.tasks.clear_datasets]
+cmd = "jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/datasets/**/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.clear_tutorial]
+cmd = "jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/tutorial/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.clear_how_to]
+cmd = "jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/how_to/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.clear_gallery]
+cmd = "jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/gallery/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.clear_docs]
+cmd = "jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace docs/*.ipynb"
+depends-on = ["clear_gallery", "clear_how_to", "clear_tutorial", "clear_datasets"]
+
+
+[tool.pixi.feature.docs.tasks.run_datasets]
+cmd = "jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/datasets/**/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.run_tutorial]
+cmd = "jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/tutorial/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.run_how_to]
+cmd = "jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/how_to/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.run_gallery]
+cmd = "jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/gallery/*.ipynb"
+
+[tool.pixi.feature.docs.tasks.run_docs]
+cmd = "jupyter nbconvert --ExecutePreprocessor.allow_errors=True --execute --inplace docs/*.ipynb"
+depends-on = ["run_gallery", "run_how_to", "run_tutorial", "run_datasets"]
+
+[tool.pixi.tasks]
+conda_export = "conda env export --name polartoolkit --channel conda-forge --file env/environment.yml"
