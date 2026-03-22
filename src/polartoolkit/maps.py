@@ -1825,7 +1825,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     cmap=cmap,
                     fill=kwargs.get("hist_fill"),
                     pen=kwargs.get("hist_pen", "default"),
-                    bar_width=kwargs.get("hist_barwidth"),
+                    barwidth=kwargs.get("hist_barwidth"),
                     center=kwargs.get("hist_center", False),
                     distribution=kwargs.get("hist_distribution", False),
                     cumulative=kwargs.get("hist_cumulative", False),
@@ -4307,7 +4307,7 @@ def plot_3d(
             transparency=transparency,
             # plane='-9000+ggrey',
             shading=kwargs.get("shading", False),
-            drape_grid=drapegrids[i],
+            drapegrid=drapegrids[i],
         )
 
         # display colorbar
