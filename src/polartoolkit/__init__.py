@@ -58,6 +58,7 @@ class Report(scooby.Report):  # type: ignore[misc] # pylint: disable=missing-cla
 
 
 from .fetch import (  # noqa: E402
+    get_fetches,
     resample_grid,
 )
 from .maps import (  # noqa: E402
@@ -83,6 +84,7 @@ from .regions import (  # noqa: E402
     alter_region,
     combine_regions,
     draw_region,
+    get_regions,
     regions_overlap,
 )
 from .utils import (  # noqa: E402
