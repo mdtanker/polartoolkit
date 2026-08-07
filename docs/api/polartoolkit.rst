@@ -134,6 +134,17 @@ Here are a few utility functions which can be helpful for plotting.
 
    square_subplots
    set_proj
+   rotated_crs
+   rotated_central_meridian
+   rotation_transformer
+   rotate_region
+   region_corners
+   native_top_longitude
+   top_longitude_to_rotation
+   rotation_to_top_longitude
+   unrotated_region
+   oriented_region
+   normalize_rotation
    random_color
    get_fig_height
    get_fig_width
