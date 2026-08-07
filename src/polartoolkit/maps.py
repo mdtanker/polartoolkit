@@ -17,6 +17,7 @@ import pygmt
 import verde as vd
 import xarray as xr
 from numpy.typing import NDArray
+from rasterio.enums import Resampling
 
 import polartoolkit
 from polartoolkit import fetch, logger, regions, utils
@@ -86,11 +87,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
     def __init__(
         self,
         fig: pygmt.Figure | None = None,
-        reg: tuple[float, float, float, float] | None = None,
+        reg: typing.Any = None,
         hemisphere: str | None = None,
         epsg: str | None = None,
         height: float | None = None,
         width: float | None = None,
+        rotation: float | None = None,
     ) -> None:
         if fig is None and reg is None:
             msg = "Either a figure instance or a region (`reg`) must be provided."
@@ -126,10 +128,75 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 height = None
 
         epsg = utils.default_epsg(epsg, hemisphere)
-
-        reg = typing.cast("tuple[float, float, float, float]", reg)
-        self.reg = reg
         self.epsg = epsg
+
+        # `reg` is either a plain [xmin, xmax, ymin, ymax] region in `epsg`, or the
+        # corners of a *tilted* box - which a 4-tuple cannot express. Corners are what
+        # `utils.oriented_region` returns, and what you get from clicking or from a
+        # shapefile outline, so they carry their own orientation.
+        corners = utils._region_is_corners(reg)
+
+        # Rotating is implemented by shifting the central meridian of the polar
+        # stereographic projection, which is exactly a rotation about the pole. The data
+        # is then reprojected into that rotated frame by the `_rotate_*` helpers below.
+        # `self.epsg` deliberately stays the *base* EPSG, since the many
+        # `if self.epsg != "3031"` guards are about data availability by hemisphere.
+        if rotation is None:
+            if isinstance(reg, utils.OrientedRegion):
+                # already computed, no need to re-derive it
+                rotation = reg.rotation
+            elif corners:
+                # infer from the corners' own orientation
+                rotation = utils._corner_rotation(reg, self.epsg)
+            else:
+                rotation = 0
+        self.rotation = utils.normalize_rotation(rotation)
+
+        # informational: which line of longitude ends up at the top of the page
+        self.top_longitude = (
+            utils.rotation_to_top_longitude(self.epsg, self.rotation)
+            if self.epsg in utils.POLAR_STEREOGRAPHIC_PARAMS
+            else None
+        )
+
+        if self.rotation == 0:
+            self.rotated_crs = None
+            # corners of an unrotated box still just give their bounding region
+            reg = utils._corners_to_region(reg) if corners else reg
+        else:
+            self.rotated_crs = utils.rotated_crs(self.epsg, self.rotation)
+            easting, northing = (
+                utils._coordinates_from(reg, self.epsg)
+                if corners
+                else utils.region_corners(reg)
+            )
+            # a tilted box is axis-aligned once rotated, so this is a tight fit; a plain
+            # region instead grows to its bounding box so nothing asked for is cut off
+            reg = tuple(
+                float(v)
+                for v in vd.get_region(
+                    utils.rotation_transformer(self.epsg, self.rotation)(
+                        easting, northing
+                    )
+                )
+            )
+
+        # the plotting region, in the rotated frame when rotated
+        self.reg = typing.cast("tuple[float, float, float, float]", reg)
+
+        # the region of data needed to fill the map, in the base EPSG. Equal to `reg`
+        # unless rotated, in which case the footprint is a tilted rectangle and data must
+        # be fetched/clipped using its bounding box. Users can compute this without
+        # building a figure via `utils.unrotated_region`.
+        self.reg_base = typing.cast(
+            "tuple[float, float, float, float]",
+            self.reg
+            if self.rotation == 0
+            else tuple(
+                float(v)
+                for v in vd.get_region(self._to_base(*utils.region_corners(self.reg)))
+            ),
+        )
 
         # use default height if not set
         if width is None and height is None:
@@ -140,6 +207,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             fig_height=height,
             fig_width=width,
             epsg=self.epsg,
+            rotation=self.rotation,
         )
 
         self.origin_shift: str | None = None
@@ -178,6 +246,179 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             # doesn't work with EPSG or PROJ string, but works with Stereographic projections
             # self.reg_latlon = "/".join(map(str, self.reg)) + "/+ue"  # codespell:ignore ue
             # self.reg_latlon = (*self.reg, "+ue", "") # codespell:ignore ue
+
+    # ------------------------------------------------------------------------------
+    # rotation helpers
+    #
+    # Every one of these is a strict no-op when `self.rotation == 0`, so an unrotated
+    # figure follows exactly the same code path (and produces exactly the same output)
+    # as it did before rotation support was added.
+    # ------------------------------------------------------------------------------
+
+    def _to_base(
+        self,
+        easting: typing.Any,
+        northing: typing.Any,
+    ) -> tuple[typing.Any, typing.Any]:
+        """Convert coordinates from the rotated frame back into the base EPSG."""
+        if self.rotation == 0:
+            return easting, northing
+        return utils.rotation_transformer(self.epsg, self.rotation, inverse=True)(
+            easting, northing
+        )
+
+    def _from_base(
+        self,
+        easting: typing.Any,
+        northing: typing.Any,
+    ) -> tuple[typing.Any, typing.Any]:
+        """Convert coordinates from the base EPSG into the rotated frame."""
+        if self.rotation == 0:
+            return easting, northing
+        return utils.rotation_transformer(self.epsg, self.rotation)(easting, northing)
+
+    def _rotate_grid(
+        self,
+        grid: str | xr.DataArray,
+        categorical: bool = False,
+    ) -> str | xr.DataArray:
+        """
+        Reproject a grid from the base EPSG into the rotated frame.
+
+        Uses rioxarray (GDAL's warper) rather than :func:`verde.project_grid`, which
+        interpolates scattered points and does not scale to full resolution polar
+        grids.
+
+        Parameters
+        ----------
+        grid : str or xarray.DataArray
+            grid in the base EPSG, either loaded or a path to a file
+        categorical : bool, optional
+            if True use nearest-neighbour resampling to preserve integer class values,
+            by default False
+
+        Returns
+        -------
+        str or xarray.DataArray
+            the grid reprojected into the rotated frame, or `grid` unchanged if the
+            figure is not rotated
+        """
+        if self.rotation == 0:
+            return grid
+
+        if isinstance(grid, str):
+            grid = xr.load_dataarray(grid, engine="rasterio").squeeze(drop=True)
+
+        # preserve the input resolution
+        spacing = utils.get_grid_info(grid)[0]
+
+        # Clip to the footprint's bounding box before warping. Nothing inside the map is
+        # lost, since `reg_base` is by construction the bounding box of the rotated
+        # region, but it keeps continent-scale layers (imagery, MODIS) from being warped
+        # in full. Pad by a couple of cells so interpolation at the edge has neighbours.
+        if spacing is not None:
+            try:
+                grid = utils.subset_grid(
+                    grid, vd.pad_region(self.reg_base, 2 * spacing)
+                )
+            except (ValueError, IndexError, KeyError) as e:
+                # not fatal - just means the whole grid gets warped
+                logger.debug("could not clip grid before rotating: %s", e)
+
+        # fill the corners left empty by the rotation with NaN rather than a sentinel,
+        # which is only possible for a float grid
+        nodata = np.nan if np.issubdtype(grid.dtype, np.floating) else None
+
+        rotated = grid.rio.write_crs(f"EPSG:{self.epsg}").rio.reproject(
+            self.rotated_crs,
+            resolution=spacing,
+            nodata=nodata,
+            resampling=Resampling.nearest if categorical else Resampling.bilinear,
+        )
+        # rioxarray adds a CRS coordinate which PyGMT does not expect
+        return rotated.drop_vars("spatial_ref", errors="ignore")
+
+    def _rotate_vector(
+        self,
+        data: str | gpd.GeoDataFrame | pd.DataFrame,
+    ) -> typing.Any:
+        """
+        Reproject vector data from the base EPSG into the rotated frame.
+
+        Accepts a path to a shapefile as well as a loaded GeoDataFrame, since several
+        layers hand paths straight to GMT; those have to be loaded before they can be
+        rotated.
+
+        Parameters
+        ----------
+        data : str or geopandas.GeoDataFrame or pandas.DataFrame
+            vector data in the base EPSG, either loaded or a path to a file
+
+        Returns
+        -------
+        typing.Any
+            the data reprojected into the rotated frame, or `data` unchanged if the
+            figure is not rotated
+        """
+        if self.rotation == 0:
+            return data
+
+        if isinstance(data, str):
+            data = gpd.read_file(data, engine="pyogrio")
+        if data.crs is None:
+            data = data.set_crs(f"EPSG:{self.epsg}")
+        return data.to_crs(self.rotated_crs)
+
+    def _rotate_points(
+        self,
+        points: pd.DataFrame | gpd.GeoDataFrame,
+    ) -> tuple[pd.DataFrame | gpd.GeoDataFrame, str, str]:
+        """
+        Reproject tabular point data from the base EPSG into the rotated frame.
+
+        Parameters
+        ----------
+        points : pandas.DataFrame or geopandas.GeoDataFrame
+            point data with columns 'x'/'y' or 'easting'/'northing'
+
+        Returns
+        -------
+        tuple
+            the (possibly rotated) points and the names of the easting/northing columns
+        """
+        if ("x" in points.columns) and ("y" in points.columns):
+            x_col, y_col = "x", "y"
+        elif ("easting" in points.columns) and ("northing" in points.columns):
+            x_col, y_col = "easting", "northing"
+        else:
+            msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
+            raise ValueError(msg)
+
+        if self.rotation == 0:
+            return points, x_col, y_col
+
+        points = points.copy()
+        points[x_col], points[y_col] = self._from_base(
+            points[x_col].to_numpy(),
+            points[y_col].to_numpy(),
+        )
+        return points, x_col, y_col
+
+    def _add_footprint_box(
+        self,
+        pen: str = "2p,black",
+        verbose: str = "warning",
+    ) -> None:
+        """
+        Plot this map's footprint in *base* EPSG coordinates.
+
+        Used for the region-of-interest box inside an inset. The inset itself is never
+        rotated - it is a context map - so the footprint of a rotated figure has to be
+        converted back out of the rotated frame, the opposite direction to
+        :meth:`add_box`. On a rotated figure it therefore draws a tilted quadrilateral.
+        """
+        easting, northing = self._to_base(*utils.region_corners(self.reg))
+        self.plot(x=easting, y=northing, pen=pen, verbose=verbose)
 
     def shift_figure(
         self,
@@ -289,7 +530,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             )
         elif self.epsg == "3031":
             self.grdimage(
-                grid=fetch.imagery(),
+                grid=self._rotate_grid(fetch.imagery()),
                 cmap=None,
                 transparency=transparency,
                 projection=self.proj,
@@ -390,7 +631,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             raise ValueError(msg)
 
         self.plot(
-            data,  # pylint: disable=used-before-assignment
+            self._rotate_vector(data),  # pylint: disable=used-before-assignment
             projection=self.proj,
             region=self.reg,
             pen=pen,
@@ -527,7 +768,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "fault_exposure is deprecated, use faults_exposure instead"
             warnings.warn(msg, UserWarning, stacklevel=2)
 
-        faults = fetch.geomap(version="faults", region=self.reg)
+        faults = fetch.geomap(version="faults", region=self.reg_base)
 
         legend_label = "Fault types: "
 
@@ -592,7 +833,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             label = legend_label
 
         self.plot(
-            faults,
+            self._rotate_vector(faults),
             projection=self.proj,
             region=self.reg,
             pen=pen,
@@ -627,7 +868,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "Geologic units are only available for EPSG:3031."
             raise NotImplementedError(msg)
 
-        geologic_units = fetch.geomap(version="units", region=self.reg)
+        geologic_units = fetch.geomap(version="units", region=self.reg_base)
 
         if len(geologic_units) == 0:
             msg = "No geologic units found in the specified region."
@@ -655,7 +896,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             legend_spec = io.StringIO(legend_spec)  # type: ignore[assignment]
 
         self.plot(
-            data=geologic_units[["SIMPsymbol", "geometry"]],
+            data=self._rotate_vector(geologic_units[["SIMPsymbol", "geometry"]]),
             close=True,
             projection=self.proj,
             region=self.reg,
@@ -695,7 +936,14 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "Bed type classifications are only available for EPSG:3031."
             raise NotImplementedError(msg)
 
-        bed_type = fetch.antarctic_bed_type(region=self.reg)
+        # categorical raster, so nearest-neighbour resampling to preserve class values
+        bed_type = typing.cast(
+            "xr.DataArray",
+            self._rotate_grid(
+                fetch.antarctic_bed_type(region=self.reg_base),
+                categorical=True,
+            ),
+        )
 
         bed_type_cmap = {
             "Mixed: In-Situ/Ancient Basin": {"value": "-3.0", "color": "darkseagreen"},
@@ -788,14 +1036,14 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             msg = "`add_modis` only supports EPSG:3031 and EPSG:3413."
             raise NotImplementedError(msg)
 
-        image = fetch.modis(version=version, epsg=self.epsg)
-
         imagery_cmap, _, _ = set_cmap(
             True,
             modis=True,
             modis_cmap=cmap,
         )
         with set_env(GTIFF_SRS_SOURCE="EPSG"):
+            # read and rotate inside the same GDAL env the GeoTIFF is plotted under
+            image = self._rotate_grid(fetch.modis(version=version, epsg=self.epsg))
             self.grdimage(
                 grid=image,
                 cmap=imagery_cmap,
@@ -868,7 +1116,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             if self.epsg != "3031":
                 msg = "simple basemap with depoorter-2013 is only available for EPSG:3031."
                 raise NotImplementedError(msg)
-            gdf = gpd.read_file(fetch.groundingline("depoorter-2013"), engine="pyogrio")
+            gdf = self._rotate_vector(
+                gpd.read_file(fetch.groundingline("depoorter-2013"), engine="pyogrio")
+            )
             # plot floating ice as blue
             self.plot(
                 data=gdf[gdf.Id_text == "Ice shelf"],
@@ -890,26 +1140,36 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 data=gdf,
                 pen=pen,
                 transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
             )
 
         elif version == "measures-v2":
             if self.epsg != "3031":
                 msg = "simple basemap with measures-v2 is only available for EPSG:3031."
                 raise NotImplementedError(msg)
+            coastline = self._rotate_vector(
+                fetch.antarctic_boundaries(version="Coastline")
+            )
+            groundingline = self._rotate_vector(
+                fetch.groundingline(version="measures-v2")
+            )
             self.plot(
-                data=fetch.antarctic_boundaries(version="Coastline"),
+                data=coastline,
                 fill=floating_color,
                 transparency=transparency,
                 projection=self.proj,
                 region=self.reg,
             )
             self.plot(
-                data=fetch.groundingline(version="measures-v2"),
+                data=groundingline,
                 fill=grounded_color,
                 transparency=transparency,
+                projection=self.proj,
+                region=self.reg,
             )
             self.plot(
-                fetch.groundingline(version="measures-v2"),
+                groundingline,
                 pen=pen,
                 transparency=transparency,
                 projection=self.proj,
@@ -920,7 +1180,9 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
             if self.epsg != "3413":
                 msg = "simple basemap with BAS is only available for EPSG:3413."
                 raise NotImplementedError(msg)
-            gdf = gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
+            gdf = self._rotate_vector(
+                gpd.read_file(fetch.groundingline("BAS"), engine="pyogrio")
+            )
             self.plot(
                 data=gdf,
                 fill=grounded_color,
@@ -944,26 +1206,41 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         self,
         box: tuple[float, float, float, float],
         pen: str = "2p,black",
+        label: str | None = None,
         verbose: str = "warning",
     ) -> None:
         """
         Plot a GMT region as a box.
 
+        On a rotated figure the box is drawn as a tilted quadrilateral, since a region
+        which is axis-aligned in the base projection is not axis-aligned in the rotated
+        one.
+
         Parameters
         ----------
         box : tuple[float, float, float, float]
-            region in EPSG3031 in format [xmin, xmax, ymin, ymax] in meters
+            region in the figure's base EPSG, in format [xmin, xmax, ymin, ymax] in
+            meters, or corner coordinates of an already-tilted box
         pen : str, optional
             GMT pen string used for the box, by default "2p,black"
         verbose : str, optional
             verbosity level for pygmt, by default "warning" for warnings
         """
         logger.debug("adding box to figure; %s", box)
+        # a rotation is affine, so the edges stay straight and the four corners are
+        # enough - no densification needed
+        corners = (
+            utils._coordinates_from(box, self.epsg)  # pylint: disable=protected-access
+            if utils._region_is_corners(box)  # pylint: disable=protected-access
+            else utils.region_corners(box)
+        )
+        easting, northing = self._from_base(*corners)
         self.plot(
-            x=[box[0], box[0], box[1], box[1], box[0]],
-            y=[box[2], box[3], box[3], box[2], box[2]],
+            x=easting,
+            y=northing,
             pen=pen,
             verbose=verbose,
+            label=label,
         )
 
     def add_inset(
@@ -1073,10 +1350,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     )
 
                     # shown main figure region as red box
-                    self.add_box(
-                        box=self.reg,
-                        pen=inset_box_pen,
-                    )
+                    self._add_footprint_box(pen=inset_box_pen)
 
                 # default region for inset map is a square centered on Greenland
                 # of the inset map (defaults to all of Greenland)
@@ -1095,12 +1369,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 # inset_width_factor times the widest dimension of the figure region
                 if inset_width_factor is not None:
                     inset_region = utils.square_around_region(
-                        self.region, inset_width_factor
+                        self.reg_base, inset_width_factor
                     )
                     while True:  # continue trying until break
                         try:  # try with width_factor, if fails, decrease by 1
                             inset_region = utils.square_around_region(
-                                self.region, inset_width_factor
+                                self.reg_base, inset_width_factor
                             )
                             plot_inset(
                                 inset_region,
@@ -1165,10 +1439,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     )
 
                     # show main figure region as red box
-                    self.add_box(
-                        box=self.reg,
-                        pen=inset_box_pen,
-                    )
+                    self._add_footprint_box(pen=inset_box_pen)
 
                 # default region for inset map is a square centered on Antarctica
                 if inset_region is None:
@@ -1179,12 +1450,12 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 # inset_width_factor times the widest dimension of the figure region
                 if inset_width_factor is not None:
                     inset_region = utils.square_around_region(
-                        self.region, inset_width_factor
+                        self.reg_base, inset_width_factor
                     )
                     while True:  # continue trying until break
                         try:  # try with width_factor, if fails, decrease by 1
                             inset_region = utils.square_around_region(
-                                self.region, inset_width_factor
+                                self.reg_base, inset_width_factor
                             )
                             plot_inset(
                                 inset_region,
@@ -1237,10 +1508,10 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                         verbose="error",
                     )
 
-                    box = self.reg
+                    easting, northing = self._to_base(*utils.region_corners(self.reg))
                     self.plot(
-                        x=[box[0], box[0], box[1], box[1], box[0]],
-                        y=[box[2], box[3], box[3], box[2], box[2]],
+                        x=easting,
+                        y=northing,
                         pen=inset_box_pen,
                         region=inset_region,
                         projection="x?",  # auto determine region from inset width
@@ -1257,7 +1528,7 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                     while True:  # continue trying until break
                         try:  # try with width_factor, if fails, decrease by 1
                             inset_region = utils.square_around_region(
-                                self.region, width_factor
+                                self.reg_base, width_factor
                             )
                             plot_inset(
                                 inset_region,
@@ -1400,11 +1671,13 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
 
         kwargs = copy.deepcopy(kwargs)
 
-        # clip grid to region
+        # clip grid to region. `reg_base` equals `reg` unless the figure is rotated, in
+        # which case the input grid is still in the base EPSG and must be clipped to the
+        # bounding box of the rotated footprint before being reprojected.
         try:
             grid = pygmt.grdcut(
                 grid,
-                region=self.reg,
+                region=self.reg_base,
                 verbose="quiet",
             )
         except ValueError as e:
@@ -1414,6 +1687,16 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
                 logger.error(e)
                 msg = "clipping grid to plot region failed!"
                 logger.error(msg)
+
+        # reproject into the rotated frame (no-op for an unrotated figure)
+        grid = self._rotate_grid(grid)
+
+        # `cmap_region` is supplied by the user in the base EPSG, but `set_cmap` is
+        # about to be handed the rotated grid, so it has to be rotated to match
+        if kwargs.get("cmap_region") is not None:
+            kwargs["cmap_region"] = utils.rotate_region(
+                kwargs["cmap_region"], self.rotation, epsg=self.epsg
+            )
 
         # if using shading, nan_transparent needs to be False
         if shading is False or shading is None:
@@ -1479,19 +1762,16 @@ class Figure(pygmt.Figure):  # type: ignore[misc]
         """
         logger.debug("adding points")
 
-        # subset points to plot region
         points = points.copy()
+        # rotate into the plotting frame BEFORE subsetting, since `self.reg` is in that
+        # frame (no-op for an unrotated figure)
+        points, x_col, y_col = self._rotate_points(points)
+
+        # subset points to plot region
         points = utils.points_inside_region(
             points,
             region=self.reg,
         )
-        if ("x" in points.columns) and ("y" in points.columns):
-            x_col, y_col = "x", "y"
-        elif ("easting" in points.columns) and ("northing" in points.columns):
-            x_col, y_col = "easting", "northing"
-        else:
-            msg = "points must contain columns 'x' and 'y' or 'easting' and 'northing'."
-            raise ValueError(msg)
 
         # plot points
         if fill in points.columns:
@@ -2108,7 +2388,7 @@ def add_colorbar(
 
 
 def basemap(
-    region: tuple[float, float, float, float] | None = None,
+    region: typing.Any = None,
     hemisphere: str | None = None,
     epsg: str | None = None,
     coast: bool = False,
@@ -2125,6 +2405,7 @@ def basemap(
     points: pd.DataFrame | None = None,
     gridlines: bool = False,
     origin_shift: str | None = None,
+    rotation: float | None = None,
     fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
@@ -2204,6 +2485,15 @@ def basemap(
         will be the width/height of the figure instance, this can be changed with kwargs
         `xshift_amount` and `yshift_amount`, which are in multiples of figure
         width/height.
+    rotation : float, optional
+        rotate the map clockwise by this many degrees. By default None, which keeps the
+        projection's own orientation, or infers the rotation from `region` if that was
+        given as corner coordinates. The plotted region is expanded to the bounding box
+        of the rotated region, so nothing you asked for is cut off - which means a
+        rotated figure is larger than an unrotated one. Only supported for polar
+        stereographic projections (EPSG:3031 and EPSG:3413). Use
+        `utils.unrotated_region` to work out what data you need to fetch to fill the
+        corners of a rotated map.
     fig : pygmt.Figure, optional
         supply a figure instance for adding subplots or using other PyGMT plotting
         methods, by default None
@@ -2383,6 +2673,7 @@ def basemap(
         epsg=epsg,
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
+        rotation=rotation,
     )
     new_width = fig.width
     new_height = fig.height
@@ -3058,7 +3349,7 @@ def plot_grd(
 
 def plot_grid(
     grid: str | xr.DataArray,
-    region: tuple[float, float, float, float] | None = None,
+    region: typing.Any = None,
     hemisphere: str | None = None,
     epsg: str | None = None,
     cmap: str | bool = "viridis",
@@ -3076,6 +3367,7 @@ def plot_grid(
     points: pd.DataFrame | None = None,
     gridlines: bool = False,
     origin_shift: str | None = None,
+    rotation: float | None = None,
     fig: pygmt.Figure | None = None,
     **kwargs: typing.Any,
 ) -> pygmt.Figure:
@@ -3153,6 +3445,15 @@ def plot_grid(
         will be the width/height of the figure instance, this can be changed with kwargs
         `xshift_amount` and `yshift_amount`, which are in multiples of figure
         width/height.
+    rotation : float, optional
+        rotate the map clockwise by this many degrees. By default None, which keeps the
+        projection's own orientation, or infers the rotation from `region` if that was
+        given as corner coordinates. The plotted region is expanded to the bounding box
+        of the rotated region, so nothing you asked for is cut off - which means a
+        rotated figure is larger than an unrotated one. Only supported for polar
+        stereographic projections (EPSG:3031 and EPSG:3413). Use
+        `utils.unrotated_region` to work out what data you need to fetch to fill the
+        corners of a rotated map.
     fig : pygmt.Figure, optional
         supply a figure instance for adding subplots or using other PyGMT plotting
         methods, by default None
@@ -3364,6 +3665,7 @@ def plot_grid(
         epsg=epsg,
         height=kwargs.get("fig_height"),
         width=kwargs.get("fig_width"),
+        rotation=rotation,
     )
     new_width = fig.width
     new_height = fig.height
@@ -3692,6 +3994,10 @@ def interactive_map(
         interactive map
     """
     epsg = utils.default_epsg(epsg, hemisphere)
+
+    if kwargs.get("rotation"):
+        msg = "`rotation` is not supported by `interactive_map`; ipyleaflet cannot rotate."
+        raise NotImplementedError(msg)
 
     if ipyleaflet is None:
         msg = """
@@ -4143,6 +4449,13 @@ def plot_3d(
         Returns a figure object, which can be used by other PyGMT plotting functions.
     """
     epsg = utils.default_epsg(epsg, hemisphere)
+
+    if kwargs.get("rotation"):
+        msg = (
+            "`rotation` is not supported by `plot_3d`; use the `view` parameter to set "
+            "the azimuth of the 3D perspective instead."
+        )
+        raise NotImplementedError(msg)
 
     fig_height = kwargs.get("fig_height", 15)
     fig_width = kwargs.get("fig_width")

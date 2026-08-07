@@ -1480,12 +1480,671 @@ def alter_region(
     )
 
 
+POLAR_STEREOGRAPHIC_PARAMS: dict[str, tuple[float, float, float]] = {
+    # epsg: (latitude of origin, latitude of true scale, central meridian)
+    "3031": (-90.0, -71.0, 0.0),
+    "3413": (90.0, 70.0, -45.0),
+}
+
+
+def normalize_rotation(rotation: float) -> float:
+    """
+    Wrap a rotation angle into the range (-180, 180].
+
+    Parameters
+    ----------
+    rotation : float
+        angle in degrees
+
+    Returns
+    -------
+    float
+        equivalent angle in the range (-180, 180]
+
+    Examples
+    --------
+    >>> [normalize_rotation(r) for r in (0, 45, 180, -180, 190, 360)]
+    [0.0, 45.0, 180.0, 180.0, -170.0, 0.0]
+    """
+    # the trailing `+ 0.0` normalises -0.0 to 0.0, which otherwise formats as "-0" and
+    # would end up in the GMT projection string
+    return -((-float(rotation) + 180.0) % 360.0 - 180.0) + 0.0
+
+
+def rotated_central_meridian(epsg: str, rotation: float) -> float:
+    """
+    Central meridian of the polar stereographic projection which rotates a map clockwise
+    by `rotation` degrees.
+
+    For a pole-centred stereographic projection, rotating the map about the pole is
+    exactly a change of central meridian. The sign differs between hemispheres because
+    PROJ uses ``y = +rho * cos(lon - lon_0)`` for a south polar aspect but
+    ``y = -rho * cos(lon - lon_0)`` for a north polar aspect, which flips the induced
+    rotation. So the shift is ``+rotation`` in the north and ``-rotation`` in the south.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+    rotation : float
+        clockwise rotation of the map in degrees
+
+    Returns
+    -------
+    float
+        central meridian (`lon_0`) in degrees, in the range (-180, 180]
+    """
+    if epsg not in POLAR_STEREOGRAPHIC_PARAMS:
+        msg = (
+            f"map rotation is only supported for polar stereographic projections "
+            f"({', '.join(POLAR_STEREOGRAPHIC_PARAMS)}), not EPSG:{epsg}. Rotating a "
+            "map is equivalent to changing the central meridian, which only holds for a "
+            "projection centred on the pole."
+        )
+        raise NotImplementedError(msg)
+
+    lat_0, _, lon_0 = POLAR_STEREOGRAPHIC_PARAMS[epsg]
+    sign = 1.0 if lat_0 > 0 else -1.0
+    return normalize_rotation(lon_0 + sign * normalize_rotation(rotation))
+
+
+def rotated_crs(epsg: str, rotation: float) -> pyproj.CRS:
+    """
+    Build the polar stereographic CRS which rotates a map clockwise by `rotation`
+    degrees.
+
+    The returned CRS is identical to `epsg` except for its central meridian, so
+    converting between the two is a pure rotation about the pole.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+    rotation : float
+        clockwise rotation of the map in degrees
+
+    Returns
+    -------
+    pyproj.CRS
+        the rotated coordinate reference system
+
+    Examples
+    --------
+    >>> crs = rotated_crs("3031", 45)
+    >>> crs.to_dict()["lon_0"]
+    -45.0
+    """
+    lat_0, lat_ts, _ = POLAR_STEREOGRAPHIC_PARAMS[epsg]
+    lon_0 = rotated_central_meridian(epsg, rotation)
+    return pyproj.CRS.from_proj4(
+        f"+proj=stere +lat_0={lat_0} +lat_ts={lat_ts} +lon_0={lon_0} "
+        "+k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+    )
+
+
+def native_top_longitude(epsg: str) -> float:
+    """
+    Line of longitude at the top of the page when no rotation is applied.
+
+    In a polar stereographic projection every meridian is a straight line radiating from
+    the pole, and exactly one of them is parallel to the page's vertical axis. For a
+    south polar aspect that is the central meridian itself; for a north polar aspect it
+    is the antimeridian of the central meridian, because PROJ flips the sign of the
+    northing there. So EPSG:3031 is drawn with 0 degrees east at the top, but EPSG:3413
+    with 135 degrees east.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+
+    Returns
+    -------
+    float
+        longitude in degrees east, in the range (-180, 180]
+
+    Examples
+    --------
+    >>> native_top_longitude("3031")
+    0.0
+    >>> native_top_longitude("3413")
+    135.0
+    """
+    if epsg not in POLAR_STEREOGRAPHIC_PARAMS:
+        msg = (
+            f"orienting a map by longitude is only supported for polar stereographic "
+            f"projections ({', '.join(POLAR_STEREOGRAPHIC_PARAMS)}), not EPSG:{epsg}."
+        )
+        raise NotImplementedError(msg)
+
+    lat_0, _, lon_0 = POLAR_STEREOGRAPHIC_PARAMS[epsg]
+    return normalize_rotation(lon_0 + (180.0 if lat_0 > 0 else 0.0))
+
+
+def top_longitude_to_rotation(epsg: str, top_longitude: float) -> float:
+    """
+    Clockwise rotation which places a given line of longitude at the top of the page.
+
+    Note the two hemispheres turn in opposite senses: moving the top longitude eastwards
+    rotates a south polar map anticlockwise but a north polar map clockwise.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+    top_longitude : float
+        line of longitude to place at the top of the page, in degrees east
+
+    Returns
+    -------
+    float
+        clockwise rotation in degrees, in the range (-180, 180]
+
+    Examples
+    --------
+    >>> top_longitude_to_rotation("3031", -45)
+    45.0
+    >>> top_longitude_to_rotation("3413", 180)
+    45.0
+    """
+    native = native_top_longitude(epsg)
+    lat_0 = POLAR_STEREOGRAPHIC_PARAMS[epsg][0]
+    sign = 1.0 if lat_0 > 0 else -1.0
+    return normalize_rotation(sign * normalize_rotation(top_longitude - native))
+
+
+def rotation_to_top_longitude(epsg: str, rotation: float) -> float:
+    """
+    Line of longitude at the top of the page after rotating a map clockwise.
+
+    The inverse of :func:`top_longitude_to_rotation`.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+    rotation : float
+        clockwise rotation of the map in degrees
+
+    Returns
+    -------
+    float
+        longitude in degrees east, in the range (-180, 180]
+
+    Examples
+    --------
+    >>> rotation_to_top_longitude("3031", 45)
+    -45.0
+    >>> rotation_to_top_longitude("3413", 45)
+    180.0
+    """
+    native = native_top_longitude(epsg)
+    lat_0 = POLAR_STEREOGRAPHIC_PARAMS[epsg][0]
+    sign = 1.0 if lat_0 > 0 else -1.0
+    return normalize_rotation(native + sign * normalize_rotation(rotation))
+
+
+def rotation_transformer(
+    epsg: str,
+    rotation: float,
+    inverse: bool = False,
+) -> typing.Callable[[typing.Any, typing.Any], tuple[typing.Any, typing.Any]]:
+    """
+    Callable which converts coordinates between an EPSG code and its rotated equivalent.
+
+    The returned function has the signature expected by
+    :func:`verde.project_region` and :func:`verde.project_grid`, i.e.
+    ``projection(easting, northing) -> (easting, northing)``.
+
+    Parameters
+    ----------
+    epsg : str
+        EPSG code string, must be a polar stereographic projection ("3031" or "3413")
+    rotation : float
+        clockwise rotation of the map in degrees
+    inverse : bool, optional
+        if True, convert from the rotated frame back to `epsg`, by default False
+
+    Returns
+    -------
+    callable
+        function converting (easting, northing) arrays between the two frames
+    """
+    base = pyproj.CRS(f"EPSG:{epsg}")
+    rotated = rotated_crs(epsg, rotation)
+    source, target = (rotated, base) if inverse else (base, rotated)
+    transformer = Transformer.from_crs(source, target, always_xy=True)
+    return transformer.transform  # type: ignore[no-any-return]
+
+
+def rotate_region(
+    region: tuple[float, float, float, float],
+    rotation: float,
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+) -> tuple[float, float, float, float]:
+    """
+    Convert a region into the rotated frame, expanding it to contain the whole region.
+
+    A region which is axis-aligned in `epsg` is a *tilted* rectangle once rotated, so
+    this returns its bounding box in the rotated frame. Everything inside `region`
+    therefore stays visible, at the cost of the map growing: a w x h region becomes
+    ``w|cos| + h|sin|`` by ``w|sin| + h|cos|``, so a square region grows by a factor of
+    sqrt(2) at 45 degrees.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float]
+        region in format [xmin, xmax, ymin, ymax] in meters, in the `epsg` frame
+    rotation : float
+        clockwise rotation of the map in degrees
+    hemisphere : str, optional
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        the equivalent region in the rotated frame
+
+    Examples
+    --------
+    >>> region = (-680e3, 470e3, -1420e3, -310e3)
+    >>> tuple(round(v) for v in rotate_region(region, 45, epsg="3031"))
+    (-1484924, 113137, -1336432, 261630)
+    """
+    epsg = default_epsg(epsg, hemisphere)
+    if normalize_rotation(rotation) == 0:
+        return region
+
+    return tuple(  # type: ignore[return-value]
+        float(v)
+        for v in vd.get_region(
+            rotation_transformer(epsg, rotation)(*region_corners(region))
+        )
+    )
+
+
+def unrotated_region(
+    region: tuple[float, float, float, float],
+    rotation: float = 0,
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+) -> tuple[float, float, float, float]:
+    """
+    Region of data needed to fill a rotated map, in unrotated coordinates.
+
+    When a map is rotated, its footprint is a *tilted* rectangle in the original
+    projection, so a grid clipped to `region` will not reach into the corners. This
+    returns the axis-aligned region, in the unrotated `epsg`, which fully contains that
+    tilted footprint - fetch your data with this and the whole map will be covered.
+
+    This is the same value a rotated figure exposes as ``Figure.reg_base``.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float]
+        region in format [xmin, xmax, ymin, ymax] in meters, in the `epsg` frame
+    rotation : float, optional
+        clockwise rotation of the map in degrees, by default 0 which returns `region`
+        unchanged
+    hemisphere : str, optional
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+
+    Examples
+    --------
+    >>> region = (-680e3, 470e3, -1420e3, -310e3)
+    >>> tuple(round(v) for v in unrotated_region(region, 45, epsg="3031"))
+    (-904031, 694031, -1664031, -65969)
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        region in format [xmin, xmax, ymin, ymax] in meters, in the unrotated `epsg`
+    """
+    epsg = default_epsg(epsg, hemisphere)
+    rotation = normalize_rotation(rotation)
+    if rotation == 0:
+        return region
+
+    # the plotted region lives in the rotated frame; convert its corners back out
+    rotated = rotate_region(region, rotation, epsg=epsg)
+    to_base = rotation_transformer(epsg, rotation, inverse=True)
+    return tuple(  # type: ignore[return-value]
+        float(v) for v in vd.get_region(to_base(*region_corners(rotated)))
+    )
+
+
+def _coordinates_from(
+    data: typing.Any,
+    epsg: str,
+) -> tuple[NDArray, NDArray]:
+    """
+    Pull easting/northing arrays out of the many things a user might have.
+
+    Accepts a path to a vector file, a geopandas GeoDataFrame, a pandas DataFrame with
+    'easting'/'northing' or 'x'/'y' columns, the list-of-vertices output of
+    :func:`polartoolkit.regions.draw_region` (which is in lon/lat), or a pair of
+    coordinate arrays.
+
+    Parameters
+    ----------
+    data : typing.Any
+        the coordinates, in any of the forms above
+    epsg : str
+        EPSG code the returned coordinates should be in
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        easting and northing arrays
+    """
+    if isinstance(data, OrientedRegion):
+        return data.easting, data.northing
+
+    if isinstance(data, str):
+        data = gpd.read_file(data, engine="pyogrio")
+
+    if isinstance(data, gpd.GeoDataFrame):
+        if data.crs is not None:
+            data = data.to_crs(f"EPSG:{epsg}")
+        coords = np.concatenate(
+            [
+                np.asarray(geom.exterior.coords)
+                if geom.geom_type == "Polygon"
+                else np.asarray(geom.coords)
+                for geom in data.geometry.explode(index_parts=False)
+            ]
+        )
+        return coords[:, 0], coords[:, 1]
+
+    if isinstance(data, pd.DataFrame):
+        if {"easting", "northing"}.issubset(data.columns):
+            return data.easting.to_numpy(), data.northing.to_numpy()
+        if {"x", "y"}.issubset(data.columns):
+            return data.x.to_numpy(), data.y.to_numpy()
+        msg = "dataframe must have 'easting'/'northing' or 'x'/'y' columns"
+        raise ValueError(msg)
+
+    array = np.asarray(data, dtype=float)
+
+    # the output of `draw_region` is a list of shapes of lon/lat vertices
+    if array.ndim == 3:
+        df = shapes_to_df(shapes=data, epsg=epsg)
+        return df.easting.to_numpy(), df.northing.to_numpy()
+
+    if array.ndim == 2:
+        # either (N, 2) points or a pair of coordinate arrays
+        if array.shape[0] == 2 and array.shape[1] != 2:
+            return array[0], array[1]
+        return array[:, 0], array[:, 1]
+
+    msg = f"could not interpret {type(data)} as coordinates"
+    raise ValueError(msg)
+
+
+def _region_is_corners(region: typing.Any) -> bool:
+    """
+    Whether a region was given as corner coordinates rather than [xmin, xmax, ymin, ymax].
+
+    A plain region is four scalars, so anything else - a pair of coordinate arrays, an
+    (N, 2) array of points, a GeoDataFrame, a file path - is treated as corners of a
+    possibly tilted box.
+
+    Parameters
+    ----------
+    region : typing.Any
+        the region to inspect
+
+    Returns
+    -------
+    bool
+        True if `region` describes corner coordinates
+    """
+    if region is None:
+        return False
+    if isinstance(region, (OrientedRegion, str, gpd.GeoDataFrame, pd.DataFrame)):
+        return True
+    try:
+        array = np.asarray(region, dtype=float)
+    except (TypeError, ValueError):
+        return False
+    return bool(array.ndim > 1 or array.size != 4)
+
+
+def _corners_to_region(
+    corners: typing.Any,
+    epsg: str | None = None,
+) -> tuple[float, float, float, float]:
+    """
+    Bounding region of some corner coordinates.
+
+    Parameters
+    ----------
+    corners : typing.Any
+        corner coordinates, in any form accepted by :func:`_coordinates_from`
+    epsg : str | None, optional
+        EPSG code the coordinates should be in, by default None
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        region in format [xmin, xmax, ymin, ymax]
+    """
+    easting, northing = _coordinates_from(corners, epsg)  # type: ignore[arg-type]
+    return tuple(float(v) for v in vd.get_region((easting, northing)))  # type: ignore[return-value]
+
+
+def _corner_rotation(corners: typing.Any, epsg: str) -> float:
+    """
+    Clockwise rotation which squares up a tilted box given by its corners.
+
+    Parameters
+    ----------
+    corners : typing.Any
+        corner coordinates, in any form accepted by :func:`_coordinates_from`
+    epsg : str
+        EPSG code the coordinates are in
+
+    Returns
+    -------
+    float
+        clockwise rotation in degrees
+    """
+    return oriented_region(corners, epsg=epsg)[0]
+
+
+class OrientedRegion(typing.NamedTuple):
+    """
+    A rotated map region, as returned by :func:`oriented_region`.
+
+    Carries everything needed to fetch data for a rotated map and then plot it, so you
+    don't have to assemble it yourself. Pass the whole thing to `plot_grid`, `basemap` or
+    `Figure` as `region` and the map will rotate to match.
+
+    Attributes
+    ----------
+    rotation : float
+        clockwise rotation in degrees which squares the box up. Of the four quarter turns
+        which do so, this is the one laying the box's long axis across the page with true
+        north nearest the top; add 90 or 180 to it for any of the others.
+    easting, northing : numpy.ndarray
+        corners of the box as a closed 5-point ring, in the unrotated projection
+    region : tuple[float, float, float, float]
+        the box in the rotated frame, i.e. what the map will actually show
+    data_region : tuple[float, float, float, float]
+        axis-aligned region in the unrotated projection covering the whole rotated map -
+        fetch your data with this
+    """
+
+    rotation: float
+    easting: NDArray
+    northing: NDArray
+    region: tuple[float, float, float, float]
+    data_region: tuple[float, float, float, float]
+
+
+def oriented_region(
+    data: typing.Any,
+    hemisphere: str | None = None,
+    epsg: str | None = None,
+    pad: float | tuple[float, float] = 0,
+) -> OrientedRegion:
+    """
+    Smallest rotated rectangle enclosing some data, and the rotation which squares it up.
+
+    Where :func:`polygon_to_region` throws away orientation by taking an axis-aligned
+    bounding box, this keeps it.
+
+    Four quarter turns square the box up equally well, so the returned `rotation` is the
+    one which lays the box's long axis across the page and puts true north nearest the
+    top. Note that this is not always the smallest turn: away from the projection's own
+    top meridian the default orientation is already closer to south-up, so a large
+    rotation may be needed to bring north back to the top.
+
+    Parameters
+    ----------
+    data : typing.Any
+        outline to enclose. A path to a vector file, a GeoDataFrame, a DataFrame with
+        'easting'/'northing' or 'x'/'y' columns, the output of
+        :func:`polartoolkit.regions.draw_region`, or a pair of coordinate arrays.
+    hemisphere : str, optional
+        set projection based on "north" or "south" hemispheres, by default None
+    epsg : str | None, optional
+        set projection from EPSG code string ("3031"), by default None
+    pad : float or tuple[float, float], optional
+        zoom out by this many meters on each side, by default 0. The box is the
+        *smallest* one enclosing the data, which is usually tighter than you want for a
+        figure. A tuple pads the two axes of the rotated box separately. Negative values
+        zoom in.
+
+    Returns
+    -------
+    OrientedRegion
+        named tuple of `rotation`, `easting`, `northing`, `region` and `data_region`
+
+    Examples
+    --------
+    >>> box = oriented_region(outline, pad=20e3)
+    >>> grid = fetch.bedmap2(layer="bed", region=box.data_region)
+    >>> fig = plot_grid(grid, region=box)
+    """
+    epsg = default_epsg(epsg, hemisphere)
+    easting, northing = _coordinates_from(data, epsg)
+
+    box = shapely.MultiPoint(
+        np.column_stack([easting, northing])
+    ).minimum_rotated_rectangle
+    corners = np.asarray(box.exterior.coords)
+
+    # Bearing of the longest edge, clockwise from page-up. The rotation which squares the
+    # box up is the negative of that, and only matters modulo 90 degrees - the four
+    # quarter turns all leave the box axis-aligned - so pick a canonical one below.
+    edges = np.diff(corners, axis=0)
+    longest = edges[np.argmax(np.hypot(edges[:, 0], edges[:, 1]))]
+    bearing = np.degrees(np.arctan2(longest[0], longest[1]))
+    rotation = ((-bearing + 90.0) % 180.0) - 90.0  # into (-90, 90]
+
+    # of the two remaining choices, take the one which lays the feature's long axis
+    # across the page rather than up it
+    width, height = _rotated_extent(corners, epsg, rotation)
+    if height > width:
+        rotation = normalize_rotation(rotation + 90.0)
+
+    # that still leaves a half turn, which gives an identical box upside down, so take
+    # whichever puts true north nearer the top of the page. In the rotated frame the pole
+    # sits at the origin, so at the box centre north points away from it in the south and
+    # towards it in the north - i.e. north is up when `sign(lat_0) * northing < 0`.
+    rotation = normalize_rotation(rotation)
+    lat_0 = POLAR_STEREOGRAPHIC_PARAMS[epsg][0]
+    centre = corners[:-1].mean(axis=0)  # corners is a closed ring, drop the repeat
+    _, y = rotation_transformer(epsg, rotation)(*centre)
+    if np.sign(lat_0) * y >= 0:
+        rotation = normalize_rotation(rotation + 180.0)
+
+    # the box is axis-aligned once rotated, so pad it there - padding in the unrotated
+    # projection would skew the margin around a tilted box
+    to_rotated = rotation_transformer(epsg, rotation)
+    region = typing.cast(
+        "tuple[float, float, float, float]",
+        tuple(
+            float(v) for v in vd.get_region(to_rotated(corners[:, 0], corners[:, 1]))
+        ),
+    )
+    if np.any(np.asarray(pad) != 0):
+        region = typing.cast(
+            "tuple[float, float, float, float]",
+            tuple(float(v) for v in vd.pad_region(region, pad)),
+        )
+        corners = np.column_stack(
+            rotation_transformer(epsg, rotation, inverse=True)(*region_corners(region))
+        )
+
+    # what to fetch: the unrotated bounding box of that (tilted) footprint
+    data_region = typing.cast(
+        "tuple[float, float, float, float]",
+        tuple(float(v) for v in vd.get_region((corners[:, 0], corners[:, 1]))),
+    )
+    # data_region = vd.get_region(corners)
+
+    return OrientedRegion(
+        rotation=rotation,
+        easting=corners[:, 0],
+        northing=corners[:, 1],
+        region=region,
+        data_region=data_region,
+    )
+
+
+def _rotated_extent(
+    corners: NDArray,
+    epsg: str,
+    rotation: float,
+) -> tuple[float, float]:
+    """Width and height of some corners' bounding box, after rotating."""
+    region = vd.get_region(
+        rotation_transformer(epsg, rotation)(corners[:, 0], corners[:, 1])
+    )
+    return float(region[1] - region[0]), float(region[3] - region[2])
+
+
+def region_corners(
+    region: tuple[float, float, float, float],
+) -> tuple[NDArray, NDArray]:
+    """
+    The closed 5-point corner ring of a region, for plotting it as a polygon.
+
+    Unlike a plain rectangle this survives being reprojected, which matters for rotated
+    maps where a region's footprint is no longer axis-aligned. A rotation is affine, so
+    the edges stay straight and four corners are enough - no densification is needed.
+
+    Parameters
+    ----------
+    region : tuple[float, float, float, float]
+        region in format [xmin, xmax, ymin, ymax]
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        easting and northing of the corners, starting and ending at the lower left
+    """
+    xmin, xmax, ymin, ymax = region
+    return (
+        np.array([xmin, xmin, xmax, xmax, xmin], dtype=float),
+        np.array([ymin, ymax, ymax, ymin, ymin], dtype=float),
+    )
+
+
 def set_proj(
     region: tuple[float, float, float, float],
     hemisphere: str | None = None,
     epsg: str | None = None,
     fig_height: float | None = None,
     fig_width: float | None = None,
+    rotation: float = 0,
 ) -> tuple[str, str | None, float, float]:
     """
     Gives GMT projection strings in project and geographic units, from region and figure
@@ -1495,7 +2154,8 @@ def set_proj(
     Parameters
     ----------
     region : tuple[float, float, float, float]
-        region boundaries in format [xmin, xmax, ymin, ymax] in projected meters
+        region boundaries in format [xmin, xmax, ymin, ymax] in projected meters. If
+        `rotation` is non-zero this must already be in the rotated frame.
     hemisphere : str, optional,
         set projection based on "north" or "south" hemispheres, by default None
     epsg : str | None, optional
@@ -1505,6 +2165,10 @@ def set_proj(
     fig_width : float | None
         instead of using figure height, set the projection based on figure width in cm,
         by default is None
+    rotation : float, optional
+        clockwise rotation of the map in degrees, by default 0 which orients the map
+        with the maximum northing at the top. Only supported for polar stereographic
+        projections (EPSG:3031 and EPSG:3413).
 
     Returns
     -------
@@ -1513,6 +2177,7 @@ def set_proj(
         fig_height
     """
     epsg = default_epsg(epsg, hemisphere)
+    rotation = normalize_rotation(rotation)
 
     if epsg == "3857":
         msg = (
@@ -1551,23 +2216,21 @@ def set_proj(
     proj = f"x{ratio}"
 
     # define projection string in lat/lon using the same ratio
-    if epsg == "3413":
-        # s denotes stereographic projection
-        # -45/90 denotes the lon and lat at the center of the projection (north pole)
-        # -45 is central meridian
-        # 90 is the central latitude
-        # 70 is the latitude of true scale
-        # 70/ratio denotes the true scale is located at -71 deg lat
-        proj_latlon = f"s-45/90/70/{ratio}"
-    elif epsg == "3031":
-        # s denotes stereographic projection
-        # 0/-90 denotes the lon and lat at the center of the projection (south pole)
-        # 0 is the central meridian
-        # -90 is the central latitude
-        # -71 is the latitude of true scale
-        # -71/ratio denotes the true scale is located at -71 deg lat
-        proj_latlon = f"s0/-90/-71/{ratio}"
+    if epsg in POLAR_STEREOGRAPHIC_PARAMS:
+        # s denotes stereographic projection, followed by the central meridian, the
+        # central latitude (the pole) and the latitude of true scale. For EPSG:3413
+        # that is "s-45/90/70" and for EPSG:3031 "s0/-90/-71".
+        # Rotating the map is exactly a shift of the central meridian, so `rotation`
+        # only ever changes the first of those values.
+        # at rotation=0 this reproduces the historic literals exactly:
+        # "s0/-90/-71/{ratio}" and "s-45/90/70/{ratio}"
+        lat_0, lat_ts, _ = POLAR_STEREOGRAPHIC_PARAMS[epsg]
+        lon_0 = rotated_central_meridian(epsg, rotation)
+        proj_latlon = f"s{lon_0:g}/{lat_0:g}/{lat_ts:g}/{ratio}"
     else:
+        if rotation != 0:
+            # raises NotImplementedError with an explanation
+            rotated_central_meridian(epsg, rotation)
         # just use the EPSG codes directly
         proj_latlon = f"EPSG:{epsg}/{ratio}"
 
