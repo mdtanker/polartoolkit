@@ -57,10 +57,10 @@ class Report(scooby.Report):  # type: ignore[misc] # pylint: disable=missing-cla
         )
 
 
-from .fetch import (  # noqa: E402
+from .fetch import (
     resample_grid,
 )
-from .maps import (  # noqa: E402
+from .maps import (
     Figure,
     basemap,
     geoviews_points,
@@ -70,7 +70,7 @@ from .maps import (  # noqa: E402
     plot_grid,
     subplots,
 )
-from .profiles import (  # noqa: E402
+from .profiles import (
     default_data,
     default_layers,
     draw_lines,
@@ -79,13 +79,13 @@ from .profiles import (  # noqa: E402
     plot_profile,
     sample_grids,
 )
-from .regions import (  # noqa: E402
+from .regions import (
     alter_region,
     combine_regions,
     draw_region,
     regions_overlap,
 )
-from .utils import (  # noqa: E402
+from .utils import (
     block_reduce,
     change_registration,
     dd2dms,

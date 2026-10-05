@@ -889,11 +889,11 @@ def points_inside_region(
 
     if reverse is True:
         # subset if False
-        df_result = df1.loc[df1.inside_tmp == False].copy()  # noqa: E712 # pylint: disable=singleton-comparison
+        df_result = df1.loc[df1.inside_tmp == False].copy()  # pylint: disable=singleton-comparison
 
     else:
         # subset if True
-        df_result = df1.loc[df1.inside_tmp == True].copy()  # noqa: E712 # pylint: disable=singleton-comparison
+        df_result = df1.loc[df1.inside_tmp == True].copy()  # pylint: disable=singleton-comparison
 
     # drop the column 'inside'
     return df_result.drop(columns="inside_tmp")
