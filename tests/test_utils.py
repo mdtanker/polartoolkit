@@ -143,6 +143,30 @@ def test_region_to_df():
     assert reg2 == reg
 
 
+def test_region_to_df_num():
+    """
+    test the `num` argument of region_to_df, which densely samples the edges of the
+    region instead of just returning the 4 corners.
+    """
+    reg = regions.ross_ice_shelf
+    num = 10
+
+    df = utils.region_to_df(reg, num=num)
+    assert isinstance(df, pd.DataFrame)
+
+    # 4 edges, each sampled `num` times
+    assert len(df) == 4 * num
+
+    # every sampled point should lie exactly on the boundary of the region
+    on_x_bound = df.easting.isin([reg[0], reg[1]])
+    on_y_bound = df.northing.isin([reg[2], reg[3]])
+    assert (on_x_bound | on_y_bound).all()
+
+    # reversing a densely-sampled df should recover the original region
+    reg2 = utils.region_to_df(df, reverse=True)
+    assert reg2 == reg
+
+
 def test_region_xy_to_ll_north():
     """
     test the GMT_xy_to_ll function
@@ -156,7 +180,7 @@ def test_region_xy_to_ll_north():
         "-82:34:6.931303778954316",
         "-2:17:26.19615349869855",
         "77:39:39.3112071675132",
-        "82:26:25.183721040550154",
+        "84:0:17.716958124015946",
     )
 
     reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="north")
@@ -165,7 +189,7 @@ def test_region_xy_to_ll_north():
         -82.56859202882748,
         -2.2906100426385274,
         77.66091977976876,
-        82.44032881140015,
+        84.00492137725666,
     )
 
 
@@ -179,20 +203,65 @@ def test_region_xy_to_ll_south():
     reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="south", dms=True)
 
     assert reg_ll == (
-        "-154:24:41.35269126086496",
-        "161:41:10.261402247124352",
-        "-84:49:17.300473876937758",
+        "-179:58:0.7701206244528294",
+        "179:59:12.017239187262021",
+        "-87:8:50.74697948998073",
         "-75:34:58.96941344602965",
     )
 
     reg_ll = utils.region_xy_to_ll(reg_xy, hemisphere="south")
 
     assert reg_ll == (
-        -154.41148685868356,
-        161.6861837228464,
-        -84.8214723538547,
+        -179.96688058906236,
+        179.9866714553298,
+        -87.147429716525,
         -75.58304705929056,
     )
+
+
+def test_region_xy_to_ll_num():
+    """
+    the `num` argument controls how densely the region boundary is sampled before
+    reprojecting, which affects the returned lat/lon bounding box.
+    """
+    reg_xy = regions.ross_ice_shelf
+
+    # corners only
+    corners_only = utils.region_xy_to_ll(reg_xy, hemisphere="south", num=2)
+    # densely sampled edges
+    dense = utils.region_xy_to_ll(reg_xy, hemisphere="south", num=1000)
+
+    # densely sampling finds a larger (or equal) bounding box than just the corners,
+    # since the edges of a projected rectangle bulge outwards in lat/lon space.
+    assert dense[0] <= corners_only[0]
+    assert dense[1] >= corners_only[1]
+    assert dense[2] <= corners_only[2]
+    assert dense[3] >= corners_only[3]
+
+
+def test_region_xy_to_ll_pole_in_region_south():
+    """
+    if the pole is within the region, longitude should span the full range and the
+    pole-ward latitude bound should be -90.
+    """
+    reg_ll = utils.region_xy_to_ll(regions.antarctica, hemisphere="south")
+
+    assert reg_ll[0] == -180.0
+    assert reg_ll[1] == 180.0
+    assert reg_ll[2] == -90.0
+
+
+def test_region_xy_to_ll_pole_in_region_north():
+    """
+    if the pole is within the region, longitude should span the full range and the
+    pole-ward latitude bound should be 90.
+    """
+    region = (-500e3, 500e3, -500e3, 500e3)
+    reg_ll = utils.region_xy_to_ll(region, hemisphere="north")
+
+    assert reg_ll[0] == -180.0
+    assert reg_ll[1] == 180.0
+    assert reg_ll[3] == 90.0
 
 
 def test_region_to_bounding_box():

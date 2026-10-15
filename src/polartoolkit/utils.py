@@ -389,10 +389,13 @@ def region_to_df(
     region: tuple[float, float, float, float] | pd.DataFrame,
     coord_names: tuple[str, str] = ("easting", "northing"),
     reverse: bool = False,
+    num: int | None = None,
 ) -> tuple[float, float, float, float] | pd.DataFrame:
     """
     Convert region bounds in format [xmin, xmax, ymin, ymax] to pandas dataframe with
-    coordinates of region corners, or reverse this if `reverse` is True.
+    coordinates of region corners, or if num is not None, with the coordinates of
+    sample points along the edge of the region box. If `reverse` is True, it returns the
+    bounding edges of the points in the dataframe.
 
     Parameters
     ----------
@@ -404,28 +407,52 @@ def region_to_df(
     reverse : bool, optional
         If True, convert from df to region tuple, else, convert from region tuple to df,
         by default False
+    num : int | None, optional
+        If not none, will sample this many points along the edges of the bounding box.
 
     Returns
     -------
     tuple[typing.Any, typing.Any, typing.Any, typing.Any] | pandas.DataFrame
         Dataframe with easting and northing columns, and a row for each corner of the
-        region, or, if `reverse` is True, an array in the format
+        region, or equal to num, or, if `reverse` is True, an array in the format
         [xmin, xmax, ymin, ymax].
     """
-
     if reverse:
         return (
-            region[coord_names[0]][0],  # type: ignore[call-overload,index]
-            region[coord_names[0]][1],  # type: ignore[call-overload,index]
-            region[coord_names[1]][0],  # type: ignore[call-overload,index]
-            region[coord_names[1]][2],  # type: ignore[call-overload,index]
+            region[coord_names[0]].min(),  # type: ignore[call-overload,union-attr]
+            region[coord_names[0]].max(),  # type: ignore[call-overload,union-attr]
+            region[coord_names[1]].min(),  # type: ignore[call-overload,union-attr]
+            region[coord_names[1]].max(),  # type: ignore[call-overload,union-attr]
         )
 
-    bl = (region[0], region[2])
-    br = (region[1], region[2])
-    tl = (region[0], region[3])
-    tr = (region[1], region[3])
-    return pd.DataFrame(data=[bl, br, tl, tr], columns=(coord_names[0], coord_names[1]))
+    if num is None:
+        bl = (region[0], region[2])
+        br = (region[1], region[2])
+        tl = (region[0], region[3])
+        tr = (region[1], region[3])
+        return pd.DataFrame(
+            data=[bl, br, tl, tr], columns=(coord_names[0], coord_names[1])
+        )
+
+    xmin, xmax, ymin, ymax = region
+    # densely sample all 4 edges, not just the 4 corners
+    x = np.concatenate(
+        [
+            np.linspace(xmin, xmax, num),  # bottom edge
+            np.linspace(xmin, xmax, num),  # top edge
+            np.full(num, xmin),  # left edge
+            np.full(num, xmax),  # right edge
+        ]
+    )
+    y = np.concatenate(
+        [
+            np.full(num, ymin),
+            np.full(num, ymax),
+            np.linspace(ymin, ymax, num),
+            np.linspace(ymin, ymax, num),
+        ]
+    )
+    return pd.DataFrame(data={coord_names[0]: x, coord_names[1]: y})
 
 
 def region_xy_to_ll(
@@ -434,9 +461,12 @@ def region_xy_to_ll(
     epsg: str | None = None,
     dms: bool = False,
     as_corners: bool = False,
+    num: int = 1000,
 ) -> tuple[typing.Any, typing.Any, typing.Any, typing.Any] | str:
     """
-    Convert region in format [xmin, xmax, ymin, ymax] in projected meters to lat / lon
+    Convert region in format [xmin, xmax, ymin, ymax] in projected meters to lat / lon.
+    First it densely samples points along the region bounding box, then projects all
+    these points, before finding the geographic bounding box as the reprojected region.
 
     Parameters
     ----------
@@ -452,6 +482,9 @@ def region_xy_to_ll(
     as_corners: bool = False,
         if True, will return the region string in the format (lower left longitude /
         lower left latitude / upper right longitude / upper right latitude +r)
+    num: int,
+        number of points to sample along the cartesian bounding box before reprojecting,
+        by default 1000.
 
     Returns
     -------
@@ -496,7 +529,7 @@ def region_xy_to_ll(
 
         return f"{ll_lonlat[0]}/{ll_lonlat[1]}/{ur_lonlat[0]}/{ur_lonlat[1]}+r"  # type: ignore[misc]
 
-    df = region_to_df(region)
+    df = region_to_df(region, num=num)
     df_proj = reproject(
         df,
         f"epsg:{epsg}",
@@ -505,6 +538,20 @@ def region_xy_to_ll(
         input_coord_names=("easting", "northing"),
         output_coord_names=("lon", "lat"),
     )
+
+    xmin, xmax, ymin, ymax = region
+    lon_min, lon_max = df_proj[0], df_proj[1]  # type: ignore[misc]
+    lat_min, lat_max = df_proj[2], df_proj[3]  # type: ignore[misc]
+
+    # if pole is within region, need to override latitude values
+    if xmin <= 0 <= xmax and ymin <= 0 <= ymax:
+        lon_min, lon_max = -180.0, 180.0
+        if epsg == "3031":  # south polar stereographic
+            lat_min = -90.0
+        elif epsg == "3413":  # north polar stereographic
+            lat_max = 90.0
+
+    df_proj = (lon_min, lon_max, lat_min, lat_max)
 
     return tuple([dd2dms(x) for x in df_proj] if dms is True else df_proj)
 
