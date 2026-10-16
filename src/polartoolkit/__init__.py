@@ -58,6 +58,7 @@ class Report(scooby.Report):  # type: ignore[misc] # pylint: disable=missing-cla
 
 
 from .fetch import (  # noqa: E402
+    get_fetches,
     resample_grid,
 )
 from .maps import (  # noqa: E402
@@ -83,9 +84,11 @@ from .regions import (  # noqa: E402
     alter_region,
     combine_regions,
     draw_region,
+    get_regions,
     regions_overlap,
 )
 from .utils import (  # noqa: E402
+    OrientedRegion,
     block_reduce,
     change_registration,
     dd2dms,
@@ -112,21 +115,32 @@ from .utils import (  # noqa: E402
     make_grid,
     mask_from_polygon,
     mask_from_shapefile,
+    native_top_longitude,
     nearest_grid_fill,
+    normalize_rotation,
+    oriented_region,
     points_inside_region,
     points_inside_shapefile,
     polygon_to_region,
     polygon_to_shapefile,
     random_color,
+    region_corners,
     region_ll_to_xy,
     region_to_bounding_box,
     region_to_df,
     region_xy_to_ll,
     reproject,
     rmse,
+    rotate_region,
+    rotated_central_meridian,
+    rotated_crs,
+    rotation_to_top_longitude,
+    rotation_transformer,
     set_proj,
     shapes_to_df,
     square_around_region,
     square_subplots,
     subset_grid,
+    top_longitude_to_rotation,
+    unrotated_region,
 )

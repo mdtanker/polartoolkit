@@ -34,6 +34,23 @@ Contributors:
 
 -->
 
+## Unreleased
+
+### 🚀 Added
+- new parameter `rotation` for `plot_grid`, `basemap`, `Figure` and `set_proj`, to rotate a map clockwise by a given number of degrees instead of always using the projection's own orientation. The plotted region is expanded to the bounding box of the rotated region, so nothing is cut off; this means a rotated figure is larger than an unrotated one. When no region is given, the map is zoomed to fit the data. Only available for polar stereographic projections (EPSG:3031 and EPSG:3413).
+- `region` for `plot_grid`, `basemap` and `Figure` now also accepts corner coordinates, which unlike a `[xmin, xmax, ymin, ymax]` region can describe a *tilted* box. The rotation is then inferred from the corners, so it needn't be given.
+- new function `oriented_region` returning the smallest rotated rectangle around an outline: the rotation which squares it up, its corners, the region the map will show, and the region to fetch data for. Accepts a shapefile path, a GeoDataFrame, a DataFrame, the output of `draw_region`, or coordinate arrays, and takes a `pad` to zoom out from a box which is otherwise the tightest possible. This is the rotated counterpart of `polygon_to_region`; for the Getz Ice Shelf outline it plots 2.2x less area. Four quarter turns square a box up equally well, so the one returned lays the long axis across the page with true north nearest the top; add 90 or 180 to `rotation` for any of the others.
+- new function `unrotated_region` giving the region of data needed to fully cover a rotated map, since its footprint is a tilted rectangle in the unrotated projection. Also available on a figure as `Figure.reg_base`.
+- new functions `native_top_longitude`, `rotation_to_top_longitude` and `top_longitude_to_rotation`, since rotating is equivalent to choosing which line of longitude is at the top of the page. Also available on a figure as `Figure.top_longitude`.
+- new functions `rotated_crs`, `rotated_central_meridian`, `rotation_transformer`, `rotate_region`, `region_corners` and `normalize_rotation` supporting the above
+- `rotate_region` and `unrotated_region` take `rotation` before the optional `hemisphere`/`epsg`, matching the rest of the library, so the hemisphere can come from the `POLARTOOLKIT_HEMISPHERE` environment variable
+- added `rasterio` as an explicit dependency; it was already required transitively by `rioxarray` and is now imported directly
+
+### ✏️ Changed
+- `add_box` now draws the region as a quadrilateral rather than an axis-aligned rectangle, so it stays correct on a rotated map
+- two `plot` calls in `add_simple_basemap` now pass `projection` and `region` explicitly instead of relying on GMT's ambient state
+- `add_inset` now determines its region from the stored figure region rather than PyGMT's live GMT state, which inside the inset context was not the main map's region
+
 ## v1.5.1
 Released on 2026-03-22
 Contributors:
